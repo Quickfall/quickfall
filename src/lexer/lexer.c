@@ -100,6 +100,8 @@ struct LexerResult runLexer(char string[]) {
                 token.type = ABSTRACT;
             } else if (strcmp(word, "interface") == 0) {
                 token.type = INTERFACE;
+            } else if (strcmp(word, "new") == 0) {
+                token.type = NEW;
             } else {
                 token.type = KEYWORD;
             }

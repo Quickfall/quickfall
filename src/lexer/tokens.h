@@ -24,6 +24,7 @@ enum TokenType {
     IMPLEMENTS = 16,
     ABSTRACT = 17,
     INTERFACE = 18,
+    NEW = 19,
 
     /* Other */
     KEYWORD = 19,

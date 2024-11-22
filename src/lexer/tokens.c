@@ -27,9 +27,10 @@ enum TokenType {
     IMPLEMENTS = 16,
     ABSTRACT = 17,
     INTERFACE = 18,
-    KEYWORD = 19,
-    SEMICOLON = 20,
-    COMMA = 21,
-    DECLARE = 22
+    NEW = 19,
+    KEYWORD = 20,
+    SEMICOLON = 21,
+    COMMA = 22,
+    DECLARE = 23
 };
 

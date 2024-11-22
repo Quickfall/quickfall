@@ -424,6 +424,17 @@ struct ASTNode* parseExpression(struct LexerResult result, int index, int end) {
                 current = node;
             }
         }
+        else if(t.type == NEW) {
+            if(next.type != KEYWORD) {
+                printf("Error: Expected class name after new!\n");
+                continue;
+            }
+            struct ASTNode* node = createASTNode(AST_NEW);
+            memcpy(node->value, next.value, strlen(next.value));
+            index++;
+            current->next = node;
+            current = node;
+        }
         else if(t.type == KEYWORD) {
             if(next.type == PAREN_OPEN) {
                 struct ASTNode* node = parseFunctionInvoke(result, index);
