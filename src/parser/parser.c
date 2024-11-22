@@ -13,6 +13,7 @@ struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index);
 struct ASTNode* parseExpression(struct LexerResult result, int index, int end);
 struct ASTNode* parseClassDeclaration(struct LexerResult result, int index);
 struct ASTNode* parseInterfaceDeclaration(struct LexerResult result, int index);
+struct ASTNode* parseClassBody(struct LexerResult result, int index, int allowSubclasses);
 
 /**
  * Parses parameters of a function.
@@ -129,13 +130,60 @@ struct ASTNode* parseClassDeclaration(struct LexerResult result, int index) {
     }
     
     index++;
-    int start = index;
+    struct ASTNode* body = parseClassBody(result, index, 1);
+    if(!body) {
+        return NULL;
+    }
     
-    for(;index < result.size + 1; ++index) {
-        if(result.tokens[index].type == BRACKETS_CLOSE) {
-            node->right = parseExpression(result, start, index);
-            node->end = index;
-            return node;
+    if(node->right) {
+        node->right->next = body;
+    } else {
+        node->right = body;
+    }
+    
+    node->end = body->end;
+    return node;
+}
+
+/**
+ * Parses a class body, optionally allowing subclasses
+ */
+struct ASTNode* parseClassBody(struct LexerResult result, int index, int allowSubclasses) {
+    struct ASTNode* root = createASTNode(AST_GENERIC);
+    struct ASTNode* current = root;
+    
+    for(; index < result.size + 1; ++index) {
+        struct Token t = result.tokens[index];
+        
+        if(t.type == BRACKETS_CLOSE) {
+            root->end = index;
+            return root;
+        }
+        
+        if(t.type == CLASS) {
+            if(!allowSubclasses) {
+                printf("Error: Nested classes cannot have their own subclasses!\n");
+                return NULL;
+            }
+            struct ASTNode* subclass = parseClassDeclaration(result, index);
+            if(!subclass) return NULL;
+            current->next = subclass;
+            current = subclass;
+            index = subclass->end;
+        }
+        else if(t.type == FUNCTION) {
+            struct ASTNode* func = parseFunctionDeclaration(result, index);
+            if(!func) return NULL;
+            current->next = func;
+            current = func;
+            index = func->end;
+        }
+        else if(t.type == KEYWORD && result.tokens[index + 1].type == DECLARE) {
+            struct ASTNode* var = parseVariableDefinition(result, index);
+            if(!var) return NULL;
+            current->next = var;
+            current = var;
+            index = var->end;
         }
     }
     
@@ -188,22 +236,19 @@ struct ASTNode* parseInterfaceDeclaration(struct LexerResult result, int index) 
     }
     
     index++;
-    int start = index;
-    
-    for(;index < result.size + 1; ++index) {
-        if(result.tokens[index].type == BRACKETS_CLOSE) {
-            if(node->right) {
-                node->right->next = parseExpression(result, start, index);
-            } else {
-                node->right = parseExpression(result, start, index);
-            }
-            node->end = index;
-            return node;
-        }
+    struct ASTNode* body = parseClassBody(result, index, 0);
+    if(!body) {
+        return NULL;
     }
     
-    printf("Error: Interface body not closed!\n");
-    return NULL;
+    if(node->right) {
+        node->right->next = body;
+    } else {
+        node->right = body;
+    }
+    
+    node->end = body->end;
+    return node;
 }
 
 /**
