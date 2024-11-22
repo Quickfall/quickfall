@@ -9,7 +9,7 @@
 #include <string.h>
 
 struct ASTNode* parseParameters(struct LexerResult result, int index);
-struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index);
+struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index, int isInterface);
 struct ASTNode* parseExpression(struct LexerResult result, int index, int end);
 struct ASTNode* parseClassDeclaration(struct LexerResult result, int index);
 struct ASTNode* parseInterfaceDeclaration(struct LexerResult result, int index);
@@ -75,6 +75,12 @@ struct ASTNode* parseParameters(struct LexerResult result, int index) {
  */
 struct ASTNode* parseClassDeclaration(struct LexerResult result, int index) {
     struct ASTNode* node = createASTNode(AST_CLASS_DEF);
+    
+    // Check if class is abstract
+    if(result.tokens[index - 1].type == ABSTRACT) {
+        node->value[0] = '1'; // Mark as abstract
+        index--;
+    }
     
     // Get class name
     if(result.tokens[index + 1].type != KEYWORD) {
@@ -171,9 +177,12 @@ struct ASTNode* parseClassBody(struct LexerResult result, int index, int allowSu
             current = subclass;
             index = subclass->end;
         }
-        else if(t.type == FUNCTION) {
-            struct ASTNode* func = parseFunctionDeclaration(result, index);
+        else if(t.type == FUNCTION || (t.type == ABSTRACT && result.tokens[index + 1].type == FUNCTION)) {
+            struct ASTNode* func = parseFunctionDeclaration(result, index + (t.type == ABSTRACT ? 1 : 0), 0);
             if(!func) return NULL;
+            if(t.type == ABSTRACT) {
+                func->value[0] = '1'; // Mark as abstract
+            }
             current->next = func;
             current = func;
             index = func->end;
@@ -196,6 +205,7 @@ struct ASTNode* parseClassBody(struct LexerResult result, int index, int allowSu
  */
 struct ASTNode* parseInterfaceDeclaration(struct LexerResult result, int index) {
     struct ASTNode* node = createASTNode(AST_CLASS_DEF);
+    node->value[0] = '2'; // Mark as interface
     
     // Get interface name
     if(result.tokens[index + 1].type != KEYWORD) {
@@ -254,11 +264,11 @@ struct ASTNode* parseInterfaceDeclaration(struct LexerResult result, int index) 
 /**
  * Parses a function declaration.
  */
-struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index) {
+struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index, int isInterface) {
     struct ASTNode* node = createASTNode(AST_FUNCTION_DEF);
 
     if(result.tokens[index + 2].type != PAREN_OPEN) {
-        printf("Error: Excepted a paren after function name!\n");
+        printf("Error: Expected a paren after function name!\n");
         return NULL;
     }
 
@@ -276,8 +286,18 @@ struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index) {
 
     index = parameters->end + 1;
 
+    // For interfaces, expect semicolon instead of body
+    if(isInterface) {
+        if(result.tokens[index].type != SEMICOLON) {
+            printf("Error: Expected semicolon after interface method declaration!\n");
+            return NULL;
+        }
+        node->end = index;
+        return node;
+    }
+
     if(result.tokens[index].type != BRACKETS_OPEN) {
-        printf("Error: Excepted function body declaration got %d instead!\n", result.tokens[index - 1].type);
+        printf("Error: Expected function body declaration got %d instead!\n", result.tokens[index - 1].type);
         printf("Dump:\n");
         for(;index < result.size +1; ++index) {
             printf("Index: %d, Type: %d\n", index, result.tokens[index].type);
@@ -375,10 +395,12 @@ struct ASTNode* parseExpression(struct LexerResult result, int index, int end) {
         struct Token t = result.tokens[index];
         struct Token next = result.tokens[index + 1];
 
-        if(t.type == FUNCTION) {
-            if(next.type == KEYWORD) {
-                struct ASTNode* node = parseFunctionDeclaration(result, index);
-
+        if(t.type == FUNCTION || (t.type == ABSTRACT && next.type == FUNCTION)) {
+            if(result.tokens[index + (t.type == ABSTRACT ? 1 : 0) + 1].type == KEYWORD) {
+                struct ASTNode* node = parseFunctionDeclaration(result, index + (t.type == ABSTRACT ? 1 : 0), 0);
+                if(t.type == ABSTRACT) {
+                    node->value[0] = '1'; // Mark as abstract
+                }
                 if(node != NULL) {
                     index = node->end;
                     current->next = node;
@@ -386,11 +408,16 @@ struct ASTNode* parseExpression(struct LexerResult result, int index, int end) {
                 }
             }
             else {
-                printf("Error: Excepted function name after func!\n");
+                printf("Error: Expected function name after func!\n");
             }
         }
-        else if(t.type == CLASS) {
-            struct ASTNode* node = parseClassDeclaration(result, index);
+        else if(t.type == CLASS || t.type == INTERFACE) {
+            struct ASTNode* node;
+            if(t.type == CLASS) {
+                node = parseClassDeclaration(result, index);
+            } else {
+                node = parseInterfaceDeclaration(result, index);
+            }
             if(node != NULL) {
                 index = node->end;
                 current->next = node;
@@ -418,7 +445,7 @@ struct ASTNode* parseExpression(struct LexerResult result, int index, int end) {
             }
         }
         else {
-            printf("Error: Unexcepted token %d\n", t.type);
+            printf("Error: Unexpected token %d\n", t.type);
         }
     }
 
