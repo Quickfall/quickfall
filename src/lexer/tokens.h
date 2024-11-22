@@ -5,6 +5,7 @@
 #define smallestKeywordSize 4
 
 enum TokenType {
+    /* Keywords */
     FUNCTION = 1,
     RETURN = 2,
     VAR = 3,
@@ -18,10 +19,17 @@ enum TokenType {
     STRING = 11,
     BOOLEAN = 12,
     NU = 13,
-    KEYWORD = 14,
-    SEMICOLON = 15,
-    COMMA = 16,
-    DECLARE = 17
+    CLASS = 14,
+    EXTENDS = 15,
+    IMPLEMENTS = 16,
+    ABSTRACT = 17,
+    INTERFACE = 18,
+
+    /* Other */
+    KEYWORD = 19,
+    SEMICOLON = 20,
+    COMMA = 21,
+    DECLARE = 22
 };
 
 struct KeywordResult {

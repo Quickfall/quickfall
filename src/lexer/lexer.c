@@ -90,6 +90,16 @@ struct LexerResult runLexer(char string[]) {
                 token.type = BOOLEAN;
             } else if (strcmp(word, "null") == 0) {
                 token.type = NU;
+            } else if (strcmp(word, "class") == 0) {
+                token.type = CLASS;
+            } else if (strcmp(word, "extends") == 0) {
+                token.type = EXTENDS;
+            } else if (strcmp(word, "implements") == 0) {
+                token.type = IMPLEMENTS;
+            } else if (strcmp(word, "abstract") == 0) {
+                token.type = ABSTRACT;
+            } else if (strcmp(word, "interface") == 0) {
+                token.type = INTERFACE;
             } else {
                 token.type = KEYWORD;
             }

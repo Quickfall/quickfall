@@ -11,7 +11,8 @@
 struct ASTNode* parseParameters(struct LexerResult result, int index);
 struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index);
 struct ASTNode* parseExpression(struct LexerResult result, int index, int end);
-
+struct ASTNode* parseClassDeclaration(struct LexerResult result, int index);
+struct ASTNode* parseInterfaceDeclaration(struct LexerResult result, int index);
 
 /**
  * Parses parameters of a function.
@@ -69,6 +70,143 @@ struct ASTNode* parseParameters(struct LexerResult result, int index) {
 }
 
 /**
+ * Parses a class declaration.
+ */
+struct ASTNode* parseClassDeclaration(struct LexerResult result, int index) {
+    struct ASTNode* node = createASTNode(AST_CLASS_DEF);
+    
+    // Get class name
+    if(result.tokens[index + 1].type != KEYWORD) {
+        printf("Error: Expected class name!\n");
+        return NULL;
+    }
+    
+    node->left = createASTNode(AST_CLASS_NAME);
+    memcpy(node->left->value, result.tokens[index + 1].value, strlen(result.tokens[index + 1].value));
+    
+    index += 2;
+    
+    // Check for extends
+    if(result.tokens[index].type == EXTENDS) {
+        if(result.tokens[index + 1].type != KEYWORD) {
+            printf("Error: Expected parent class name after extends!\n");
+            return NULL;
+        }
+        node->right = createASTNode(AST_CLASS_EXTENDS);
+        memcpy(node->right->value, result.tokens[index + 1].value, strlen(result.tokens[index + 1].value));
+        index += 2;
+    }
+    
+    // Check for implements
+    if(result.tokens[index].type == IMPLEMENTS) {
+        struct ASTNode* implements = createASTNode(AST_CLASS_IMPLEMENTS);
+        struct ASTNode* current = implements;
+        
+        index++;
+        while(index < result.size && result.tokens[index].type == KEYWORD) {
+            memcpy(current->value, result.tokens[index].value, strlen(result.tokens[index].value));
+            if(result.tokens[index + 1].type == COMMA) {
+                current->next = createASTNode(AST_CLASS_IMPLEMENTS);
+                current = current->next;
+                index += 2;
+            } else {
+                index++;
+                break;
+            }
+        }
+        
+        if(!node->right) {
+            node->right = implements;
+        } else {
+            node->right->next = implements;
+        }
+    }
+    
+    // Parse class body
+    if(result.tokens[index].type != BRACKETS_OPEN) {
+        printf("Error: Expected class body!\n");
+        return NULL;
+    }
+    
+    index++;
+    int start = index;
+    
+    for(;index < result.size + 1; ++index) {
+        if(result.tokens[index].type == BRACKETS_CLOSE) {
+            node->right = parseExpression(result, start, index);
+            node->end = index;
+            return node;
+        }
+    }
+    
+    printf("Error: Class body not closed!\n");
+    return NULL;
+}
+
+/**
+ * Parses an interface declaration.
+ */
+struct ASTNode* parseInterfaceDeclaration(struct LexerResult result, int index) {
+    struct ASTNode* node = createASTNode(AST_CLASS_DEF);
+    
+    // Get interface name
+    if(result.tokens[index + 1].type != KEYWORD) {
+        printf("Error: Expected interface name!\n");
+        return NULL;
+    }
+    
+    node->left = createASTNode(AST_CLASS_NAME);
+    memcpy(node->left->value, result.tokens[index + 1].value, strlen(result.tokens[index + 1].value));
+    
+    index += 2;
+    
+    // Check for extends (interfaces can extend multiple interfaces)
+    if(result.tokens[index].type == EXTENDS) {
+        struct ASTNode* extends = createASTNode(AST_CLASS_EXTENDS);
+        struct ASTNode* current = extends;
+        
+        index++;
+        while(index < result.size && result.tokens[index].type == KEYWORD) {
+            memcpy(current->value, result.tokens[index].value, strlen(result.tokens[index].value));
+            if(result.tokens[index + 1].type == COMMA) {
+                current->next = createASTNode(AST_CLASS_EXTENDS);
+                current = current->next;
+                index += 2;
+            } else {
+                index++;
+                break;
+            }
+        }
+        
+        node->right = extends;
+    }
+    
+    // Parse interface body
+    if(result.tokens[index].type != BRACKETS_OPEN) {
+        printf("Error: Expected interface body!\n");
+        return NULL;
+    }
+    
+    index++;
+    int start = index;
+    
+    for(;index < result.size + 1; ++index) {
+        if(result.tokens[index].type == BRACKETS_CLOSE) {
+            if(node->right) {
+                node->right->next = parseExpression(result, start, index);
+            } else {
+                node->right = parseExpression(result, start, index);
+            }
+            node->end = index;
+            return node;
+        }
+    }
+    
+    printf("Error: Interface body not closed!\n");
+    return NULL;
+}
+
+/**
  * Parses a function declaration.
  */
 struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index) {
@@ -110,7 +248,7 @@ struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index) {
         struct Token t = result.tokens[index];
 
         if(t.type == BRACKETS_CLOSE) {
-            node->right = parseExpression(result, start, index); //todo: make a function to remove the need to loop to find the closing point
+            node->right = parseExpression(result, start, index);
         }
 
         printf("Token in method body: %d\n", t.type);
@@ -204,6 +342,14 @@ struct ASTNode* parseExpression(struct LexerResult result, int index, int end) {
             }
             else {
                 printf("Error: Excepted function name after func!\n");
+            }
+        }
+        else if(t.type == CLASS) {
+            struct ASTNode* node = parseClassDeclaration(result, index);
+            if(node != NULL) {
+                index = node->end;
+                current->next = node;
+                current = node;
             }
         }
         else if(t.type == KEYWORD) {
