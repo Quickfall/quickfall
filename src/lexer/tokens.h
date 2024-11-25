@@ -24,12 +24,7 @@ enum TokenType {
     DECLARE = 17,
     USE = 18,
 
-    // Math Operators
-    PLUS = 19,
-    MINUS = 20,
-    MULTIYPLY = 21,
-    DIVIDE = 22,
-    POW = 23
+    MATH_OPERATOR = 19
 };
 
 struct KeywordResult {
