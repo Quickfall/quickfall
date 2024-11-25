@@ -22,7 +22,14 @@ enum TokenType {
     SEMICOLON = 15,
     COMMA = 16,
     DECLARE = 17,
-    USE = 18
+    USE = 18,
+
+    // Math Operators
+    PLUS = 19,
+    MINUS = 20,
+    MULTIYPLY = 21,
+    DIVIDE = 22,
+    POW = 23
 };
 
 struct KeywordResult {
