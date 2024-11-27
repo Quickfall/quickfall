@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "./tokens.h"
-#include "../utils/hashes.h"
+#include "../utils/fastutils.h"
 
 /**
  * A token that was parsed by the Lexer.
@@ -84,18 +84,29 @@ struct LexerResult runLexer(char string[]) {
             
             struct Token token;
             
-            if (strcmp(word, "func") == 0) {
-                token.type = FUNCTION;
-            } else if (strcmp(word, "true") == 0 || strcmp(word, "false") == 0) {
-                token.type = BOOLEAN_VALUE;
-            } else if (strcmp(word, "null") == 0) {
-                token.type = NU;
-            } else if(strcmp(word, "use") == 0) {
-                token.type = USE;
-            } 
-            else {
-                token.type = KEYWORD;
-            }
+	    switch(strhash(word)) {
+		case strhash("func"):
+			token.type = FUNCTION;
+			break;
+
+		case strhash("false"):	
+		case strhash("true"):
+			token.type == BOOLEAN_VALUE;
+			break;
+		
+		case strhash("null"):
+			token.type = NU;
+			break;
+		
+		case strhash("use"):
+			token.type = USE;
+			break;
+
+		default:
+			token.type = KEYWORD;
+			break;
+
+	    }
             
             strncpy(token.value, word, sizeof(token.value) - 1);
             result.tokens[result.size++] = token;
@@ -112,6 +123,14 @@ struct LexerResult runLexer(char string[]) {
             case ';': pushToken(&result, SEMICOLON); break;
             case ',': pushToken(&result, COMMA); break;
             case '=': pushToken(&result, DECLARE); break;
+	    
+	    case '+':
+            case '-':
+	    case '*':
+            case '/':
+	    case '^':
+		pushToken(&result, MATH_OPERATOR);
+		result.tokens[result.size - 1].value[0] = c;
         }
     }
 
