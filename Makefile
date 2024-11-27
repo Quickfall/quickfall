@@ -16,7 +16,7 @@ else
 endif
 
 # Compiler settings
-CFLAGS = -Wall -Wextra -std=c11 -Wimplicit-function-declaration -g
+CFLAGS = -Wall -Wextra -std=c11 -Wimplicit-function-declaration
 
 # Directories
 SRC_DIR = src
@@ -38,6 +38,7 @@ SOURCES = $(LEXER_DIR)/lexer.c \
           $(COMPILER_PLATFORMS)/linux.c \
           $(COMPILER_PLATFORMS)/windowsx86-64.c \
           $(UTILS_DIR)/hashes.c \
+	  $(UTILS_DIR)/fastutils.c \
 
 # Executable name
 TARGET = quickfall$(TARGET_EXTENSION)
@@ -73,11 +74,11 @@ $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 # Link object files
 $(TARGET): $(OBJECTS)
 	gcc $(CFLAGS) -c src/cli/main.c -o build/src/cli/main.o
-	gcc build/src/cli/main.o $(OBJECTS) -g -o $@
+	gcc build/src/cli/main.o $(OBJECTS) -o $@
 
 $(BENCH_TARGET): $(OBJECTS)
 	gcc $(CFLAGS) -c benchmarks/main.c -o build/benchmarks/main.o
-	gcc build/benchmarks/main.o $(OBJECTS) -g -o $@
+	gcc build/benchmarks/main.o $(OBJECTS) -o $@
 
 # Clean build files
 clean:
