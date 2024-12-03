@@ -15,7 +15,7 @@
 #include "../compiler/compiler.h"
 #include "../compilerv2/compilerv2.h"
 
-#include "../utils/logging.c"
+#include "../utils/logging.h"
 
 // Version
 #define VERSION "0.1.0"

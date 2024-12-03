@@ -9,7 +9,7 @@
 #include "./compilerv2.h"
 #include "./objects.h"
 #include "../parser/ast.h"
-#include "../utils/logging.c"
+#include "../utils/logging.h"
 
 #include "./att/att-win.h"
 #include "./att/att-linux.h"

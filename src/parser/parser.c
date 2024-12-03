@@ -5,7 +5,7 @@
 #include "../lexer/tokens.h"
 #include "../lexer/lexer.h"
 #include "./ast.h"
-#include "../utils/logging.c"
+#include "../utils/logging.h"
 
 #include <stdio.h>
 #include <string.h>
