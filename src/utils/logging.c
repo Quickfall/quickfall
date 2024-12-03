@@ -4,6 +4,8 @@
 
 #include <stdlib.h>
 
+#include "./logging.h"
+
 struct LoggingContext loggingCtx;
 
 loggingCtx.errorCount = 0;
