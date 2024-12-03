@@ -73,7 +73,7 @@ struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index) {
     struct ASTNode* node = createASTNode(AST_FUNCTION_DEF);
 
     if(result.tokens[index + 2].type != PAREN_OPEN) {
-        printf("Error: Excepted a paren after function name!\n");
+	logError("Excepted a paren token after the function name!");
         return NULL;
     }
 
@@ -85,14 +85,14 @@ struct ASTNode* parseFunctionDeclaration(struct LexerResult result, int index) {
     node->left->right = parameters;
 
     if(!parameters) {
-        printf("Error: Argument parsing went wrong!\n");
+	logWarning("Couldn't parse arguments!");
         return NULL;
     }
 
     index = parameters->end + 1;
 
     if(result.tokens[index].type != BRACKETS_OPEN) {
-        printf("Error: Excepted function body declaration got %d instead!\n", result.tokens[index - 1].type);
+	logError("Excepted a function body declaration after function name!");
         return NULL;
     }
 
