@@ -172,11 +172,11 @@ struct ASTNode* parseVariableDefinition(struct LexerResult result, int index) {
 		node->value[0] = 'b';
 		break;
 	default:
-		printf("%sWarning: unsupported variable value type! Compiling of this variable will be ignored!%s\n", TEXT_YELLOW, RESET); // This warning will be here until there is no unsupported types
+		logWarning("Unsupported variable value type! Compiling of this variable will be ignored until its implementation!");
     }
 
     if(val.type != KEYWORD && val.type != NUMBER && val.type != STRING && val.type != BOOLEAN_VALUE) {
-        printf("Error: Disallowed token as variable value: %d\n", val.type);
+	logError("Couldn't parse variable value: Unexcepted token as variable value!");
         return NULL;
     }
 
