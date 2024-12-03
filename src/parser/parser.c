@@ -213,7 +213,7 @@ struct ASTNode* parseExpression(struct LexerResult result, int index, int end, e
                 }
             }
             else {
-                printf("Error: Excepted function name after func!\n");
+		logError("Excepted function name after function declaration keyword!");
             }
         }
         else if(t.type == KEYWORD) {
@@ -248,11 +248,11 @@ struct ASTNode* parseExpression(struct LexerResult result, int index, int end, e
                 current = node;
             }
             else {
-                printf("Error: Excepted string litteral after use\n");
+		logError("Excepted string litteral after the use keyword!");
             }
         }
         else {
-            printf("Error: Unexcepted token %d\n", t.type);
+	    logError("Found unexcepted token in expression!");
         }
     }
 
