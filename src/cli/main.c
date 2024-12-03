@@ -107,7 +107,9 @@ int main(int argc, char* argv[]) {
 			}
 			
 			if(outputFile == NULL) {
-				printf("%sError: the output file destination wasn't provided! Please use the -o argument to add an output!%s", TEXT_RED, RESET);
+				logError("The output file destination was not provided! Use the -o option to add an output!");
+				showLoggingContext();
+				
 				return -1;
 			}
 
@@ -129,13 +131,17 @@ int main(int argc, char* argv[]) {
 			char* output = compileV2(ctx);
 
 			if(output == NULL) {
-				printf("Error: the compiled output is null! Something went wrong!\n");
+				logError("Compilation went wrong! Output buffer is null!");
+				showLoggingContext();
+
 				return -1;
 			}
 
 			fptr = fopen(outputFile, "w");
 			fprintf(fptr, output);
 			fclose(fptr);
+
+			showLoggingContext();
 
 			break;
 		case 'v':
