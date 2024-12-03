@@ -18,7 +18,7 @@ void logWarning(char* warning) {
 	loggingCtx->warningCount++;
 }
 
-void showLogginContext() {
+void showLoggingContext() {
 	for(int i = 0; i < loggingCtx->errorCount; ++i) {
 		printf("%sError: %s%s%s\n", TEXT_HGRAY, TEXT_HRED, loggingCtx->errors[i], RESET);
 	}
