@@ -122,4 +122,6 @@ struct LoggingContext {
 void logError(char* error);
 void logWarning(char* warning);
 
+void showLoggingContext();
+
 #endif
