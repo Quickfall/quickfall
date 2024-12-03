@@ -31,7 +31,7 @@ struct ASTNode* parseParameters(struct LexerResult result, int index) {
 	switch (t.type) {
 		case COMMA:
 			if (mode == 0) {
-				printf("Error: Arguments aren't passed properly!\n");
+				logError("Arguments weren't passed correctly: Excepted parameter node, not a comma!");
 				return NULL;
 			}
 			mode = 0;
@@ -41,16 +41,14 @@ struct ASTNode* parseParameters(struct LexerResult result, int index) {
 		case NONE:
 		case KEYWORD:
 			if(mode >= 2) {
-				printf("Error: Arguments aren't passed properly!\n");
+				logError("Arguments weren't passed correctly! Excepted two parameters nodes max before a comma!");
 				return NULL;
 			}
 			if(result.tokens[index + 1].type == NONE || result.tokens[index + 1].type == KEYWORD) {
-				printf("Passed type %s\n", t.value);
 				current->right = createASTNode(AST_PARAM_TYPE);
 				memcpy(current->right->value, t.value, strlen(t.value));
 			}
 			else {
-				printf("Passed name %s\n", t.value);
 				current->left = createASTNode(AST_PARAM_NAME);
 				memcpy(current->left->value, t.value, strlen(t.value));
 			}
@@ -59,7 +57,8 @@ struct ASTNode* parseParameters(struct LexerResult result, int index) {
 		case PAREN_CLOSE:
 			return root;
 		default:
-			printf("Didn't except token %d in arguments!\n", t.type);
+			logError("An unexcepted token was found during argument parsing!");
+
 	}
     }
 
