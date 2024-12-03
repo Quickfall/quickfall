@@ -20,6 +20,8 @@
 // Version
 #define VERSION "0.1.0"
 
+extern struct LoggingContext* loggingCtx;
+
 
 void showCommandEntry(char* commandName, char* description, int argumentCount, char* argumentNames[], char* argumentDescriptions[]) {
 	printf("\n    >  %s\n\n       %s%sDescription%s: %s\n", commandName, STYLE_BOLD, STYLE_UNDERLINE, RESET, description);
@@ -55,6 +57,16 @@ void showHelpMessage() {
 
 
 int main(int argc, char* argv[]) {
+
+	// Creates the logging context.
+	loggingCtx = malloc(sizeof(struct LoggingContext));
+
+	loggingCtx->errorCount = 0;
+	loggingCtx->warningCount = 0;
+
+	loggingCtx->errors = malloc(sizeof(char*) * 100);
+	loggingCtx->warnings = malloc(sizeof(char*) * 100);
+
 	if(argc < 2) {
 		showHelpMessage();
 		return -1;
