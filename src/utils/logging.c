@@ -2,104 +2,22 @@
  * Quickfall Logging Utilities.
  */
 
-#define RESET "\x1b[0m"
+#include <stdlib.h>
 
-#define STYLE_BOLD "\x1b[1m"
-#define STYLE_ITALIC "\x1b[3m"
-#define STYLE_UNDERLINE "\x1b[4m"
-#define STYLE_STRIKETROUGH "\x1b[9m"
+struct LoggingContext loggingCtx;
 
-#define PREFIX "\x1b["
+loggingCtx.errorCount = 0;
+loggingCtx.warningCount = 0;
 
-#define CLASSIC_OP PREFIX "0;"
-#define BOLD_OP PREFIX "1;"
+loggingCtx.errors = malloc(sizeof(char*) * 100);
+loggingCtx.warnings = malloc(sizeof(char*) * 100);
 
-#define RED "31m"
-#define BLACK "30m"
-#define GREEN "32m"
-#define YELLOW "33m"
-#define BLUE "34m"
-#define MAGENTA "35m"
-#define CYAN "36m"
-#define WHITE "37m"
-#define GRAY "90m"
+void logError(char* error) {
+	loggingCtx.errors[loggingCtx.errorCount] = error;
+	loggingCtx.errorCount++;
+}
 
-#define HBLACK "90m"
-#define HRED "91m"
-#define HGREEN "92m"
-#define HYELLOW "93m"
-#define HBLUE "94m"
-#define HMAGENTA "95m"
-#define HCYAN "96m"
-#define HWHITE "97m"
-#define HGRAY "98m"
-
-#define BG_BLACK "40m"
-#define BG_RED "41m"
-#define BG_GREEN "42m"
-#define BG_YELLOW "43m"
-#define BG_BLUE "44m"
-#define BG_MAGENTA "45m"
-#define BG_CYAN "46m"
-#define BG_WHITE "47m"
-#define BG_GRAY "48m"
-
-#define BG_HBLACK "100m"
-#define BG_HRED "101m"
-#define BG_HGRREEN "102m"
-#define BG_HYELLOW "103m"
-#define BG_HBLUE "104m"
-#define BG_HPURPLE "105m"
-#define BG_HCYAN "106m"
-#define BG_HWHITE "107m"
-#define BH_HGRAY "108m"
-
-#define TEXT_RED CLASSIC_OP RED
-#define TEXT_BLACK CLASSIC_OP BLACK
-#define TEXT_GREEN CLASSIC_OP GREEN
-#define TEXT_YELLOW CLASSIC_OP YELLOW
-#define TEXT_BLUE CLASSIC_OP BLUE
-#define TEXT_MAGENTA CLASSIC_OP MAGENTA
-#define TEXT_CYAN CLASSIC_OP CYAN
-#define TEXT_WHITE CLASSIC_OP WHITE
-#define TEXT_GRAY CLASSIC_OP GRAY
-
-#define TEXT_HRED CLASSIC_OP HRED
-#define TEXT_HBLACK CLASSIC_OP HBLACK
-#define TEXT_HGREEN CLASSIC_OP HGREEN
-#define TEXT_HYELLOW CLASSIC_OP HYELLOW
-#define TEXT_HBLUE CLASSIC_OP HBLUE
-#define TEXT_HMAGENTA CLASSIC_OP HMAGENTA
-#define TEXT_HCYAN CLASSIC_OP HCYAN
-#define TEXT_HWHITE CLASSIC_OP HWHITE
-#define TEXT_HGRAY CLASSIC_OP HGRAY
-
-#define BACKGROUND_RED CLASSIC_OP BG_RED
-#define BACKGROUND_BLACK CLASSIC_OP BG_BLACK
-#define BACKGROUND_GREEN CLASSIC_OP BG_GREEN
-#define BACKGROUND_YELLOW CLASSIC_OP BG_YELLOW
-#define BACKGROUND_BLUE CLASSIC_OP BG_BLUE
-#define BACKGROUND_MAGENTA CLASSIC_OP BG_MAGENTA
-#define BACKGROUND_CYAN CLASSIC_OP BG_CYAN
-#define BACKGROUND_WHITE CLASSIC_OP BG_WHITE
-#define BACKGROUND_GRAY CLASSIC_OP BG_GRAY
-
-#define BTEXT_RED BOLD_OP RED
-#define BTEXT_BLACK BOLD_OP BLACK
-#define BTEXT_GREEN BOLD_OP GREEN
-#define BTEXT_YELLOW BOLD_OP YELLOW
-#define BTEXT_BLUE BOLD_OP BLUE
-#define BTEXT_MAGENTA BOLD_OP MAGENTA
-#define BTEXT_CYAN BOLD_OP CYAN
-#define BTEXT_WHITE BOLD_OP WHITE
-#define BTEXT_GRAY BOLD_OP GRAY
-
-#define BTEXT_HRED BOLD_OP HRED
-#define BTEXT_HBLACK BOLD_OP HBLACK
-#define BTEXT_HGREEN BOLD_OP HGREEN
-#define BTEXT_HYELLOW BOLD_OP HYELLOW
-#define BTEXT_HBLUE BOLD_OP HBLUE
-#define BTEXT_HMAGENTA BOLD_OP HMAGENTA
-#define BTEXT_HCYAN BOLD_OP HCYAN
-#define BTEXT_HWHITE BOLD_OP HWHITE
-#define BTEXT_HGRAY BOLD_OP HGRAY
+void logWarning(char* warning) {
+	loggingCtx.warning[loggingCtx.warningCount] = warning;
+	loggingCtx.warningCount++;
+}
