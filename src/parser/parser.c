@@ -132,7 +132,7 @@ struct ASTNode* parseFunctionInvoke(struct LexerResult result, int index) {
 
         if(t.type == COMMA) {
             if(i == 0) {
-                printf("Error: Invoker arguments were passed wrongly!\n");
+		logError("Function invocation arguments were passed wrongly! Excepted parameters node(s) before comma");
                 return NULL;
             }
             i = 0;
