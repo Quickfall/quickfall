@@ -32,7 +32,9 @@ typedef enum {
 	AST_MATH_OPERATION,
 	AST_MATH_OP_HEADER,
 
-	AST_PARAMETER // A function parameter AST Node, used in function declaration.
+	AST_PARAMETER, // A function parameter AST Node, used in function declaration.
+	
+	AST_TYPE_DECLARATION
 } AST_NODE_TYPE;
 
 /**
