@@ -109,6 +109,9 @@ LEXER_RESULT runLexer(char* string, int size) {
 			else if(strcmp(buff, "var") == 0) {
 				pushToken(&result, VAR);
 			}
+			else if(strcmp(buff, "type") == 0) {
+				pushToken(&result, TYPE);
+			}
 			else {
 				pushToken(&result, KEYWORD);
 				result.tokens[result.size - 1].value = buff;
