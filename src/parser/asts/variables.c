@@ -2,6 +2,8 @@
  * Variable-related AST parsing.
  */
 
+#include <stdlib.h>
+
 #include "../../utils/hash.h"
 
 #include "../../std/types.h"
@@ -20,6 +22,8 @@ AST_NODE* parseVariableValue(LEXER_RESULT result, int index) {
 		AST_NODE* node = createASTNode(AST_VARIABLE_VALUE);
 		node->endingIndex = index;
 		node->left = createASTNode(AST_TYPE);
+
+		node->left->value = malloc(1);
 
 		switch(t.type) {
 			case NUMBER:
@@ -60,6 +64,8 @@ AST_NODE* parseVariableValue(LEXER_RESULT result, int index) {
 AST_NODE* parseVariableDeclaration(LEXER_RESULT result, int index) {
 	AST_NODE* node = createASTNode(AST_VARIABLE_DECLARATION);
 
+	node->value = malloc(1);
+
 	if(result.tokens[index].type == VAR) {
 		node->value[0] = TYPE_VOID;	
 	}
@@ -87,8 +93,9 @@ AST_NODE* parseVariableDeclaration(LEXER_RESULT result, int index) {
 
 	node->right = parseVariableValue(result, index + 3);
 
-	if(node->value[0] != TYPE_VOID && node->value[0] != node->right->value[0]) {
+	if(node->value[0] != TYPE_VOID && node->right != NULL && node->value[0] != node->right->left->value[0]) {
 		printf("Error: Variable type mismatch!\n");
+		return NULL;
 	}	
 
 	if(node->right != NULL) node->endingIndex = node->right->endingIndex;
