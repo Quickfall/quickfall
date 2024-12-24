@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://avatars.githubusercontent.com/u/186870998?s=200&v=4">
+<img src="https://files.horizon.pics/c20a230d-ec2d-4d15-ba21-c6b851925381?a=1199&mime1=image&mime2=jpeg">
 </div>
 
 # Introduction to Quickfall
