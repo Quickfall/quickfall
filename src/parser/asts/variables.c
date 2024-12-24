@@ -59,10 +59,25 @@ AST_NODE* parseVariableDeclaration(LEXER_RESULT result, int index) {
 	AST_NODE* node = createASTNode(AST_VARIABLE_DECLARATION);
 
 	if(result.tokens[index].type == VAR) {
-		node->value = "none";	
+		node->value[0] = TYPE_VOID;	
 	}
 	else {
-		node->value = result.tokens[index].value;
+		int hash = strhash(result.tokens[index.value]);
+
+		switch(hash) {
+			case hashstr("int"):
+				node->value[0] = TYPE_NUMBER;
+				break;
+			case hashstr("str"):
+				node->value[0] = TYPE_STRING;
+				break;
+			case hashstr("boolean"):
+				node->value[0] = TYPE_BOOL;
+				break;
+			default:
+				node->value[0] = TYPE_CUSTOM;
+				
+		}
 	}
 
 	node->left = createASTNode(AST_VARIABLE_NAME);
