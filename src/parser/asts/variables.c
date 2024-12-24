@@ -24,9 +24,12 @@ AST_NODE* parseVariableValue(LEXER_RESULT result, int index) {
 				if(result.size >= index + 1 && result.tokens[index + 1].type == MATH_OP) return parseMathematicalOpNode(result, index);
 
 				node->left->value[0] = TYPE_NUMBER;
-					
+				break;
 			case STRING:
 				node->left->value[0] = TYPE_STRING;
+				break;
+			case BOOL:
+				node->left->value[0] = TYPE_BOOL;
 				break;
 			default:
 				node->left->value[0] = TYPE_VOID;
