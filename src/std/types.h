@@ -24,6 +24,6 @@ unsigned char* STD_TYPES_BYTES[4] = {
 	0x02,
 	0x03,
 	0x04
-}
+};
 
 #endif
