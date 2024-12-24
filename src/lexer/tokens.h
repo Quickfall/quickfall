@@ -22,7 +22,8 @@ typedef enum {
     DECLARE,
     USE,
     NONE,
-    MATH_OP
+    MATH_OP,
+    TYPE
 } TOKEN_TYPE;
 
 /**
