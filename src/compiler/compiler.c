@@ -123,6 +123,35 @@ IR_CTX* makeContext(AST_NODE* tree) {
 				hashPut(ctx->nodeMap, hash, node);
 
 				break;
+			case AST_TYPE_DECLARATION:
+				hash = hashstr(tree->value);
+
+				if(hashGet(ctx->nodeMap, hash) != NULL) {
+					printf("Type %s is already defined!\n", tree->value);
+					return NULL;
+				}
+
+				node = createIRNode(IR_TYPE_DEC, tree->value);
+				
+				while(tree->left != NULL) {
+
+					IR_NODE* var = createIRNode(IR_VARIABLE, tree->left->value);
+					var->type = tree->left->right->value;
+
+					node->variables[node->variableIndex] = var;
+					node->variableIndex++;
+
+					hashPut(node->variableMap, hashstr(tree->left->value), var);
+				
+					tree->left = tree->left->next;
+				}
+
+				ctx->nodes[ctx->nodeIndex] = node;
+				ctx->nodeIndex++;
+
+				hashPut(ctx->nodeMap, hash, node);
+
+				break;
 
 		}
 
