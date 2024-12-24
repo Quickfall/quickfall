@@ -52,9 +52,6 @@ typedef struct {
 	int nodeIndex;
 
 	struct Hashmap* nodeMap;
-
-	IR_NODE* mainFunc;
-
 } IR_CTX;
 
 /**
