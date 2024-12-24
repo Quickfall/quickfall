@@ -69,6 +69,14 @@ AST_NODE* parseNodes(LEXER_RESULT result, int index, AST_NODE_TYPE type) {
 						index = node->endingIndex;
 					}
 				}
+				if(result.tokens[index + 1].type == KEYWORD && result.tokens[index + 2].type == DECLARE) {
+					node = parseVariableDeclaration(result, index);
+					if(node != NULL) {
+						current->next = node;
+						current = node;
+						index = node->endingIndex;
+					}
+				}
 
 		}
 	}

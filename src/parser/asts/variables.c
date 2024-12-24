@@ -2,6 +2,8 @@
  * Variable-related AST parsing.
  */
 
+#include "../../utils/hash.h"
+
 #include "../../std/types.h"
 
 #include "../../lexer/lexer.h"
@@ -28,7 +30,7 @@ AST_NODE* parseVariableValue(LEXER_RESULT result, int index) {
 			case STRING:
 				node->left->value[0] = TYPE_STRING;
 				break;
-			case BOOL:
+			case BOOLEAN_VALUE:
 				node->left->value[0] = TYPE_BOOL;
 				break;
 			default:
@@ -62,16 +64,16 @@ AST_NODE* parseVariableDeclaration(LEXER_RESULT result, int index) {
 		node->value[0] = TYPE_VOID;	
 	}
 	else {
-		int hash = strhash(result.tokens[index.value]);
+		int hash = hashstr(result.tokens[index].value);
 
 		switch(hash) {
-			case hashstr("int"):
+			case 1283: // "int"
 				node->value[0] = TYPE_NUMBER;
 				break;
-			case hashstr("str"):
+			case 1731: // "str"
 				node->value[0] = TYPE_STRING;
 				break;
-			case hashstr("boolean"):
+			case 1831: // "boolean"
 				node->value[0] = TYPE_BOOL;
 				break;
 			default:
@@ -84,6 +86,10 @@ AST_NODE* parseVariableDeclaration(LEXER_RESULT result, int index) {
 	node->left->value = result.tokens[index + 1].value;
 
 	node->right = parseVariableValue(result, index + 3);
+
+	if(node->value[0] != TYPE_VOID && node->value[0] != node->right->value[0]) {
+		printf("Error: Variable type mismatch!\n");
+	}	
 
 	if(node->right != NULL) node->endingIndex = node->right->endingIndex;
 	else node->endingIndex = index + 2;
