@@ -2,6 +2,8 @@
  * Variable-related AST parsing.
  */
 
+#include "../../std/types.h"
+
 #include "../../lexer/lexer.h"
 #include "../../lexer/tokens.h"
 
@@ -21,13 +23,13 @@ AST_NODE* parseVariableValue(LEXER_RESULT result, int index) {
 			case NUMBER:
 				if(result.size >= index + 1 && result.tokens[index + 1].type == MATH_OP) return parseMathematicalOpNode(result, index);
 
-				node->left->value[0] = 'n';
+				node->left->value[0] = TYPE_NUMBER;
 					
 			case STRING:
-				node->left->value[0] = 's';
+				node->left->value[0] = TYPE_STRING;
 				break;
 			default:
-				node->left->value[0] = 'v';
+				node->left->value[0] = TYPE_VOID;
 		
 		}
 

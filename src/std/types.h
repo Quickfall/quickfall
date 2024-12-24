@@ -9,10 +9,10 @@
  * The standart Quickfall types.
  */
 typedef enum {
-	VOID = 0x01,
-	STRING = 0x02,
-	NUMBER = 0x03,
-	BOOL = 0x04
+	TYPE_VOID = 0x01,
+	TYPE_STRING = 0x02,
+	TYPE_NUMBER = 0x03,
+	TYPE_BOOL = 0x04
 } STD_TYPE;
 
 #endif
