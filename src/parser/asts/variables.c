@@ -21,13 +21,13 @@ AST_NODE* parseVariableValue(LEXER_RESULT result, int index) {
 			case NUMBER:
 				if(result.size >= index + 1 && result.tokens[index + 1].type == MATH_OP) return parseMathematicalOpNode(result, index);
 
-				node->left->value = 0x01;
+				node->left->value[0] = 'n';
 					
 			case STRING:
-				node->left->value = 0x02;
+				node->left->value[0] = 's';
 				break;
 			default:
-				node->left->value = 0x03;
+				node->left->value[0] = 'v';
 		
 		}
 

@@ -9,21 +9,10 @@
  * The standart Quickfall types.
  */
 typedef enum {
-	VOID,
-	STRING,
-	NUMBER,
-	BOOL
+	VOID = 0x01,
+	STRING = 0x02,
+	NUMBER = 0x03,
+	BOOL = 0x04
 } STD_TYPE;
-
-/**
- * Conversion of the STD_TYPE to thier bytes.
- * Used for internal and quickfall compiled.
- */
-unsigned char* STD_TYPES_BYTES[4] = {
-	0x01,
-	0x02,
-	0x03,
-	0x04
-};
 
 #endif
