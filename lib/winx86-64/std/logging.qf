@@ -1,0 +1,15 @@
+use "@std/winx86-64/lowlevel";
+
+func print(str message) {
+    // Allocate stack space for the message
+    salloc(256);  // Allocate space for the string
+    
+    // Put the message into the allocated stack space
+    sput("str", message);
+    
+    // Call Windows WriteConsoleA function
+    mov("stack", "rsp", "rcx");  // First argument (message)
+    
+    // Free the allocated stack space
+    sfree(256);
+}

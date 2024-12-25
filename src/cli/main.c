@@ -103,19 +103,37 @@ int main(int argc, char* argv[]) {
 				return -1;
 			}
 
+			printf("%sReading source file...%s\n", TEXT_CYAN, RESET);
+
 			fseek(fptr, 0, SEEK_END);
 			int size = ftell(fptr);
+			printf("  File size: %d bytes\n", size);
 			fseek(fptr, 0, SEEK_SET);
 
 			char* buff = malloc(size + 1); // Allocates one more byte for the \0 char.
+			if (!buff) {
+				printf("%sError: Failed to allocate buffer for source file%s\n", TEXT_RED, RESET);
+				return -1;
+			}
 
 			size = fread(buff, 1, size, fptr);
 			buff[size] = '\0';
 			fclose(fptr);
 
+			printf("%sLexing source code...%s\n", TEXT_CYAN, RESET);
 			LEXER_RESULT result = runLexer(buff, size);
-			AST_NODE* root = parseNodes(result, 0, AST_ROOT);
+			printf("  Generated %d tokens\n", result.size);
+			free(buff);
 
+			printf("%sParsing tokens...%s\n", TEXT_CYAN, RESET);
+			AST_NODE* root = parseNodes(result, 0, AST_ROOT);
+			if (!root) {
+				printf("%sError: Parser failed to create AST%s\n", TEXT_RED, RESET);
+				free(result.tokens);
+				return -1;
+			}
+
+			printf("%sGenerating IR context...%s\n", TEXT_CYAN, RESET);
 			IR_CTX* ctx = makeContext(root);
 
 			if(ctx == NULL) {
@@ -149,5 +167,4 @@ int main(int argc, char* argv[]) {
 	}
 
 }
-
 

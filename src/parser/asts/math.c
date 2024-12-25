@@ -15,26 +15,26 @@
  * @param index the starting index.
  */
 AST_NODE* parseMathematicalOpNode(LEXER_RESULT result, int index) {
-	AST_NODE* node = createASTNode(AST_MATH_OPERATION);
-	node->left = createASTNode(AST_MATH_OP_HEADER);
+	AST_NODE* node = createNode(AST_BINARY_EXPRESSION);
+	AST_NODE* header = createNode(AST_IDENTIFIER);
+	addChild(node, header);
 
-	node->left->left = createASTNode(AST_VARIABLE_NAME);
-	node->left->left->value = result.tokens[index].value;
+	AST_NODE* leftOperand = createValueNode(AST_IDENTIFIER, result.tokens[index].value);
+	addChild(header, leftOperand);
 
-	node->left->right = createASTNode(AST_MATH_OPERATOR);
-
-	node->left->right->value = malloc(2);
-	node->left->right->value[0] = result.tokens[index + 1].value[0];
-	node->left->right->value[1] = '\0';
+	AST_NODE* operator = createValueNode(AST_IDENTIFIER, result.tokens[index + 1].value);
+	addChild(header, operator);
 
 	node->value = malloc(1);
-
 	if(result.size >= index + 2 && result.tokens[index + 2].type == DECLARE) {
 		node->value[0] = '1';
 	}
 
-	node->right = parseVariableValue(result, index + 2);
-	node->endingIndex = node->right->endingIndex;
+	AST_NODE* rightOperand = parseVariableValue(result, index + 2);
+	if (rightOperand) {
+		addChild(node, rightOperand);
+		node->endingIndex = rightOperand->endingIndex;
+	}
 
 	return node;
 }

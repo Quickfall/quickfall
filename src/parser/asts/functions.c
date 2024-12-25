@@ -21,8 +21,7 @@
  * @param index the starting index of the parsing.
  */
 AST_NODE* parseParameters(LEXER_RESULT result, int index) {
-
-	AST_NODE* root = createASTNode(AST_PARAMETER);
+	AST_NODE* root = createNode(AST_ARGUMENT_LIST);
 	AST_NODE* current = root;
 
 	int stack = 0;	
@@ -37,8 +36,9 @@ AST_NODE* parseParameters(LEXER_RESULT result, int index) {
 				}
 
 				stack = 0;
-				current->next = createASTNode(AST_PARAMETER);
-				current = current->next;
+				AST_NODE* param = createNode(AST_ARGUMENT_LIST);
+				addChild(root, param);
+				current = param;
 				break;
 			case NONE:
 			case KEYWORD:
@@ -49,12 +49,12 @@ AST_NODE* parseParameters(LEXER_RESULT result, int index) {
 				TOKEN next = result.tokens[index + 1];
 
 				if(next.type == NONE || next.type == KEYWORD) {
-					current->left = createASTNode(AST_TYPE);
-					current->left->value = next.value;
+					AST_NODE* type = createValueNode(AST_TYPE, next.value);
+					addChild(current, type);
 				}
 				else {
-					current->right = createASTNode(AST_VARIABLE_NAME);
-					current->right->value = t.value;
+					AST_NODE* name = createValueNode(AST_IDENTIFIER, t.value);
+					addChild(current, name);
 				}
 
 				stack++;
@@ -107,9 +107,9 @@ AST_NODE* parseArguments(LEXER_RESULT result, int index) {
 }
 
 AST_NODE* parseFunctionDeclaration(LEXER_RESULT result, int index) {
-
-	AST_NODE* node = createASTNode(AST_FUNCTION_DECLARATION);
-	node->left = createASTNode(AST_FUNCTION_HEADER);
+	AST_NODE* node = createNode(AST_FUNCTION_DECLARATION);
+	AST_NODE* header = createNode(AST_FUNCTION_ROOT);
+	addChild(node, header);
 
 	if(result.tokens[index].type != KEYWORD) {
 		return NULL;
@@ -118,53 +118,52 @@ AST_NODE* parseFunctionDeclaration(LEXER_RESULT result, int index) {
 	int off = 1;
 
 	switch(result.tokens[index + 1].type) {
+		AST_NODE* name;
 		case KEYWORD:
-			node->left->value = result.tokens[index].value;
-			node->left->right = createASTNode(AST_VARIABLE_NAME);
-			node->left->right->value = result.tokens[index + 1].value;
+			header->value = result.tokens[index].value;
+			name = createValueNode(AST_VARIABLE_NAME, result.tokens[index + 1].value);
+			addChild(header, name);
 			++off;
 			break;
 		case PAREN_OPEN:
-			node->left->value = "void";
-			node->left->right = createASTNode(AST_VARIABLE_NAME);
-			node->left->right->value = result.tokens[index].value;
+			header->value = "void";
+			name = createValueNode(AST_VARIABLE_NAME, result.tokens[index].value);
+			addChild(header, name);
 			break;
 		default:
 			return NULL;
 	}
 
 	AST_NODE* params = parseParameters(result, index + off);
-
 	if(params == NULL) return NULL;
 
-	node->left->left = params;
+	addChild(header, params);
 
-	node->right = parseNodes(result, params->endingIndex, AST_FUNCTION_ROOT);
-
-	node->endingIndex = node->right->endingIndex;
+	AST_NODE* body = parseNodes(result, params->endingIndex, AST_FUNCTION_ROOT);
+	if(body) {
+		addChild(node, body);
+		node->endingIndex = body->endingIndex;
+	}
 
 	return node;
 }
 
 AST_NODE* parseASMFunctionDeclaration(LEXER_RESULT result, int index) {
-	AST_NODE* node = createASTNode(AST_ASM_FUNCTION_DECLARATION);
-	
-	node->left = createASTNode(AST_FUNCTION_HEADER);
+	AST_NODE* node = createNode(AST_ASM_FUNCTION_DECLARATION);
+	AST_NODE* header = createNode(AST_FUNCTION_ROOT);
+	addChild(node, header);
 
 	if(result.tokens[index + 1].type != KEYWORD) {
 		return NULL;
 	}
 
-	node->left->right = createASTNode(AST_VARIABLE_NAME);
-	node->left->right->value = result.tokens[index + 1].value;
+	AST_NODE* name = createValueNode(AST_VARIABLE_NAME, result.tokens[index + 1].value);
+	addChild(header, name);
 
 	AST_NODE* params = parseParameters(result, index + 2);
+	if(params == NULL) return NULL;
 
-	if(params == NULL) {
-		return NULL;
-	}
-
-	node->left->left = params;
+	addChild(header, params);
 
 	index = params->endingIndex + 2;
 
@@ -198,16 +197,15 @@ AST_NODE* parseASMFunctionDeclaration(LEXER_RESULT result, int index) {
 }
 
 AST_NODE* parseFunctionInvoke(LEXER_RESULT result, int index) {
-	AST_NODE* node = createASTNode(AST_FUNCTION_INVOKE);
+	AST_NODE* node = createNode(AST_FUNCTION_INVOKE);
 
 	node->value = result.tokens[index].value;
 	
 	AST_NODE* args = parseArguments(result, index + 2);
-
 	node->endingIndex = index;
 
 	if(args != NULL) {
-		node->right = args;
+		addChild(node, args);
 		node->endingIndex = args->endingIndex;
 	}
 

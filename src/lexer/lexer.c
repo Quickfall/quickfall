@@ -9,8 +9,10 @@
 
 #include "./lexer.h"
 #include "./tokens.h"
+#include "../parser/ast.h"
 
 #include "../utils/hashes.h"
+#include "../utils/logging.c"
 
 /**
  * Sets the token type of the currently selected token in the LexerResult with the provided token type.
@@ -23,20 +25,30 @@ void pushToken(LEXER_RESULT* result, TOKEN_TYPE type) {
 LEXER_RESULT runLexer(char* string, int size) {
 	LEXER_RESULT result;
 	result.size = 0;
+	printf("  Initializing lexer...\n");
 
 	result.tokens = malloc(sizeof(TOKEN) * 1024);
+	if (!result.tokens) {
+		printf("%sError: Failed to allocate token array%s\n", TEXT_RED, RESET);
+		return result;
+	}
 
 	char c;
+	int tokenCount = 0;
 
 	for(int i = 0; i < size; ++i) {
-
 		c = string[i];
 
 		int buffLen = 32;
 		char* buff = malloc(buffLen);
+		if (!buff) {
+			printf("%sError: Failed to allocate token buffer%s\n", TEXT_RED, RESET);
+			continue;
+		}
 		buff[0] = '\0';
 
 		if(c == ' ' || c == '\t' || c == '\n') {
+			free(buff);
 			continue;
 		} 
 		else if(c == '\0') {
@@ -63,17 +75,21 @@ LEXER_RESULT runLexer(char* string, int size) {
 
 		} else if (c == '\"') {
 			int strLen = 0;
-
-			while(c != '\"') {
+			++i;  // Skip the opening quote
+			c = string[i];
+			
+			while(c != '\"' && i < size) {  // Add size check
 				buff[strLen] = c;
 				strLen++;
-
+				
 				++i;
 				c = string[i];
 			}
-
+			buff[strLen] = '\0';  // Properly terminate the string
+			
 			pushToken(&result, STRING);
-			result.tokens[result.size - 1].value = buff;
+			result.tokens[result.size - 1].value = strdup(buff);  // Make a copy of the string
+			free(buff);  // Free the temporary buffer
 
 		} else if(isalpha(c)) {
 
