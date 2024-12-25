@@ -22,6 +22,17 @@ typedef enum {
 } IR_TYPE;
 
 /**
+ * An IR represented function.
+ */
+typedef struct IR_FUNCTION {
+	
+	char* funcName;
+
+	unsigned char* returnType;
+
+} IR_FUNCTION;
+
+/**
  * An IR Node.
  */
 typedef struct IR_NODE {
