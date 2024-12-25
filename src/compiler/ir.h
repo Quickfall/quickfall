@@ -10,15 +10,15 @@
 #define IR_H
 
 typedef enum {
-	IR_FUNCTION,
+	IR_TYPE_FUNCTION,
 
-	IR_ASM_FUNCTION,
+	IR_TYPE_ASM_FUNCTION,
 
-	IR_TYPE_DEC,
+	IR_TYPE_TYPE_DEC,
 
-	IR_VARIABLE,
-	IR_FUNCTION_ARGUMENT,
-	IR_FUNCTION_BODY_VARIABLE
+	IR_TYPE_VARIABLE,
+	IR_TYPE_FUNCTION_ARGUMENT,
+	IR_TYPE_FUNCTION_BODY_VARIABLE
 } IR_TYPE;
 
 /**
@@ -33,29 +33,39 @@ typedef struct IR_FUNCTION {
 } IR_FUNCTION;
 
 /**
- * An IR Node.
+ * An IR represented variable.
  */
-typedef struct IR_NODE {
+typedef struct IR_VARIABLE {
 
-	IR_TYPE nodeType;
+	char* varName;
+	unsigned char* type;
 
-	// Shared Properties
-	
-	char* nodeName;
-	char* type;
-
-	// Variable Properties
-	void* value;
+	unsigned char* value;
 	int valueSize;
 
-	// Function Properties
-	struct IR_NODE** variables;
-	int variableIndex;
+} IR_VARIABLE;
 
-	struct Hashmap* variableMap;
+/**
+ * A member of an IR represented type.
+ */
+typedef struct IR_TYPE_MEMBER {
+	
+	char* varName;
+	unsigned char* type;
 
-	AST_NODE* tree;
-} IR_NODE;
+} IR_TYPE_MEMBER;
+
+/**
+ * A type declaration.
+ */
+typedef struct IR_TYPE_DEC {
+
+	char* typeName;
+
+	IR_TYPE_MEMBER* members;
+	int memberCount;
+	
+} IR_TYPE_DEC;
 
 /**
  * The overall IR context.
