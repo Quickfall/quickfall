@@ -131,7 +131,18 @@ typedef enum IR_INSTRUCTION_CODE {
     /**
      * Returns from a function.
      */
-    RET
+    RET,
+
+    /**
+     * Saves the stack.
+     */
+    STACK_SAVE,
+
+
+    /**
+     * Loads the stack back.
+     */
+    STACK_LOAD
 
 } IR_INSTRUCTION_CODE;
 

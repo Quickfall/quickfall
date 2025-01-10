@@ -9,7 +9,7 @@
 #include "../../ir/instructions.h"
 #include "../../ir/structs.h"
 
-const char* formatedInstructions[] = {"blck_swap", "cblk_swap", "lblck_swap", "salloc", "ptr_set", "ptr_load", "iadd", "isub", "imul", "idiv", "icmp", "icmp_h", "icmp_l", "prm_push", "ret_push", "call", "ret"};
+const char* formatedInstructions[] = {"blck_swap", "cblk_swap", "lblck_swap", "salloc", "ptr_set", "ptr_load", "iadd", "isub", "imul", "idiv", "icmp", "icmp_h", "icmp_l", "prm_push", "ret_push", "call", "ret", "st_push", "st_load"};
 
 /**
  * Writes some standart QuickAssembly code equivalent to the parsed IR.
@@ -62,7 +62,6 @@ void writeQASM(FILE* fptr, IR_OUTPUT* output) {
                 case RET_PUSH:
                     writeVarName(fptr, instruction->params, 0);
                     break;
-                
             }   
 
         }
