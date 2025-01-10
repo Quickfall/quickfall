@@ -61,7 +61,20 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->size += 4;
             break;
 
-        case PTR_SET: //dword
+        case PTR_SET:
+            buff->buff[buff->size] = 0xC6;
+            buff->buff[buff->size + 1] = 0x45;
+
+            int* ii = hashGet(ctx->map, hashstr(instruction->params[0]));
+
+            buff->buff[buff->size + 2] = (uint8_t) *ii;
+
+            buff->buff[buff->size + 3] = ((unsigned char*)instruction->params[1])[3];
+
+            buff->size += 4;
+            break;
+
+        case QUAD_SET: //dword
             buff->buff[buff->size] = 0xC7;
             buff->buff[buff->size + 1] = 0x45;
 

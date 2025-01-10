@@ -39,13 +39,6 @@ typedef enum IR_INSTRUCTION_CODE {
     S_ALLOC,
 
     /**
-     * Sets the value of the pointer's address to the provided element.
-     * @param val the new value (an integer for now).
-     * @param ptr the pointer containing the target address.
-     */
-    PTR_SET,
-
-    /**
      * Loads the values of a specific address into a variable.
      * @param var the output variable.
      * @param ptr the pointer containing the target address.
@@ -147,7 +140,24 @@ typedef enum IR_INSTRUCTION_CODE {
     /**
      * Frees all of the stack used by the function.
      */
-    STACK_FREE_FUNC
+    STACK_FREE_FUNC,
+
+
+    /**
+     * Sets the byte located at the pointer.
+     * @param ptr the pointer containing the target address.
+     * @param val the new value (an integer for now).
+     */
+    PTR_SET,
+
+    /**
+     * Sets 32 bits located at the pointer.
+     * @param ptr the pointer containing the target address.
+     * @param val the new integer value.
+     */
+    QUAD_SET,
+
+
 
 } IR_INSTRUCTION_CODE;
 
