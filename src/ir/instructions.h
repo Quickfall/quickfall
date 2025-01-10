@@ -157,7 +157,19 @@ typedef enum IR_INSTRUCTION_CODE {
      */
     QUAD_SET,
 
+    /**
+     * Sets 16 bits located at the pointer.
+     * @param ptr the pointer containing the target address.
+     * @param val the new integer value.
+     */
+    DUO_SET,
 
+    /**
+     * Sets 64 bits located at the pointer.
+     * @param ptr the pointer containing the target address.
+     * @param val the new integer value.
+     */
+    OCT_SET
 
 } IR_INSTRUCTION_CODE;
 

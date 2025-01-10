@@ -58,12 +58,27 @@ void parseVariableDeclaration(IR_BASIC_BLOCK* block, AST_VARIABLE_DEC* node) {
     appendInstruction(block, S_ALLOC, params, 2);
 
     if(node->value != NULL) {
-        params = malloc(sizeof(void*) * 2);
-        params[0] = node->name;
+        if(allocSize == 32) { // if allocates 32 bits, use qd_set
+            params = malloc(sizeof(void*) * 2);
+            params[0] = node->name;
     
-        parseValue(params, 1, node->value);
+            parseValue(params, 1, node->value);
 
-        appendInstruction(block, PTR_SET, params, 2);
+            appendInstruction(block, QUAD_SET, params, 2);
+        }
+        else {
+            void** buff = malloc(sizeof(void*) * allocSize / 8);
+            parseValue(buff, 0, node->value);
+
+            for(int i = 0; i < allocSize / 8; ++i) {
+                params = malloc(sizeof(void*) * 2);
+                params[0] = node->name;
+
+                params[1] = malloc(1);
+                ((unsigned char*)params[1])[0] = ((unsigned char*)buff[0])[i];
+                appendInstruction(block, PTR_SET, params, 2);
+            }
+        }
     }
 }
 

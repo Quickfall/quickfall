@@ -74,11 +74,24 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->size += 4;
             break;
 
+        case DUO_SET:
+            buff->buff[buff->size] = 0x66;
+            buff->buff[buff->size + 1] = 0x45;
+            
+            ii = hashGet(ctx->map, hashstr(instruction->params[0]));
+
+            buff->buff[buff->size + 2] = (uint8_t) *ii;
+
+            buff->buff[buff->size + 3] = ((unsigned char*)instruction->params[1])[3];
+            buff->buff[buff->size + 4] = ((unsigned char*)instruction->params[1])[2];
+
+            buff->size += 5;
+
         case QUAD_SET: //dword
             buff->buff[buff->size] = 0xC7;
             buff->buff[buff->size + 1] = 0x45;
 
-            int* ii = hashGet(ctx->map, hashstr(instruction->params[0]));
+            ii = hashGet(ctx->map, hashstr(instruction->params[0]));
 
             buff->buff[buff->size + 2] = (uint8_t) *ii;
 
@@ -88,6 +101,27 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->buff[buff->size + 6] = ((unsigned char*)instruction->params[1])[0];
 
             buff->size += 7;
+            break;
+
+        case OCT_SET: //qword
+            buff->buff[buff->size] = 0x48;
+            buff->buff[buff->size + 1] = 0xC7;
+            buff->buff[buff->size + 2] = 0x45;
+
+            ii = hashGet(ctx->map, hashstr(instruction->params[0]));
+
+            buff->buff[buff->size + 3] = (uint8_t) *ii;
+
+            buff->buff[buff->size + 4] = ((unsigned char*)instruction->params[1])[7];
+            buff->buff[buff->size + 5] = ((unsigned char*)instruction->params[1])[6];
+            buff->buff[buff->size + 6] = ((unsigned char*)instruction->params[1])[5];
+            buff->buff[buff->size + 7] = ((unsigned char*)instruction->params[1])[4];
+            buff->buff[buff->size + 8] = ((unsigned char*)instruction->params[1])[3];
+            buff->buff[buff->size + 9] = ((unsigned char*)instruction->params[1])[2];
+            buff->buff[buff->size + 10] = ((unsigned char*)instruction->params[1])[1];
+            buff->buff[buff->size + 11] = ((unsigned char*)instruction->params[1])[0];
+
+            buff->size += 12;
             break;
 
         case STACK_FREE_FUNC:

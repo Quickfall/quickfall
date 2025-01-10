@@ -9,7 +9,7 @@
 #include "../../ir/instructions.h"
 #include "../../ir/structs.h"
 
-const char* formatedInstructions[] = {"blck_swap", "cblk_swap", "lblck_swap", "salloc", "ptr_load", "iadd", "isub", "imul", "idiv", "icmp", "icmp_h", "icmp_l", "prm_push", "ret_push", "call", "ret", "st_push", "st_load", "st_freef", "ptr_set", "qd_set"};
+const char* formatedInstructions[] = {"blck_swap", "cblk_swap", "lblck_swap", "salloc", "ptr_load", "iadd", "isub", "imul", "idiv", "icmp", "icmp_h", "icmp_l", "prm_push", "ret_push", "call", "ret", "st_push", "st_load", "st_freef", "ptr_set", "qd_set", "dd_set", "od_set"};
 
 /**
  * Writes some standart QuickAssembly code equivalent to the parsed IR.
