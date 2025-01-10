@@ -70,11 +70,31 @@ void parseVariableDeclaration(IR_BASIC_BLOCK* block, AST_VARIABLE_DEC* node) {
             unsigned char* equiv = getByteEquivalent(node->value);
 
             for(int i = 4; i > (4 - allocSize / 8); --i) {
-                printf("i: %d\n", i);
-                printf("0x%x ", equiv[i - 1]);
+                int size = strlen(node->name) + 2;
+                char* ptrName = malloc(size);
+                ptrName[size] = '\0';
+                ptrName[size - 1] = (char) i + 97;
 
-                appendInstruction(block, PTR_SET)
+                params = malloc(sizeof(void*) * 3);
+                params[0] = ptrName;
+                params[1] = node->name;
 
+                params[2] = malloc(4);
+                unsigned char* buff = (unsigned char*) params[2];
+
+                buff[0] = ((i - 4) * 8 - 1 >> 24) & 0xFF;
+                buff[1] = ((i - 4) * 8 - 1 >> 16) & 0xFF;
+                buff[2] = ((i - 4) * 8 - 1 >> 8) & 0xFF;
+                buff[3] = (i - 4) * 8 - 1 & 0xFF;
+
+                appendInstruction(block, PTR_DEC_OFF, params, 3);
+                
+                params = malloc(sizeof(void*) * 2);
+                params[0] = ptrName;
+                params[1] = malloc(1);
+                ((unsigned char*)params[1])[0] = equiv[i - 1];
+
+                appendInstruction(block, PTR_SET, params, 2);
             }
         }
     }

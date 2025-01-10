@@ -177,7 +177,15 @@ typedef enum IR_INSTRUCTION_CODE {
      * @param ptr the new pointer.
      * @param addr the address
      */
-    PTR_DEC
+    PTR_DEC,
+
+    /**
+     * Declares a pointer that is an offset of another pointer.
+     * @param ptr the new pointer.
+     * @param p the old pointer.
+     * @param off the offset.
+     */
+    PTR_DEC_OFF
 
 } IR_INSTRUCTION_CODE;
 

@@ -69,7 +69,7 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
 
             buff->buff[buff->size + 2] = (uint8_t) *ii;
 
-            buff->buff[buff->size + 3] = ((unsigned char*)instruction->params[1])[3];
+            buff->buff[buff->size + 3] = ((unsigned char*)instruction->params[1])[0];
 
             buff->size += 4;
             break;
@@ -135,9 +135,19 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             break;
 
         case PTR_DEC:
-            int* ii = malloc(sizeof(int));
-
+            ii = malloc(sizeof(int));
             *ii = (((unsigned char*)instruction->params[1])[0] << 24) | (((unsigned char*)instruction->params[1])[1] << 16) | (((unsigned char*)instruction->params[1])[2] << 8) | ((unsigned char*)instruction->params[1])[3];
+
+            hashPut(ctx->map, hashstr(instruction->params[0]), ii);
+            break;
+
+        case PTR_DEC_OFF:
+            ii = malloc(sizeof(int));
+            *ii = (((unsigned char*)instruction->params[2])[0] << 24) | (((unsigned char*)instruction->params[2])[1] << 16) | (((unsigned char*)instruction->params[2])[2] << 8) | ((unsigned char*)instruction->params[2])[3];
+            
+            int* o = hashGet(ctx->map, hashstr(instruction->params[1]));
+
+            *ii += *o;
 
             hashPut(ctx->map, hashstr(instruction->params[0]), ii);
             break;
