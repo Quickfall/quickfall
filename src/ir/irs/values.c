@@ -3,6 +3,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "../../parser/ast.h"
 
@@ -59,6 +60,36 @@ void parseValue(void** buff, int index, void* value) {
 
         }
     }
+}
+
+/**
+ * Gets the byte equivalent.
+ * @param value the value.
+ */
+unsigned char* getByteEquivalent(void* value) {
+    if(((AST_TREE_BRANCH*)value)->type == AST_TYPE_VALUE) {
+        AST_VALUE* val = (AST_VALUE*)value;
+
+        switch(*val->valueType) {
+            case INT32:
+            case INT24:
+            case INT16:
+            case INT8:
+
+                int num = atoi(val->value);
+
+                printf("%d", num);
+
+                unsigned char* buff = malloc(4);
+
+                buff[0] = (num >> 24) & 0xFF;
+                buff[1] = (num >> 16) & 0xFF;
+                buff[2] = (num >> 8) & 0xFF;
+                buff[3] = num & 0xFF;
+
+                return buff;
+        }
+    }   
 }
 
 /**

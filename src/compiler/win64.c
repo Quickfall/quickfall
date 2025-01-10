@@ -133,6 +133,14 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             
             buff->size += 4;
             break;
+
+        case PTR_DEC:
+            int* ii = malloc(sizeof(int));
+
+            *ii = (((unsigned char*)instruction->params[1])[0] << 24) | (((unsigned char*)instruction->params[1])[1] << 16) | (((unsigned char*)instruction->params[1])[2] << 8) | ((unsigned char*)instruction->params[1])[3];
+
+            hashPut(ctx->map, hashstr(instruction->params[0]), ii);
+            break;
         
     }
 }

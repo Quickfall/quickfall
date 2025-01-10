@@ -169,7 +169,15 @@ typedef enum IR_INSTRUCTION_CODE {
      * @param ptr the pointer containing the target address.
      * @param val the new integer value.
      */
-    OCT_SET
+    OCT_SET,
+
+
+    /**
+     * Declares a pointer at the specified address.
+     * @param ptr the new pointer.
+     * @param addr the address
+     */
+    PTR_DEC
 
 } IR_INSTRUCTION_CODE;
 
