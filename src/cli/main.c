@@ -24,6 +24,8 @@
 
 #include "../qasm/writer/writer.h"
 
+#include "../compiler/structs.h"
+
 #include "../utils/logging.c"
 
 // Version
@@ -128,8 +130,16 @@ int main(int argc, char* argv[]) {
 
 			fptr = fopen(outputFile, "w");
 
-			writeQASM(fptr, irOut); // experimental: ir -> QASM
-			
+			BYTECODE_BUFFER* buffer = compile(irOut);
+
+			for(int i = 0; i < buffer->size; ++i) {
+				printf("0x%x ", buffer->buff[i]);
+			}
+
+			compilePE(fptr, buffer);
+
+			fclose(fptr);
+
 			break;
 		case 'v':
 			if(strlen(argv[1]) > 1 && strcmp(argv[1], "version") != 0) {

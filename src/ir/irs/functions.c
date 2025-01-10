@@ -62,6 +62,11 @@ void parseFunction(IR_OUTPUT* out, AST_FUNCTION_DEC* node) {
                 break;
         }
     }
+
+    appendInstruction(out->blocks[out->blockCount], STACK_FREE_FUNC, NULL, 0);
+    appendInstruction(out->blocks[out->blockCount], STACK_LOAD, NULL, 0);
+
+    appendInstruction(out->blocks[out->blockCount], RET, NULL, 0);
 }
 
 /**

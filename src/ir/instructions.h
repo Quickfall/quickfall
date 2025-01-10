@@ -142,7 +142,12 @@ typedef enum IR_INSTRUCTION_CODE {
     /**
      * Loads the stack back.
      */
-    STACK_LOAD
+    STACK_LOAD,
+
+    /**
+     * Frees all of the stack used by the function.
+     */
+    STACK_FREE_FUNC
 
 } IR_INSTRUCTION_CODE;
 

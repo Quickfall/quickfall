@@ -28,6 +28,7 @@ typedef struct COMPILER_CONTEXT {
 
     struct Hashmap* map;
     int stackSize;
+    int currStack;
 
 } COMPILER_CONTEXT;
 

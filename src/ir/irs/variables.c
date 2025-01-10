@@ -53,6 +53,8 @@ void parseVariableDeclaration(IR_BASIC_BLOCK* block, AST_VARIABLE_DEC* node) {
 
     params[1] = node->name;
 
+    appendInstruction(block, STACK_SAVE, NULL, 0);
+
     appendInstruction(block, S_ALLOC, params, 2);
 
     if(node->value != NULL) {
