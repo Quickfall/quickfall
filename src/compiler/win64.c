@@ -7,6 +7,9 @@
 
 #include "./structs.h"
 
+#include "../utils/hashmap.h"
+#include "../utils/hash.h"
+
 /**
  * Compiles an QAsm / IR instruction to the Win-x64 bytecode.
  * @param buff the bytecode buffer.
@@ -39,8 +42,24 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
 
             int i = (((unsigned char*)instruction->params[0])[0] << 24) | (((unsigned char*)instruction->params[0])[1] << 16) | (((unsigned char*)instruction->params[0])[2] << 8) | ((unsigned char*)instruction->params[0])[3];
 
+            ctx->stackSize += i;
+            hashPut(ctx->map, hashstr(instruction->params[1]), ctx->stackSize);
+
             buff->buff[buff->size++] = i;
             break;
+
+        case PTR_SET: //dword
+            buff->buff[buff->size] = 0xC7;
+            buff->buff[buff->size++] = 0x45;
+
+            buff->buff[buff->size++] = (uint8_t) hashGet(ctx->map, hashstr(instruction->params[1]));
+
+            buff->buff[buff->size++] = ((unsigned char*)instruction->params[0])[0];
+            buff->buff[buff->size++] = ((unsigned char*)instruction->params[0])[1];
+            buff->buff[buff->size++] = ((unsigned char*)instruction->params[0])[2];
+            buff->buff[buff->size++] = ((unsigned char*)instruction->params[0])[3];
+            break;
+
 
     }
 }

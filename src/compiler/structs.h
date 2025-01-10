@@ -26,9 +26,9 @@ typedef struct BYTECODE_BUFFER {
  */
 typedef struct COMPILER_CONTEXT {
 
-    struct Hashmap map;
+    struct Hashmap* map;
     int stackSize;
-    
+
 } COMPILER_CONTEXT;
 
 
