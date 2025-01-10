@@ -31,7 +31,11 @@ BYTECODE_BUFFER* compile(IR_OUTPUT* out) {
     ctx->currStack = 0;
     ctx->map = createHashmap(200,512);
 
+    ctx->blockOffsets = malloc(sizeof(int) * out->blockCount);
+
     // todo: add multi block handling.
+
+    ctx->blockOffsets[0] = 0;
 
     for(int i = 0; i < out->blocks[0]->instructionCount; ++i) {
         compileInstruction(buff, ctx, out->blocks[0]->instructions[i]);
