@@ -68,6 +68,10 @@ void* parseValueGroup(LEXER_RESULT result, int index, LIB_TYPES exceptedType) {
             
             return parseASTValue(result, index, exceptedType);
             break;
+            
+        case BOOLEAN_VALUE:
+            return parseASTValue(result, index, exceptedType);
+
         default:
             printf("Error: couldn't parse value token group!\n");
             return NULL;

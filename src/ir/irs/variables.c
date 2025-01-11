@@ -61,7 +61,7 @@ void parseVariableDeclaration(IR_BASIC_BLOCK* block, AST_VARIABLE_DEC* node) {
 
     if(node->value != NULL) {
         AST_VALUE* val = (AST_VALUE*) node->value;
-        if(node->type[0] == BIT && val->valueType == BIT) {
+        if(node->type[0] == BIT) {
             params = malloc(sizeof(void*) * 2);
             params[0] = node->name;
 

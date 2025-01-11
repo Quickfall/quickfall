@@ -63,19 +63,6 @@ void parseFunction(IR_OUTPUT* out, AST_FUNCTION_DEC* node) {
         }
     }
 
-    void** params = malloc(sizeof(void*));
-    params[0] = malloc(3);
-    ((unsigned char*)params[0])[0] = '%';
-    ((unsigned char*)params[0])[1] = 'a';
-    ((unsigned char*)params[0])[2] = 'b';
-    
-
-    params[1] = malloc(sizeof(int));
-    int* p = (params[1]);
-    *p = 0;
-
-    appendInstruction(out->blocks[out->blockCount], COND_BLOCK_SWAP, params, 2);
-
     appendInstruction(out->blocks[out->blockCount], STACK_FREE_FUNC, NULL, 0);
     appendInstruction(out->blocks[out->blockCount], STACK_LOAD, NULL, 0);
 
