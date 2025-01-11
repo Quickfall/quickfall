@@ -27,7 +27,8 @@ typedef enum {
     TYPE_INT32,
     TYPE_INT24,
     TYPE_INT16,
-    TYPE_INT8
+    TYPE_INT8,
+    TYPE_BIT
 } TOKEN_TYPE;
 
 /**
