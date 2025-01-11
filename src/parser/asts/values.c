@@ -36,6 +36,15 @@ AST_VALUE* parseASTValue(LEXER_RESULT result, int index, LIB_TYPES exceptedType)
             value->valueType = malloc(1);
             value->valueType[0] = exceptedType;
             break;
+        case BIT:
+            if(result.tokens[index].type != BOOLEAN_VALUE) {
+                printf("Excepted boolean as bit value!\n");
+                return NULL;
+            }
+
+            value->valueType = malloc(1);
+            value->valueType[0] = BIT;
+            break;
     }
 
     value->endingIndex = index + 1;
