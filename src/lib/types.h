@@ -13,7 +13,8 @@ typedef enum LIB_TYPES {
     INT32 = 0x01,
     INT24 = 0x02,
     INT16 = 0x03,
-    INT8 = 0x04
+    INT8 = 0x04,
+    BIT = 0x05
 
 } LIB_TYPES;
 

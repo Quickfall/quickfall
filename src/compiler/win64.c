@@ -167,5 +167,22 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->size += 5;
             break;
 
+        case COND_BLOCK_SWAP:
+            buff->buff[buff->size] = 0x80;
+            buff->buff[buff->size + 1] = 0x7d;
+
+            i = (((unsigned char*)instruction->params[0])[0] << 24) | (((unsigned char*)instruction->params[0])[1] << 16) | (((unsigned char*)instruction->params[0])[2] << 8) | ((unsigned char*)instruction->params[0])[3];
+
+            off = ctx->blockOffsets[i] - buff->size;
+
+            ii = hashGet(ctx->map, hashstr(instruction->params[1]));
+
+
+            buff->buff[buff->size + 2] = *ii & 0xFF;
+            buff->buff[buff->size + 3] = 0x01;
+
+            buff->buff[buff->size + 4] = 0x74;
+            buff->buff[buff->size + 4] = off & 0xFF;
+            break;
     }
 }
