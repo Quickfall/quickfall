@@ -68,7 +68,7 @@ void parseVariableDeclaration(IR_BASIC_BLOCK* block, AST_VARIABLE_DEC* node) {
             params[1] = malloc(1);
             ((unsigned char*)params[1])[0] = strcmp(val->value, "true") == 0;
 
-            pushInstruction(block, PTR_SET, params, 2);
+            appendInstruction(block, PTR_SET, params, 2);
         }
         else if(allocSize == 32) { // if allocates 32 bits, use qd_set
             params = malloc(sizeof(void*) * 2);
