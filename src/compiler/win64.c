@@ -182,7 +182,9 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->buff[buff->size + 3] = 0x01;
 
             buff->buff[buff->size + 4] = 0x74;
-            buff->buff[buff->size + 4] = off & 0xFF;
+            buff->buff[buff->size + 5] = off & 0xFF;
+            
+            buff->size += 6;
             break;
     }
 }
