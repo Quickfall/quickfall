@@ -38,6 +38,7 @@ void* parseRoot(LEXER_RESULT result, int startingIndex, AST_TYPE type) {
             case TYPE_INT24:
             case TYPE_INT16:
             case TYPE_INT8:
+            case TYPE_BIT:
             case VAR:
                 void* node = parseASTVariableDeclaration(result, i);
                 if(node != NULL) {

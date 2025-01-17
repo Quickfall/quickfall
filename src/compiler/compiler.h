@@ -2,14 +2,17 @@
  * The compiler of Quickfall.
  */
 
+#include "../ir/structs.h"
+
+#include "./structs.h"
+
 #ifndef COMPILER_H
 #define COMPILER_H
 
 /**
- * Compiles the Context tree to an executable named the provided name.
- * @param ctx the IR context.
- * @param char the output file.
+ * Compiles the IR into actual bytecode.
+ * @param out the IR output.
  */
-void compile(FILE* outputFileName);
+BYTECODE_BUFFER* compile(IR_OUTPUT* out);
 
 #endif

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "../../parser/structs/variables.h"
+#include "../../parser/structs/values.h"
 
 #include "./values.h"
 
@@ -32,6 +33,7 @@ void parseVariableDeclaration(IR_BASIC_BLOCK* block, AST_VARIABLE_DEC* node) {
         case INT16:
             allocSize = 16;
             break;
+        case BIT: // bit is 8 for now, only for now
         case INT8:
             allocSize = 8;
             break;
@@ -53,15 +55,60 @@ void parseVariableDeclaration(IR_BASIC_BLOCK* block, AST_VARIABLE_DEC* node) {
 
     params[1] = node->name;
 
+    appendInstruction(block, STACK_SAVE, NULL, 0);
+
     appendInstruction(block, S_ALLOC, params, 2);
 
     if(node->value != NULL) {
-        params = malloc(sizeof(void*) * 2);
-        params[0] = node->name;
-    
-        parseValue(params, 1, node->value);
+        AST_VALUE* val = (AST_VALUE*) node->value;
+        if(node->type[0] == BIT) {
+            params = malloc(sizeof(void*) * 2);
+            params[0] = node->name;
 
-        appendInstruction(block, PTR_SET, params, 2);
+            params[1] = malloc(1);
+            ((unsigned char*)params[1])[0] = strcmp(val->value, "true") == 0;
+
+            appendInstruction(block, PTR_SET, params, 2);
+        }
+        else if(allocSize == 32) { // if allocates 32 bits, use qd_set
+            params = malloc(sizeof(void*) * 2);
+            params[0] = node->name;
+    
+            parseValue(params, 1, node->value);
+
+            appendInstruction(block, QUAD_SET, params, 2);
+        }
+        else {
+            unsigned char* equiv = getByteEquivalent(node->value);
+
+            for(int i = 4; i > (4 - allocSize / 8); --i) {
+                int size = strlen(node->name) + 2;
+                char* ptrName = malloc(size);
+                ptrName[size] = '\0';
+                ptrName[size - 1] = (char) i + 97;
+
+                params = malloc(sizeof(void*) * 3);
+                params[0] = ptrName;
+                params[1] = node->name;
+
+                params[2] = malloc(4);
+                unsigned char* buff = (unsigned char*) params[2];
+
+                buff[0] = ((i - 4) * 8 - 1 >> 24) & 0xFF;
+                buff[1] = ((i - 4) * 8 - 1 >> 16) & 0xFF;
+                buff[2] = ((i - 4) * 8 - 1 >> 8) & 0xFF;
+                buff[3] = (i - 4) * 8 - 1 & 0xFF;
+
+                appendInstruction(block, PTR_DEC_OFF, params, 3);
+                
+                params = malloc(sizeof(void*) * 2);
+                params[0] = ptrName;
+                params[1] = malloc(1);
+                ((unsigned char*)params[1])[0] = equiv[i - 1];
+
+                appendInstruction(block, PTR_SET, params, 2);
+            }
+        }
     }
 }
 

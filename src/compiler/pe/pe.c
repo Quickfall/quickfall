@@ -7,11 +7,12 @@
 #include <stdint.h>
 
 #include "./format.h"
+#include "../structs.h"
 
 /**
  * Compiles into PE format.
  */
-void compilePE(FILE* fptr, uint8_t program[], int programSize) {
+void compilePE(FILE* fptr, BYTECODE_BUFFER* buff) {
 	PE_DOS_HEADER dos_header = {0};
     dos_header.e_magic = 0x5A4D;  // "MZ"
     dos_header.e_lfanew = sizeof(PE_DOS_HEADER);
@@ -55,7 +56,7 @@ void compilePE(FILE* fptr, uint8_t program[], int programSize) {
     memcpy(section_header.Name, ".text", 5);
     section_header.Misc.VirtualSize = 0x1000;
     section_header.VirtualAddress = 0x1000;
-    section_header.SizeOfRawData = programSize;
+    section_header.SizeOfRawData = buff->size;
     section_header.PointerToRawData = 0x200;
     section_header.Characteristics = 0x60000020;  // Code | Execute | Read
 
@@ -65,7 +66,7 @@ void compilePE(FILE* fptr, uint8_t program[], int programSize) {
     uint8_t padding[256] = {0};
     fwrite(padding, 1, 0x200 - (sizeof(PE_DOS_HEADER) + sizeof(PE_NT_HEADERS) + sizeof(PE_OPTIONAL_HEADER) + sizeof(PE_SECTION_HEADER)), fptr);
 
-    fwrite(program, 1, programSize, fptr);
+    fwrite(buff->buff, 1, buff->size, fptr);
 
     fclose(fptr);
 }

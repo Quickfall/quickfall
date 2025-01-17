@@ -8,14 +8,12 @@
 #include <ctype.h>
 
 #include "./lexer.h"
-#include "./tokens.h"
 
-#include "../utils/hashes.h"
 
 /**
  * Sets the token type of the currently selected token in the LexerResult with the provided token type.
  */
-void pushToken(LEXER_RESULT* result, TOKEN_TYPE type) {
+void pushToken(LEXER_RESULT* result, LEXER_TOKEN_TYPE type) {
     result->tokens[result->size].type = type;
     result->size++;
 }
@@ -64,13 +62,19 @@ LEXER_RESULT runLexer(char* string, int size) {
 		} else if (c == '\"') {
 			int strLen = 0;
 
-			while(c != '\"') {
+			++i;
+			c = string[i];
+
+			while(c != '\"' && c != '\0') {
 				buff[strLen] = c;
 				strLen++;
 
 				++i;
 				c = string[i];
-			}
+			} 
+
+			buff[strLen] = '\0';
+			++i;
 
 			pushToken(&result, STRING);
 			result.tokens[result.size - 1].value = buff;
@@ -120,6 +124,9 @@ LEXER_RESULT runLexer(char* string, int size) {
 			}
 			else if(strcmp(buff, "int8") == 0) {
 				pushToken(&result, TYPE_INT8);
+			}
+			else if(strcmp(buff, "bit") == 0) {
+				pushToken(&result, TYPE_BIT);
 			}
 			else {
 				pushToken(&result, KEYWORD);

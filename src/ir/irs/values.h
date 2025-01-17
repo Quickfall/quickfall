@@ -14,6 +14,12 @@
 void parseValue(void** buff, int index, void* value);
 
 /**
+ * Gets the byte equivalent.
+ * @param value the value.
+ */
+unsigned char* getByteEquivalent(void* value);
+
+/**
  * Gets the value size for a certain type for a  parameter.
  * @param type the type's byte indentifier.
  */

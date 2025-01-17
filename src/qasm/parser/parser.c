@@ -38,6 +38,12 @@ void parseQAsmInstructions(IR_BASIC_BLOCK* block, char* buffer, int size) {
         if(c == '\0') return;
 
         if(c == '\n') {
+            if(secIndex != 0) {
+                ((char*)buff[buffIndex])[secIndex] = '\0';
+                secIndex = 0;
+                buffIndex++;
+            }
+
             IR_INSTRUCTION* instruction = parseInstruction(buff, buffIndex);
 
             if(instruction == NULL) {
@@ -80,7 +86,7 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
 
     // Determines the instruction type based on the string hash.
     switch(instructionHash) {
-        case 2985:
+        case 1648:
             instruction->opCode = BLOCK_SWAP;
             b = malloc(sizeof(void*));
             parseInt32(b, 0, buff[1]);
@@ -88,7 +94,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 1;
             break;
-        case 2987:
+            
+        case 842:
             instruction->opCode = COND_BLOCK_SWAP;
             b = malloc(sizeof(void*) * 2);
 
@@ -98,7 +105,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 2;
             break;
-        case 3275:
+
+        case 1891:
             instruction->opCode = LOGICAL_BLOCK_SWAP;
             b = malloc(sizeof(int*) * 3);
 
@@ -109,7 +117,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 3;
             break;
-        case 1798:
+
+        case 275:
             instruction->opCode = S_ALLOC;
             b = malloc(sizeof(void*) * 2);
 
@@ -119,17 +128,19 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 2;
             break;
-        case 2887:
+
+        case 2133:
             instruction->opCode = PTR_SET;
             b = malloc(sizeof(void*) * 2);
 
-            parseInt32(b, 0, buff[1]);
-            parseVariableName(b, 1, buff[2]);
+            parseVariableName(b, 0, buff[1]);
+            parseInt32(b, 1, buff[2]);
 
             instruction->params = b;
             instruction->paramCount = 2;
             break;
-        case 2472:
+
+        case 2059:
             instruction->opCode = PTR_LOAD;
             b = malloc(sizeof(void*) * 2);
 
@@ -139,7 +150,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 2;
             break;
-        case 452:
+
+        case 3257:
             instruction->opCode = IADD;
             b = malloc(sizeof(void*) * 3);
 
@@ -150,7 +162,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 3;
             break;
-        case 1508:
+
+        case 1305:
             instruction->opCode = ISUB;
             b = malloc(sizeof(void*) * 3);
 
@@ -161,7 +174,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 3;
             break;
-        case 1636:
+
+        case 386:
             instruction->opCode = IMUL;
             b = malloc(sizeof(void*) * 3);
 
@@ -172,7 +186,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 3;
             break;
-        case 1284:
+
+        case 780:
             instruction->opCode = IDIV;
             b = malloc(sizeof(void*) * 3);
 
@@ -183,7 +198,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 3;
             break;
-        case 1188:
+
+        case 3858:
             instruction->opCode = ICMP;
             b = malloc(sizeof(void*) * 3);
 
@@ -194,7 +210,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 3;
             break;
-        case 1350:
+
+        case 3409:
             instruction->opCode = ICMP_H;
             b = malloc(sizeof(void*) * 3);
 
@@ -205,7 +222,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 3;
             break;
-        case 1478:
+
+        case 118:
             instruction->opCode = ICMP_L;
             b = malloc(sizeof(void*) * 3);
 
@@ -216,7 +234,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 3;
             break;
-        case 3272:
+
+        case 2745:
             instruction->opCode = PRM_PUSH;
             b = malloc(sizeof(void*) * 2);
 
@@ -226,7 +245,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 2;
             break;
-        case 3144:
+
+        case 3108:
             instruction->opCode = RET_PUSH;
             b = malloc(sizeof(void*));
 
@@ -235,7 +255,8 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 1;
             break;
-        case 772:
+
+        case 2123:
             instruction->opCode = CALL;
             b = malloc(sizeof(void*));
 
@@ -244,11 +265,86 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->params = b;
             instruction->paramCount = 1;
             break;
-        case 1283:
+
+        case 1042:
             instruction->opCode = RET;
             instruction->params = NULL;
             instruction->paramCount = 0;
             break;
+
+        case 865:
+            instruction->opCode = STACK_SAVE;
+            instruction->params = NULL;
+            instruction->paramCount = 0;
+            break;
+
+        case 572:
+            instruction->opCode = STACK_LOAD;
+            instruction->params = NULL;
+            instruction->paramCount = 0;
+            break;
+
+        case 3237:
+            instruction->opCode = STACK_FREE_FUNC;
+            instruction->params = NULL;
+            instruction->paramCount = 0;
+            break;
+
+        case 745:
+            instruction->opCode = QUAD_SET;
+            b = malloc(sizeof(void*) * 2);
+
+            parseVariableName(b, 0, buff[1]);
+            parseInt32(b, 1, buff[2]);
+
+            instruction->params = b;
+            instruction->paramCount = 2;
+            break;
+        
+        case 2397:
+            instruction->opCode = DUO_SET;
+            b = malloc(sizeof(void*) * 2);
+
+            parseVariableName(b, 0, buff[1]);
+            parseInt32(b, 1, buff[2]);
+
+            instruction->params = b;
+            instruction->paramCount = 2;
+            break;
+        
+        case 3398:
+            instruction->opCode = OCT_SET;
+            b = malloc(sizeof(void*) * 2);
+
+            parseVariableName(b, 0, buff[1]);
+            parseInt32(b, 1, buff[2]);
+
+            instruction->params = b;
+            instruction->paramCount = 2;
+
+        case 2087:
+            instruction->opCode = PTR_DEC;
+            b = malloc(sizeof(void*) * 2);
+
+            parseVariableName(b, 0, buff[1]);
+            parseInt32(b, 1, buff[2]);
+
+            instruction->params = b;
+            instruction->paramCount = 2;
+            break;
+        
+        case 2137:
+            instruction->opCode = PTR_DEC_OFF;
+            b = malloc(sizeof(void*) * 3);
+
+            parseVariableName(b, 0, buff[1]);
+            parseVariableName(b, 1, buff[2]);
+            parseVariableName(b, 2, buff[3]);
+
+            instruction->params = b;
+            instruction->paramCount = 3;
+            break;
+
         default:
             printf("Error: Unknown instruction %s!\n", buff[0]);
             return NULL;

@@ -62,6 +62,13 @@ void parseFunction(IR_OUTPUT* out, AST_FUNCTION_DEC* node) {
                 break;
         }
     }
+
+    appendInstruction(out->blocks[out->blockCount], STACK_FREE_FUNC, NULL, 0);
+    appendInstruction(out->blocks[out->blockCount], STACK_LOAD, NULL, 0);
+
+    appendInstruction(out->blocks[out->blockCount], RET, NULL, 0);
+
+    out->blockCount++;
 }
 
 /**
@@ -81,6 +88,9 @@ void parseASMFunction(IR_OUTPUT* out, AST_ASM_FUNCTION_DEC* node) {
     out->blocks[out->blockCount] = malloc(sizeof(IR_BASIC_BLOCK));
     out->blocks[out->blockCount]->instructions = NULL;
     out->blocks[out->blockCount]->instructionCount = 0;
+    out->blocks[out->blockCount]->allocatedSize = 0;
 
     parseQAsmInstructions(out->blocks[out->blockCount], node->buff, node->buffIndex);
+
+    out->blockCount++;
 }

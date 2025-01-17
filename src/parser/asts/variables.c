@@ -29,6 +29,7 @@ AST_VARIABLE_DEC* parseASTVariableDeclaration(LEXER_RESULT result, int index) {
         case TYPE_INT24:
         case TYPE_INT16:
         case TYPE_INT8:
+        case TYPE_BIT:
             var->type[0] = (result.tokens[index].type - TYPE_INT32) + 0x01;
             break;
 

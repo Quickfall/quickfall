@@ -15,6 +15,8 @@
 
 #include "../../lexer/lexer.h"
 
+#include "../../utils/string.h"
+
 /**
  * Parses a function declaration into AST.
  * @param result the Lexer result.
@@ -98,14 +100,44 @@ AST_ASM_FUNCTION_DEC* parseASMFunctionDeclaration(LEXER_RESULT result, int index
 
     index = func->endingIndex;
 
-    if(result.tokens[index + 1].type != BRACKETS_OPEN || result.tokens[index + 2].type != STRING || result.tokens[index + 3].type != BRACKETS_CLOSE) {
+    if(result.tokens[index + 1].type != BRACKETS_OPEN) {
         printf("Error: Badly made ASM function body!\n");
         return NULL;
     }
 
-    func->buff = result.tokens[index + 2].value;
-    func->buffIndex = strlen(func->buff);
 
+    int allocatedBuff = 512;
+
+    func->buff = malloc(allocatedBuff);
+    func->buffIndex = 0;
+
+    index += 2;
+    for(; index < result.size; ++index) {
+        TOKEN t = result.tokens[index];
+
+        if(t.type == BRACKETS_CLOSE) {
+            func->endingIndex = index;
+            return func;
+        }
+        else if(t.type == STRING) {
+            func->buffIndex = fast_strcat(func->buff, t.value, func->buffIndex) + 1; // Adds one to the index to keep the seperator.
+            func->buff[func->buffIndex - 1] = '\n';
+
+            if(func->buffIndex >= allocatedBuff) {
+                allocatedBuff *= 1.5;
+                func->buff = realloc(func->buff, allocatedBuff);
+            }
+
+        }
+        else {
+            printf("Error: disallowed token %d in ASM function! Only string are allowed in body!\n", t.type);
+            printf("%s", t.value);
+            return NULL;
+        }
+
+    }
+
+    func->endingIndex = index;
     return func;
 }
 

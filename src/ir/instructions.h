@@ -39,13 +39,6 @@ typedef enum IR_INSTRUCTION_CODE {
     S_ALLOC,
 
     /**
-     * Sets the value of the pointer's address to the provided element.
-     * @param val the new value (an integer for now).
-     * @param ptr the pointer containing the target address.
-     */
-    PTR_SET,
-
-    /**
      * Loads the values of a specific address into a variable.
      * @param var the output variable.
      * @param ptr the pointer containing the target address.
@@ -131,7 +124,68 @@ typedef enum IR_INSTRUCTION_CODE {
     /**
      * Returns from a function.
      */
-    RET
+    RET,
+
+    /**
+     * Saves the stack.
+     */
+    STACK_SAVE,
+
+
+    /**
+     * Loads the stack back.
+     */
+    STACK_LOAD,
+
+    /**
+     * Frees all of the stack used by the function.
+     */
+    STACK_FREE_FUNC,
+
+
+    /**
+     * Sets the byte located at the pointer.
+     * @param ptr the pointer containing the target address.
+     * @param val the new value (an integer for now).
+     */
+    PTR_SET,
+
+    /**
+     * Sets 32 bits located at the pointer.
+     * @param ptr the pointer containing the target address.
+     * @param val the new integer value.
+     */
+    QUAD_SET,
+
+    /**
+     * Sets 16 bits located at the pointer.
+     * @param ptr the pointer containing the target address.
+     * @param val the new integer value.
+     */
+    DUO_SET,
+
+    /**
+     * Sets 64 bits located at the pointer.
+     * @param ptr the pointer containing the target address.
+     * @param val the new integer value.
+     */
+    OCT_SET,
+
+
+    /**
+     * Declares a pointer at the specified address.
+     * @param ptr the new pointer.
+     * @param addr the address
+     */
+    PTR_DEC,
+
+    /**
+     * Declares a pointer that is an offset of another pointer.
+     * @param ptr the new pointer.
+     * @param p the old pointer.
+     * @param off the offset.
+     */
+    PTR_DEC_OFF
 
 } IR_INSTRUCTION_CODE;
 

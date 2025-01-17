@@ -1,6 +1,7 @@
 #ifndef HASH_UTILS
 #define HASH_UTILS
 
+
 /**
  * Hashes the string.
  */
