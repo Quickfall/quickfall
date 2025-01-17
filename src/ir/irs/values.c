@@ -78,8 +78,6 @@ unsigned char* getByteEquivalent(void* value) {
 
                 int num = atoi(val->value);
 
-                printf("%d", num);
-
                 unsigned char* buff = malloc(4);
 
                 buff[0] = (num >> 24) & 0xFF;
