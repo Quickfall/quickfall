@@ -10,7 +10,6 @@
 #include "./lexer.h"
 #include "./tokens.h"
 
-#include "../utils/hashes.h"
 
 /**
  * Sets the token type of the currently selected token in the LexerResult with the provided token type.
