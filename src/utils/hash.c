@@ -3,13 +3,19 @@
  */
 
 unsigned int hashstr(char* str) {
-	unsigned int result = 0;
-	unsigned char* p = (unsigned char*) str;
-
-	while(*p != '\0') {
-		result = ((*p - 97)  << 5) + result + 1;
-		++p;
-	}
-
-	return result;
+    unsigned int hash = 2166136261u;  // FNV offset basis
+    unsigned char *p = (unsigned char *)str;
+    
+    while (*p) {
+        hash ^= *p++;
+        hash *= 16777619u;  // FNV prime
+        hash &= 0x0FFF;     // Keep only 12 bits to maintain smaller values
+    }
+    
+    // Final mixing for better distribution in small range
+    hash ^= hash >> 6;
+    hash *= 0x9E3779B1;    // Golden ratio prime
+    hash &= 0x0FFF;        // Final mask to 12 bits
+    
+    return hash;
 }
