@@ -8,13 +8,12 @@
 #include <ctype.h>
 
 #include "./lexer.h"
-#include "./tokens.h"
 
 
 /**
  * Sets the token type of the currently selected token in the LexerResult with the provided token type.
  */
-void pushToken(LEXER_RESULT* result, TOKEN_TYPE type) {
+void pushToken(LEXER_RESULT* result, LEXER_TOKEN_TYPE type) {
     result->tokens[result->size].type = type;
     result->size++;
 }
