@@ -98,9 +98,30 @@ AST_ASM_FUNCTION_DEC* parseASMFunctionDeclaration(LEXER_RESULT result, int index
 
     index = func->endingIndex;
 
-    if(result.tokens[index + 1].type != BRACKETS_OPEN || result.tokens[index + 2].type != STRING || result.tokens[index + 3].type != BRACKETS_CLOSE) {
+    if(result.tokens[index + 1].type != BRACKETS_OPEN) {
         printf("Error: Badly made ASM function body!\n");
         return NULL;
+    }
+
+
+    int allocated = 1024;
+
+    index += 2;
+    for(; index < result.size; ++index) {
+        TOKEN t = result.tokens[index];
+
+        if(t.type == BRACKETS_CLOSE) {
+            func->buffIndex = strlen(func->buff);
+            return func;
+        }
+        else if(t.type == STRING) {
+            
+        }
+        else {
+            printf("Error: disallowed token in ASM function! Only string are allowed in body!\n");
+            return NULL;
+        }
+
     }
 
     func->buff = result.tokens[index + 2].value;
