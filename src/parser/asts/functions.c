@@ -119,7 +119,8 @@ AST_ASM_FUNCTION_DEC* parseASMFunctionDeclaration(LEXER_RESULT result, int index
             return func;
         }
         else if(t.type == STRING) {
-            func->buffIndex = fast_strcat(func->buff, t.value, func->buffIndex);
+            func->buffIndex = fast_strcat(func->buff, t.value, func->buffIndex) + 1; // Adds one to the index to keep the seperator.
+            func->buff[func->buffIndex - 1] = '\n';
 
             if(func->buffIndex >= allocatedBuff) {
                 allocatedBuff *= 1.5;
