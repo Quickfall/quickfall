@@ -15,6 +15,8 @@
 
 #include "../../lexer/lexer.h"
 
+#include "../../utils/string.h"
+
 /**
  * Parses a function declaration into AST.
  * @param result the Lexer result.
@@ -104,18 +106,26 @@ AST_ASM_FUNCTION_DEC* parseASMFunctionDeclaration(LEXER_RESULT result, int index
     }
 
 
-    int allocated = 1024;
+    int allocatedBuff = 512;
+
+    func->buff = malloc(allocatedBuff);
+    func->buffIndex = 0;
 
     index += 2;
     for(; index < result.size; ++index) {
         TOKEN t = result.tokens[index];
 
         if(t.type == BRACKETS_CLOSE) {
-            func->buffIndex = strlen(func->buff);
             return func;
         }
         else if(t.type == STRING) {
-            
+            func->buffIndex = fast_strcat(func->buff, t.value, func->buffIndex);
+
+            if(func->buffIndex >= allocatedBuff) {
+                allocatedBuff *= 1.5;
+                func->buff = realloc(func->buff, allocatedBuff);
+            }
+
         }
         else {
             printf("Error: disallowed token in ASM function! Only string are allowed in body!\n");
@@ -123,9 +133,6 @@ AST_ASM_FUNCTION_DEC* parseASMFunctionDeclaration(LEXER_RESULT result, int index
         }
 
     }
-
-    func->buff = result.tokens[index + 2].value;
-    func->buffIndex = strlen(func->buff);
 
     return func;
 }
