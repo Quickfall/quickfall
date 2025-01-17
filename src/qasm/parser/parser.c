@@ -38,6 +38,12 @@ void parseQAsmInstructions(IR_BASIC_BLOCK* block, char* buffer, int size) {
         if(c == '\0') return;
 
         if(c == '\n') {
+            if(secIndex != 0) {
+                ((char*)buff[buffIndex])[secIndex] = '\0';
+                secIndex = 0;
+                buffIndex++;
+            }
+
             IR_INSTRUCTION* instruction = parseInstruction(buff, buffIndex);
 
             if(instruction == NULL) {

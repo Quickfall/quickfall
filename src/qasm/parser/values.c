@@ -36,5 +36,9 @@ void parseVariableName(void** buff, int index, char* str) {
         return;
     }
 
-    buff[index] = (str + 1);
+    int size = strlen(str);
+    buff[index] = malloc(size);
+
+    memccpy(buff[index], str, 1, size);
+    ((char*)buff[index])[size] = '\0';
 }

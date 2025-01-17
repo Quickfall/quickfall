@@ -20,6 +20,7 @@
  * @param instruction the instruction to convert.
  */
 void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUCTION* instruction) {
+    
     switch(instruction->opCode) {
         case RET:
             buff->buff[buff->size] = 0xC3;
@@ -189,10 +190,6 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
         case LOGICAL_BLOCK_SWAP:
             int trueBlockId = (((unsigned char*)instruction->params[0])[0] << 24) | (((unsigned char*)instruction->params[0])[1] << 16) | (((unsigned char*)instruction->params[0])[2] << 8) | ((unsigned char*)instruction->params[0])[3];
             int falseBlockId = (((unsigned char*)instruction->params[1])[0] << 24) | (((unsigned char*)instruction->params[1])[1] << 16) | (((unsigned char*)instruction->params[1])[2] << 8) | ((unsigned char*)instruction->params[1])[3];
-            
-            int* trueBlockPtr = ctx->blockOffsets[trueBlockId];
-            int* falseBlockPtr = ctx->blockOffsets[falseBlockId];
-
 
             // Instead of doing if else, just jump to the block if true and continue if not
 
@@ -205,10 +202,10 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->buff[buff->size + 3] = 0x01;
 
             buff->buff[buff->size + 4] = 0x74;
-            buff->buff[buff->size + 5] = (*trueBlockPtr - buff->size) & 0xFF;
+            buff->buff[buff->size + 5] = (ctx->blockOffsets[trueBlockId] - buff->size) & 0xFF;
             
             // else
-            off = *falseBlockPtr - buff->size;
+            off = ctx->blockOffsets[falseBlockId] - buff->size;
 
             buff->buff[buff->size + 6] = off & 0xFF;
             buff->buff[buff->size + 7] = (off >> 8) & 0xFF;

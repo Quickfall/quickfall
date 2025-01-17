@@ -132,10 +132,6 @@ int main(int argc, char* argv[]) {
 
 			BYTECODE_BUFFER* buffer = compile(irOut);
 
-			for(int i = 0; i < buffer->size; ++i) {
-				printf("0x%x ",buffer->buff[i]);
-			}
-
 			compilePE(fptr, buffer);
 
 			fclose(fptr);

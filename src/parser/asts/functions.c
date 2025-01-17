@@ -116,6 +116,7 @@ AST_ASM_FUNCTION_DEC* parseASMFunctionDeclaration(LEXER_RESULT result, int index
         TOKEN t = result.tokens[index];
 
         if(t.type == BRACKETS_CLOSE) {
+            func->endingIndex = index;
             return func;
         }
         else if(t.type == STRING) {
@@ -129,12 +130,14 @@ AST_ASM_FUNCTION_DEC* parseASMFunctionDeclaration(LEXER_RESULT result, int index
 
         }
         else {
-            printf("Error: disallowed token in ASM function! Only string are allowed in body!\n");
+            printf("Error: disallowed token %d in ASM function! Only string are allowed in body!\n", t.type);
+            printf("%s", t.value);
             return NULL;
         }
 
     }
 
+    func->endingIndex = index;
     return func;
 }
 

@@ -7,7 +7,10 @@ unsigned int hashstr(char* str) {
     unsigned char *p = (unsigned char *)str;
     
     while (*p) {
-        hash ^= *p++;
+        char c = *p++;
+        if(c == '\0') break;
+        
+        hash ^= c;
         hash *= 16777619u;  // FNV prime
         hash &= 0x0FFF;     // Keep only 12 bits to maintain smaller values
     }

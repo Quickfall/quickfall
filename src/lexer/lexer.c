@@ -63,13 +63,19 @@ LEXER_RESULT runLexer(char* string, int size) {
 		} else if (c == '\"') {
 			int strLen = 0;
 
-			while(c != '\"') {
+			++i;
+			c = string[i];
+
+			while(c != '\"' && c != '\0') {
 				buff[strLen] = c;
 				strLen++;
 
 				++i;
 				c = string[i];
-			}
+			} 
+
+			buff[strLen] = '\0';
+			++i;
 
 			pushToken(&result, STRING);
 			result.tokens[result.size - 1].value = buff;
