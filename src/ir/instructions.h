@@ -38,68 +38,61 @@ typedef enum IR_INSTRUCTION_CODE {
      */
     S_ALLOC,
 
-    /**
-     * Loads the values of a specific address into a variable.
-     * @param var the output variable.
-     * @param ptr the pointer containing the target address.
-     */
-    PTR_LOAD,
-
 
     /**
      * Adds two 32 bit integers together.
      * @param output the output variable of the result.
-     * @param i1 the first integer.
-     * @param i2 the second integer.
+     * @param p1 the first integer pointer.
+     * @param p2 the second integer pointer.
      */
     IADD,
 
     /**
      * Subtracts two 32 bit integers together.
      * @param output the output variable of the result.
-     * @param i1 the first integer.
-     * @param i2 the second integer.
+     * @param p1 the first integer pointer.
+     * @param p2 the second integer pointer.
      */
     ISUB,
 
     /**
      * Multiplies two 32 bit integers together.
      * @param output the output variable of the result.
-     * @param i1 the first integer.
-     * @param i2 the second integer.
+     * @param p1 the first integer pointer.
+     * @param p2 the second integer pointer.
      */
     IMUL,
 
     /**
      * Divides two 32 bit integers together.
      * @param output the output variable of the result.
-     * @param i1 the first integer.
-     * @param i2 the second integer.
+     * @param p1 the first integer pointer.
+     * @param p2 the second integer pointer.
      */
     IDIV,
 
     /**
      * Compares two 32 bit integers to check if they are equal.
-     * @param out the output variable containing the result.
-     * @param i1 the first integer.
-     * @param i2 the second integer.
+     * @param output the output variable of the result.
+     * @param p1 the first integer pointer.
+     * @param p2 the second integer pointer.
      */
     ICMP,
 
     /**
      * Compares two 32 bit integers to check if the first one is higher than the second one.
-     * @param out the output variable containing the result.
-     * @param i1 the first integer.
-     * @param i2 the second integer.
+     * @param output the output variable of the result.
+     * @param p1 the first integer pointer.
+     * @param p2 the second integer pointer.
      */
     ICMP_H,
 
     /**
      * Compares two 32 bit integers to check if the first one is higher or equal to the second one.
-     * @param out the output variable containing the result.
-     * @param i1 the first integer.
-     * @param i2 the second integer.
-    */
+     * @param output the output variable of the result.
+     * @param p1 the first integer pointer.
+     * @param p2 the second integer pointer.
+     */
     ICMP_L,
 
     /**
@@ -188,5 +181,52 @@ typedef enum IR_INSTRUCTION_CODE {
     PTR_DEC_OFF
 
 } IR_INSTRUCTION_CODE;
+
+/**
+ * The types for parameters in an IR instruction.
+ */
+typedef enum IR_PARAMETER_TYPE {
+
+    VARIABLE,
+    INT,
+    STRING
+
+} IR_PARAMETER_TYPE;
+
+/**
+ * Holds all of the parameter types of the instructions.
+ */
+const unsigned char INSTRUCTION_PARAMETER_TYPES[24][3] = {
+    {INT},
+    {INT, VARIABLE},
+    {INT, INT, VARIABLE},
+    {INT, VARIABLE},
+
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+
+    {VARIABLE, INT},
+    {VARIABLE},
+    {STRING},
+    
+    {0},
+    {0},
+    {0},
+    {0},
+
+    {VARIABLE, VARIABLE},
+    {VARIABLE, VARIABLE},
+    {VARIABLE, VARIABLE},
+    {VARIABLE, VARIABLE},
+
+    {VARIABLE, INT},
+    {VARIABLE, VARIABLE, VARIABLE}
+};
 
 #endif
