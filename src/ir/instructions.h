@@ -38,13 +38,6 @@ typedef enum IR_INSTRUCTION_CODE {
      */
     S_ALLOC,
 
-    /**
-     * Loads the values of a specific address into a variable.
-     * @param var the output variable.
-     * @param ptr the pointer containing the target address.
-     */
-    PTR_LOAD,
-
 
     /**
      * Adds two 32 bit integers together.
@@ -188,5 +181,53 @@ typedef enum IR_INSTRUCTION_CODE {
     PTR_DEC_OFF
 
 } IR_INSTRUCTION_CODE;
+
+/**
+ * The types for parameters in an IR instruction.
+ */
+typedef enum IR_PARAMETER_TYPE {
+
+    VARIABLE,
+    INT,
+    STRING
+
+} IR_PARAMETER_TYPE;
+
+/**
+ * Holds all of the parameter types of the instructions.
+ */
+const unsigned char INSTRUCTION_PARAMETER_TYPES[25][3] = {
+    {INT},
+    {INT, VARIABLE},
+    {INT, INT, VARIABLE},
+    {INT, VARIABLE},
+    {VARIABLE, VARIABLE},
+
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+    {VARIABLE, INT, INT},
+
+    {VARIABLE, INT},
+    {VARIABLE},
+    {STRING},
+    
+    {0},
+    {0},
+    {0},
+    {0},
+
+    {VARIABLE, VARIABLE},
+    {VARIABLE, VARIABLE},
+    {VARIABLE, VARIABLE},
+    {VARIABLE, VARIABLE},
+
+    {VARIABLE, INT},
+    {VARIABLE, VARIABLE, VARIABLE}
+};
 
 #endif
