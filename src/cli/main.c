@@ -131,24 +131,6 @@ int main(int argc, char* argv[]) {
 
 			fptr = fopen(outputFile, "w");
 
-			FILE* test = fopen("bob.txt", "w");
-
-			writeIRBlock(irOut->blocks[0], test);
-
-			fclose(test);
-
-			test = fopen("bob.txt", "r");
-			fseek(test, 0, SEEK_END);
-			int sz = ftell(test);
-			rewind(test);
-
-			unsigned char* b = malloc(sizeof(sz));
-			fread(b, sz, 1, test);
-
-			fclose(test);
-
-			printf("%d\n", ((IR_BASIC_BLOCK*)b)->instructionCount);
-
 			BYTECODE_BUFFER* buffer = compile(irOut);
 
 			compilePE(fptr, buffer);
