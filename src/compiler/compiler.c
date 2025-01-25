@@ -10,6 +10,7 @@
 #include "../ir/instructions.h"
 
 #include "./compiler.h"
+#include "./structs.h"
 
 #include "./win64.h"
 
@@ -52,7 +53,7 @@ BYTECODE_BUFFER* compile(IR_OUTPUT* out) {
  * @param out the IR output.
  * @param ptr the pointer name.
  */
-int getAddressFromPointer(IR_OUTPUT* out, char* ptr) {
+int getAddressFromPointer(COMPILER_CONTEXT* out, char* ptr) {
     unsigned char* name = malloc(sizeof(ptr));
 
     unsigned char hasOffset = 0x00;

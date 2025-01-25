@@ -9,6 +9,7 @@
 #include "../ir/instructions.h"
 
 #include "./structs.h"
+#include "./compiler.h"
 
 #include "../utils/hashmap.h"
 #include "../utils/hash.h"
@@ -66,9 +67,8 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->buff[buff->size] = 0xC6;
             buff->buff[buff->size + 1] = 0x45;
 
-            int* ii = hashGet(ctx->map, hashstr(instruction->params[0]));
-
-            buff->buff[buff->size + 2] = (uint8_t) *ii;
+            int addr = getAddressFromPointer(ctx, instruction->params[0]);
+            buff->buff[buff->size + 2] = (uint8_t) addr;
 
             buff->buff[buff->size + 3] = ((unsigned char*)instruction->params[1])[0];
 
@@ -79,9 +79,8 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->buff[buff->size] = 0x66;
             buff->buff[buff->size + 1] = 0x45;
             
-            ii = hashGet(ctx->map, hashstr(instruction->params[0]));
-
-            buff->buff[buff->size + 2] = (uint8_t) *ii;
+            addr = getAddressFromPointer(ctx, instruction->params[0]);
+            buff->buff[buff->size + 2] = (uint8_t) addr;
 
             buff->buff[buff->size + 3] = ((unsigned char*)instruction->params[1])[3];
             buff->buff[buff->size + 4] = ((unsigned char*)instruction->params[1])[2];
@@ -92,9 +91,8 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->buff[buff->size] = 0xC7;
             buff->buff[buff->size + 1] = 0x45;
 
-            ii = hashGet(ctx->map, hashstr(instruction->params[0]));
-
-            buff->buff[buff->size + 2] = (uint8_t) *ii;
+            addr = getAddressFromPointer(ctx, instruction->params[0]);
+            buff->buff[buff->size + 2] = (uint8_t) addr;
 
             buff->buff[buff->size + 3] = ((unsigned char*)instruction->params[1])[3];
             buff->buff[buff->size + 4] = ((unsigned char*)instruction->params[1])[2];
@@ -109,9 +107,8 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->buff[buff->size + 1] = 0xC7;
             buff->buff[buff->size + 2] = 0x45;
 
-            ii = hashGet(ctx->map, hashstr(instruction->params[0]));
-
-            buff->buff[buff->size + 3] = (uint8_t) *ii;
+            addr = getAddressFromPointer(ctx, instruction->params[0]);
+            buff->buff[buff->size + 2] = (uint8_t) addr;
 
             buff->buff[buff->size + 4] = ((unsigned char*)instruction->params[1])[7];
             buff->buff[buff->size + 5] = ((unsigned char*)instruction->params[1])[6];
@@ -136,7 +133,7 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             break;
 
         case PTR_DEC:
-            ii = malloc(sizeof(int));
+            int* ii = malloc(sizeof(int));
             *ii = (((unsigned char*)instruction->params[1])[0] << 24) | (((unsigned char*)instruction->params[1])[1] << 16) | (((unsigned char*)instruction->params[1])[2] << 8) | ((unsigned char*)instruction->params[1])[3];
 
             hashPut(ctx->map, hashstr(instruction->params[0]), ii);
@@ -146,9 +143,10 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             ii = malloc(sizeof(int));
             *ii = (((unsigned char*)instruction->params[2])[0] << 24) | (((unsigned char*)instruction->params[2])[1] << 16) | (((unsigned char*)instruction->params[2])[2] << 8) | ((unsigned char*)instruction->params[2])[3];
             
-            int* o = hashGet(ctx->map, hashstr(instruction->params[1]));
+            addr = getAddressFromPointer(ctx, instruction->params[1]);
 
-            *ii += *o;
+
+            *ii += addr;
 
             hashPut(ctx->map, hashstr(instruction->params[0]), ii);
             break;
@@ -176,10 +174,9 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
 
             off = ctx->blockOffsets[i] - buff->size;
 
-            ii = hashGet(ctx->map, hashstr(instruction->params[1]));
+            addr = getAddressFromPointer(ctx, instruction->params[1]);
 
-
-            buff->buff[buff->size + 2] = *ii & 0xFF;
+            buff->buff[buff->size + 2] = addr & 0xFF;
             buff->buff[buff->size + 3] = 0x01;
 
             buff->buff[buff->size + 4] = 0x74;
@@ -193,12 +190,13 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
 
             // Instead of doing if else, just jump to the block if true and continue if not
 
-            ii = hashGet(ctx->map, hashstr(instruction->params[2]));
+            addr = getAddressFromPointer(ctx, instruction->params[2]);
+
 
             buff->buff[buff->size] = 0x80;
             buff->buff[buff->size + 1] = 0x7d;
 
-            buff->buff[buff->size + 2] = *ii & 0xFF;
+            buff->buff[buff->size + 2] = addr & 0xFF;
             buff->buff[buff->size + 3] = 0x01;
 
             buff->buff[buff->size + 4] = 0x74;
