@@ -15,4 +15,12 @@
  */
 BYTECODE_BUFFER* compile(IR_OUTPUT* out);
 
+
+/**
+ * Gets the compiled address from the pointer.
+ * @param out the IR output.
+ * @param ptr the pointer name.
+ */
+int getAddressFromPointer(IR_OUTPUT* out, char* ptr);
+
 #endif

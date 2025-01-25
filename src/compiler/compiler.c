@@ -15,6 +15,9 @@
 
 #include "./pe/pe.h"
 
+#include "../utils/hashmap.h"
+#include "../utils/hash.h"
+
 /**
  * Compiles the IR into actual bytecode.
  * @param out the IR output.
@@ -42,4 +45,41 @@ BYTECODE_BUFFER* compile(IR_OUTPUT* out) {
     }
 
     return buff;
+}
+
+/**
+ * Gets the compiled address from the pointer.
+ * @param out the IR output.
+ * @param ptr the pointer name.
+ */
+int getAddressFromPointer(IR_OUTPUT* out, char* ptr) {
+    unsigned char* name = malloc(sizeof(ptr));
+
+    unsigned char hasOffset = 0x00;
+    int i;
+    char c;
+    while(c == *ptr++) {
+        if(c == ',') {
+            ptr++;
+            hasOffset = 0x01;
+            break;
+        }
+
+        if(c == '\0') {
+            break;
+        }
+
+
+        name[i] = c;
+        ++i;
+    }
+
+    int addr = hashGet(out->map, hashstr(name));
+
+    if(hasOffset) {
+        int i = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | ptr[3];
+        addr += i;
+    }
+
+    return addr;
 }
