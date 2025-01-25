@@ -140,17 +140,6 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->paramCount = 2;
             break;
 
-        case 2059:
-            instruction->opCode = PTR_LOAD;
-            b = malloc(sizeof(void*) * 2);
-
-            parseVariableName(b, 0, buff[1]);
-            parseVariableName(b, 1, buff[2]);
-
-            instruction->params = b;
-            instruction->paramCount = 2;
-            break;
-
         case 3257:
             instruction->opCode = IADD;
             b = malloc(sizeof(void*) * 3);

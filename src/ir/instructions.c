@@ -1,0 +1,37 @@
+#include "./instructions.h"
+
+/**
+ * Holds all of the parameter types of the instructions.
+ */
+const unsigned char INSTRUCTION_PARAMETER_TYPES[24][3] = {
+    {INT_VALUE},
+    {INT_VALUE, VARIABLE},
+    {INT_VALUE, INT_VALUE, VARIABLE},
+    {INT_VALUE, VARIABLE},
+
+    {VARIABLE, INT_VALUE, INT_VALUE},
+    {VARIABLE, INT_VALUE, INT_VALUE},
+    {VARIABLE, INT_VALUE, INT_VALUE},
+    {VARIABLE, INT_VALUE, INT_VALUE},
+
+    {VARIABLE, INT_VALUE, INT_VALUE},
+    {VARIABLE, INT_VALUE, INT_VALUE},
+    {VARIABLE, INT_VALUE, INT_VALUE},
+
+    {VARIABLE, INT_VALUE},
+    {VARIABLE},
+    {STRING_VALUE},
+    
+    {0},
+    {0},
+    {0},
+    {0},
+
+    {VARIABLE, VARIABLE},
+    {VARIABLE, VARIABLE},
+    {VARIABLE, VARIABLE},
+    {VARIABLE, VARIABLE},
+
+    {VARIABLE, INT_VALUE},
+    {VARIABLE, VARIABLE, VARIABLE}
+};

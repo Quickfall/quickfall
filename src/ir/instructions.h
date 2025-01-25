@@ -33,77 +33,77 @@ typedef enum IR_INSTRUCTION_CODE {
 
     /**
      * Allocates a set amount of bits in the stack.
-     * @param size the size of the pointer.
-     * @param ptr the pointer that is going to be allocated.
+     * @param size the size of the poINT_VALUEer.
+     * @param ptr the poINT_VALUEer that is going to be allocated.
      */
     S_ALLOC,
 
 
     /**
-     * Adds two 32 bit integers together.
+     * Adds two 32 bit INT_VALUEegers together.
      * @param output the output variable of the result.
-     * @param p1 the first integer pointer.
-     * @param p2 the second integer pointer.
+     * @param p1 the first INT_VALUEeger poINT_VALUEer.
+     * @param p2 the second INT_VALUEeger poINT_VALUEer.
      */
     IADD,
 
     /**
-     * Subtracts two 32 bit integers together.
+     * Subtracts two 32 bit INT_VALUEegers together.
      * @param output the output variable of the result.
-     * @param p1 the first integer pointer.
-     * @param p2 the second integer pointer.
+     * @param p1 the first INT_VALUEeger poINT_VALUEer.
+     * @param p2 the second INT_VALUEeger poINT_VALUEer.
      */
     ISUB,
 
     /**
-     * Multiplies two 32 bit integers together.
+     * Multiplies two 32 bit INT_VALUEegers together.
      * @param output the output variable of the result.
-     * @param p1 the first integer pointer.
-     * @param p2 the second integer pointer.
+     * @param p1 the first INT_VALUEeger poINT_VALUEer.
+     * @param p2 the second INT_VALUEeger poINT_VALUEer.
      */
     IMUL,
 
     /**
-     * Divides two 32 bit integers together.
+     * Divides two 32 bit INT_VALUEegers together.
      * @param output the output variable of the result.
-     * @param p1 the first integer pointer.
-     * @param p2 the second integer pointer.
+     * @param p1 the first INT_VALUEeger poINT_VALUEer.
+     * @param p2 the second INT_VALUEeger poINT_VALUEer.
      */
     IDIV,
 
     /**
-     * Compares two 32 bit integers to check if they are equal.
+     * Compares two 32 bit INT_VALUEegers to check if they are equal.
      * @param output the output variable of the result.
-     * @param p1 the first integer pointer.
-     * @param p2 the second integer pointer.
+     * @param p1 the first INT_VALUEeger poINT_VALUEer.
+     * @param p2 the second INT_VALUEeger poINT_VALUEer.
      */
     ICMP,
 
     /**
-     * Compares two 32 bit integers to check if the first one is higher than the second one.
+     * Compares two 32 bit INT_VALUEegers to check if the first one is higher than the second one.
      * @param output the output variable of the result.
-     * @param p1 the first integer pointer.
-     * @param p2 the second integer pointer.
+     * @param p1 the first INT_VALUEeger poINT_VALUEer.
+     * @param p2 the second INT_VALUEeger poINT_VALUEer.
      */
     ICMP_H,
 
     /**
-     * Compares two 32 bit integers to check if the first one is higher or equal to the second one.
+     * Compares two 32 bit INT_VALUEegers to check if the first one is higher or equal to the second one.
      * @param output the output variable of the result.
-     * @param p1 the first integer pointer.
-     * @param p2 the second integer pointer.
+     * @param p1 the first INT_VALUEeger poINT_VALUEer.
+     * @param p2 the second INT_VALUEeger poINT_VALUEer.
      */
     ICMP_L,
 
     /**
-     * Moves a variable value into the parameter registers.
+     * Moves a variable value INT_VALUEo the parameter registers.
      * @param var the variable holding the value.
      * @param index the index of the parameter to register to.
      */
     PRM_PUSH,
 
     /**
-     * Moves a variable value into the return value register.
+     * Moves a variable value INT_VALUEo the return value register.
      * @param var the variable holding the value.
      */
     RET_PUSH,
@@ -137,45 +137,45 @@ typedef enum IR_INSTRUCTION_CODE {
 
 
     /**
-     * Sets the byte located at the pointer.
-     * @param ptr the pointer containing the target address.
-     * @param val the new value (an integer for now).
+     * Sets the byte located at the poINT_VALUEer.
+     * @param ptr the poINT_VALUEer containing the target address.
+     * @param val the new value (an INT_VALUEeger for now).
      */
     PTR_SET,
 
     /**
-     * Sets 32 bits located at the pointer.
-     * @param ptr the pointer containing the target address.
-     * @param val the new integer value.
+     * Sets 32 bits located at the poINT_VALUEer.
+     * @param ptr the poINT_VALUEer containing the target address.
+     * @param val the new INT_VALUEeger value.
      */
     QUAD_SET,
 
     /**
-     * Sets 16 bits located at the pointer.
-     * @param ptr the pointer containing the target address.
-     * @param val the new integer value.
+     * Sets 16 bits located at the poINT_VALUEer.
+     * @param ptr the poINT_VALUEer containing the target address.
+     * @param val the new INT_VALUEeger value.
      */
     DUO_SET,
 
     /**
-     * Sets 64 bits located at the pointer.
-     * @param ptr the pointer containing the target address.
-     * @param val the new integer value.
+     * Sets 64 bits located at the poINT_VALUEer.
+     * @param ptr the poINT_VALUEer containing the target address.
+     * @param val the new INT_VALUEeger value.
      */
     OCT_SET,
 
 
     /**
-     * Declares a pointer at the specified address.
-     * @param ptr the new pointer.
+     * Declares a poINT_VALUEer at the specified address.
+     * @param ptr the new poINT_VALUEer.
      * @param addr the address
      */
     PTR_DEC,
 
     /**
-     * Declares a pointer that is an offset of another pointer.
-     * @param ptr the new pointer.
-     * @param p the old pointer.
+     * Declares a poINT_VALUEer that is an offset of another poINT_VALUEer.
+     * @param ptr the new poINT_VALUEer.
+     * @param p the old poINT_VALUEer.
      * @param off the offset.
      */
     PTR_DEC_OFF
@@ -188,45 +188,9 @@ typedef enum IR_INSTRUCTION_CODE {
 typedef enum IR_PARAMETER_TYPE {
 
     VARIABLE,
-    INT,
-    STRING
+    INT_VALUE,
+    STRING_VALUE
 
 } IR_PARAMETER_TYPE;
-
-/**
- * Holds all of the parameter types of the instructions.
- */
-const unsigned char INSTRUCTION_PARAMETER_TYPES[24][3] = {
-    {INT},
-    {INT, VARIABLE},
-    {INT, INT, VARIABLE},
-    {INT, VARIABLE},
-
-    {VARIABLE, INT, INT},
-    {VARIABLE, INT, INT},
-    {VARIABLE, INT, INT},
-    {VARIABLE, INT, INT},
-
-    {VARIABLE, INT, INT},
-    {VARIABLE, INT, INT},
-    {VARIABLE, INT, INT},
-
-    {VARIABLE, INT},
-    {VARIABLE},
-    {STRING},
-    
-    {0},
-    {0},
-    {0},
-    {0},
-
-    {VARIABLE, VARIABLE},
-    {VARIABLE, VARIABLE},
-    {VARIABLE, VARIABLE},
-    {VARIABLE, VARIABLE},
-
-    {VARIABLE, INT},
-    {VARIABLE, VARIABLE, VARIABLE}
-};
 
 #endif
