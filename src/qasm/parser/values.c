@@ -39,6 +39,24 @@ void parseVariableName(void** buff, int index, char* str) {
     int size = strlen(str);
     buff[index] = malloc(size);
 
-    memccpy(buff[index], str, 1, size);
-    ((char*)buff[index])[size] = '\0';
+    char c;
+    int i = 0;
+    while(c == *str++) {
+        ((unsigned char*)buff[index])[i] = c;
+        
+        ++i;
+
+        if(c == ',') {
+            ((unsigned char*)buff[index])[i] = ',';
+            int t = atoi(str++);
+
+            ((unsigned char*)buff[index])[i + 1] = (i >> 24) & 0xFF;
+            ((unsigned char*)buff[index])[i + 2] = (i >> 16) & 0xFF;
+            ((unsigned char*)buff[index])[i + 3] = (i >> 8) & 0xFF;
+            ((unsigned char*)buff[index])[i + 4] = i & 0xFF;
+        }
+
+        if(c == '\0') break;
+    }
+
 }
