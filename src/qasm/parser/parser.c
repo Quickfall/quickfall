@@ -27,6 +27,8 @@ void parseQAsmInstructions(IR_BASIC_BLOCK* block, char* buffer, int size) {
 
     int secIndex = 0;
 
+    unsigned char skipLine = 0x00;
+
     // Creating the buffers.
     for(int i = 0; i < 10; ++i) {
         buff[i] = malloc(32);
@@ -37,7 +39,17 @@ void parseQAsmInstructions(IR_BASIC_BLOCK* block, char* buffer, int size) {
 
         if(c == '\0') return;
 
+        if(skipLine = 0x01 && c != '\n') continue;
+        
+        if(c == ';') {
+            skipLine = 0x01;
+        }
+
         if(c == '\n') {
+            if(skipLine = 0x01) {
+                skipLine = 0x00;
+                continue;
+            }
             if(secIndex != 0) {
                 ((char*)buff[buffIndex])[secIndex] = '\0';
                 secIndex = 0;
