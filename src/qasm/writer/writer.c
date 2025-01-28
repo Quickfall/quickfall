@@ -37,6 +37,11 @@ void writeQASM(FILE* fptr, IR_OUTPUT* output) {
                     break;
                     
                 case S_ALLOC:
+                    writeInt32(fptr, instruction->params, 0);
+                    writeVarName(fptr, instruction->params, 1);
+                    break;
+
+                case S_ALLOC_PTR:
                     writeVarName(fptr, instruction->params, 0);
                     writeVarName(fptr, instruction->params, 1);
                     break;

@@ -38,6 +38,12 @@ typedef enum IR_INSTRUCTION_CODE {
      */
     S_ALLOC,
 
+    /**
+     * Allocates an unset amount of bits in the stack.
+     * @param sizePtr the pointer containing the size of the pointer.
+     * @param ptr the pointer that is going to be allocated.
+     */
+    S_ALLOC_PTR,
 
     /**
      * Adds two 32 bit INT_VALUEegers together.

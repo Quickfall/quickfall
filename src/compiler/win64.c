@@ -51,18 +51,37 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             break;
 
         case S_ALLOC:
-            buff->buff[buff->size] = 0x48; 
-            buff->buff[buff->size + 1] = 0x2B;
-            buff->buff[buff->size + 2] = 0x64;
-            buff->buff[buff->size + 3] = 0x24;
-
-            int i = getAddressFromPointer(ctx, instruction->params[0]);
-            //int i = (((unsigned char*)instruction->params[0])[0] << 24) | (((unsigned char*)instruction->params[0])[1] << 16) | (((unsigned char*)instruction->params[0])[2] << 8) | ((unsigned char*)instruction->params[0])[3];
+            buff->buff[buff->size] = 0x48;
+            buff->buff[buff->size + 1] = 0x83;
+            buff->buff[buff->size + 2] = 0xEC;
+            int i = (((unsigned char*)instruction->params[0])[0] << 24) | (((unsigned char*)instruction->params[0])[1] << 16) | (((unsigned char*)instruction->params[0])[2] << 8) | ((unsigned char*)instruction->params[0])[3];
 
             ctx->currStack += i;
             ctx->stackSize += i;
 
             int* ptr = malloc(sizeof(int));
+            *ptr = ctx->stackSize;
+
+            hashPut(ctx->map, hashstr(instruction->params[1]), ptr);
+
+            buff->buff[buff->size + 3] = i;
+
+            buff->size += 4;
+            break;
+
+        case S_ALLOC_PTR:
+            buff->buff[buff->size] = 0x48; 
+            buff->buff[buff->size + 1] = 0x2B;
+            buff->buff[buff->size + 2] = 0x64;
+            buff->buff[buff->size + 3] = 0x24;
+
+            i = getAddressFromPointer(ctx, instruction->params[0]);
+            //int i = (((unsigned char*)instruction->params[0])[0] << 24) | (((unsigned char*)instruction->params[0])[1] << 16) | (((unsigned char*)instruction->params[0])[2] << 8) | ((unsigned char*)instruction->params[0])[3];
+
+            ctx->currStack += i;
+            ctx->stackSize += i;
+
+            ptr = malloc(sizeof(int));
             *ptr = ctx->stackSize;
 
             hashPut(ctx->map, hashstr(instruction->params[1]), ptr);
