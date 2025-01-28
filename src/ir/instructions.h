@@ -33,7 +33,7 @@ typedef enum IR_INSTRUCTION_CODE {
 
     /**
      * Allocates a set amount of bits in the stack.
-     * @param size the size of the poINT_VALUEer.
+     * @param size the pointer containing size of the poINT_VALUEer.
      * @param ptr the poINT_VALUEer that is going to be allocated.
      */
     S_ALLOC,

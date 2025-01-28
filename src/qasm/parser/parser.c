@@ -134,7 +134,7 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->opCode = S_ALLOC;
             b = malloc(sizeof(void*) * 2);
 
-            parseInt32(b, 0, buff[1]);
+            parseVariableName(b, 0, buff[1]);
             parseVariableName(b, 1, buff[2]);
 
             instruction->params = b;
