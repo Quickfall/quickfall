@@ -75,12 +75,12 @@ int getAddressFromPointer(COMPILER_CONTEXT* out, char* ptr) {
         ++i;
     }
 
-    int addr = hashGet(out->map, hashstr(name));
+    int* addr = hashGet(out->map, hashstr(name));
 
     if(hasOffset) {
         int i = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | ptr[3];
-        addr += i;
+        *addr += i;
     }
 
-    return addr;
+    return *addr;
 }
