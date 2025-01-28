@@ -1,0 +1,27 @@
+//
+// Stack related memory functions.
+//
+
+// Allocates a set amount of bits inside the stack.
+// @param size(int32) the size of the pointer.
+// @ret the pointer.
+func salloc(size) {
+    "salloc 32 %p"
+    "prm_load 0 %p"
+    "salloc_p %p %ptr"
+    "push_ret %ptr"
+    "ret"
+}
+
+
+// Creates a pointer that is pointing at the specified stack address.
+// Warn: Currently, this function is unusable due to the current QAsm specifications, it will be available once QAsm will reciveve a rewrite
+// @param addr the stack address.
+// @ret the pointer.
+func spoint(addr) {
+    "salloc 32 %p"
+    "prm_load 0 %p"
+    "ptr_dec %ptr %p"
+    "push_ret %ptr"
+    "ret"
+}
