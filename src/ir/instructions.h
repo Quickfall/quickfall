@@ -178,7 +178,14 @@ typedef enum IR_INSTRUCTION_CODE {
      * @param p the old poINT_VALUEer.
      * @param off the offset.
      */
-    PTR_DEC_OFF
+    PTR_DEC_OFF,
+
+    /**
+     * Loads a parameter and pushes it into a register.
+     * @param index the parameter index.
+     * @param register the register.
+     */
+    PRM_LOAD
 
 } IR_INSTRUCTION_CODE;
 
