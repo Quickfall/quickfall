@@ -25,3 +25,24 @@ func spoint(addr) {
     "push_ret %ptr"
     "ret"
 }
+
+
+// Loads the stack snapshot that was saved in a register. 
+// Info: this function is mostly a function alias of the st_load instruction
+func stackload() {
+    "st_load"
+}
+
+
+// Saves the stack snapshot in a register.
+// Info: this function is mostly a function alias of the st_push instruction
+func stacksave() {
+    "st_push"
+}
+
+
+// Frees the portion of the stack used by the current running function.
+// Info: this function is mostly a function alias of the st_freef instruction
+func sfree_function() {
+    "st_freef"
+}
