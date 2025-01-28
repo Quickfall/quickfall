@@ -346,6 +346,17 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             instruction->paramCount = 3;
             break;
 
+        case 2059:
+            instruction->opCode = PRM_LOAD;
+            b = malloc(sizeof(void*) * 2);
+
+            parseInt32(b, 0, buff[1]);
+            parseVariableName(b, 1, buff[2]);
+
+            instruction->params = b;
+            instruction->paramCount = 2;
+            break;
+
         default:
             printf("Error: Unknown instruction %s!\n", buff[0]);
             return NULL;

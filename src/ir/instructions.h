@@ -183,7 +183,7 @@ typedef enum IR_INSTRUCTION_CODE {
     /**
      * Loads a parameter and pushes it into a register.
      * @param index the parameter index.
-     * @param register the register.
+     * @param ptr the pointer.
      */
     PRM_LOAD
 

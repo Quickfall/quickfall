@@ -14,6 +14,13 @@
 #include "../utils/hashmap.h"
 #include "../utils/hash.h"
 
+const unsigned char WIN_REGISTERS[] = {
+    0x48, 0x4D,
+    0x48, 0x55,
+    0x4C, 0x45,
+    0x4C, 0x4D
+};
+
 /**
  * Compiles an QAsm / IR instruction to the Win-x64 bytecode.
  * @param buff the bytecode buffer.
@@ -211,5 +218,21 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->buff[buff->size + 9] = (off >> 24) & 0xFF;
 
             buff->size += 10;
+            break;
+
+        case PRM_LOAD:
+            int index = (((unsigned char*)instruction->params[0])[0] << 24) | (((unsigned char*)instruction->params[0])[1] << 16) | (((unsigned char*)instruction->params[0])[2] << 8) | ((unsigned char*)instruction->params[0])[3];
+
+            buff->buff[buff->size] = WIN_REGISTERS[2 * index];
+            buff->buff[buff->size + 1] = 0x89;
+            buff->buff[buff->size + 2] = WIN_REGISTERS[(2 * index) + 1];
+
+            int i = getAddressFromPointer(ctx, instruction->params[1]);
+
+            buff->buff[buff->size + 3] = (uint8_t) i;
+            buff->size += 4;
+            break;
+
+            
     }
 }
