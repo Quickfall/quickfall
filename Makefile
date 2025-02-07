@@ -28,8 +28,7 @@ endif
 COMPILER = gcc
 
 # Flags that are passed to the compiler
-FLAGS = -Wall -Wextra -Wimplicit-function-declaration
-
+FLAGS = -Wall -Wextra -Wimplicit-function-declaration -O0 -g
 #
 # Path configuration.
 #

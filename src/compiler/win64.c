@@ -248,7 +248,7 @@ void compileInstruction(BYTECODE_BUFFER* buff, COMPILER_CONTEXT* ctx, IR_INSTRUC
             buff->buff[buff->size + 1] = 0x89;
             buff->buff[buff->size + 2] = WIN_REGISTERS[(2 * index) + 1];
 
-            int i = getAddressFromPointer(ctx, instruction->params[1]);
+            i = getAddressFromPointer(ctx, instruction->params[1]);
 
             buff->buff[buff->size + 3] = (uint8_t) i;
             buff->size += 4;

@@ -146,7 +146,7 @@ IR_INSTRUCTION* parseInstruction(char** buff, int bufferSize) {
             b = malloc(sizeof(void*) * 2);
 
             parseVariableName(b, 0, buff[1]);
-            parseVariableNamer(b, 1, buff[2]);
+            parseVariableName(b, 1, buff[2]);
 
             instruction->params = b;
             instruction->paramCount = 2;

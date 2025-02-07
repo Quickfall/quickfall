@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "../src/lexer/lexer.h"
-#include "../src/lexer/tokens.h"
 
 /**
  * Runs the lexer test.
