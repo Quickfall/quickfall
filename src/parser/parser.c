@@ -13,9 +13,11 @@
 
 #include "./structs/tree.h"
 #include "./structs/variables.h"
+#include "./structs/misc.h"
 
 #include "./asts/variables.h"
 #include "./asts/functions.h"
+#include "./asts/misc.h"
 
 
 /**
@@ -84,6 +86,24 @@ void* parseRoot(LEXER_RESULT result, int startingIndex, AST_TYPE type) {
                     root->endingIndex = i;
                     return root;
                 }
+                break;
+
+            case USE:
+                node = parseASTUseSTDStatement(result, i);
+                if(node != NULL) {
+                    curr->next = node;
+                    curr = node;
+                }
+                i = ((AST_TREE_BRANCH*)node)->endingIndex;
+                break;
+            
+            case IMPORT:
+                node = parseASTUseImportStatement(result, i);
+                if(node != NULL) {
+                    curr->next = node;
+                    curr = node;
+                }
+                i = ((AST_TREE_BRANCH*)node)->endingIndex;
                 break;
 
             default:

@@ -23,6 +23,7 @@ typedef enum {
     COMMA,
     DECLARE,
     USE,
+    IMPORT,
     NONE,
     MATH_OP,
 
