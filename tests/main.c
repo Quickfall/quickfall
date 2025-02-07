@@ -32,7 +32,7 @@ void runTest(char* buff, char* testName) {
 	else printf("[%sOK%s] The test %s was OK!\n", TEXT_HGREEN, RESET, testName);
 }
 
-int main(int argc, char** argv) {
+int mainsdsd(int argc, char** argv) {
 	if(argc < 3) {
 		printf("Usage: <executable> <file> <tests...>\0");
 		return -1;

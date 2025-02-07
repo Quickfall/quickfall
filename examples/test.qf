@@ -1,0 +1,5 @@
+func main() {
+    int32 test = 32
+    int24 hello = 24
+    int16 shel = 16
+}
