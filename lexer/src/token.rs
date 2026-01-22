@@ -1,6 +1,13 @@
+//! 
+//! Module containing lexer token-based utilities and classes
+//! 
+
+/// The token type for the lexer
 pub enum LexerToken {
+    /// Represent the func keyword
     FUNCTION,
-    VAR,
+
+    /// Represent the ret keyword
     RETURN,
 
     EQUAL_SIGN,

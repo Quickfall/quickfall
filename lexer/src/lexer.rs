@@ -1,3 +1,7 @@
+//!
+//! Module containing the core lexer algorithm
+//! 
+
 use std::{fs, hash::{DefaultHasher, Hash, Hasher}, io::Error};
 
 use crate::{LexerParseResult, LexerParsingError, token::LexerToken};
@@ -5,7 +9,13 @@ use crate::{LexerParseResult, LexerParsingError, token::LexerToken};
 const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
 const RET_KEYWORD_HASH: u64 = 9222097151127739705;
 
-
+/// Parses a file into a set of lexer tokens.
+/// 
+/// # Examples
+/// 
+/// ```
+/// let result: LexerParseResult<Vec<LexerToken>> = lexer_parse_file("test_file.qf").expect("Lexer didn't work");
+/// ```
 pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>> {
     let contents: String = match fs::read_to_string(file_path) {
         Ok(v) => v,
@@ -59,7 +69,7 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
     Ok(tokens)
 }
 
-pub fn parse_number_token(str: &String, ind: &mut usize) -> LexerParseResult<LexerToken> {
+fn parse_number_token(str: &String, ind: &mut usize) -> LexerParseResult<LexerToken> {
     let start = *ind + 1;
     let mut end: usize = start;
     
