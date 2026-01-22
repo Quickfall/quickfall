@@ -3,7 +3,9 @@
 //! 
 
 use core::hash;
-use std::hash::{DefaultHasher, Hash, Hasher};
+use std::{any::TypeId, hash::{DefaultHasher, Hash, Hasher}};
+
+pub type TypeHash = u64;
 
 ///
 /// Represents a value bundled with a cached hash. 
@@ -70,14 +72,14 @@ impl <K: Hash> WithHash<K> {
     /// let hash = hasher.finish();
     /// assert!(hashed.compare_hash(hash));
     /// ```
-    pub fn compare_hash(&self, hash: u64) -> bool {
+    pub fn compare_hash(&self, hash: TypeHash) -> bool {
         return self.hash == hash;
     }
 
 }
 
 #[inline(always)]
-fn utils_get_hash<K: Hash>(val: &K) -> u64 {
+fn utils_get_hash<K: Hash>(val: &K) -> TypeHash {
     let mut hasher = DefaultHasher::new();
     val.hash(&mut hasher);
     hasher.finish()
