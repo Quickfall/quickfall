@@ -1,13 +1,17 @@
 use std::{fs, hash::{DefaultHasher, Hash, Hasher}, io::Error};
 
-use crate::token::LexerToken;
+use crate::{LexerParseResult, LexerParsingError, token::LexerToken};
 
 const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
 const RET_KEYWORD_HASH: u64 = 9222097151127739705;
 
 
-pub fn lexer_parse_file(file_path: &String) -> Result<Vec<LexerToken>, Error> {
-    let contents: String = fs::read_to_string(file_path)?;
+pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>> {
+    let contents: String = match fs::read_to_string(file_path) {
+        Ok(v) => v,
+        Err(_) => return Err(LexerParsingError::new("File couldn't be read!".to_string(), 0)),
+    };
+
     let mut tokens: Vec<LexerToken> = Vec::new();
 
     let mut i: usize = 0;
@@ -16,7 +20,7 @@ pub fn lexer_parse_file(file_path: &String) -> Result<Vec<LexerToken>, Error> {
         let c: char = contents.chars().nth(i).unwrap();
 
         if c.is_numeric() {
-            tokens.push(parse_number_token(&contents, &mut i));
+            tokens.push(parse_number_token(&contents, &mut i)?);
             continue;
         }
 
@@ -55,7 +59,7 @@ pub fn lexer_parse_file(file_path: &String) -> Result<Vec<LexerToken>, Error> {
     Ok(tokens)
 }
 
-pub fn parse_number_token(str: &String, ind: &mut usize) -> LexerToken {
+pub fn parse_number_token(str: &String, ind: &mut usize) -> LexerParseResult<LexerToken> {
     let start = *ind + 1;
     let mut end: usize = start;
     
@@ -68,11 +72,14 @@ pub fn parse_number_token(str: &String, ind: &mut usize) -> LexerToken {
     }
 
     let slice = &str[*ind..end];
-    let num: i64 = slice.parse().expect("The number token should be a number!");
+    let num: i64 = match slice.parse() {
+        Ok(v) => v,
+        Err(_) => return Err(LexerParsingError::new("Couldn't parse int lit!".to_string(), *ind)),
+    };
 
     *ind = end;
 
-    return LexerToken::INT_LIT(num);
+    return Ok(LexerToken::INT_LIT(num));
 }
 
 fn parse_string_token(str: &String, ind: &mut usize) -> LexerToken {
