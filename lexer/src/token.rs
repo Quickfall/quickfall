@@ -2,7 +2,10 @@
 //! Module containing lexer token-based utilities and classes
 //! 
 
+use crate::{LexerParseResult, LexerParsingError};
+
 /// The token type for the lexer
+#[derive(PartialEq)]
 pub enum LexerToken {
     /// Represent the func keyword
     FUNCTION,
@@ -33,4 +36,13 @@ pub enum LexerToken {
 
     KEYWORD(String, u64),
     END_OF_FILE
+}
+
+impl LexerToken {
+	pub fn as_keyword(&self) -> LexerParseResult<(String, u64)> {
+		match self {
+			LexerToken::KEYWORD(str, hash) => Ok((str.clone(), *hash)),
+			_ => Err(LexerParsingError::new(String::from("Token is not a keyword!"), 0))
+		}
+	}
 }
