@@ -26,4 +26,5 @@ pub enum ASTTreeNode {
 
     FunctionCall { funcName: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
     FunctionDeclaration { funcName: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>> }
+	
 }
