@@ -4,6 +4,7 @@
 
 use utils::hash::{TypeHash, WithHash};
 
+#[derive(Debug)]
 pub struct FunctionDeclarationArgument {
     pub name: WithHash<String>,
     pub argumentType: TypeHash
@@ -15,6 +16,7 @@ impl FunctionDeclarationArgument {
     }
 }
 
+#[derive(Debug)]
 pub enum ASTTreeNode {
     IntegerLit(i64),
     StringLit(String),

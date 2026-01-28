@@ -15,5 +15,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "test-main"
+version = "0.1.0"
+dependencies = [
+ "lexer",
+ "parser",
+]
+
+[[package]]
 name = "utils"
 version = "0.1.0"

@@ -12,6 +12,7 @@ pub type TypeHash = u64;
 /// This is valuable for objects that are frequently compared trough hashes. 
 /// This wrapper struct allows for every value change to recaculate the hash, making it safe to change.
 /// 
+#[derive(Debug)]
 pub struct WithHash<K: Hash> {
     pub val: K,
     hash: u64

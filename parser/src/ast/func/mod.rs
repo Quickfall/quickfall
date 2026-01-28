@@ -33,7 +33,7 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize) -> Pa
 
 	let mut args: Vec<FunctionDeclarationArgument> = Vec::new();
 	
-	while *ind < tokens.len() && tokens[*ind] == LexerToken::KEYWORD(_, _) {
+	while *ind < tokens.len() && tokens[*ind].is_keyword() {
 		let varType = match tokens[*ind].as_keyword() {
 			Ok(val) => val,
 			Err(e) => return Err(ParserError::new(String::from("Malformed function arguments"), 0))

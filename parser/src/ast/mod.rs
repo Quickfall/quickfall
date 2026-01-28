@@ -6,6 +6,8 @@
 //! Indexes passed to parsing functions SHOULD be the "detected" token rather than the next one.
 //! 
 
+use std::fmt::Debug;
+
 use lexer::token::LexerToken;
 
 use crate::{ParserError, ParserResult, ast::{func::decl::parse_function_declaraction, tree::ASTTreeNode}};
@@ -20,7 +22,7 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult
 		}
 
 		_ => {
-			return Err(ParserError::new(String::from("Unkown token type!"), 0));
+			return Err(ParserError::new(format!("err: {:#?}", tokens[*ind]), 0));
 		}
 
 	}

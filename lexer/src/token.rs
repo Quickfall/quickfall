@@ -5,7 +5,7 @@
 use crate::{LexerParseResult, LexerParsingError};
 
 /// The token type for the lexer
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum LexerToken {
     /// Represent the func keyword
     FUNCTION,
@@ -43,6 +43,13 @@ impl LexerToken {
 		match self {
 			LexerToken::KEYWORD(str, hash) => Ok((str.clone(), *hash)),
 			_ => Err(LexerParsingError::new(String::from("Token is not a keyword!"), 0))
+		}
+	}
+
+	pub fn is_keyword(&self) -> bool {
+		match self {
+			LexerToken::KEYWORD(_, _) => true,
+			_ => false
 		}
 	}
 }

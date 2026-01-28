@@ -117,7 +117,7 @@ fn parse_keyword(str: &String, ind: &mut usize) -> LexerToken {
     let mut end: usize = start;
     
     for(i, c) in str[start..].char_indices() {
-        if !c.is_alphabetic() {
+        if !c.is_alphabetic() && !c.is_numeric() {
             break;
         }
 
