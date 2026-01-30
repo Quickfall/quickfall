@@ -31,6 +31,7 @@ pub enum LexerToken {
 
     COMMA,
     DOT,
+	AMPERSAND,
 
     BRACKET_OPEN,
     BRACKET_CLOSE,
