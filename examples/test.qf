@@ -1,3 +1,8 @@
 func main(si32 myTestArg, si32 age) {
     var si32 test = 50;
+
+	if test == 0 {
+		
+	}
+
 }

@@ -16,6 +16,7 @@ pub mod tree;
 pub mod func;
 pub mod var;
 pub mod literals;
+pub mod cond;
 
 pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
 	println!("Ind: {}, tok at: {:#?}", ind, tokens[*ind]);
