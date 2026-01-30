@@ -1,3 +1,3 @@
-func main() {
+func main(si32 myTestArg, si32 age) {
     var si32 test = 50;
 }

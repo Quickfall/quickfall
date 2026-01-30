@@ -23,6 +23,8 @@ pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 	let mut val: Option<Box<ASTTreeNode>> = None;
 
 	if tokens[*ind] == LexerToken::EQUAL_SIGN {
+		*ind += 1;
+		
 		val = match parse_ast_node(tokens, ind) {
 			Ok(v) => Some(v),
 			Err(e) => None

@@ -28,7 +28,6 @@ pub enum LexerToken {
 
     EQUAL_SIGN,
 
-    SEMICOLON,
     COMMA,
     DOT,
 

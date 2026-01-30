@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use lexer::token::LexerToken;
 
 use crate::{ParserError, ParserResult, ast::{parse_ast_node, tree::{ASTTreeNode, FunctionDeclarationArgument}}};
@@ -48,8 +50,13 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize) -> Pa
 		args.push(FunctionDeclarationArgument::new(varName.0, varType.1));
 
 		*ind += 1;
-		if tokens[*ind] != LexerToken::SEMICOLON {
-			return Err(ParserError::new(String::from("Arguments must be seperated with semicolons"), 0));
+
+		if tokens[*ind] == LexerToken::PAREN_CLOSE {
+			break;
+		}
+
+		if tokens[*ind] != LexerToken::COMMA {
+			return Err(ParserError::new(format!("Arguments must be seperated with commas! Got token {:#?}", tokens[*ind]), 0));
 		}
 
 		*ind += 1;
