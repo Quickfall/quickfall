@@ -8,6 +8,16 @@ use crate::{LexerParseResult, LexerParsingError, token::LexerToken};
 
 const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
 const RET_KEYWORD_HASH: u64 = 9222097151127739705;
+const VAR_KEYWORD_HASH: u64 = 10000921911505692860;
+const STRUCT_KEYWORD_HASH: u64 = 9993791738993869954;
+const LAYOUT_KEYWORD_HASH: u64 = 3186948275885044588;
+const LAY_KEYWORD_HASH: u64 = 5285095872557529407;
+const FALSE_KEYWORD_HASH: u64 = 8985926696363166359;
+const TRUE_KEYWORD_HASH: u64 = 2326242343701258586;
+const IF_KEYWORD_HASH: u64 = 14565880314940941169;
+const ELSE_KEYWORD_HASH: u64 = 15870633062462684568;
+const WHILE_KEYWORD_HASH: u64 = 10666076348663826897;
+const FOR_KEYWORD_HASH: u64 = 8246706989536534387;
 
 /// Parses a file into a set of lexer tokens.
 /// 
@@ -136,6 +146,17 @@ fn parse_keyword(str: &String, ind: &mut usize) -> LexerToken {
     match hash {
         FUNC_KEYWORD_HASH => return LexerToken::FUNCTION,
         RET_KEYWORD_HASH => return LexerToken::RETURN,
+		STRUCT_KEYWORD_HASH => return LexerToken::STRUCT,
+		LAYOUT_KEYWORD_HASH => return LexerToken::LAYOUT,
+		LAY_KEYWORD_HASH => return LexerToken::LAY,
+		TRUE_KEYWORD_HASH => return LexerToken::TRUE,
+		FALSE_KEYWORD_HASH => return LexerToken::FALSE,
+		VAR_KEYWORD_HASH => return LexerToken::VAR,
+		IF_KEYWORD_HASH => return LexerToken::IF,
+		ELSE_KEYWORD_HASH => return LexerToken::ELSE,
+		WHILE_KEYWORD_HASH => return LexerToken::WHILE,
+		FOR_KEYWORD_HASH => return LexerToken::FOR,
+
         _ => {
             return LexerToken::KEYWORD(slice.to_string(), hash);
         }

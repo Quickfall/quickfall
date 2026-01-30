@@ -10,8 +10,21 @@ pub enum LexerToken {
     /// Represent the func keyword
     FUNCTION,
 
+	VAR,
+	STRUCT,
+	LAYOUT,
+	LAY,
+		
     /// Represent the ret keyword
     RETURN,
+
+	TRUE,
+	FALSE,
+
+	FOR,
+	IF,
+	ELSE,
+	WHILE,
 
     EQUAL_SIGN,
 
