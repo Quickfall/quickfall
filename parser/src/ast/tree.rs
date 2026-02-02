@@ -27,12 +27,16 @@ pub enum ASTTreeNode {
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ConditionOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
 
+	RepresentsElement { elementName: WithHash<String> },
+
     VarDeclaration { varName: WithHash<String>, varType: TypeHash, value: Option<Box<ASTTreeNode>> },
-    VarValueChange { varName: WithHash<String>, value: Box<ASTTreeNode> },
+    VarValueChange { var: Box<ASTTreeNode>, value: Box<ASTTreeNode> },
 
     Return { value: Option<Box<ASTTreeNode>> },
 
-    FunctionCall { funcName: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
-    FunctionDeclaration { funcName: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>> }
+    FunctionCall { func: Box<ASTTreeNode>, args: Vec<Box<ASTTreeNode>>  },
+    FunctionDeclaration { funcName: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>> },
 	
+	StructBasedVariableRepresentation { steps: Vec<Box<ASTTreeNode>>, varName: WithHash<String> },
+	StructBasedFunctionRepresentaztion { steps: Vec<Box<ASTTreeNode>>, funcName: WithHash<String> }
 }
