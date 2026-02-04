@@ -61,6 +61,15 @@ pub struct LexerToken {
 }
 
 impl LexerToken {
+	pub fn make_single_sized(pos: Position, t: LexerTokenType) -> Self {
+		let end = pos.increment_by(1);
+		return LexerToken { tok_type: t, pos, end_pos: end };
+	}
+
+	pub fn new(start: Position, end: Position, t: LexerTokenType) -> Self {
+		return LexerToken { tok_type:t , pos: start, end_pos: end }
+	}
+
 	pub fn as_keyword(&self) -> LexerParseResult<(String, u64)> {
 		match &self.tok_type {
 			LexerTokenType::KEYWORD(str, hash) => Ok((str.clone(), *hash)),

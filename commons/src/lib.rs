@@ -20,6 +20,16 @@ impl Position {
 	}
 }
 
+impl Position {
+	pub fn new(path: String, line: usize, col: usize) -> Self {
+		return Position { line, col, file_path: path };
+	}
+
+	pub fn increment_by(&self, count: usize) -> Self {
+		return Position::new(self.file_path.clone(), self.line, self.col + count);
+	}
+}
+
 impl fmt::Display for Position {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{}:{} in {}", self.line, self.col, self.file_path);
