@@ -30,13 +30,14 @@ pub enum ASTTreeNode {
 
     VarDeclaration { varName: WithHash<String>, varType: TypeHash, value: Option<Box<ASTTreeNode>> },
     VarValueChange { var: Box<ASTTreeNode>, value: Box<ASTTreeNode> },
+	VarIncrement { var: Box<ASTTreeNode>, incrementBy: Option<Box<ASTTreeNode>> }, // Default is by 1
 
 	IfStatement { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>>, elseStatement: Option<Box<ASTTreeNode>> },
 	IfElseStatement { cond: Option<Box<ASTTreeNode>>, body: Vec<Box<ASTTreeNode>>, elseStatement: Option<Box<ASTTreeNode>> },
 	ElseStatement { body: Vec<Box<ASTTreeNode>> },
 
 	WhileBlock { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
-	ForBlock { initialState: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode> },
+	ForBlock { initialState: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 
     Return { value: Option<Box<ASTTreeNode>> },
 
