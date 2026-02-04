@@ -2,6 +2,8 @@
 //! Module containing lexer token-based utilities and classes
 //! 
 
+use commons::Position;
+
 use crate::{LexerParseResult, LexerParsingError};
 
 /// The token type for the lexer
@@ -54,7 +56,8 @@ pub enum LexerTokenType {
 
 pub struct LexerToken {
 	tok_type: LexerTokenType,
-	pos: LexerTokenPosition // Valid tokens require a position
+	pos: Position, // Valid tokens require a position
+	end_pos: Position
 }
 
 impl LexerToken {
@@ -71,9 +74,4 @@ impl LexerToken {
 			_ => false
 		}
 	}
-}
-
-pub struct LexerTokenPosition {
-	line: usize,
-	col: usize
 }
