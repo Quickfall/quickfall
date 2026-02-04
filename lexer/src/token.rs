@@ -67,3 +67,8 @@ impl LexerToken {
 		}
 	}
 }
+
+pub struct LexerTokenPosition {
+	line: usize,
+	col: usize
+}
