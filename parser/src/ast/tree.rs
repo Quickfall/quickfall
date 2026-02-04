@@ -35,6 +35,9 @@ pub enum ASTTreeNode {
 	IfElseStatement { cond: Option<Box<ASTTreeNode>>, body: Vec<Box<ASTTreeNode>>, elseStatement: Option<Box<ASTTreeNode>> },
 	ElseStatement { body: Vec<Box<ASTTreeNode>> },
 
+	WhileBlock { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
+	ForBlock { initialState: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode> },
+
     Return { value: Option<Box<ASTTreeNode>> },
 
     FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },

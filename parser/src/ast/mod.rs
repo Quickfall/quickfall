@@ -11,7 +11,7 @@ use std::fmt::Debug;
 use lexer::token::LexerToken;
 use utils::hash::WithHash;
 
-use crate::{ParserError, ParserResult, ast::{cond::operators::parse_condition_operator, control::ifelse::parse_if_statement, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, tree::ASTTreeNode, var::decl::parse_variable_declaration}};
+use crate::{ParserError, ParserResult, ast::{cond::operators::parse_condition_operator, control::{ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, tree::ASTTreeNode, var::decl::parse_variable_declaration}};
 
 pub mod tree;
 pub mod func;
@@ -113,6 +113,10 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult
 
 		LexerToken::IF => {
 			return parse_if_statement(tokens, ind);
+		},
+		
+		LexerToken::WHILE => {
+			return parse_while_block(tokens, ind);
 		}
 
 		_ => {
