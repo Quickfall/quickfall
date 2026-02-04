@@ -30,6 +30,8 @@ impl fmt::Display for PositionedError {
 
 		writeln!(f, "{}{}{}", before, target, after);
 		writeln!(f, "");
-		writeln!(f, "{}", self.reason.bright_red())
+		writeln!(f, "{}", self.reason.bright_red());
+
+		Ok(())
 	}
 }
