@@ -2,7 +2,9 @@
 //! Module containing lexer token-based utilities and classes
 //! 
 
-use commons::Position;
+use std::any::Any;
+
+use commons::{Position, err::{PositionedError, PositionedResult}};
 
 use crate::{LexerParseResult, LexerParsingError};
 
@@ -55,9 +57,9 @@ pub enum LexerTokenType {
 }
 
 pub struct LexerToken {
-	tok_type: LexerTokenType,
-	pos: Position, // Valid tokens require a position
-	end_pos: Position
+	pub tok_type: LexerTokenType,
+	pub pos: Position, // Valid tokens require a position
+	pub end_pos: Position
 }
 
 impl LexerToken {
@@ -68,6 +70,43 @@ impl LexerToken {
 
 	pub fn new(start: Position, end: Position, t: LexerTokenType) -> Self {
 		return LexerToken { tok_type:t , pos: start, end_pos: end }
+	}
+
+	pub fn is(&self, t: LexerTokenType) -> bool {
+		return self.tok_type == t;
+	}
+
+	pub fn expects(&self, t: LexerTokenType) -> PositionedResult<bool> {
+		if self.tok_type != t {
+			return Err(PositionedError::new(self.pos.clone(), self.end_pos.clone(), format!("Expected {:#?} token but instead got {:#?}!", t, self.tok_type)))
+		}
+
+		return Ok(true);
+	}
+
+	pub fn expects_int_lit(&self) -> PositionedResult<i64> {
+		match &self.tok_type {
+			LexerTokenType::INT_LIT(v) => return Ok(*v),
+			_ => return Err(self.make_err("Expected int litteral here!"))
+		};
+	}
+
+	pub fn expects_string_lit(&self) -> PositionedResult<String> {
+		match &self.tok_type {
+			LexerTokenType::STRING_LIT(v) => return Ok(v.to_string()),
+			_ => return Err(self.make_err("Expected string litteral here!"))
+		};
+	}
+
+	pub fn expects_keyword(&self) -> PositionedResult<(String, u64)> {
+		match &self.tok_type {
+			LexerTokenType::KEYWORD(s, h) => return Ok((s.to_string(), *h)),
+			_ => return Err(self.make_err("Expected keyword here!"))
+		};
+	}
+
+	pub fn make_err(&self, err: &str) -> PositionedError {
+		return PositionedError::new(self.pos.clone(), self.end_pos.clone(), String::from(err));
 	}
 
 	pub fn as_keyword(&self) -> LexerParseResult<(String, u64)> {

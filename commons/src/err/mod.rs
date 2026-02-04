@@ -8,11 +8,19 @@ use colored::Colorize;
 
 use crate::Position;
 
+pub type PositionedResult<K> = Result<K, PositionedError>;
+
 /// An error that has a position
 pub struct PositionedError {
 	pub start: Position,
 	pub end: Position,
 	pub reason: String
+}
+
+impl PositionedError {
+	pub fn new(start: Position, end: Position, reason: String) -> Self {
+		return PositionedError { start, end, reason }
+	}
 }
 
 impl fmt::Display for PositionedError {
