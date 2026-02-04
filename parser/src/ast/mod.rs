@@ -20,11 +20,45 @@ pub mod literals;
 pub mod cond;
 
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: ParserResult<Box<ASTTreeNode>>) -> ParserResult<Box<ASTTreeNode>> {
-	return original;
+	match &tokens[*ind] {
+		LexerToken::DOT => {
+			let o = &original?;
+			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
+
+			if !o.is_function_call() && !o.is_var_access() {
+				return Err(ParserError::new(String::from("Tried using field/func access on non-value element!"), 0));
+			}
+
+			*ind += 1;
+			let r = parse_ast_value(tokens, ind)?;
+
+			if r.is_function_call() {
+				return Ok(Box::new(ASTTreeNode::StructLRFunction { l: k, r }))
+			} else if r.is_var_access() {
+				return Ok(Box::new(ASTTreeNode::StructLRVariable { l: k, r }))
+			}
+
+			return Err(ParserError::new(String::from("Next member isn't any valid field/func access type!"), 0));
+		},
+
+		_ => return original
+	}
 }
 
 pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
 	match &tokens[*ind] {
+
+		LexerToken::EXCLAMATION_MARK => {
+			*ind += 1;
+			let ast = parse_ast_value(tokens, ind)?;
+
+			if ast.is_function_call() || ast.is_var_access() {
+				return Ok(Box::new(ASTTreeNode::BooleanBasedConditionMember { val: ast, negate: true }))
+			}
+
+			return Err(ParserError::new(String::from("Boolean negation requires either function or variable usage!"), 0));
+		},
+
 		LexerToken::INT_LIT(_) => {
 			let int = parse_integer_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, int);
@@ -41,7 +75,10 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResul
 				return parse_ast_value_post_l(tokens, ind, call);
 			}
 
-			let n = Ok(Box::new(ASTTreeNode::RepresentsElement { elementName: WithHash::new(String::clone(str)) }));
+			let n = Ok(Box::new(ASTTreeNode::VariableReference(WithHash::new(String::clone(str)))));
+
+			*ind += 1;
+
 			return parse_ast_value_post_l(tokens, ind, n);
 		}
 

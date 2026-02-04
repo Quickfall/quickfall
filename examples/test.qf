@@ -1,4 +1,6 @@
 func main(si32 myTestArg, si32 age) {
-    var si32 test = 50;
+    var si32 test = test.abc().test;
+
+	var si32 test2 = !test.abs();
 
 }

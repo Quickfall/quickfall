@@ -2,7 +2,7 @@ use lexer::token::LexerToken;
 
 use crate::{ParserError, ParserResult};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ConditionOperator {
 	EQUAL,
 	NOT_EQUAL,
