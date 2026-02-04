@@ -31,6 +31,10 @@ pub enum ASTTreeNode {
     VarDeclaration { varName: WithHash<String>, varType: TypeHash, value: Option<Box<ASTTreeNode>> },
     VarValueChange { var: Box<ASTTreeNode>, value: Box<ASTTreeNode> },
 
+	IfStatement { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>>, elseStatement: Option<Box<ASTTreeNode>> },
+	IfElseStatement { cond: Option<Box<ASTTreeNode>>, body: Vec<Box<ASTTreeNode>>, elseStatement: Option<Box<ASTTreeNode>> },
+	ElseStatement { body: Vec<Box<ASTTreeNode>> },
+
     Return { value: Option<Box<ASTTreeNode>> },
 
     FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
