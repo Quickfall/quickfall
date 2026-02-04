@@ -1,7 +1,7 @@
 use lexer::token::LexerToken;
 use utils::hash::WithHash;
 
-use crate::{ParserError, ParserResult, ast::{parse_ast_node, tree::ASTTreeNode}};
+use crate::{ParserError, ParserResult, ast::{parse_ast_node, parse_ast_value, tree::ASTTreeNode}};
 
 pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
 	*ind += 1;
@@ -25,7 +25,7 @@ pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 	if tokens[*ind] == LexerToken::EQUAL_SIGN {
 		*ind += 1;
 		
-		val = match parse_ast_node(tokens, ind) {
+		val = match parse_ast_value(tokens, ind) {
 			Ok(v) => Some(v),
 			Err(e) => None
 		};

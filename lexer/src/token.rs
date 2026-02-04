@@ -27,9 +27,11 @@ pub enum LexerToken {
 	WHILE,
 
     EQUAL_SIGN,
+	EXCLAMATION_MARK,
 
     COMMA,
     DOT,
+	AMPERSAND,
 
     BRACKET_OPEN,
     BRACKET_CLOSE,

@@ -66,6 +66,8 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
             '=' => tokens.push(LexerToken::EQUAL_SIGN),
             ',' => tokens.push(LexerToken::COMMA),
             '.' => tokens.push(LexerToken::DOT),
+			'!' => tokens.push(LexerToken::EXCLAMATION_MARK),
+			'&' => tokens.push(LexerToken::AMPERSAND),
             '<' => tokens.push(LexerToken::ANGEL_BRACKET_OPEN),
             '>' => tokens.push(LexerToken::ANGEL_BRACKET_CLOSE),
             _ => continue

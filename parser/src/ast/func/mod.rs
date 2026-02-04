@@ -5,6 +5,7 @@ use lexer::token::LexerToken;
 use crate::{ParserError, ParserResult, ast::{parse_ast_node, tree::{ASTTreeNode, FunctionDeclarationArgument}}};
 
 pub mod decl;
+pub mod call;
 
 pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Vec<Box<ASTTreeNode>>> {
     *ind += 1;
