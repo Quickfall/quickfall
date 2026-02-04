@@ -23,7 +23,6 @@ pub enum ASTTreeNode {
     IntegerLit(i64),
     StringLit(String),
 
-	ConditionSeperator,
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ConditionOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
 
