@@ -11,7 +11,7 @@ use std::fmt::Debug;
 use lexer::token::LexerToken;
 use utils::hash::WithHash;
 
-use crate::{ParserError, ParserResult, ast::{func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, tree::ASTTreeNode, var::decl::parse_variable_declaration}};
+use crate::{ParserError, ParserResult, ast::{cond::operators::parse_condition_operator, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, tree::ASTTreeNode, var::decl::parse_variable_declaration}};
 
 pub mod tree;
 pub mod func;
@@ -40,6 +40,18 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 
 			return Err(ParserError::new(String::from("Next member isn't any valid field/func access type!"), 0));
 		},
+
+		LexerToken::ANGEL_BRACKET_CLOSE | LexerToken::EQUAL_SIGN | LexerToken::ANGEL_BRACKET_OPEN => {
+			let operator = parse_condition_operator(tokens, ind)?;
+
+			let o = &original?;
+			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
+
+			*ind += 1;
+			let right_val = parse_ast_value(tokens, ind)?;
+
+			return Ok(Box::new(ASTTreeNode::OperatorBasedConditionMember { lval: k, rval: right_val, operator }));
+		}
 
 		_ => return original
 	}
