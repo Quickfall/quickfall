@@ -19,6 +19,12 @@ pub enum LexerTokenType {
 	LAYOUT,
 	LAY,
 		
+	MATH_ADD,
+	MATH_SUBTRACT,
+	MATH_DIVIDE,
+	MATH_MULTIPLY,
+	
+
     /// Represent the ret keyword
     RETURN,
 

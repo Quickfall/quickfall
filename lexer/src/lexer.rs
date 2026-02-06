@@ -93,6 +93,10 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
 			'&' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AMPERSAND)),
             '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_OPEN)),
             '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_CLOSE)),
+			'+' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::MATH_ADD)),
+			'-' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::MATH_SUBTRACT)),
+			'*' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::MATH_MULTIPLY)),
+			'/' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::MATH_DIVIDE)),
             _ => continue
         }
 
