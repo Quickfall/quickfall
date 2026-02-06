@@ -6,7 +6,7 @@ use std::any::Any;
 
 use commons::{Position, err::{PositionedError, PositionedResult}};
 
-use crate::{LexerParseResult, LexerParsingError};
+use crate::{LexerParseResult, LexerParsingError, toks::math::MathOperator};
 
 /// The token type for the lexer
 #[derive(PartialEq, Debug)]
@@ -19,10 +19,9 @@ pub enum LexerTokenType {
 	LAYOUT,
 	LAY,
 		
-	MATH_ADD,
-	MATH_SUBTRACT,
-	MATH_DIVIDE,
-	MATH_MULTIPLY,
+	/// 0: the operator
+	/// 1: does the operator affect the original variable!
+	MATH_OPERATOR(MathOperator, bool),
 	
 
     /// Represent the ret keyword

@@ -7,6 +7,7 @@ use core::fmt;
 
 pub mod token;
 pub mod lexer;
+pub mod toks;
 
 type LexerParseResult<T> = std::result::Result<T, LexerParsingError>;
 
