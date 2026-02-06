@@ -8,7 +8,7 @@
 
 use std::fmt::Debug;
 
-use lexer::token::LexerToken;
+use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
 use crate::{ParserError, ParserResult, ast::{cond::operators::parse_condition_operator, control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, tree::ASTTreeNode, var::decl::parse_variable_declaration}};
@@ -21,8 +21,8 @@ pub mod cond;
 pub mod control;
 
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: ParserResult<Box<ASTTreeNode>>) -> ParserResult<Box<ASTTreeNode>> {
-	match &tokens[*ind] {
-		LexerToken::DOT => {
+	match &tokens[*ind].tok_type {
+		LexerTokenType::DOT => {
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
 
@@ -42,7 +42,7 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			return Err(ParserError::new(String::from("Next member isn't any valid field/func access type!"), 0));
 		},
 
-		LexerToken::ANGEL_BRACKET_CLOSE | LexerToken::EQUAL_SIGN | LexerToken::ANGEL_BRACKET_OPEN => {
+		LexerTokenType::ANGEL_BRACKET_CLOSE | LexerTokenType::EQUAL_SIGN | LexerTokenType::ANGEL_BRACKET_OPEN => {
 			let operator = parse_condition_operator(tokens, ind)?;
 
 			let o = &original?;
@@ -59,9 +59,9 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 }
 
 pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
-	match &tokens[*ind] {
+	match &tokens[*ind].tok_type {
 
-		LexerToken::EXCLAMATION_MARK => {
+		LexerTokenType::EXCLAMATION_MARK => {
 			*ind += 1;
 			let ast = parse_ast_value(tokens, ind)?;
 
@@ -72,18 +72,18 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResul
 			return Err(ParserError::new(String::from("Boolean negation requires either function or variable usage!"), 0));
 		},
 
-		LexerToken::INT_LIT(_) => {
+		LexerTokenType::INT_LIT(_) => {
 			let int = parse_integer_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, int);
 		},
 
-		LexerToken::STRING_LIT(_) => {
+		LexerTokenType::STRING_LIT(_) => {
 			let str = parse_string_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, str);
 		},
 
-		LexerToken::KEYWORD(str, _) => {
-			if tokens[*ind + 1] == LexerToken::PAREN_OPEN {
+		LexerTokenType::KEYWORD(str, _) => {
+			if tokens[*ind + 1].tok_type == LexerTokenType::PAREN_OPEN {
 				let call = parse_function_call(tokens, ind);
 				return parse_ast_value_post_l(tokens, ind, call);
 			}
@@ -100,31 +100,31 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResul
 }
 
 pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
-	println!("Ind: {}, tok at: {:#?}", ind, tokens[*ind]);
+	println!("Ind: {}, tok at: {:#?}", ind, tokens[*ind].tok_type);
 
-	match &tokens[*ind] {
-		LexerToken::FUNCTION => {
+	match &tokens[*ind].tok_type {
+		LexerTokenType::FUNCTION => {
 			return parse_function_declaraction(tokens, ind);
 		}
 
-		LexerToken::VAR => {
+		LexerTokenType::VAR => {
 			return parse_variable_declaration(tokens, ind);
 		},
 
-		LexerToken::IF => {
+		LexerTokenType::IF => {
 			return parse_if_statement(tokens, ind);
 		},
 		
-		LexerToken::WHILE => {
+		LexerTokenType::WHILE => {
 			return parse_while_block(tokens, ind);
 		},
 
-		LexerToken::FOR => {
+		LexerTokenType::FOR => {
 			return parse_for_loop(tokens, ind);
 		}
 
 		_ => {
-			return Err(ParserError::new(format!("err: {:#?}", tokens[*ind]), 0));
+			return Err(ParserError::new(format!("err: {:#?}", tokens[*ind].tok_type), 0));
 		}
 
 	}
