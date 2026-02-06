@@ -1,4 +1,5 @@
-use lexer::token::LexerToken;
+use commons::err::PositionedResult;
+use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{ParserError, ParserResult};
 
@@ -14,38 +15,38 @@ pub enum ConditionOperator {
 	LOWEREQ // A <= B
 }
 
-pub fn parse_condition_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<ConditionOperator> {
-	match &tokens[*ind] {
-		LexerToken::EQUAL_SIGN => {
+pub fn parse_condition_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<ConditionOperator> {
+	match &tokens[*ind].tok_type {
+		LexerTokenType::EQUAL_SIGN => {
 			*ind += 1;
 
-			if tokens[*ind] == LexerToken::EQUAL_SIGN {
-				return Ok(ConditionOperator::EQUAL);
-			}
+			tokens[*ind].expects(LexerTokenType::EQUAL_SIGN);
+
+			return Ok(ConditionOperator::EQUAL)
 		},
 
-		LexerToken::EXCLAMATION_MARK => {
+		LexerTokenType::EXCLAMATION_MARK => {
 			*ind += 1;
 
-			if tokens[*ind] == LexerToken::EQUAL_SIGN {
+			if tokens[*ind].tok_type == LexerTokenType::EQUAL_SIGN {
 				return Ok(ConditionOperator::NOT_EQUAL)
 			}
 		},
 
-		LexerToken::ANGEL_BRACKET_OPEN => {
+		LexerTokenType::ANGEL_BRACKET_OPEN => {
 			*ind += 1;
 
-			if tokens[*ind] == LexerToken::EQUAL_SIGN {
+			if tokens[*ind].tok_type == LexerTokenType::EQUAL_SIGN {
 				return Ok(ConditionOperator::LOWEREQ);
 			}
 
 			return Ok(ConditionOperator::LOWER);
 		},
 
-		LexerToken::ANGEL_BRACKET_CLOSE => {
+		LexerTokenType::ANGEL_BRACKET_CLOSE => {
 			*ind += 1;
 
-			if tokens[*ind] == LexerToken::EQUAL_SIGN {
+			if tokens[*ind].tok_type == LexerTokenType::EQUAL_SIGN {
 				return Ok(ConditionOperator::HIGHEREQ);
 			}
 
@@ -55,5 +56,5 @@ pub fn parse_condition_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> Pa
 		_ => {}
 	}
 
-	Err(ParserError::new(String::from("Pattern doesn't represent a valid condition operator!"), 0))
+	Err(tokens[*ind].make_err("Token doesn't make a valid condition operator"))
 }

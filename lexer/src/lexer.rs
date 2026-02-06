@@ -39,34 +39,43 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
     let mut i: usize = 0;
 
 	let mut line: usize = 1;
-	let mut col: usize = 0;
+
+	let mut last_line_break: usize = 0;
     
     while i < contents.len() {
         let c: char = contents.chars().nth(i).unwrap();
 		
-		col += 1;
-
 		if c == '\n' {
+			i += c.len_utf8();
+			last_line_break = i;
 			line += 1;
 			continue;
 		}
 
         if c.is_numeric() {
+			let col = i - last_line_break + 1;
             tokens.push(parse_number_token(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
             continue;
         }
 
         if c == '"' {
+			let col = i - last_line_break + 1;
+
             tokens.push(parse_string_token(&contents, &mut i, Position::new(file_path.to_string(), line, col)));
             continue;
         }
 
         if c.is_alphabetic() {
+			let col = i - last_line_break + 1;
+
             tokens.push(parse_keyword(&contents, &mut i, Position::new(file_path.to_string(), line, col)));
             continue;
         }
 
         i += c.len_utf8();
+
+
+		let col = i - last_line_break + 1;
 
 		let pos = Position::new(file_path.to_string(), line, col);
 
@@ -89,7 +98,7 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
 
     }
 
-    tokens.push(LexerToken::make_single_sized(Position::new(file_path.to_string(), line, col), LexerTokenType::END_OF_FILE));
+    tokens.push(LexerToken::make_single_sized(Position::new(file_path.to_string(), line, i - last_line_break + 1), LexerTokenType::END_OF_FILE));
 
     Ok(tokens)
 }
@@ -114,7 +123,7 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
 
     *ind = end;
 
-	let endpos = start_pos.increment_by(start - end);
+	let endpos = start_pos.increment_by(end - start);
     return Ok(LexerToken::new(start_pos, endpos, LexerTokenType::INT_LIT(num)));
 }
 
@@ -135,7 +144,7 @@ fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
 
     *ind = end;
     
-	let endpos: Position = start_pos.increment_by(start - end);
+	let endpos: Position = start_pos.increment_by(end - start);
     return LexerToken::new(start_pos, endpos, LexerTokenType::STRING_LIT(slice.to_string()));
 }
 
@@ -176,6 +185,6 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
         _ => LexerTokenType::KEYWORD(slice.to_string(), hash)
     };
 
-	let endpos: Position = start_pos.increment_by(start - end);
+	let endpos: Position = start_pos.increment_by(end - start);
 	return LexerToken::new(start_pos, endpos, token_type);
 }

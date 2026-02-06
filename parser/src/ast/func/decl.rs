@@ -1,26 +1,21 @@
-use lexer::token::LexerToken;
+use commons::err::PositionedResult;
+use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
 use crate::{ParserError, ParserResult, ast::{func::{parse_function_arguments, parse_node_body}, tree::ASTTreeNode}};
 
-pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
+pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;
-	let functionName = match tokens[*ind].as_keyword() {
-		Ok(val) => val,
-		Err(e) => return Err(ParserError::new(String::from("Function name wasn't a keyword!"), 0))
-	};
+	let functionName = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
-	if tokens[*ind] != LexerToken::PAREN_OPEN {
-		return Err(ParserError::new(String::from("Function name must be followed by arguments!"), 0));
-	}
+	tokens[*ind].expects(LexerTokenType::PAREN_OPEN)?;
 
 	let args = parse_function_arguments(tokens, ind)?;
 
 	*ind += 1;
-	if tokens[*ind] != LexerToken::BRACKET_OPEN {
-		return Err(ParserError::new(String::from("Expected function body declaration after arguments!"), 0));
-	}
+
+	tokens[*ind].expects(LexerTokenType::BRACKET_OPEN)?;
 
 	let body = parse_node_body(tokens, ind)?;
 

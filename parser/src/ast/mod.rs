@@ -8,6 +8,7 @@
 
 use std::fmt::Debug;
 
+use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
@@ -20,14 +21,14 @@ pub mod literals;
 pub mod cond;
 pub mod control;
 
-pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: ParserResult<Box<ASTTreeNode>>) -> ParserResult<Box<ASTTreeNode>> {
+pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::DOT => {
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
 
 			if !o.is_function_call() && !o.is_var_access() {
-				return Err(ParserError::new(String::from("Tried using field/func access on non-value element!"), 0));
+				return Err(tokens[*ind].make_err("Invalid dot access token!"));
 			}
 
 			*ind += 1;
@@ -39,7 +40,7 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 				return Ok(Box::new(ASTTreeNode::StructLRVariable { l: k, r }))
 			}
 
-			return Err(ParserError::new(String::from("Next member isn't any valid field/func access type!"), 0));
+			return Err(tokens[*ind].make_err("Invalid token type to use dot access!"));
 		},
 
 		LexerTokenType::ANGEL_BRACKET_CLOSE | LexerTokenType::EQUAL_SIGN | LexerTokenType::ANGEL_BRACKET_OPEN => {
@@ -58,7 +59,7 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 	}
 }
 
-pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
+pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 
 		LexerTokenType::EXCLAMATION_MARK => {
@@ -69,7 +70,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResul
 				return Ok(Box::new(ASTTreeNode::BooleanBasedConditionMember { val: ast, negate: true }))
 			}
 
-			return Err(ParserError::new(String::from("Boolean negation requires either function or variable usage!"), 0));
+			return Err(tokens[*ind].make_err("Boolean negative requires either func or var access!"));
 		},
 
 		LexerTokenType::INT_LIT(_) => {
@@ -95,11 +96,11 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResul
 			return parse_ast_value_post_l(tokens, ind, n);
 		}
 
-		_ => return Err(ParserError::new(String::from("Cannot be parsed as val!"), 0))
+		_ => return Err(tokens[*ind].make_err("Cannot be parsed as value!"))
 	}	
 }
 
-pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
+pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	println!("Ind: {}, tok at: {:#?}", ind, tokens[*ind].tok_type);
 
 	match &tokens[*ind].tok_type {
@@ -124,7 +125,7 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult
 		}
 
 		_ => {
-			return Err(ParserError::new(format!("err: {:#?}", tokens[*ind].tok_type), 0));
+			return Err(tokens[*ind].make_err("Invalid token type! Shouldn't be there!"));
 		}
 
 	}
