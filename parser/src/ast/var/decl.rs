@@ -1,34 +1,26 @@
-use lexer::token::LexerToken;
+use commons::err::PositionedResult;
+use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
 use crate::{ParserError, ParserResult, ast::{parse_ast_node, parse_ast_value, tree::ASTTreeNode}};
 
-pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
+pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;
 
-	let typeName = match tokens[*ind].as_keyword() {
-		Ok(val) => val,
-		Err(e) => return Err(ParserError::new(String::from("Type name isn't a keyword"), 0))
-	};
+	let typeName = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
 
-	let varName = match tokens[*ind].as_keyword() {
-		Ok(val) => val,
-		Err(e) => return Err(ParserError::new(String::from("Var name isn't a keyword!"), 0))
-	};
+	let varName = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
 
 	let mut val: Option<Box<ASTTreeNode>> = None;
 
-	if tokens[*ind] == LexerToken::EQUAL_SIGN {
+	if tokens[*ind].tok_type == LexerTokenType::EQUAL_SIGN {
 		*ind += 1;
 		
-		val = match parse_ast_value(tokens, ind) {
-			Ok(v) => Some(v),
-			Err(e) => None
-		};
+		val = Some(parse_ast_value(tokens, ind)?);
 	}
 
 	return Ok(Box::new(ASTTreeNode::VarDeclaration { varName: WithHash::new(varName.0), varType: typeName.1, value: val }));

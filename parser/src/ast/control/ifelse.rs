@@ -2,35 +2,30 @@
 //! Parsing for if and else statements
 //! 
 
-use lexer::token::LexerToken;
+use commons::err::PositionedResult;
+use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{ParserError, ParserResult, ast::{func::parse_node_body, parse_ast_value, tree::ASTTreeNode}};
 
-pub fn parse_condition_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
-	if tokens[*ind] != LexerToken::PAREN_OPEN {
-		return Err(ParserError::new(String::from("If statements must be followed by condition!"), 0));
-	}
+pub fn parse_condition_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+	tokens[*ind].expects(LexerTokenType::PAREN_OPEN)?;
 
 	*ind += 1;
 	let cond = parse_ast_value(tokens, ind)?;
 
-	if tokens[*ind] != LexerToken::PAREN_CLOSE {
-		return Err(ParserError::new(String::from("Conditions must be closed by paren!"), 0));
-	}
+	tokens[*ind].expects(LexerTokenType::PAREN_CLOSE)?;
 
 	*ind += 1;
 
 	return Ok(cond);
 }
 
-pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
+pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;
 
 	let cond = parse_condition_member(tokens, ind)?;
 
-	if tokens[*ind] != LexerToken::BRACKET_OPEN {
-		return Err(ParserError::new(String::from("Condition must be followed by body!"), 0));
-	}
+	tokens[*ind].expects(LexerTokenType::BRACKET_OPEN)?;
 
 	let body = match parse_node_body(tokens, ind) {
 		Ok(v) => v,
@@ -39,7 +34,7 @@ pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserRe
 
 	let mut elseStatement = None;
 
-	if tokens[*ind + 1] == LexerToken::ELSE {
+	if tokens[*ind + 1].tok_type == LexerTokenType::ELSE {
 		*ind += 1;
 
 		elseStatement = Some(parse_else_statement(tokens, ind)?);
@@ -48,19 +43,17 @@ pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserRe
 	return Ok(Box::new(ASTTreeNode::IfStatement { cond, body, elseStatement }));
 }
 
-pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> ParserResult<Box<ASTTreeNode>> {
+pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;
 
 	let mut cond = None;
 
-	if tokens[*ind] == LexerToken::IF {
+	if tokens[*ind].tok_type == LexerTokenType::IF {
 		*ind += 1;
 		cond = Some(parse_condition_member(tokens, ind)?);
 	}
 
-	if tokens[*ind] != LexerToken::BRACKET_OPEN {
-		return Err(ParserError::new(String::from("Condition must be followed by body!"), 0));
-	}
+	tokens[*ind].expects(LexerTokenType::BRACKET_OPEN)?;
 
 	let body = match parse_node_body(tokens, ind) {
 		Ok(v) => v,
@@ -70,7 +63,7 @@ pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Parser
 	if cond.is_some() {
 		let mut elseStatement = None;
 
-		if tokens[*ind + 1] == LexerToken::ELSE {
+		if tokens[*ind + 1].tok_type == LexerTokenType::ELSE {
 			*ind += 1;
 
 			elseStatement = Some(parse_else_statement(tokens, ind)?);
