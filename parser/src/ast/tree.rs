@@ -4,7 +4,7 @@
 
 use utils::hash::{TypeHash, WithHash};
 
-use crate::ast::cond::operators::ConditionOperator;
+use crate::ast::{cond::operators::ConditionOperator, math::MathOperator};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
@@ -25,6 +25,8 @@ pub enum ASTTreeNode {
 
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ConditionOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
+
+	MathResult { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: MathOperator },
 
 	VariableReference(WithHash<String>),
 

@@ -20,6 +20,7 @@ pub mod var;
 pub mod literals;
 pub mod cond;
 pub mod control;
+pub mod math;
 
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
