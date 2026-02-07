@@ -130,11 +130,23 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedRe
 
 		LexerTokenType::FOR => {
 			return parse_for_loop(tokens, ind);
-		}
+		},
+
+		LexerTokenType::KEYWORD(str, _) => {
+			if tokens[*ind + 1].tok_type == LexerTokenType::PAREN_OPEN {
+				let call = parse_function_call(tokens, ind);
+				return parse_ast_value_post_l(tokens, ind, call);
+			}
+
+			let n = Ok(Box::new(ASTTreeNode::VariableReference(WithHash::new(String::clone(str)))));
+
+			*ind += 1;
+
+			return parse_ast_value_post_l(tokens, ind, n);
+		},
 
 		_ => {
-			return Err(tokens[*ind].make_err("Invalid token type! Shouldn't be there!"));
+			return Err(tokens[*ind].make_err("Expected valid token type in this context!"));
 		}
-
 	}
 }
