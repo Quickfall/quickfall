@@ -72,6 +72,14 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
             continue;
         }
 
+		if c == '+' || c == '-' || c == '*' || c == '/' {
+			let col = i - last_line_break + 1;
+
+			tokens.push(parse_math_operator(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
+
+			continue;
+		}
+
         i += c.len_utf8();
 
 
@@ -93,8 +101,7 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
 			'&' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AMPERSAND)),
             '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_OPEN)),
             '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_CLOSE)),
-			'+' | '-' | '*' | '/' => tokens.push(parse_math_operator(&contents, &mut i, pos)?),
-            _ => continue
+			_ => continue
         }
 
     }
@@ -117,10 +124,14 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 
 	*ind += 1;
 
-	let assigns = match contents.chars().nth(*ind + 1) {
+	let assigns = match contents.chars().nth(*ind) {
 		Some(v) => v == '=',
 		None => false
 	};
+
+	if assigns {
+		*ind += 1;
+	}
 
 	let mut incrementCount = 1;
 

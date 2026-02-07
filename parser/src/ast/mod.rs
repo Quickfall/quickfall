@@ -22,7 +22,7 @@ pub mod cond;
 pub mod control;
 pub mod math;
 
-pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>) -> PositionedResult<Box<ASTTreeNode>> {
+pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>, invoked_on_body: bool) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::DOT => {
 			let o = &original?;
@@ -48,7 +48,7 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
 
-			return Ok(parse_math_operation(tokens, ind, k, false)?);
+			return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
 		},
 
 		LexerTokenType::ANGEL_BRACKET_CLOSE | LexerTokenType::EQUAL_SIGN | LexerTokenType::ANGEL_BRACKET_OPEN => {
@@ -83,28 +83,28 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 
 		LexerTokenType::INT_LIT(_) => {
 			let int = parse_integer_literal(tokens, ind);
-			return parse_ast_value_post_l(tokens, ind, int);
+			return parse_ast_value_post_l(tokens, ind, int, false);
 		},
 
 		LexerTokenType::STRING_LIT(_) => {
 			let str = parse_string_literal(tokens, ind);
-			return parse_ast_value_post_l(tokens, ind, str);
+			return parse_ast_value_post_l(tokens, ind, str, false);
 		},
 
 		LexerTokenType::KEYWORD(str, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::PAREN_OPEN {
 				let call = parse_function_call(tokens, ind);
-				return parse_ast_value_post_l(tokens, ind, call);
+				return parse_ast_value_post_l(tokens, ind, call, false);
 			}
 
 			let n = Ok(Box::new(ASTTreeNode::VariableReference(WithHash::new(String::clone(str)))));
 
 			*ind += 1;
 
-			return parse_ast_value_post_l(tokens, ind, n);
+			return parse_ast_value_post_l(tokens, ind, n, false);
 		}
 
-		_ => return Err(tokens[*ind].make_err("Cannot be parsed as value!"))
+		_ => return Err(tokens[*ind].make_err("Invalid token to parse as a value!"))
 	}	
 }
 
@@ -135,14 +135,14 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedRe
 		LexerTokenType::KEYWORD(str, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::PAREN_OPEN {
 				let call = parse_function_call(tokens, ind);
-				return parse_ast_value_post_l(tokens, ind, call);
+				return parse_ast_value_post_l(tokens, ind, call, true);
 			}
 
 			let n = Ok(Box::new(ASTTreeNode::VariableReference(WithHash::new(String::clone(str)))));
 
 			*ind += 1;
 
-			return parse_ast_value_post_l(tokens, ind, n);
+			return parse_ast_value_post_l(tokens, ind, n, true);
 		},
 
 		_ => {
