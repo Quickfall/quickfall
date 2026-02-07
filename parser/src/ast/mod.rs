@@ -12,7 +12,7 @@ use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
-use crate::{ParserError, ParserResult, ast::{cond::operators::parse_condition_operator, control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, tree::ASTTreeNode, var::decl::parse_variable_declaration}};
+use crate::{ParserError, ParserResult, ast::{cond::operators::parse_condition_operator, control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::ASTTreeNode, var::decl::parse_variable_declaration}};
 
 pub mod tree;
 pub mod func;
@@ -20,6 +20,7 @@ pub mod var;
 pub mod literals;
 pub mod cond;
 pub mod control;
+pub mod math;
 
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
@@ -41,6 +42,13 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			}
 
 			return Err(tokens[*ind].make_err("Invalid token type to use dot access!"));
+		},
+
+		LexerTokenType::MATH_OPERATOR(_, _) => {
+			let o = &original?;
+			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
+
+			return Ok(parse_math_operation(tokens, ind, k, false)?);
 		},
 
 		LexerTokenType::ANGEL_BRACKET_CLOSE | LexerTokenType::EQUAL_SIGN | LexerTokenType::ANGEL_BRACKET_OPEN => {

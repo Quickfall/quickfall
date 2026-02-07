@@ -2,9 +2,10 @@
 //! AST tree related definitions.
 //! 
 
+use lexer::toks::math::MathOperator;
 use utils::hash::{TypeHash, WithHash};
 
-use crate::ast::{cond::operators::ConditionOperator, math::MathOperator};
+use crate::ast::{cond::operators::ConditionOperator};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
@@ -26,7 +27,7 @@ pub enum ASTTreeNode {
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ConditionOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
 
-	MathResult { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: MathOperator },
+	MathResult { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: MathOperator, assigns: bool },
 
 	VariableReference(WithHash<String>),
 

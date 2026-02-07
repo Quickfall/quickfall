@@ -96,6 +96,13 @@ impl LexerToken {
 		};
 	}
 
+	pub fn expects_math_operator(&self) -> PositionedResult<(MathOperator, bool)> {
+		match &self.tok_type {
+			LexerTokenType::MATH_OPERATOR(a, b) => return Ok((a.clone(), *b)),
+			_ => return Err(self.make_err("Expected math operator here!"))
+		};
+	}
+
 	pub fn expects_string_lit(&self) -> PositionedResult<String> {
 		match &self.tok_type {
 			LexerTokenType::STRING_LIT(v) => return Ok(v.to_string()),
