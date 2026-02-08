@@ -6,7 +6,7 @@ use std::any::Any;
 
 use commons::{Position, err::{PositionedError, PositionedResult}};
 
-use crate::{LexerParseResult, LexerParsingError};
+use crate::{LexerParseResult, LexerParsingError, toks::math::MathOperator};
 
 /// The token type for the lexer
 #[derive(PartialEq, Debug)]
@@ -19,6 +19,11 @@ pub enum LexerTokenType {
 	LAYOUT,
 	LAY,
 		
+	/// 0: the operator
+	/// 1: does the operator affect the original variable!
+	MATH_OPERATOR(MathOperator, bool),
+	
+
     /// Represent the ret keyword
     RETURN,
 
@@ -88,6 +93,13 @@ impl LexerToken {
 		match &self.tok_type {
 			LexerTokenType::INT_LIT(v) => return Ok(*v),
 			_ => return Err(self.make_err("Expected int litteral here!"))
+		};
+	}
+
+	pub fn expects_math_operator(&self) -> PositionedResult<(MathOperator, bool)> {
+		match &self.tok_type {
+			LexerTokenType::MATH_OPERATOR(a, b) => return Ok((a.clone(), *b)),
+			_ => return Err(self.make_err("Expected math operator here!"))
 		};
 	}
 

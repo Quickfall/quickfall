@@ -6,7 +6,7 @@ use std::{fs, hash::{DefaultHasher, Hash, Hasher}, io::Error};
 
 use commons::Position;
 
-use crate::{LexerParseResult, LexerParsingError, token::LexerToken, token::LexerTokenType};
+use crate::{LexerParseResult, LexerParsingError, token::{LexerToken, LexerTokenType}, toks::math::MathOperator};
 
 const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
 const RET_KEYWORD_HASH: u64 = 9222097151127739705;
@@ -72,6 +72,14 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
             continue;
         }
 
+		if c == '+' || c == '-' || c == '*' || c == '/' {
+			let col = i - last_line_break + 1;
+
+			tokens.push(parse_math_operator(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
+
+			continue;
+		}
+
         i += c.len_utf8();
 
 
@@ -93,7 +101,7 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
 			'&' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AMPERSAND)),
             '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_OPEN)),
             '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_CLOSE)),
-            _ => continue
+			_ => continue
         }
 
     }
@@ -101,6 +109,40 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
     tokens.push(LexerToken::make_single_sized(Position::new(file_path.to_string(), line, i - last_line_break + 1), LexerTokenType::END_OF_FILE));
 
     Ok(tokens)
+}
+
+fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) -> LexerParseResult<LexerToken> {
+	let operatorChar = contents.chars().nth(*ind).unwrap();
+
+	let operator = match operatorChar {
+		'+' => MathOperator::ADD,
+		'-' => MathOperator::SUBSTRACT,
+		'*' => MathOperator::MULTIPLY,
+		'/' => MathOperator::DIVIDE,
+		_ => return Err(LexerParsingError::new(String::from("Invalid operator sign!"), 0))
+	};
+
+	*ind += 1;
+
+	let assigns = match contents.chars().nth(*ind) {
+		Some(v) => v == '=',
+		None => false
+	};
+
+	if assigns {
+		*ind += 1;
+	}
+
+	let mut incrementCount = 1;
+
+	if assigns {
+		incrementCount += 1;
+	}
+
+	let end = start_pos.increment_by(incrementCount);
+
+	return Ok(LexerToken::new(start_pos, end, LexerTokenType::MATH_OPERATOR(operator, assigns)));
+
 }
 
 fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> LexerParseResult<LexerToken> {
