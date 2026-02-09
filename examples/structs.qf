@@ -1,0 +1,4 @@
+layout abc {
+	int32 aaz
+	bool hellos
+}

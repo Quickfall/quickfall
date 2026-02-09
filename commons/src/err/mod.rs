@@ -39,8 +39,8 @@ impl fmt::Display for PositionedError {
 		};
 
 		let before = &line[0..self.start.col - 1];
-		let target = &line[self.start.col - 1..self.end.col - 1].cyan().underline();
-		let after = &line[self.end.col - 1..];
+		let target = &line[self.start.col - 1..self.end.col].cyan().underline();
+		let after = &line[self.end.col..];
 
 		writeln!(f, "{}{}{}", before, target, after)?;
 		writeln!(f, "")?;
