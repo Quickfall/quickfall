@@ -1,6 +1,7 @@
 //! Comparing token related utils
 
 /// The different comparing tokens
+#[derive(Debug, PartialEq, Clone)]
 pub enum ComparingOperator {
 	EQUAL, // A == B
 	N_EQUAL, // A != B

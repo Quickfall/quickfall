@@ -2,11 +2,11 @@
 //! Module containing the core lexer algorithm
 //! 
 
-use std::{fs, hash::{DefaultHasher, Hash, Hasher}, io::Error};
+use std::{arch::naked_asm, fs, hash::{DefaultHasher, Hash, Hasher}, io::Error};
 
 use commons::Position;
 
-use crate::{LexerParseResult, LexerParsingError, token::{LexerToken, LexerTokenType}, toks::math::MathOperator};
+use crate::{LexerParseResult, LexerParsingError, token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
 
 const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
 const RET_KEYWORD_HASH: u64 = 9222097151127739705;
@@ -80,6 +80,19 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
 			continue;
 		}
 
+		if c == '=' || c == '>' || c == '<' {
+			let col = i - last_line_break + 1;
+
+			let parse = parse_comp_operator(&contents, &mut i, Position::new(file_path.to_string(), line, col));
+
+			if parse.is_some() {
+				tokens.push(parse.unwrap());
+				continue;
+			}
+
+			i -= 2; // Try parsing operator as normal token.
+		}
+
         i += c.len_utf8();
 
 
@@ -125,7 +138,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	*ind += 1;
 
 	let assigns = match contents.chars().nth(*ind) {
-		Some(v) => v == '=',
+		Some(v) => v == '=', // TODO: make this enforce either '=' or ' '
 		None => false
 	};
 
@@ -142,6 +155,51 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	let end = start_pos.increment_by(incrementCount);
 
 	return Ok(LexerToken::new(start_pos, end, LexerTokenType::MATH_OPERATOR(operator, assigns)));
+
+}
+
+fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) -> Option<LexerToken> {
+	let firstChar = contents.chars().nth(*ind).unwrap();
+	*ind += 1;
+	let secondChar = contents.chars().nth(*ind).unwrap();
+
+	*ind += 1;
+
+	let end = start_pos.increment_by(2);
+
+	if secondChar != '=' || secondChar != ' ' {
+		return None;
+	}
+
+	match firstChar {
+		'=' => {
+			if secondChar != '=' {
+				return None;
+			}
+
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::EQUAL)));
+		},
+
+		'>' => {
+			if secondChar == '=' {
+				return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::HIGHER_EQ)));
+			}
+
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::HIGHER)));
+		},
+		
+		'<' => {
+			if secondChar == '=' {
+				return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::LOWER_EQ)));
+			}
+
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::LOWER)));
+		},
+
+		_ => {
+			return None;
+		}
+	}
 
 }
 
