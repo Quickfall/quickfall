@@ -31,6 +31,9 @@ pub enum ASTTreeNode {
 
 	VariableReference(WithHash<String>),
 
+	StructLayoutDeclaration { name: WithHash<String>, layout: bool, members: Vec<Box<ASTTreeNode>> },
+	StructFieldMember { name: WithHash<String>, memberType: TypeHash },
+
     VarDeclaration { varName: WithHash<String>, varType: TypeHash, value: Option<Box<ASTTreeNode>> },
     VarValueChange { var: Box<ASTTreeNode>, value: Box<ASTTreeNode> },
 	VarIncrement { var: Box<ASTTreeNode>, incrementBy: Option<Box<ASTTreeNode>> }, // Default is by 1
