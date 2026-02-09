@@ -110,12 +110,29 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 }
 
 pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
-	println!("Ind: {}, tok at: {:#?}", ind, tokens[*ind].tok_type);
-
 	match &tokens[*ind].tok_type {
 		LexerTokenType::FUNCTION => {
 			return parse_function_declaraction(tokens, ind);
+		},
+
+		LexerTokenType::STRUCT => {
+			return parse_type_declaration(tokens, ind, false);
+		},
+
+		LexerTokenType::LAYOUT => {
+			return parse_type_declaration(tokens, ind, true);
+		},
+
+		_ => {
+			return Err(tokens[*ind].make_err("Expected valid token type in this context!"));
 		}
+	}	
+}
+
+pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+	println!("Ind: {}, tok at: {:#?}", ind, tokens[*ind].tok_type);
+
+	match &tokens[*ind].tok_type {
 
 		LexerTokenType::VAR => {
 			return parse_variable_declaration(tokens, ind);
@@ -131,15 +148,7 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedRe
 
 		LexerTokenType::FOR => {
 			return parse_for_loop(tokens, ind);
-		},
-
-		LexerTokenType::STRUCT => {
-			return parse_type_declaration(tokens, ind, false);
-		},
-
-		LexerTokenType::LAYOUT => {
-			return parse_type_declaration(tokens, ind, true);
-		},
+		}
 
 		LexerTokenType::KEYWORD(str, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::PAREN_OPEN {

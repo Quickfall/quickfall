@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{ParserError, ParserResult, ast::{parse_ast_node, tree::{ASTTreeNode, FunctionDeclarationArgument}}};
+use crate::{ParserError, ParserResult, ast::{parse_ast_node_in_body, tree::{ASTTreeNode, FunctionDeclarationArgument}}};
 
 pub mod decl;
 pub mod call;
@@ -15,7 +15,7 @@ pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
     let mut body: Vec<Box<ASTTreeNode>> = Vec::new();
 
     while tok.tok_type != LexerTokenType::END_OF_FILE && tok.tok_type != LexerTokenType::BRACKET_CLOSE {
-        let n = parse_ast_node(tokens, ind)?;
+        let n = parse_ast_node_in_body(tokens, ind)?;
 
         body.push(n);
 
