@@ -62,4 +62,8 @@ impl ASTTreeNode {
 		return !matches!(self, ASTTreeNode::VariableReference { .. } | ASTTreeNode::StructLRVariable { .. })
 	}
 
+	pub fn is_tree_permissible(&self) -> bool {
+		return matches!(self, ASTTreeNode::FunctionDeclaration { .. } | ASTTreeNode::StructLayoutDeclaration { .. })
+	}
+
 }

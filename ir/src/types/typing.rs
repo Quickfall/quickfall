@@ -39,7 +39,7 @@ impl IRType<'_> {
 
 				// TODO: add bool compacting
 
-				for (field_name, ir_type) in v {
+				for (_, ir_type) in v {
 					sz += ir_type.get_bitsize();					
 				}
 
@@ -49,7 +49,7 @@ impl IRType<'_> {
 			IRType::Layout(v) => {
 				let mut sz: usize = 0;
 
-				for (field_name, ir_type) in v {
+				for (_, ir_type) in v {
 					sz += ir_type.get_bitsize();
 				}
 
