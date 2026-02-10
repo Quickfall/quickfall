@@ -1,2 +1,2 @@
 [workspace]
-members = ["commons","lexer", "parser", "test-main", "utils"]
+members = ["commons", "ir","lexer", "parser", "test-main", "utils"]
