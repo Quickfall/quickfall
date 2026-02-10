@@ -2,6 +2,7 @@ use std::{collections::HashMap};
 
 use crate::ast::tree::ASTTreeNode;
 
+#[derive(Debug)]
 pub struct ParserCtx {
 	pub map: HashMap<String, Box<ASTTreeNode>> 
 }
