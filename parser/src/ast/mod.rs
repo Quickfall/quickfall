@@ -215,7 +215,7 @@ pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> Posi
 		},
 
 		_ => {
-			return Err(tokens[*ind].make_err("Expected valid token type in this context!"));
+			return Err(tokens[*ind].make_err(format!("Expected valid token type for body in this context! Got type {:#?}", tokens[*ind].tok_type).as_str()));
 		}
 	}
 }

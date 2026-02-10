@@ -34,8 +34,7 @@ pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Position
 
 	let mut else_statement = None;
 
-	if tokens[*ind + 1].tok_type == LexerTokenType::Else {
-		*ind += 1;
+	if tokens[*ind].tok_type == LexerTokenType::Else {
 
 		else_statement = Some(parse_else_statement(tokens, ind)?);
 	}
@@ -63,9 +62,7 @@ pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Positi
 	if cond.is_some() {
 		let mut else_statement = None;
 
-		if tokens[*ind + 1].tok_type == LexerTokenType::Else {
-			*ind += 1;
-
+		if tokens[*ind].tok_type == LexerTokenType::Else {
 			else_statement = Some(parse_else_statement(tokens, ind)?);
 		}
 

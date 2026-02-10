@@ -22,6 +22,8 @@ pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
         tok = &tokens[*ind];
     }
 
+	*ind += 1;
+
     return Ok(body);
 }
 
