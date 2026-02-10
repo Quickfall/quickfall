@@ -2,6 +2,7 @@ use core::fmt;
 use std::{fs, io::Error};
 
 pub mod err;
+pub mod utils;
 
 #[derive(Debug, Clone)]
 pub struct Position {
