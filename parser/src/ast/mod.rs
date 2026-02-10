@@ -124,7 +124,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 				return Ok(Box::new(ASTTreeNode::BooleanBasedConditionMember { val: ast, negate: true }))
 			}
 
-			return Err(tokens[*ind].make_err("Boolean negative requires either func or var access!"));
+			return Err(tokens[*ind].make_err(format!("Boolean negative requires either func or var access! Got {:#?}", ast).as_str()));
 		},
 
 		LexerTokenType::IntLit(_) => {
@@ -211,7 +211,13 @@ pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> Posi
 
 			*ind += 1;
 
-			return parse_ast_value_post_l(tokens, ind, n, true);
+			let new =  parse_ast_value_post_l(tokens, ind, n, true)?;
+
+			if new.is_var_access() {
+				return Err(tokens[*ind].make_err("Unused variable access / reference here! Please remove"));
+			}
+
+			return Ok(new);
 		},
 
 		_ => {

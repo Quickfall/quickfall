@@ -57,11 +57,11 @@ pub enum ASTTreeNode {
 
 impl ASTTreeNode {
 	pub fn is_function_call(&self) -> bool {
-		return !matches!(self, ASTTreeNode::FunctionCall { .. } | ASTTreeNode::StructLRFunction { .. } )
+		return matches!(self, ASTTreeNode::FunctionCall { .. } | ASTTreeNode::StructLRFunction { .. } )
 	}
 
 	pub fn is_var_access(&self) -> bool {
-		return !matches!(self, ASTTreeNode::VariableReference { .. } | ASTTreeNode::StructLRVariable { .. })
+		return matches!(self, ASTTreeNode::VariableReference { .. } | ASTTreeNode::StructLRVariable { .. })
 	}
 
 	pub fn is_tree_permissible(&self) -> bool {
