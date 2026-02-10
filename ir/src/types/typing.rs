@@ -2,21 +2,23 @@
 
 use std::{cell::Ref, collections::HashMap};
 
+use inkwell::types::IntType;
+
 /// Types of IR variables
 pub enum IRType<'a> {
-	Signed8,
-	Signed16,
-	Signed32,
-	Signed64, 
-	Signed128,
+	Signed8(IntType<'a>),
+	Signed16(IntType<'a>),
+	Signed32(IntType<'a>),
+	Signed64(IntType<'a>), 
+	Signed128(IntType<'a>),
 
-	Unsigned8,
-	Unsigned16,
-	Unsigned32,
-	Unsigned64,
-	Unsigned128,
+	Unsigned8(IntType<'a>),
+	Unsigned16(IntType<'a>),
+	Unsigned32(IntType<'a>),
+	Unsigned64(IntType<'a>),
+	Unsigned128(IntType<'a>),
 
-	Bool,
+	Bool(IntType<'a>),
 	
 	Struct(HashMap<String, Ref<'a, IRType<'a>>>), // fields
 	Layout(HashMap<String, Ref<'a, IRType<'a>>>) // fields
@@ -26,11 +28,11 @@ impl IRType<'_> {
 	/// Gets the size in bits of a given IR element
 	pub fn get_bitsize(&self) -> usize {
 		match self {
-			IRType::Signed8 | IRType::Unsigned8 | IRType::Bool => return 8, 
-			IRType::Signed16 | IRType::Unsigned16 => return 16,
-			IRType::Signed32 | IRType::Unsigned32 => return 32, 
-			IRType::Signed64 | IRType::Unsigned64 => return 64, 
-			IRType::Signed128 | IRType::Unsigned128 => return 128,
+			IRType::Signed8(_) | IRType::Unsigned8(_) | IRType::Bool(_) => return 8, 
+			IRType::Signed16(_) | IRType::Unsigned16(_) => return 16,
+			IRType::Signed32(_) | IRType::Unsigned32(_) => return 32, 
+			IRType::Signed64(_) | IRType::Unsigned64(_) => return 64, 
+			IRType::Signed128(_) | IRType::Unsigned128(_) => return 128,
 
 			IRType::Struct(v) => {
 				let mut sz: usize = 0;
@@ -59,8 +61,8 @@ impl IRType<'_> {
 	/// Determines if the given IR type is a numeric based type
 	pub fn is_numeric_type(&self) -> bool {
 		match self {
-			IRType::Signed8 | IRType::Signed16 | IRType::Signed32 | IRType::Signed64 | IRType::Signed128 |
-			IRType::Unsigned8 | IRType::Unsigned16 | IRType::Unsigned32 | IRType::Unsigned64 | IRType::Unsigned128 => {
+			IRType::Signed8(_) | IRType::Signed16(_) | IRType::Signed32(_) | IRType::Signed64(_) | IRType::Signed128(_) |
+			IRType::Unsigned8(_) | IRType::Unsigned16(_) | IRType::Unsigned32(_) | IRType::Unsigned64(_) | IRType::Unsigned128(_) => {
 				return true;
 			},
 
@@ -70,7 +72,7 @@ impl IRType<'_> {
 
 	pub fn is_signed(&self) -> bool {
 		match self {
-			IRType::Signed8 | IRType::Signed16 | IRType::Signed32 | IRType::Signed64 | IRType::Signed128 => {
+			IRType::Signed8(_) | IRType::Signed16(_) | IRType::Signed32(_) | IRType::Signed64(_) | IRType::Signed128(_) => {
 				return true;
 			},
 

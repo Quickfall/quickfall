@@ -15,3 +15,4 @@ pub const UNSIGNED128_TYPE_HASH: u64 = 9667664784078163512;
 pub const BOOL_TYPE_HASH: u64 = 10699440025065254663;
 
 pub mod typing;
+pub mod storage;
