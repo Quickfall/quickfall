@@ -12,13 +12,12 @@ use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
-use crate::{ParserError, ParserResult, ast::{cond::operators::parse_condition_operator, control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::ASTTreeNode, types::parse_type_declaration, var::decl::parse_variable_declaration}};
+use crate::{ParserError, ParserResult, ast::{control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::ASTTreeNode, types::parse_type_declaration, var::decl::parse_variable_declaration}};
 
 pub mod tree;
 pub mod func;
 pub mod var;
 pub mod literals;
-pub mod cond;
 pub mod control;
 pub mod math;
 pub mod types;
@@ -52,8 +51,8 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
 		},
 
-		LexerTokenType::ANGEL_BRACKET_CLOSE | LexerTokenType::EQUAL_SIGN | LexerTokenType::ANGEL_BRACKET_OPEN => {
-			let operator = parse_condition_operator(tokens, ind)?;
+		LexerTokenType::COMPARING_OPERATOR(op) => {
+			let operator = op.clone();
 
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
