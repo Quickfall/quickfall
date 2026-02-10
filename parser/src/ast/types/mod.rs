@@ -1,3 +1,5 @@
+//! AST parsing for struct & layout parsing
+
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;

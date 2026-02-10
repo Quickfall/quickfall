@@ -17,6 +17,7 @@ impl FunctionDeclarationArgument {
     }
 }
 
+/// The main AST node type in the AST parsing system.
 #[derive(Debug, PartialEq, Clone)]
 pub enum ASTTreeNode {
     IntegerLit(i64),

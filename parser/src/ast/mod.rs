@@ -3,7 +3,18 @@
 //! The AST parsing is responsible for putting tokens into structures such as functions and other stuff.
 //! It is an extremely important step.
 //! 
-//! Indexes passed to parsing functions SHOULD be the "detected" token rather than the next one.
+//! # Parsing 
+//! Parsing the first AST node found in the lexer token buffer can be done using `parse_ast_node`.
+//! 
+//! Parsing inside of an AST node body (eg functions, if statements, ...) can be done using `parse_ast_node_in_body`
+//! 
+//! # Design notes
+//! The initial index represents the given value of the index value (usually `ind`) passed to any AST parsing function.
+//! 
+//! Whenever any AST parsing function requires a keyword (for example `var`) to be called, the initial index should be the index representing said keyword and not the next one.
+//! Furthermore, AST parsing functions requiring a keyword should increment index by one at the start to skip the detected keyword if needed.
+//! 
+//! AST parsing functions that aren't requiring a keyword will start at the actual start of the expression unless stated otherwise.
 //! 
 
 use commons::err::PositionedResult;
@@ -20,6 +31,25 @@ pub mod control;
 pub mod math;
 pub mod types;
 
+/// Parses the post side of an AST node that can and WILL be intrepreted as a value.
+/// 
+/// This function should only be called by `parse_ast_value`
+/// 
+/// # Parsing Layout 
+/// The `parse_ast_value` function only parses the post side of the expression (noted L) if expression is:
+/// `R (pre) expression L (post) expression`
+/// 
+/// This layout allows us to seperate parsing from things like variable references, functions calls or even literals and
+/// treat them as the same while parsing other elements such as math operations or conditions!
+/// 
+/// # Possible node results
+/// `parse_ast_value_post_l` can possibly return the following node types:
+/// - original type
+/// - variable / function on type access
+/// - math operation
+/// - comparing
+/// - boolean negation
+/// 
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>, invoked_on_body: bool) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Dot => {
@@ -65,6 +95,24 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 	}
 }
 
+/// Parses an AST node that can and WILL be intrepreted as a value
+/// 
+/// # Parsing Layout 
+/// The `parse_ast_value` function only parses the pre side of the expression (noted R) if expression is:
+/// `R (pre) expression L (post) expression`
+/// 
+/// This layout allows us to seperate parsing from things like variable references, functions calls or even literals and
+/// treat them as the same while parsing other elements such as math operations or conditions!
+/// 
+/// This function will call `parse_ast_value_post_l` to parse the L part of the expression.
+/// 
+/// # Recognized Nodes
+/// Possible nodes recognized as values include:
+/// - Function calls
+/// - Variable refs
+/// - Math operation results (both with or without value changing)
+/// - Boolean negation result
+/// - Boolean compare result
 pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 
@@ -106,6 +154,13 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 	}	
 }
 
+/// Parses an AST node outside of any other node.
+/// 
+/// # Examples
+/// `parse_ast_node` is used to parse:
+/// - Function declarations
+/// - Struct declarations
+/// - Layout declarations
 pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Function => {
@@ -126,9 +181,8 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedRe
 	}	
 }
 
+/// Parses an AST node inside of another compatible node (functions, control bodies)
 pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
-	println!("Ind: {}, tok at: {:#?}", ind, tokens[*ind].tok_type);
-
 	match &tokens[*ind].tok_type {
 
 		LexerTokenType::Var => {

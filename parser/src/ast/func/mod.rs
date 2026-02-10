@@ -1,3 +1,5 @@
+//! AST parsing for function related elements (function declarations, arguments, calls, ...)
+
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 

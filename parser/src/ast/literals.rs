@@ -1,3 +1,5 @@
+//! AST parsing for number & string literals
+
 use commons::err::{PositionedResult};
 use lexer::token::{LexerToken};
 

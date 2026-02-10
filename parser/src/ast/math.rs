@@ -1,3 +1,5 @@
+//! AST parsing for math related elements (math operations, ...)
+
 use commons::err::PositionedResult;
 use lexer::token::LexerToken;
 
