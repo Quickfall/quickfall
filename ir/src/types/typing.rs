@@ -23,6 +23,7 @@ pub enum IRType<'a> {
 }
 
 impl IRType<'_> {
+	/// Gets the size in bits of a given IR element
 	pub fn get_bitsize(&self) -> usize {
 		match self {
 			IRType::Signed8 | IRType::Unsigned8 | IRType::Bool => return 8, 
@@ -53,5 +54,51 @@ impl IRType<'_> {
 				return sz;
 			}
 		}
+	}
+
+	/// Determines if the given IR type is a numeric based type
+	pub fn is_numeric_type(&self) -> bool {
+		match self {
+			IRType::Signed8 | IRType::Signed16 | IRType::Signed32 | IRType::Signed64 | IRType::Signed128 |
+			IRType::Unsigned8 | IRType::Unsigned16 | IRType::Unsigned32 | IRType::Unsigned64 | IRType::Unsigned128 => {
+				return true;
+			},
+
+			_ => return false
+		};
+	}
+
+	pub fn is_signed(&self) -> bool {
+		match self {
+			IRType::Signed8 | IRType::Signed16 | IRType::Signed32 | IRType::Signed64 | IRType::Signed128 => {
+				return true;
+			},
+
+			_ => return false
+		};
+	}
+
+	pub fn get_numeric_high_bound(&self) -> i128 {
+		if !self.is_numeric_type() {
+			return 0;
+		}
+
+		if self.is_signed() {
+			return 2_i128.pow((self.get_bitsize() - 1) as u32) - 1;
+		}
+
+		return 2_i128.pow(self.get_bitsize() as u32) - 1;
+	}
+
+	pub fn get_numeric_low_bound(&self) -> i128 {
+		if !self.is_numeric_type() {
+			return 0;
+		}
+
+		if self.is_signed() {
+			return  -2_i128.pow((self.get_bitsize() - 1) as u32) - 1;
+		}
+
+		return -2_i128.pow(self.get_bitsize() as u32) - 1;
 	}
 }
