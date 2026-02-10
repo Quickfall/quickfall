@@ -177,23 +177,23 @@ fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 				return None;
 			}
 
-			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::EQUAL)));
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::Equal)));
 		},
 
 		'>' => {
 			if secondChar == '=' {
-				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::HIGHER_EQ)));
+				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::HigherEqual)));
 			}
 
-			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::HIGHER)));
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::Higher)));
 		},
 		
 		'<' => {
 			if secondChar == '=' {
-				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::LOWER_EQ)));
+				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::LowerEqual)));
 			}
 
-			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::LOWER)));
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::Lower)));
 		},
 
 		_ => {
