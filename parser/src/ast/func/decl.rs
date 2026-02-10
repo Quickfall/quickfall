@@ -9,13 +9,13 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) ->
 	let functionName = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
-	tokens[*ind].expects(LexerTokenType::PAREN_OPEN)?;
+	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
 	let args = parse_function_arguments(tokens, ind)?;
 
 	*ind += 1;
 
-	tokens[*ind].expects(LexerTokenType::BRACKET_OPEN)?;
+	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
 	let body = parse_node_body(tokens, ind)?;
 

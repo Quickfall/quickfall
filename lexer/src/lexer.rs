@@ -101,25 +101,25 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
 		let pos = Position::new(file_path.to_string(), line, col);
 
         match c {
-            '{' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::BRACKET_OPEN)),
-            '}' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::BRACKET_CLOSE)),
-            '(' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::PAREN_OPEN)),
-            ')' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::PAREN_CLOSE)),
-            '[' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ARRAY_OPEN)),
-            ']' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ARRAY_CLOSE)),
-            '=' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::EQUAL_SIGN)),
-            ',' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::COMMA)),
-            '.' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::DOT)),
-			'!' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::EXCLAMATION_MARK)),
-			'&' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AMPERSAND)),
-            '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_OPEN)),
-            '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_CLOSE)),
+            '{' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::BracketOpen)),
+            '}' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::BracketClose)),
+            '(' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ParenOpen)),
+            ')' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ParenClose)),
+            '[' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ArrayOpen)),
+            ']' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ArrayClose)),
+            '=' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::EqualSign)),
+            ',' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Comma)),
+            '.' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Dot)),
+			'!' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ExclamationMark)),
+			'&' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Ampersand)),
+            '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketOpen)),
+            '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketClose)),
 			_ => continue
         }
 
     }
 
-    tokens.push(LexerToken::make_single_sized(Position::new(file_path.to_string(), line, i - last_line_break + 1), LexerTokenType::END_OF_FILE));
+    tokens.push(LexerToken::make_single_sized(Position::new(file_path.to_string(), line, i - last_line_break + 1), LexerTokenType::EndOfFile));
 
     Ok(tokens)
 }
@@ -154,7 +154,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 
 	let end = start_pos.increment_by(incrementCount);
 
-	return Ok(LexerToken::new(start_pos, end, LexerTokenType::MATH_OPERATOR(operator, assigns)));
+	return Ok(LexerToken::new(start_pos, end, LexerTokenType::MathOperator(operator, assigns)));
 
 }
 
@@ -177,23 +177,23 @@ fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 				return None;
 			}
 
-			return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::EQUAL)));
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::EQUAL)));
 		},
 
 		'>' => {
 			if secondChar == '=' {
-				return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::HIGHER_EQ)));
+				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::HIGHER_EQ)));
 			}
 
-			return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::HIGHER)));
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::HIGHER)));
 		},
 		
 		'<' => {
 			if secondChar == '=' {
-				return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::LOWER_EQ)));
+				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::LOWER_EQ)));
 			}
 
-			return Some(LexerToken::new(start_pos, end, LexerTokenType::COMPARING_OPERATOR(ComparingOperator::LOWER)));
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::LOWER)));
 		},
 
 		_ => {
@@ -224,7 +224,7 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
     *ind = end;
 
 	let endpos = start_pos.increment_by(end - start);
-    return Ok(LexerToken::new(start_pos, endpos, LexerTokenType::INT_LIT(num)));
+    return Ok(LexerToken::new(start_pos, endpos, LexerTokenType::IntLit(num)));
 }
 
 fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> LexerToken {
@@ -245,7 +245,7 @@ fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
     *ind = end;
     
 	let endpos: Position = start_pos.increment_by(end - start);
-    return LexerToken::new(start_pos, endpos, LexerTokenType::STRING_LIT(slice.to_string()));
+    return LexerToken::new(start_pos, endpos, LexerTokenType::StringLit(slice.to_string()));
 }
 
 fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerToken {
@@ -270,18 +270,18 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
     *ind = end;
 
     let token_type = match hash {
-        FUNC_KEYWORD_HASH => LexerTokenType::FUNCTION,
-        RET_KEYWORD_HASH => LexerTokenType::RETURN,
-		STRUCT_KEYWORD_HASH => LexerTokenType::STRUCT,
-		LAYOUT_KEYWORD_HASH => LexerTokenType::LAYOUT,
-		LAY_KEYWORD_HASH => LexerTokenType::LAY,
-		TRUE_KEYWORD_HASH => LexerTokenType::TRUE,
-		FALSE_KEYWORD_HASH => LexerTokenType::FALSE,
-		VAR_KEYWORD_HASH => LexerTokenType::VAR,
-		IF_KEYWORD_HASH => LexerTokenType::IF,
-		ELSE_KEYWORD_HASH => LexerTokenType::ELSE,
-		WHILE_KEYWORD_HASH => LexerTokenType::WHILE,
-		FOR_KEYWORD_HASH => LexerTokenType::FOR,
+        FUNC_KEYWORD_HASH => LexerTokenType::Function,
+        RET_KEYWORD_HASH => LexerTokenType::Return,
+		STRUCT_KEYWORD_HASH => LexerTokenType::Struct,
+		LAYOUT_KEYWORD_HASH => LexerTokenType::Layout,
+		LAY_KEYWORD_HASH => LexerTokenType::Lay,
+		TRUE_KEYWORD_HASH => LexerTokenType::True,
+		FALSE_KEYWORD_HASH => LexerTokenType::False,
+		VAR_KEYWORD_HASH => LexerTokenType::Var,
+		IF_KEYWORD_HASH => LexerTokenType::If,
+		ELSE_KEYWORD_HASH => LexerTokenType::Else,
+		WHILE_KEYWORD_HASH => LexerTokenType::While,
+		FOR_KEYWORD_HASH => LexerTokenType::For,
         _ => LexerTokenType::KEYWORD(slice.to_string(), hash)
     };
 

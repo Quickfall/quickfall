@@ -8,7 +8,7 @@ pub fn parse_while_block(tokens: &Vec<LexerToken>, ind: &mut usize) -> Positione
 
 	let cond = parse_condition_member(tokens, ind)?;
 
-	tokens[*ind].expects(lexer::token::LexerTokenType::BRACKET_OPEN)?;
+	tokens[*ind].expects(lexer::token::LexerTokenType::BracketOpen)?;
 
 	let body = match parse_node_body(tokens, ind) {
 		Ok(v) => v,

@@ -23,13 +23,13 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 	let typeName = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
-	tokens[*ind].expects(LexerTokenType::BRACKET_OPEN)?;
+	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
 	*ind += 1;
 
 	let mut members: Vec<Box<ASTTreeNode>> = Vec::new();	
 
-	while tokens[*ind].tok_type != LexerTokenType::BRACKET_CLOSE {
+	while tokens[*ind].tok_type != LexerTokenType::BracketClose {
 		members.push(parse_types_field_member(tokens, ind)?);
 	}
 

@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
@@ -14,7 +12,7 @@ pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
     let mut tok: &LexerToken = &tokens[*ind];
     let mut body: Vec<Box<ASTTreeNode>> = Vec::new();
 
-    while tok.tok_type != LexerTokenType::END_OF_FILE && tok.tok_type != LexerTokenType::BRACKET_CLOSE {
+    while tok.tok_type != LexerTokenType::EndOfFile && tok.tok_type != LexerTokenType::BracketClose {
         let n = parse_ast_node_in_body(tokens, ind)?;
 
         body.push(n);
@@ -42,16 +40,16 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize) -> Po
 
 		*ind += 1;
 
-		if tokens[*ind].tok_type == LexerTokenType::PAREN_CLOSE {
+		if tokens[*ind].tok_type == LexerTokenType::ParenClose {
 			break;
 		}
 
-		tokens[*ind].expects(LexerTokenType::COMMA)?;
+		tokens[*ind].expects(LexerTokenType::Comma)?;
 
 		*ind += 1;
 	}
 
-	tokens[*ind].expects(LexerTokenType::PAREN_CLOSE)?;
+	tokens[*ind].expects(LexerTokenType::ParenClose)?;
 
 	Ok(args)
 }

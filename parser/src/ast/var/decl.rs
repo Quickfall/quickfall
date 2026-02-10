@@ -17,7 +17,7 @@ pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 
 	let mut val: Option<Box<ASTTreeNode>> = None;
 
-	if tokens[*ind].tok_type == LexerTokenType::EQUAL_SIGN {
+	if tokens[*ind].tok_type == LexerTokenType::EqualSign {
 		*ind += 1;
 		
 		val = Some(parse_ast_value(tokens, ind)?);
