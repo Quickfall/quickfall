@@ -14,7 +14,7 @@ pub fn parse_types_field_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> Po
 
 	*ind += 1;
 
-	return Ok(Box::new(ASTTreeNode::StructFieldMember { name: WithHash::new(fieldName.0), memberType: typeName.1 }))
+	return Ok(Box::new(ASTTreeNode::StructFieldMember { name: WithHash::new(fieldName.0), member_type: typeName.1 }))
 }
 
 pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout: bool) -> PositionedResult<Box<ASTTreeNode>> {

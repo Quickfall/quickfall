@@ -29,5 +29,5 @@ pub fn parse_for_loop(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedRe
 
 	let body = parse_node_body(tokens, ind)?;
 
-	return Ok(Box::new(ASTTreeNode::ForBlock { initialState: initial, cond, increment, body }));
+	return Ok(Box::new(ASTTreeNode::ForBlock { initial_state: initial, cond, increment, body }));
 }

@@ -8,12 +8,12 @@ use utils::hash::{TypeHash, WithHash};
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
     pub name: WithHash<String>,
-    pub argumentType: TypeHash
+    pub argument_type: TypeHash
 }
 
 impl FunctionDeclarationArgument {
-    pub fn new(name: String, argType: TypeHash) -> Self {
-        FunctionDeclarationArgument { name: WithHash::new(name), argumentType: argType }
+    pub fn new(name: String, arg_type: TypeHash) -> Self {
+        FunctionDeclarationArgument { name: WithHash::new(name), argument_type: arg_type }
     }
 }
 
@@ -30,23 +30,23 @@ pub enum ASTTreeNode {
 	VariableReference(WithHash<String>),
 
 	StructLayoutDeclaration { name: WithHash<String>, layout: bool, members: Vec<Box<ASTTreeNode>> },
-	StructFieldMember { name: WithHash<String>, memberType: TypeHash },
+	StructFieldMember { name: WithHash<String>, member_type: TypeHash },
 
-    VarDeclaration { varName: WithHash<String>, varType: TypeHash, value: Option<Box<ASTTreeNode>> },
+    VarDeclaration { var_name: WithHash<String>, var_type: TypeHash, value: Option<Box<ASTTreeNode>> },
     VarValueChange { var: Box<ASTTreeNode>, value: Box<ASTTreeNode> },
-	VarIncrement { var: Box<ASTTreeNode>, incrementBy: Option<Box<ASTTreeNode>> }, // Default is by 1
+	VarIncrement { var: Box<ASTTreeNode>, increment_by: Option<Box<ASTTreeNode>> }, // Default is by 1
 
-	IfStatement { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>>, elseStatement: Option<Box<ASTTreeNode>> },
-	IfElseStatement { cond: Option<Box<ASTTreeNode>>, body: Vec<Box<ASTTreeNode>>, elseStatement: Option<Box<ASTTreeNode>> },
+	IfStatement { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>>, else_statement: Option<Box<ASTTreeNode>> },
+	IfElseStatement { cond: Option<Box<ASTTreeNode>>, body: Vec<Box<ASTTreeNode>>, else_statement: Option<Box<ASTTreeNode>> },
 	ElseStatement { body: Vec<Box<ASTTreeNode>> },
 
 	WhileBlock { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
-	ForBlock { initialState: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
+	ForBlock { initial_state: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 
     Return { value: Option<Box<ASTTreeNode>> },
 
     FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
-    FunctionDeclaration { funcName: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>> },
+    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>> },
 	
 	StructLRVariable { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>,},
 	StructLRFunction { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>, }

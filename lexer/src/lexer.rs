@@ -2,7 +2,7 @@
 //! Module containing the core lexer algorithm
 //! 
 
-use std::{arch::naked_asm, fs, hash::{DefaultHasher, Hash, Hasher}, io::Error};
+use std::{fs, hash::{DefaultHasher, Hash, Hasher}};
 
 use commons::Position;
 
@@ -125,9 +125,9 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
 }
 
 fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) -> LexerParseResult<LexerToken> {
-	let operatorChar = contents.chars().nth(*ind).unwrap();
+	let operator_char = contents.chars().nth(*ind).unwrap();
 
-	let operator = match operatorChar {
+	let operator = match operator_char {
 		'+' => MathOperator::ADD,
 		'-' => MathOperator::SUBSTRACT,
 		'*' => MathOperator::MULTIPLY,
@@ -146,34 +146,34 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 		*ind += 1;
 	}
 
-	let mut incrementCount = 1;
+	let mut increment_count = 1;
 
 	if assigns {
-		incrementCount += 1;
+		increment_count += 1;
 	}
 
-	let end = start_pos.increment_by(incrementCount);
+	let end = start_pos.increment_by(increment_count);
 
 	return Ok(LexerToken::new(start_pos, end, LexerTokenType::MathOperator(operator, assigns)));
 
 }
 
 fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) -> Option<LexerToken> {
-	let firstChar = contents.chars().nth(*ind).unwrap();
+	let first_char = contents.chars().nth(*ind).unwrap();
 	*ind += 1;
-	let secondChar = contents.chars().nth(*ind).unwrap();
+	let second_char = contents.chars().nth(*ind).unwrap();
 
 	*ind += 1;
 
 	let end = start_pos.increment_by(2);
 
-	if secondChar != '=' || secondChar != ' ' {
+	if second_char != '=' || second_char != ' ' {
 		return None;
 	}
 
-	match firstChar {
+	match first_char {
 		'=' => {
-			if secondChar != '=' {
+			if second_char != '=' {
 				return None;
 			}
 
@@ -181,7 +181,7 @@ fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 		},
 
 		'>' => {
-			if secondChar == '=' {
+			if second_char == '=' {
 				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::HigherEqual)));
 			}
 
@@ -189,7 +189,7 @@ fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 		},
 		
 		'<' => {
-			if secondChar == '=' {
+			if second_char == '=' {
 				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::LowerEqual)));
 			}
 

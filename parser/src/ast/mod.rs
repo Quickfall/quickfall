@@ -10,7 +10,7 @@ use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
-use crate::{ast::{control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_StringLiteral}, math::parse_math_operation, tree::ASTTreeNode, types::parse_type_declaration, var::decl::parse_variable_declaration}};
+use crate::{ast::{control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::ASTTreeNode, types::parse_type_declaration, var::decl::parse_variable_declaration}};
 
 pub mod tree;
 pub mod func;
@@ -85,7 +85,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 		},
 
 		LexerTokenType::StringLit(_) => {
-			let str = parse_StringLiteral(tokens, ind);
+			let str = parse_string_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, str, false);
 		},
 

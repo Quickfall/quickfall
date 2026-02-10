@@ -2,8 +2,6 @@
 //! Module containing lexer token-based utilities and classes
 //! 
 
-use std::any::Any;
-
 use commons::{Position, err::{PositionedError, PositionedResult}};
 
 use crate::{LexerParseResult, LexerParsingError, toks::{comp::ComparingOperator, math::MathOperator}};
@@ -91,7 +89,7 @@ impl LexerToken {
 		return Ok(true);
 	}
 
-	pub fn expects_IntLit(&self) -> PositionedResult<i64> {
+	pub fn expects_int_lit(&self) -> PositionedResult<i64> {
 		match &self.tok_type {
 			LexerTokenType::IntLit(v) => return Ok(*v),
 			_ => return Err(self.make_err("Expected int litteral here!"))
@@ -112,7 +110,7 @@ impl LexerToken {
 		};
 	}
 
-	pub fn expects_StringLit(&self) -> PositionedResult<String> {
+	pub fn expects_string_lit(&self) -> PositionedResult<String> {
 		match &self.tok_type {
 			LexerTokenType::StringLit(v) => return Ok(v.to_string()),
 			_ => return Err(self.make_err("Expected string litteral here!"))

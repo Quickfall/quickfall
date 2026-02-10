@@ -23,5 +23,5 @@ pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 		val = Some(parse_ast_value(tokens, ind)?);
 	}
 
-	return Ok(Box::new(ASTTreeNode::VarDeclaration { varName: WithHash::new(varName.0), varType: typeName.1, value: val }));
+	return Ok(Box::new(ASTTreeNode::VarDeclaration { var_name: WithHash::new(varName.0), var_type: typeName.1, value: val }));
 }
