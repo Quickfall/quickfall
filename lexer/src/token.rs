@@ -61,6 +61,7 @@ pub enum LexerTokenType {
     EndOfFile
 }
 
+#[derive(Debug)]
 pub struct LexerToken {
 	pub tok_type: LexerTokenType,
 	pub pos: Position, // Valid tokens require a position

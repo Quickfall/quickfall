@@ -46,34 +46,34 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
         let c: char = contents.chars().nth(i).unwrap();
 		
 		if c == '\n' {
-			i += c.len_utf8();
+			i += 1;
 			last_line_break = i;
 			line += 1;
 			continue;
 		}
 
         if c.is_numeric() {
-			let col = i - last_line_break + 1;
+			let col = i - last_line_break;
             tokens.push(parse_number_token(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
             continue;
         }
 
         if c == '"' {
-			let col = i - last_line_break + 1;
+			let col = i - last_line_break;
 
             tokens.push(parse_string_token(&contents, &mut i, Position::new(file_path.to_string(), line, col)));
             continue;
         }
 
         if c.is_alphabetic() {
-			let col = i - last_line_break + 1;
+			let col = i - last_line_break;
 
             tokens.push(parse_keyword(&contents, &mut i, Position::new(file_path.to_string(), line, col)));
             continue;
         }
 
 		if c == '+' || c == '-' || c == '*' || c == '/' {
-			let col = i - last_line_break + 1;
+			let col = i - last_line_break;
 
 			tokens.push(parse_math_operator(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
 
@@ -81,7 +81,7 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
 		}
 
 		if c == '=' || c == '>' || c == '<' {
-			let col = i - last_line_break + 1;
+			let col = i - last_line_break;
 
 			let parse = parse_comp_operator(&contents, &mut i, Position::new(file_path.to_string(), line, col));
 
@@ -93,10 +93,10 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
 			i -= 2; // Try parsing operator as normal token.
 		}
 
-        i += c.len_utf8();
+        i += 1;
 
 
-		let col = i - last_line_break + 1;
+		let col = i - last_line_break;
 
 		let pos = Position::new(file_path.to_string(), line, col);
 
@@ -167,7 +167,7 @@ fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 
 	let end = start_pos.increment_by(2);
 
-	if second_char != '=' || second_char != ' ' {
+	if second_char != '=' && second_char != ' ' {
 		return None;
 	}
 

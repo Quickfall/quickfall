@@ -1,7 +1,7 @@
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{ast::{func::parse_node_body, parse_ast_node, parse_ast_value, tree::ASTTreeNode, var::decl::parse_variable_declaration}};
+use crate::ast::{func::parse_node_body, parse_ast_node, parse_ast_node_in_body, parse_ast_value, tree::ASTTreeNode, var::decl::parse_variable_declaration};
 
 pub fn parse_for_loop(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;
@@ -18,9 +18,7 @@ pub fn parse_for_loop(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedRe
 	tokens[*ind].expects(LexerTokenType::Comma)?;
 	*ind += 1;
 
-	let increment = parse_ast_node(tokens, ind)?;
-
-	*ind += 1;
+	let increment = parse_ast_node_in_body(tokens, ind)?;
 
 	tokens[*ind].expects(LexerTokenType::ParenClose)?;
 	*ind += 1;
