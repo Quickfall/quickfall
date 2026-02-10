@@ -98,6 +98,13 @@ impl LexerToken {
 		};
 	}
 
+	pub fn expects_comp_operator(&self) -> PositionedResult<ComparingOperator> {
+		match &self.tok_type {
+			LexerTokenType::COMPARING_OPERATOR(op) => return Ok(op.clone()),
+			_ => return Err(self.make_err("Expected comparing operator here!"))
+		};
+	}
+
 	pub fn expects_math_operator(&self) -> PositionedResult<(MathOperator, bool)> {
 		match &self.tok_type {
 			LexerTokenType::MATH_OPERATOR(a, b) => return Ok((a.clone(), *b)),
