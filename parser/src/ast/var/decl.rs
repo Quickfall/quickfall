@@ -2,7 +2,7 @@ use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
-use crate::{ParserError, ParserResult, ast::{parse_ast_node, parse_ast_value, tree::ASTTreeNode}};
+use crate::{ast::{parse_ast_value, tree::ASTTreeNode}};
 
 pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;

@@ -1,5 +1,3 @@
-use std::mem;
-
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;

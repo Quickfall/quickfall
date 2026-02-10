@@ -1,7 +1,7 @@
-use commons::err::{PositionedError, PositionedResult};
-use lexer::token::{LexerToken, LexerTokenType};
+use commons::err::{PositionedResult};
+use lexer::token::{LexerToken};
 
-use crate::{ParserError, ParserResult, ast::tree::ASTTreeNode};
+use crate::{ast::tree::ASTTreeNode};
 
 pub fn parse_integer_literal(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	let val = tokens[*ind].expects_int_lit()?;

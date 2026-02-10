@@ -1,7 +1,7 @@
 use commons::err::PositionedResult;
 use lexer::token::LexerToken;
 
-use crate::{ParserError, ParserResult, ast::{control::ifelse::parse_condition_member, func::parse_node_body, tree::ASTTreeNode}};
+use crate::{ast::{control::ifelse::parse_condition_member, func::parse_node_body, tree::ASTTreeNode}};
 
 pub fn parse_while_block(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;

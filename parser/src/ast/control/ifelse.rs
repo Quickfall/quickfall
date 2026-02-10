@@ -5,7 +5,7 @@
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{ParserError, ParserResult, ast::{func::parse_node_body, parse_ast_value, tree::ASTTreeNode}};
+use crate::{ast::{func::parse_node_body, parse_ast_value, tree::ASTTreeNode}};
 
 pub fn parse_condition_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	tokens[*ind].expects(LexerTokenType::PAREN_OPEN)?;

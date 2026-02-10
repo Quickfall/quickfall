@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{ParserError, ParserResult, ast::{parse_ast_node_in_body, tree::{ASTTreeNode, FunctionDeclarationArgument}}};
+use crate::{ast::{parse_ast_node_in_body, tree::{ASTTreeNode, FunctionDeclarationArgument}}};
 
 pub mod decl;
 pub mod call;
@@ -18,8 +18,6 @@ pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
         let n = parse_ast_node_in_body(tokens, ind)?;
 
         body.push(n);
-
-        //println!("Func index: {}", *ind);
 
         tok = &tokens[*ind];
     }
