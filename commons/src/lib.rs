@@ -32,7 +32,7 @@ impl Position {
 
 impl fmt::Display for Position {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}:{} in {}", self.line, self.col, self.file_path);
+		let _ = write!(f, "{}:{} in {}", self.line, self.col, self.file_path);
 
 		Ok(())
 	}

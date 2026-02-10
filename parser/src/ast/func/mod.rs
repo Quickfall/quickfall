@@ -31,12 +31,12 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize) -> Po
 	let mut args: Vec<FunctionDeclarationArgument> = Vec::new();
 	
 	while *ind < tokens.len() && tokens[*ind].is_keyword() {
-		let varType = tokens[*ind].expects_keyword()?;
+		let var_type = tokens[*ind].expects_keyword()?;
 
 		*ind += 1;
-		let varName = tokens[*ind].expects_keyword()?;
+		let var_name = tokens[*ind].expects_keyword()?;
 
-		args.push(FunctionDeclarationArgument::new(varName.0, varType.1));
+		args.push(FunctionDeclarationArgument::new(var_name.0, var_type.1));
 
 		*ind += 1;
 

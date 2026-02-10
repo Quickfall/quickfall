@@ -7,11 +7,11 @@ use crate::{ast::{parse_ast_value, tree::ASTTreeNode}};
 pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;
 
-	let typeName = tokens[*ind].expects_keyword()?;
+	let type_name = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
 
-	let varName = tokens[*ind].expects_keyword()?;
+	let var_name = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
 
@@ -23,5 +23,5 @@ pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 		val = Some(parse_ast_value(tokens, ind)?);
 	}
 
-	return Ok(Box::new(ASTTreeNode::VarDeclaration { var_name: WithHash::new(varName.0), var_type: typeName.1, value: val }));
+	return Ok(Box::new(ASTTreeNode::VarDeclaration { var_name: WithHash::new(var_name.0), var_type: type_name.1, value: val }));
 }

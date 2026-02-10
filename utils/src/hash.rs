@@ -2,8 +2,7 @@
 //! Hash related utilities
 //! 
 
-use core::hash;
-use std::{any::TypeId, hash::{DefaultHasher, Hash, Hasher}};
+use std::{hash::{DefaultHasher, Hash, Hasher}};
 
 pub type TypeHash = u64;
 

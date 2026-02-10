@@ -35,7 +35,7 @@ impl fmt::Display for PositionedError {
 		
 		let line = match self.start.get_line_content() {
 			Ok(v) => v,
-			Err(e) => format!("{}","Couldn't read file contents!".red().bold())
+			Err(e) => format!("{}: {}","Couldn't read file contents!".red().bold(), e)
 		};
 
 		let before = &line[0..self.start.col - 1];

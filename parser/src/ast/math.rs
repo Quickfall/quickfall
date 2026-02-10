@@ -12,7 +12,7 @@ pub fn parse_math_operation(tokens: &Vec<LexerToken>, ind: &mut usize, original:
 
 	*ind += 1;
 
-	let rightMember = parse_ast_value(tokens, ind)?;
+	let right_member = parse_ast_value(tokens, ind)?;
 
-	return Ok(Box::new(ASTTreeNode::MathResult { lval: original, rval: rightMember, operator: oper.0, assigns: oper.1 }))
+	return Ok(Box::new(ASTTreeNode::MathResult { lval: original, rval: right_member, operator: oper.0, assigns: oper.1 }))
 }
