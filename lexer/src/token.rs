@@ -2,65 +2,66 @@
 //! Module containing lexer token-based utilities and classes
 //! 
 
-use std::any::Any;
-
 use commons::{Position, err::{PositionedError, PositionedResult}};
 
-use crate::{LexerParseResult, LexerParsingError, toks::math::MathOperator};
+use crate::{LexerParseResult, LexerParsingError, toks::{comp::ComparingOperator, math::MathOperator}};
 
 /// The token type for the lexer
 #[derive(PartialEq, Debug)]
 pub enum LexerTokenType {
     /// Represent the func keyword
-    FUNCTION,
+    Function,
 
-	VAR,
-	STRUCT,
-	LAYOUT,
-	LAY,
+	Var,
+	Struct,
+	Layout,
+	Lay,
 		
 	/// 0: the operator
 	/// 1: does the operator affect the original variable!
-	MATH_OPERATOR(MathOperator, bool),
+	MathOperator(MathOperator, bool),
+
+	ComparingOperator(ComparingOperator),
 	
 
     /// Represent the ret keyword
-    RETURN,
+    Return,
 
-	TRUE,
-	FALSE,
+	True,
+	False,
 
-	FOR,
-	IF,
-	ELSE,
-	WHILE,
+	For,
+	If,
+	Else,
+	While,
 
-    EQUAL_SIGN,
-	EXCLAMATION_MARK,
+    EqualSign,
+	ExclamationMark,
 
-    COMMA,
-    DOT,
-	AMPERSAND,
+    Comma,
+    Dot,
+	Ampersand,
 
-    BRACKET_OPEN,
-    BRACKET_CLOSE,
+    BracketOpen,
+    BracketClose,
 
-    PAREN_OPEN,
-    PAREN_CLOSE,
+    ParenOpen,
+    ParenClose,
 
-    ARRAY_OPEN,
-    ARRAY_CLOSE,
+    ArrayOpen,
+    ArrayClose,
 
-    INT_LIT(i64),
-    STRING_LIT(String),
+    IntLit(i64),
+    StringLit(String),
 
-    ANGEL_BRACKET_OPEN,
-    ANGEL_BRACKET_CLOSE,
+    AngelBracketOpen,
+    AngelBracketClose,
 
     KEYWORD(String, u64),
-    END_OF_FILE
+    EndOfFile
 }
 
+#[derive(Debug)]
 pub struct LexerToken {
 	pub tok_type: LexerTokenType,
 	pub pos: Position, // Valid tokens require a position
@@ -91,21 +92,28 @@ impl LexerToken {
 
 	pub fn expects_int_lit(&self) -> PositionedResult<i64> {
 		match &self.tok_type {
-			LexerTokenType::INT_LIT(v) => return Ok(*v),
+			LexerTokenType::IntLit(v) => return Ok(*v),
 			_ => return Err(self.make_err("Expected int litteral here!"))
+		};
+	}
+
+	pub fn expects_comp_operator(&self) -> PositionedResult<ComparingOperator> {
+		match &self.tok_type {
+			LexerTokenType::ComparingOperator(op) => return Ok(op.clone()),
+			_ => return Err(self.make_err("Expected comparing operator here!"))
 		};
 	}
 
 	pub fn expects_math_operator(&self) -> PositionedResult<(MathOperator, bool)> {
 		match &self.tok_type {
-			LexerTokenType::MATH_OPERATOR(a, b) => return Ok((a.clone(), *b)),
+			LexerTokenType::MathOperator(a, b) => return Ok((a.clone(), *b)),
 			_ => return Err(self.make_err("Expected math operator here!"))
 		};
 	}
 
 	pub fn expects_string_lit(&self) -> PositionedResult<String> {
 		match &self.tok_type {
-			LexerTokenType::STRING_LIT(v) => return Ok(v.to_string()),
+			LexerTokenType::StringLit(v) => return Ok(v.to_string()),
 			_ => return Err(self.make_err("Expected string litteral here!"))
 		};
 	}

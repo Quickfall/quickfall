@@ -2,22 +2,22 @@ use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
-use crate::{ParserError, ParserResult, ast::{func::{parse_function_arguments, parse_node_body}, tree::ASTTreeNode}};
+use crate::{ast::{func::{parse_function_arguments, parse_node_body}, tree::ASTTreeNode}};
 
 pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;
-	let functionName = tokens[*ind].expects_keyword()?;
+	let function_name = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
-	tokens[*ind].expects(LexerTokenType::PAREN_OPEN)?;
+	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
 	let args = parse_function_arguments(tokens, ind)?;
 
 	*ind += 1;
 
-	tokens[*ind].expects(LexerTokenType::BRACKET_OPEN)?;
+	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
 	let body = parse_node_body(tokens, ind)?;
 
-	return Ok(Box::new(ASTTreeNode::FunctionDeclaration { funcName: WithHash::new(functionName.0), args, body }));
+	return Ok(Box::new(ASTTreeNode::FunctionDeclaration { func_name: WithHash::new(function_name.0), args, body }));
 }

@@ -2,11 +2,11 @@
 //! Module containing the core lexer algorithm
 //! 
 
-use std::{fs, hash::{DefaultHasher, Hash, Hasher}, io::Error};
+use std::{fs, hash::{DefaultHasher, Hash, Hasher}};
 
 use commons::Position;
 
-use crate::{LexerParseResult, LexerParsingError, token::{LexerToken, LexerTokenType}, toks::math::MathOperator};
+use crate::{LexerParseResult, LexerParsingError, token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
 
 const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
 const RET_KEYWORD_HASH: u64 = 9222097151127739705;
@@ -46,75 +46,88 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
         let c: char = contents.chars().nth(i).unwrap();
 		
 		if c == '\n' {
-			i += c.len_utf8();
+			i += 1;
 			last_line_break = i;
 			line += 1;
 			continue;
 		}
 
         if c.is_numeric() {
-			let col = i - last_line_break + 1;
+			let col = i - last_line_break;
             tokens.push(parse_number_token(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
             continue;
         }
 
         if c == '"' {
-			let col = i - last_line_break + 1;
+			let col = i - last_line_break;
 
             tokens.push(parse_string_token(&contents, &mut i, Position::new(file_path.to_string(), line, col)));
             continue;
         }
 
         if c.is_alphabetic() {
-			let col = i - last_line_break + 1;
+			let col = i - last_line_break;
 
             tokens.push(parse_keyword(&contents, &mut i, Position::new(file_path.to_string(), line, col)));
             continue;
         }
 
 		if c == '+' || c == '-' || c == '*' || c == '/' {
-			let col = i - last_line_break + 1;
+			let col = i - last_line_break;
 
 			tokens.push(parse_math_operator(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
 
 			continue;
 		}
 
-        i += c.len_utf8();
+		if c == '=' || c == '>' || c == '<' {
+			let col = i - last_line_break;
+
+			let parse = parse_comp_operator(&contents, &mut i, Position::new(file_path.to_string(), line, col));
+
+			if parse.is_some() {
+				tokens.push(parse.unwrap());
+				continue;
+			}
+
+			i -= 2; // Try parsing operator as normal token.
+		}
+
+        i += 1;
 
 
-		let col = i - last_line_break + 1;
+		let col = i - last_line_break;
 
 		let pos = Position::new(file_path.to_string(), line, col);
 
         match c {
-            '{' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::BRACKET_OPEN)),
-            '}' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::BRACKET_CLOSE)),
-            '(' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::PAREN_OPEN)),
-            ')' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::PAREN_CLOSE)),
-            '[' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ARRAY_OPEN)),
-            ']' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ARRAY_CLOSE)),
-            '=' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::EQUAL_SIGN)),
-            ',' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::COMMA)),
-            '.' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::DOT)),
-			'!' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::EXCLAMATION_MARK)),
-			'&' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AMPERSAND)),
-            '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_OPEN)),
-            '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ANGEL_BRACKET_CLOSE)),
+            '{' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::BracketOpen)),
+            '}' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::BracketClose)),
+            '(' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ParenOpen)),
+            ')' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ParenClose)),
+            '[' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ArrayOpen)),
+            ']' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ArrayClose)),
+            '=' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::EqualSign)),
+            ',' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Comma)),
+            '.' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Dot)),
+			'!' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::ExclamationMark)),
+			'&' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Ampersand)),
+            '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketOpen)),
+            '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketClose)),
 			_ => continue
         }
 
     }
 
-    tokens.push(LexerToken::make_single_sized(Position::new(file_path.to_string(), line, i - last_line_break + 1), LexerTokenType::END_OF_FILE));
+    tokens.push(LexerToken::make_single_sized(Position::new(file_path.to_string(), line, i - last_line_break + 1), LexerTokenType::EndOfFile));
 
     Ok(tokens)
 }
 
 fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) -> LexerParseResult<LexerToken> {
-	let operatorChar = contents.chars().nth(*ind).unwrap();
+	let operator_char = contents.chars().nth(*ind).unwrap();
 
-	let operator = match operatorChar {
+	let operator = match operator_char {
 		'+' => MathOperator::ADD,
 		'-' => MathOperator::SUBSTRACT,
 		'*' => MathOperator::MULTIPLY,
@@ -125,7 +138,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	*ind += 1;
 
 	let assigns = match contents.chars().nth(*ind) {
-		Some(v) => v == '=',
+		Some(v) => v == '=', // TODO: make this enforce either '=' or ' '
 		None => false
 	};
 
@@ -133,15 +146,60 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 		*ind += 1;
 	}
 
-	let mut incrementCount = 1;
+	let mut increment_count = 1;
 
 	if assigns {
-		incrementCount += 1;
+		increment_count += 1;
 	}
 
-	let end = start_pos.increment_by(incrementCount);
+	let end = start_pos.increment_by(increment_count);
 
-	return Ok(LexerToken::new(start_pos, end, LexerTokenType::MATH_OPERATOR(operator, assigns)));
+	return Ok(LexerToken::new(start_pos, end, LexerTokenType::MathOperator(operator, assigns)));
+
+}
+
+fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) -> Option<LexerToken> {
+	let first_char = contents.chars().nth(*ind).unwrap();
+	*ind += 1;
+	let second_char = contents.chars().nth(*ind).unwrap();
+
+	*ind += 1;
+
+	let end = start_pos.increment_by(2);
+
+	if second_char != '=' && second_char != ' ' {
+		return None;
+	}
+
+	match first_char {
+		'=' => {
+			if second_char != '=' {
+				return None;
+			}
+
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::Equal)));
+		},
+
+		'>' => {
+			if second_char == '=' {
+				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::HigherEqual)));
+			}
+
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::Higher)));
+		},
+		
+		'<' => {
+			if second_char == '=' {
+				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::LowerEqual)));
+			}
+
+			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::Lower)));
+		},
+
+		_ => {
+			return None;
+		}
+	}
 
 }
 
@@ -166,7 +224,7 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
     *ind = end;
 
 	let endpos = start_pos.increment_by(end - start);
-    return Ok(LexerToken::new(start_pos, endpos, LexerTokenType::INT_LIT(num)));
+    return Ok(LexerToken::new(start_pos, endpos, LexerTokenType::IntLit(num)));
 }
 
 fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> LexerToken {
@@ -187,7 +245,7 @@ fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
     *ind = end;
     
 	let endpos: Position = start_pos.increment_by(end - start);
-    return LexerToken::new(start_pos, endpos, LexerTokenType::STRING_LIT(slice.to_string()));
+    return LexerToken::new(start_pos, endpos, LexerTokenType::StringLit(slice.to_string()));
 }
 
 fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerToken {
@@ -212,18 +270,18 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
     *ind = end;
 
     let token_type = match hash {
-        FUNC_KEYWORD_HASH => LexerTokenType::FUNCTION,
-        RET_KEYWORD_HASH => LexerTokenType::RETURN,
-		STRUCT_KEYWORD_HASH => LexerTokenType::STRUCT,
-		LAYOUT_KEYWORD_HASH => LexerTokenType::LAYOUT,
-		LAY_KEYWORD_HASH => LexerTokenType::LAY,
-		TRUE_KEYWORD_HASH => LexerTokenType::TRUE,
-		FALSE_KEYWORD_HASH => LexerTokenType::FALSE,
-		VAR_KEYWORD_HASH => LexerTokenType::VAR,
-		IF_KEYWORD_HASH => LexerTokenType::IF,
-		ELSE_KEYWORD_HASH => LexerTokenType::ELSE,
-		WHILE_KEYWORD_HASH => LexerTokenType::WHILE,
-		FOR_KEYWORD_HASH => LexerTokenType::FOR,
+        FUNC_KEYWORD_HASH => LexerTokenType::Function,
+        RET_KEYWORD_HASH => LexerTokenType::Return,
+		STRUCT_KEYWORD_HASH => LexerTokenType::Struct,
+		LAYOUT_KEYWORD_HASH => LexerTokenType::Layout,
+		LAY_KEYWORD_HASH => LexerTokenType::Lay,
+		TRUE_KEYWORD_HASH => LexerTokenType::True,
+		FALSE_KEYWORD_HASH => LexerTokenType::False,
+		VAR_KEYWORD_HASH => LexerTokenType::Var,
+		IF_KEYWORD_HASH => LexerTokenType::If,
+		ELSE_KEYWORD_HASH => LexerTokenType::Else,
+		WHILE_KEYWORD_HASH => LexerTokenType::While,
+		FOR_KEYWORD_HASH => LexerTokenType::For,
         _ => LexerTokenType::KEYWORD(slice.to_string(), hash)
     };
 

@@ -3,29 +3,56 @@
 //! The AST parsing is responsible for putting tokens into structures such as functions and other stuff.
 //! It is an extremely important step.
 //! 
-//! Indexes passed to parsing functions SHOULD be the "detected" token rather than the next one.
+//! # Parsing 
+//! Parsing the first AST node found in the lexer token buffer can be done using `parse_ast_node`.
 //! 
-
-use std::fmt::Debug;
+//! Parsing inside of an AST node body (eg functions, if statements, ...) can be done using `parse_ast_node_in_body`
+//! 
+//! # Design notes
+//! The initial index represents the given value of the index value (usually `ind`) passed to any AST parsing function.
+//! 
+//! Whenever any AST parsing function requires a keyword (for example `var`) to be called, the initial index should be the index representing said keyword and not the next one.
+//! Furthermore, AST parsing functions requiring a keyword should increment index by one at the start to skip the detected keyword if needed.
+//! 
+//! AST parsing functions that aren't requiring a keyword will start at the actual start of the expression unless stated otherwise.
+//! 
 
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
-use crate::{ParserError, ParserResult, ast::{cond::operators::parse_condition_operator, control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::ASTTreeNode, types::parse_type_declaration, var::decl::parse_variable_declaration}};
+use crate::{ast::{control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::ASTTreeNode, types::parse_type_declaration, var::decl::parse_variable_declaration}};
 
 pub mod tree;
 pub mod func;
 pub mod var;
 pub mod literals;
-pub mod cond;
 pub mod control;
 pub mod math;
 pub mod types;
 
+/// Parses the post side of an AST node that can and WILL be intrepreted as a value.
+/// 
+/// This function should only be called by `parse_ast_value`
+/// 
+/// # Parsing Layout 
+/// The `parse_ast_value` function only parses the post side of the expression (noted L) if expression is:
+/// `R (pre) expression L (post) expression`
+/// 
+/// This layout allows us to seperate parsing from things like variable references, functions calls or even literals and
+/// treat them as the same while parsing other elements such as math operations or conditions!
+/// 
+/// # Possible node results
+/// `parse_ast_value_post_l` can possibly return the following node types:
+/// - original type
+/// - variable / function on type access
+/// - math operation
+/// - comparing
+/// - boolean negation
+/// 
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>, invoked_on_body: bool) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
-		LexerTokenType::DOT => {
+		LexerTokenType::Dot => {
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
 
@@ -45,15 +72,15 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			return Err(tokens[*ind].make_err("Invalid token type to use dot access!"));
 		},
 
-		LexerTokenType::MATH_OPERATOR(_, _) => {
+		LexerTokenType::MathOperator(_, _) => {
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
 
 			return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
 		},
 
-		LexerTokenType::ANGEL_BRACKET_CLOSE | LexerTokenType::EQUAL_SIGN | LexerTokenType::ANGEL_BRACKET_OPEN => {
-			let operator = parse_condition_operator(tokens, ind)?;
+		LexerTokenType::ComparingOperator(op) => {
+			let operator = op.clone();
 
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
@@ -68,10 +95,28 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 	}
 }
 
+/// Parses an AST node that can and WILL be intrepreted as a value
+/// 
+/// # Parsing Layout 
+/// The `parse_ast_value` function only parses the pre side of the expression (noted R) if expression is:
+/// `R (pre) expression L (post) expression`
+/// 
+/// This layout allows us to seperate parsing from things like variable references, functions calls or even literals and
+/// treat them as the same while parsing other elements such as math operations or conditions!
+/// 
+/// This function will call `parse_ast_value_post_l` to parse the L part of the expression.
+/// 
+/// # Recognized Nodes
+/// Possible nodes recognized as values include:
+/// - Function calls
+/// - Variable refs
+/// - Math operation results (both with or without value changing)
+/// - Boolean negation result
+/// - Boolean compare result
 pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 
-		LexerTokenType::EXCLAMATION_MARK => {
+		LexerTokenType::ExclamationMark => {
 			*ind += 1;
 			let ast = parse_ast_value(tokens, ind)?;
 
@@ -82,18 +127,18 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 			return Err(tokens[*ind].make_err("Boolean negative requires either func or var access!"));
 		},
 
-		LexerTokenType::INT_LIT(_) => {
+		LexerTokenType::IntLit(_) => {
 			let int = parse_integer_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, int, false);
 		},
 
-		LexerTokenType::STRING_LIT(_) => {
+		LexerTokenType::StringLit(_) => {
 			let str = parse_string_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, str, false);
 		},
 
 		LexerTokenType::KEYWORD(str, _) => {
-			if tokens[*ind + 1].tok_type == LexerTokenType::PAREN_OPEN {
+			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
 				let call = parse_function_call(tokens, ind);
 				return parse_ast_value_post_l(tokens, ind, call, false);
 			}
@@ -109,40 +154,55 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 	}	
 }
 
+/// Parses an AST node outside of any other node.
+/// 
+/// # Examples
+/// `parse_ast_node` is used to parse:
+/// - Function declarations
+/// - Struct declarations
+/// - Layout declarations
 pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
-	println!("Ind: {}, tok at: {:#?}", ind, tokens[*ind].tok_type);
-
 	match &tokens[*ind].tok_type {
-		LexerTokenType::FUNCTION => {
+		LexerTokenType::Function => {
 			return parse_function_declaraction(tokens, ind);
-		}
-
-		LexerTokenType::VAR => {
-			return parse_variable_declaration(tokens, ind);
 		},
 
-		LexerTokenType::IF => {
-			return parse_if_statement(tokens, ind);
-		},
-		
-		LexerTokenType::WHILE => {
-			return parse_while_block(tokens, ind);
-		},
-
-		LexerTokenType::FOR => {
-			return parse_for_loop(tokens, ind);
-		},
-
-		LexerTokenType::STRUCT => {
+		LexerTokenType::Struct => {
 			return parse_type_declaration(tokens, ind, false);
 		},
 
-		LexerTokenType::LAYOUT => {
+		LexerTokenType::Layout => {
 			return parse_type_declaration(tokens, ind, true);
 		},
 
+		_ => {
+			return Err(tokens[*ind].make_err("Expected valid token type in this context!"));
+		}
+	}	
+}
+
+/// Parses an AST node inside of another compatible node (functions, control bodies)
+pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+	match &tokens[*ind].tok_type {
+
+		LexerTokenType::Var => {
+			return parse_variable_declaration(tokens, ind);
+		},
+
+		LexerTokenType::If => {
+			return parse_if_statement(tokens, ind);
+		},
+		
+		LexerTokenType::While => {
+			return parse_while_block(tokens, ind);
+		},
+
+		LexerTokenType::For => {
+			return parse_for_loop(tokens, ind);
+		}
+
 		LexerTokenType::KEYWORD(str, _) => {
-			if tokens[*ind + 1].tok_type == LexerTokenType::PAREN_OPEN {
+			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
 				let call = parse_function_call(tokens, ind);
 				return parse_ast_value_post_l(tokens, ind, call, true);
 			}
