@@ -34,23 +34,19 @@ pub mod types;
 pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Dot => {
-			let o = &original?;
-			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
-
-			if !o.is_function_call() && !o.is_var_access() {
+			let original = original?;
+			if !original.is_function_call() && !original.is_var_access() {
 				return Err(tokens[*ind].make_err("Invalid dot access token!"));
 			}
 
 			*ind += 1;
-			let r = parse_ast_value(tokens, ind)?;
+			let r = parse_ast_value_dotacess_chain_member(tokens, ind, Ok(original))?;
 
-			if r.is_function_call() {
-				return Ok(Box::new(ASTTreeNode::StructLRFunction { l: k, r }))
-			} else if r.is_var_access() {
-				return Ok(Box::new(ASTTreeNode::StructLRVariable { l: k, r }))
+			if tokens[*ind].tok_type == LexerTokenType::Dot {
+				return parse_ast_value_dotacess_chain_member(tokens, ind, Ok(r)); // Continue the chain until finished
 			}
 
-			return Err(tokens[*ind].make_err("Invalid token type to use dot access!"));
+			return Ok(r);
 		},
 
 		_ => return original
@@ -67,6 +63,8 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 			}
 
 			let r_member = Box::new(ASTTreeNode::VariableReference(WithHash::new(s.clone())));
+
+			*ind += 1;
 
 			return Ok(Box::new(ASTTreeNode::StructLRVariable { l: original?, r: r_member }));
 		},
