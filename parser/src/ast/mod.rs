@@ -221,7 +221,9 @@ pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> Posi
 
 			*ind += 1;
 
-			return parse_ast_value_post_l(tokens, ind, n, true);
+			let chain = parse_ast_value_dotacess(tokens, ind, n);
+
+			return parse_ast_value_post_l(tokens, ind, chain, true);
 		},
 
 		_ => {
