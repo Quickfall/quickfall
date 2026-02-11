@@ -69,7 +69,7 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 				return Ok(Box::new(ASTTreeNode::StructLRVariable { l: k, r }))
 			}
 
-			return Err(tokens[*ind].make_err("Invalid token type to use dot access!"));
+			return Err(tokens[*ind].make_err(format!("Invalid token type to use dot access! Got {:#?}", r).as_str()));
 		},
 
 		LexerTokenType::MathOperator(_, _) => {
