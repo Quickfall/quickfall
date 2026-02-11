@@ -24,7 +24,7 @@ pub enum IRType<'a> {
 	Layout(HashMap<String, Ref<'a, IRType<'a>>>) // fields
 }
 
-impl IRType<'_> {
+impl<'a> IRType<'a> {
 	/// Gets the size in bits of a given IR element
 	pub fn get_bitsize(&self) -> usize {
 		match self {
@@ -103,4 +103,5 @@ impl IRType<'_> {
 
 		return -2_i128.pow(self.get_bitsize() as u32) - 1;
 	}
+
 }

@@ -5,8 +5,6 @@
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 use utils::hash::{TypeHash, WithHash};
 
-use crate::ast::func;
-
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
     pub name: WithHash<String>,
