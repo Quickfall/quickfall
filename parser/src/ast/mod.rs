@@ -31,6 +31,53 @@ pub mod control;
 pub mod math;
 pub mod types;
 
+pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>) -> PositionedResult<Box<ASTTreeNode>> {
+	match &tokens[*ind].tok_type {
+		LexerTokenType::Dot => {
+			let original = original?;
+			if !original.is_function_call() && !original.is_var_access() {
+				return Err(tokens[*ind].make_err("Invalid dot access token!"));
+			}
+
+			*ind += 1;
+			let r = parse_ast_value_dotacess_chain_member(tokens, ind, Ok(original))?;
+
+			println!("Tok: {:#?}", tokens[*ind].tok_type);
+
+			if tokens[*ind].tok_type == LexerTokenType::Dot {
+				return parse_ast_value_dotacess(tokens, ind, Ok(r)); // Continue the chain until finished
+			}
+
+			return Ok(r);
+		},
+
+		_ => return original
+	}
+}
+
+pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>) -> PositionedResult<Box<ASTTreeNode>> {
+	match &tokens[*ind].tok_type {
+		LexerTokenType::KEYWORD(s, hsh) => {
+			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
+
+				println!("Calling function call parsing on kwd {}", s);
+
+				let r_member = parse_function_call(tokens, ind)?;
+
+				return Ok(Box::new(ASTTreeNode::StructLRFunction { l: original?, r: r_member }))
+			}
+
+			let r_member = Box::new(ASTTreeNode::VariableReference(WithHash::new(s.clone())));
+
+			*ind += 1;
+
+			return Ok(Box::new(ASTTreeNode::StructLRVariable { l: original?, r: r_member }));
+		},
+
+		_ => return original
+	};
+}
+
 /// Parses the post side of an AST node that can and WILL be intrepreted as a value.
 /// 
 /// This function should only be called by `parse_ast_value`
@@ -52,26 +99,6 @@ pub mod types;
 /// 
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>, invoked_on_body: bool) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
-		LexerTokenType::Dot => {
-			let o = &original?;
-			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
-
-			if !o.is_function_call() && !o.is_var_access() {
-				return Err(tokens[*ind].make_err("Invalid dot access token!"));
-			}
-
-			*ind += 1;
-			let r = parse_ast_value(tokens, ind)?;
-
-			if r.is_function_call() {
-				return Ok(Box::new(ASTTreeNode::StructLRFunction { l: k, r }))
-			} else if r.is_var_access() {
-				return Ok(Box::new(ASTTreeNode::StructLRVariable { l: k, r }))
-			}
-
-			return Err(tokens[*ind].make_err("Invalid token type to use dot access!"));
-		},
-
 		LexerTokenType::MathOperator(_, _) => {
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
@@ -147,7 +174,9 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 
 			*ind += 1;
 
-			return parse_ast_value_post_l(tokens, ind, n, false);
+			let chain = parse_ast_value_dotacess(tokens, ind, n);
+
+			return parse_ast_value_post_l(tokens, ind, chain, false);
 		}
 
 		_ => return Err(tokens[*ind].make_err("Invalid token to parse as a value!"))
