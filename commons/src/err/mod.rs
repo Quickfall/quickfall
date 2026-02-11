@@ -24,8 +24,8 @@ pub struct PositionlessError {
 }
 
 impl PositionlessError {
-	pub fn new(reason: String) -> Self {
-		let err = PositionlessError { reason };
+	pub fn new(reason: &str) -> Self {
+		let err = PositionlessError { reason: String::from(reason) };
 
 		println!("{}", err);
 

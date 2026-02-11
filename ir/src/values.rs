@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use commons::utils::num::{can_num_fit_inbits_signed, can_num_fit_inbits_unsigned};
+use commons::{err::{PositionedResult, PositionlessError, PositionlessResult}, utils::num::{can_num_fit_inbits_signed, can_num_fit_inbits_unsigned}};
 
 pub enum IRValue {
 	Signed8(i8),
@@ -24,33 +24,33 @@ pub enum IRValue {
 }
 
 impl IRValue {
-	pub fn make_signed(sz: usize, val: i128) -> Option<IRValue> {
+	pub fn make_signed(sz: usize, val: i128) -> PositionlessResult<IRValue> {
 		if !can_num_fit_inbits_signed(sz, val) {
-			return None;
+			return Err(PositionlessError::new(&format!("Cannot fit the given number value {} into {} bits!", val, sz)));
 		}
 
 		match sz {
-			8 => return Some(IRValue::Signed8(val as i8)),
-			16 => return Some(IRValue::Signed16(val as i16)),
-			32 => return Some(IRValue::Signed32(val as i32)),
-			64 => return Some(IRValue::Signed64(val as i64)),
-			128 => return Some(IRValue::Signed128(val as i128)),
-			_ => return None
+			8 => return Ok(IRValue::Signed8(val as i8)),
+			16 => return Ok(IRValue::Signed16(val as i16)),
+			32 => return Ok(IRValue::Signed32(val as i32)),
+			64 => return Ok(IRValue::Signed64(val as i64)),
+			128 => return Ok(IRValue::Signed128(val as i128)),
+			_ => return Err(PositionlessError::new(&format!("Invalid bit size! got {}", sz)))
 		}
 	}
 
-	pub fn make_unsigned(sz: usize, val: i128) -> Option<IRValue> {
+	pub fn make_unsigned(sz: usize, val: i128) -> PositionlessResult<IRValue> {
 		if !can_num_fit_inbits_unsigned(sz, val) {
-			return None;
+			return Err(PositionlessError::new(&format!("Cannot fit the given number value {} into {} bits!", val, sz)));
 		}
 
 		match sz {
-			8 => return Some(IRValue::Unsigned8(val as u8)),
-			16 => return Some(IRValue::Unsigned16(val as u16)),
-			32 => return Some(IRValue::Unsigned32(val as u32)),
-			64 => return Some(IRValue::Unsigned64(val as u64)),
-			128 => return Some(IRValue::Unsigned128(val as u128)),
-			_ => return None
+			8 => return Ok(IRValue::Unsigned8(val as u8)),
+			16 => return Ok(IRValue::Unsigned16(val as u16)),
+			32 => return Ok(IRValue::Unsigned32(val as u32)),
+			64 => return Ok(IRValue::Unsigned64(val as u64)),
+			128 => return Ok(IRValue::Unsigned128(val as u128)),
+			_ => return Err(PositionlessError::new(&format!("Invalid bit size! got {}", sz)))
 		}
 	}
 
