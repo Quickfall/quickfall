@@ -79,7 +79,7 @@ pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, origi
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>, invoked_on_body: bool) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Dot => {
-			return parse_ast_value_dotacess(tokens, ind, original);
+			return parse_ast_value_dotacess(tokens, ind, original); // TODO: check if this is required or can be removed
 		},
 
 		LexerTokenType::MathOperator(_, _) => {
@@ -157,7 +157,9 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 
 			*ind += 1;
 
-			return parse_ast_value_post_l(tokens, ind, n, false);
+			let chain = parse_ast_value_dotacess(tokens, ind, n);
+
+			return parse_ast_value_post_l(tokens, ind, chain, false);
 		}
 
 		_ => return Err(tokens[*ind].make_err("Invalid token to parse as a value!"))
@@ -221,9 +223,7 @@ pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> Posi
 
 			*ind += 1;
 
-			let chain = parse_ast_value_dotacess(tokens, ind, n);
-
-			return parse_ast_value_post_l(tokens, ind, chain, true);
+			return parse_ast_value_post_l(tokens, ind, n, true);
 		},
 
 		_ => {
