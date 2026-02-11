@@ -57,6 +57,24 @@ pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, origi
 	}
 }
 
+pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>) -> PositionedResult<Box<ASTTreeNode>> {
+	match &tokens[*ind].tok_type {
+		LexerTokenType::KEYWORD(s, hsh) => {
+			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
+				let r_member = parse_function_call(tokens, ind)?;
+
+				return Ok(Box::new(ASTTreeNode::StructLRFunction { l: original?, r: r_member }))
+			}
+
+			let r_member = Box::new(ASTTreeNode::VariableReference(WithHash::new(s.clone())));
+
+			return Ok(Box::new(ASTTreeNode::StructLRVariable { l: original?, r: r_member }));
+		},
+
+		_ => return original
+	};
+}
+
 /// Parses the post side of an AST node that can and WILL be intrepreted as a value.
 /// 
 /// This function should only be called by `parse_ast_value`
