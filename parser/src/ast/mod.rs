@@ -42,8 +42,10 @@ pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, origi
 			*ind += 1;
 			let r = parse_ast_value_dotacess_chain_member(tokens, ind, Ok(original))?;
 
+			println!("Tok: {:#?}", tokens[*ind].tok_type);
+
 			if tokens[*ind].tok_type == LexerTokenType::Dot {
-				return parse_ast_value_dotacess_chain_member(tokens, ind, Ok(r)); // Continue the chain until finished
+				return parse_ast_value_dotacess(tokens, ind, Ok(r)); // Continue the chain until finished
 			}
 
 			return Ok(r);
@@ -57,6 +59,9 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 	match &tokens[*ind].tok_type {
 		LexerTokenType::KEYWORD(s, hsh) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
+
+				println!("Calling function call parsing on kwd {}", s);
+
 				let r_member = parse_function_call(tokens, ind)?;
 
 				return Ok(Box::new(ASTTreeNode::StructLRFunction { l: original?, r: r_member }))
@@ -94,10 +99,6 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 /// 
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: PositionedResult<Box<ASTTreeNode>>, invoked_on_body: bool) -> PositionedResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
-		LexerTokenType::Dot => {
-			return parse_ast_value_dotacess(tokens, ind, original); // TODO: check if this is required or can be removed
-		},
-
 		LexerTokenType::MathOperator(_, _) => {
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
