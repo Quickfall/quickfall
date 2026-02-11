@@ -35,5 +35,7 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 		members.push(parse_types_field_member(tokens, ind)?);
 	}
 
+	*ind += 1;
+
 	return Ok(Box::new(ASTTreeNode::StructLayoutDeclaration { name: WithHash::new(type_name.0), layout, members }));
 }

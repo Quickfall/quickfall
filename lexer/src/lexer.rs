@@ -138,7 +138,13 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	*ind += 1;
 
 	let assigns = match contents.chars().nth(*ind) {
-		Some(v) => v == '=', // TODO: make this enforce either '=' or ' '
+		Some(v) => {
+			if v != ' ' && v != '=' {
+				return Err(LexerParsingError::new(String::from("Invalid operator second sign!"), 0));
+			}
+
+			v == '='
+		}
 		None => false
 	};
 

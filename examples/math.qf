@@ -1,5 +1,5 @@
 func test() {
-	var i32 e = !56
+	var i32 e = 55
 
 	eee
 }

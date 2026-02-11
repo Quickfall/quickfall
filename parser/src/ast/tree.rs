@@ -5,6 +5,8 @@
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 use utils::hash::{TypeHash, WithHash};
 
+use crate::ast::func;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
     pub name: WithHash<String>,
@@ -55,11 +57,33 @@ pub enum ASTTreeNode {
 
 impl ASTTreeNode {
 	pub fn is_function_call(&self) -> bool {
-		return !matches!(self, ASTTreeNode::FunctionCall { .. } | ASTTreeNode::StructLRFunction { .. } )
+		return matches!(self, ASTTreeNode::FunctionCall { .. } | ASTTreeNode::StructLRFunction { .. } )
 	}
 
 	pub fn is_var_access(&self) -> bool {
-		return !matches!(self, ASTTreeNode::VariableReference { .. } | ASTTreeNode::StructLRVariable { .. })
+		return matches!(self, ASTTreeNode::VariableReference { .. } | ASTTreeNode::StructLRVariable { .. })
+	}
+
+	pub fn is_tree_permissible(&self) -> bool {
+		return matches!(self, ASTTreeNode::FunctionDeclaration { .. } | ASTTreeNode::StructLayoutDeclaration { .. })
+	}
+
+	pub fn get_tree_name(&self) -> Option<WithHash<String>> {
+		match self {
+			ASTTreeNode::FunctionDeclaration { func_name, args, body } => {
+				return Some(WithHash::new(func_name.val.to_string()));
+			},
+
+			ASTTreeNode::StructLayoutDeclaration { name, layout, members } => {
+				return Some(WithHash::new(name.val.to_string()));
+			},
+
+			ASTTreeNode::VarDeclaration { var_name, var_type, value } => {
+				return Some(WithHash::new(var_name.val.to_string()));
+			},
+
+			_ => return None
+		}
 	}
 
 }
