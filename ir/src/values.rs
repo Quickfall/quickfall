@@ -19,8 +19,8 @@ pub enum IRValue {
 
 	Bool(bool),
 
-	Struct(HashMap<String, IRValue>),
-	Layout(HashMap<String, IRValue>)
+	Struct(Vec<Box<IRValue>>, u64), // type hash
+	Layout(Vec<Box<IRValue>>, u64) // type hash
 }
 
 impl IRValue {
@@ -53,4 +53,9 @@ impl IRValue {
 			_ => return None
 		}
 	}
+
+	pub fn make_bool(val: bool) -> IRValue {
+		return IRValue::Bool(val);
+	}
+
 }

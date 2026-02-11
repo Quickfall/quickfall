@@ -9,6 +9,7 @@ use colored::Colorize;
 use crate::Position;
 
 pub type PositionedResult<K> = Result<K, PositionedError>;
+pub type PositionlessResult<K> = Result<K, PositionlessError>;
 
 /// An error that has a position
 #[derive(Debug)]
@@ -16,6 +17,20 @@ pub struct PositionedError {
 	pub start: Position,
 	pub end: Position,
 	pub reason: String
+}
+
+pub struct PositionlessError {
+	pub reason: String
+}
+
+impl PositionlessError {
+	pub fn new(reason: String) -> Self {
+		let err = PositionlessError { reason };
+
+		println!("{}", err);
+
+		return err;
+	}
 }
 
 impl PositionedError {
@@ -46,6 +61,16 @@ impl fmt::Display for PositionedError {
 
 		writeln!(f, "{}{}{}", before, target, after)?;
 		writeln!(f, "")?;
+		writeln!(f, "{}", self.reason.bright_red())?;
+
+		Ok(())
+	}
+}
+
+impl fmt::Display for PositionlessError {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		writeln!(f, "{} at ??:??", "ERR".bright_red().bold())?;
+	
 		writeln!(f, "{}", self.reason.bright_red())?;
 
 		Ok(())
