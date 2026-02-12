@@ -2,7 +2,10 @@
 
 use std::{cell::Ref, collections::HashMap};
 
-use inkwell::types::IntType;
+use commons::err::{PositionlessError, PositionlessResult};
+use inkwell::{builder::{Builder, BuilderError}, types::{IntType, StringRadix}, values::PointerValue};
+
+use crate::values::IRValue;
 
 /// Types of IR variables
 pub enum IRType<'a> {
@@ -104,4 +107,42 @@ impl<'a> IRType<'a> {
 		return -2_i128.pow(self.get_bitsize() as u32) - 1;
 	}
 
+	pub fn get_inkwell_inttype(&self) -> PositionlessResult<&IntType<'a>> {
+		match self {
+			IRType::Unsigned8(v) => Ok(v),
+			IRType::Unsigned16(v) => Ok(v),
+			IRType::Unsigned32(v) => Ok(v),
+			IRType::Unsigned64(v) => Ok(v),
+			IRType::Unsigned128(v) => Ok(v),
+			IRType::Signed8(v) => Ok(v),
+			IRType::Signed16(v) => Ok(v),
+			IRType::Signed32(v) => Ok(v),
+			IRType::Signed64(v) => Ok(v),
+			IRType::Signed128(v) => Ok(v),
+
+			_ => return Err(PositionlessError::new("get_inkwell_inttype was used with a non int typed IRType!"))
+		}
+	}
+
+	pub fn make_numeric_stackvar(&self, builder: &Builder<'a>, name: String, initial_val: IRValue) -> PositionlessResult<PointerValue<'a>> {
+		let t = *self.get_inkwell_inttype()?;
+		let alloca = match builder.build_alloca(t, &name) {
+			Ok(v) => v,
+			Err(_) => return Err(PositionlessError::new("build_alloca failed!!"))
+		};
+
+		let v = initial_val.expects_numeric_value(self.get_bitsize(), self.is_signed())?;
+
+		let val = match t.const_int_from_string(&v.to_string(), StringRadix::Decimal) {
+			Some(v) => v,
+			None => return Err(PositionlessError::new("const_int_from_string failed!!"))
+		};
+	
+		
+	 	if builder.build_store(alloca, val).is_err() {
+			return Err(PositionlessError::new("build_store failed!!"));
+		}
+
+		return Ok(alloca);
+	}
 }

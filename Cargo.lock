@@ -171,6 +171,8 @@ dependencies = [
 name = "test-main"
 version = "0.1.0"
 dependencies = [
+ "inkwell",
+ "ir",
  "lexer",
  "parser",
 ]
