@@ -1,9 +1,8 @@
 //! IR value representation definitons
 
-use std::collections::HashMap;
+use commons::{err::{PositionlessError, PositionlessResult}, utils::num::{can_num_fit_inbits_signed, can_num_fit_inbits_unsigned}};
 
-use commons::{err::{PositionedResult, PositionlessError, PositionlessResult}, utils::num::{can_num_fit_inbits_signed, can_num_fit_inbits_unsigned}};
-
+#[derive(Debug)]
 pub enum IRValue {
 	Signed8(i8),
 	Signed16(i16),
@@ -57,5 +56,44 @@ impl IRValue {
 	pub fn make_bool(val: bool) -> IRValue {
 		return IRValue::Bool(val);
 	}
+
+	pub fn expects_numeric_value(&self, sz: usize, signed: bool) -> PositionlessResult<i128> {
+		let val: i128 = match self {
+			IRValue::Unsigned8(v) => *v as i128,
+			IRValue::Unsigned16(v) => *v as i128,
+			IRValue::Unsigned32(v) => *v as i128,
+			IRValue::Unsigned64(v) => *v as i128,
+			IRValue::Unsigned128(v) => *v as i128,
+			
+			IRValue::Signed8(v) => *v as i128,
+			IRValue::Signed16(v) => *v as i128,
+			IRValue::Signed32(v) => *v as i128,
+			IRValue::Signed64(v) => *v as i128,
+			IRValue::Signed128(v) => *v as i128,
+
+			_ => return Err(PositionlessError::new(&format!("Expected a numeric value! Got {:#?}", self)))
+		};
+
+		if signed {
+			if !can_num_fit_inbits_signed(sz, val) {
+				return Err(PositionlessError::new(&format!("Numerical value {} cannot fit in bits!", val)));
+			}
+
+			return Ok(val);
+		}
+
+		if !can_num_fit_inbits_unsigned(sz, val) {
+			return Err(PositionlessError::new(&format!("Numerical value {} cannot fit in bits!", val)));
+		}
+
+		return Ok(val);
+	}
+
+	pub fn expects_bool_value(&self) -> PositionlessResult<bool> {
+		match self {
+			IRValue::Bool(v) => return Ok(*v),
+			_ => return Err(PositionlessError::new(&format!("Expected a boolean but instead got {:#?}", self)))
+		}
+	} 
 
 }
