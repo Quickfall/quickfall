@@ -1,5 +1,5 @@
 use inkwell::{context::Context, module::Module};
-use ir::{irstruct::ptr::IRPointer, types::{UNSIGNED32_TYPE_HASH, storage::IRTypeStorage}, values::IRValue};
+use ir::{irstruct::{funcs::IRFunction, ptr::IRPointer}, types::{UNSIGNED32_TYPE_HASH, storage::IRTypeStorage}, values::IRValue};
 use parser::ast::func;
 
 fn main() {
@@ -13,20 +13,20 @@ fn main() {
 	//println!("{:#?}", ctx);
 
 	let context = Context::create();
-	let module= context.create_module("main_module");
-	let builder = context.create_builder();
 
 	let storage = IRTypeStorage::new(&context);
 
-	let i32_type = context.i32_type();
 
-	let fn_type = i32_type.fn_type(&[], false);
-	let function = module.add_function("main", fn_type, None);
-
-	let entry = context.append_basic_block(function, "entry");
-	builder.position_at_end(entry);
+	let module= context.create_module("main_module");
+	let builder = context.create_builder();
 
 	let t = storage.get(UNSIGNED32_TYPE_HASH).unwrap();
+
+	let i32_type = context.i32_type();
+
+	let func = IRFunction::create(&context, String::from("main"), &module, t, vec![t, t]).expect("Couldn't make IR function");
+
+	func.prepare_body_filling(&builder);
 
 	let ptr = IRPointer::create(&builder, String::from("test"), t, IRValue::Unsigned32(258)).unwrap();
 	

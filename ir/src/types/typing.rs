@@ -3,7 +3,7 @@
 use std::{cell::Ref, collections::HashMap};
 
 use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{builder::{Builder}, types::{IntType, StringRadix}, values::PointerValue};
+use inkwell::{builder::Builder, types::{BasicType, FunctionType, IntType, StringRadix}, values::PointerValue};
 
 use crate::values::IRValue;
 
@@ -145,4 +145,5 @@ impl<'a> IRType<'a> {
 
 		return Ok(alloca);
 	}
+
 }
