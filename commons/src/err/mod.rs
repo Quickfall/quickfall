@@ -19,6 +19,7 @@ pub struct PositionedError {
 	pub reason: String
 }
 
+#[derive(Debug)]
 pub struct PositionlessError {
 	pub reason: String
 }

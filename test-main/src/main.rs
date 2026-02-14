@@ -1,5 +1,5 @@
 use inkwell::{context::Context, module::Module};
-use ir::{types::{UNSIGNED32_TYPE_HASH, storage::IRTypeStorage}, values::IRValue};
+use ir::{irstruct::ptr::IRPointer, types::{UNSIGNED32_TYPE_HASH, storage::IRTypeStorage}, values::IRValue};
 use parser::ast::func;
 
 fn main() {
@@ -26,10 +26,12 @@ fn main() {
 	let entry = context.append_basic_block(function, "entry");
 	builder.position_at_end(entry);
 
-	let testvar= match storage.get(UNSIGNED32_TYPE_HASH).unwrap().make_numeric_stackvar(&builder, String::from("test_var"), IRValue::Unsigned32(44575445_u32)) {
-		Ok(v) => v,
-		Err(_) => panic!("Stop")
-	};
+	let t = storage.get(UNSIGNED32_TYPE_HASH).unwrap();
+
+	let ptr = IRPointer::create(&builder, String::from("test"), t, IRValue::Unsigned32(258)).unwrap();
+	
+	let val = ptr.load_val_int(&builder).unwrap();
+	ptr.store(&builder, val);
 
 	module.print_to_file("test.ll").unwrap();
 }
