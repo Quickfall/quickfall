@@ -15,9 +15,16 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) ->
 
 	*ind += 1;
 
+	let mut retType = None;
+
+	if tokens[*ind].is_keyword() {
+		retType = Some(tokens[*ind].expects_keyword()?.1);
+		*ind += 1;
+	}
+
 	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
 	let body = parse_node_body(tokens, ind)?;
 
-	return Ok(Box::new(ASTTreeNode::FunctionDeclaration { func_name: WithHash::new(function_name.0), args, body }));
+	return Ok(Box::new(ASTTreeNode::FunctionDeclaration { func_name: WithHash::new(function_name.0), args, body, returnType: retType }));
 }

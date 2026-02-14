@@ -47,7 +47,7 @@ pub enum ASTTreeNode {
     Return { value: Option<Box<ASTTreeNode>> },
 
     FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
-    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>> },
+    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, returnType: Option<TypeHash> },
 	
 	StructLRVariable { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>,},
 	StructLRFunction { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>, }
@@ -68,7 +68,7 @@ impl ASTTreeNode {
 
 	pub fn get_tree_name(&self) -> Option<WithHash<String>> {
 		match self {
-			ASTTreeNode::FunctionDeclaration { func_name, args, body } => {
+			ASTTreeNode::FunctionDeclaration { func_name, args, body, returnType } => {
 				return Some(WithHash::new(func_name.val.to_string()));
 			},
 
