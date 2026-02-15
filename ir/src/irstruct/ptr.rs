@@ -1,7 +1,7 @@
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::{builder::Builder, values::{BasicValue, IntValue, PointerValue}};
 
-use crate::{types::typing::IRType, values::{IRNewValue}};
+use crate::{types::typing::IRType, values::{IRValue}};
 
 pub struct IRPointer<'a> {
 	inkwell_ptr: PointerValue<'a>,
@@ -14,7 +14,7 @@ impl<'a> IRPointer<'a> {
 		return IRPointer { inkwell_ptr: ptr, name, t }
 	}
 
-	pub fn create(builder: &Builder<'a>, name: String, t: &'a IRType<'a>, initial: IRNewValue<'a>) -> PositionlessResult<Self> {
+	pub fn create(builder: &Builder<'a>, name: String, t: &'a IRType<'a>, initial: IRValue<'a>) -> PositionlessResult<Self> {
 		let ptr = t.make_numeric_stackvar(builder, name.clone(), initial)?;
 
 		return Ok(IRPointer { inkwell_ptr: ptr, t, name: name.clone() });

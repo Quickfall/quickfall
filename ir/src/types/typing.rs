@@ -5,7 +5,7 @@ use std::{cell::Ref, collections::HashMap, ops::Add};
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, FunctionType, IntType, PointerType, StringRadix}, values::PointerValue};
 
-use crate::values::{IRNewValue};
+use crate::values::{IRValue};
 
 /// Types of IR variables
 #[derive(PartialEq)]
@@ -151,7 +151,7 @@ impl<'a> IRType<'a> {
 		return ctx.ptr_type(AddressSpace::from(0u16));
 	}
 
-	pub fn make_numeric_stackvar(&self, builder: &Builder<'a>, name: String, initial_val: IRNewValue<'a>) -> PositionlessResult<PointerValue<'a>> {
+	pub fn make_numeric_stackvar(&self, builder: &Builder<'a>, name: String, initial_val: IRValue<'a>) -> PositionlessResult<PointerValue<'a>> {
 		let t = *self.get_inkwell_inttype()?;
 		let alloca = match builder.build_alloca(t, &name) {
 			Ok(v) => v,

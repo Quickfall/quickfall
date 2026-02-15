@@ -1,12 +1,12 @@
 //! IR value reference definitions
 
-use crate::{irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::IRType, values::{IRNewValue}};
+use crate::{irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::IRType, values::{IRValue}};
 
 /// The IR value reference. Basically represents any value whatsoever, can handle every shape of values and is used for uniform handling.
 pub struct IRValueRef<'a> {
 	// TODO: maybe change IRValueRef to host the fields itself rather than having to use Options
 	ptr: Option<IRPointer<'a>>,
-	val: Option<IRNewValue<'a>>,
+	val: Option<IRValue<'a>>,
 	global: Option<IRStaticVariable<'a>>,
 
 	t: &'a IRType<'a>

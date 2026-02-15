@@ -7,16 +7,16 @@ use crate::types::typing::IRType;
 
 /// The new IR value system. Allows for a close interaction with inkwell rather than a more AST-side one.
 /// # Safety
-/// IRNewValue enforces a strict typing system for values. An instance of `IRType` is required for every gather and will fail if the provided type isn't the variable's.
-pub struct IRNewValue<'a> {
+/// IRValue enforces a strict typing system for values. An instance of `IRType` is required for every gather and will fail if the provided type isn't the variable's.
+pub struct IRValue<'a> {
 	inkwell_val: BasicValueEnum<'a>,
 	t: &'a IRType<'a>, 
 }
 
-impl<'a> IRNewValue<'a> {
+impl<'a> IRValue<'a> {
 	/// Creates a new untracked instance
 	pub fn new(inkwell_val: BasicValueEnum<'a>, t: &'a IRType<'a>) -> Self {
-		return IRNewValue { inkwell_val, t }
+		return IRValue { inkwell_val, t }
 	}
 
 	pub fn from_unsigned(t: &'a IRType<'a>, v: u128) -> PositionlessResult<Self> {
@@ -30,7 +30,7 @@ impl<'a> IRNewValue<'a> {
 			None => return Err(PositionlessError::new("const_int_from_string failed!"))
 		};
 
-		return Ok(IRNewValue::new(val.into(), t))
+		return Ok(IRValue::new(val.into(), t))
 	}
 
 	pub fn from_signed(t: &'a IRType<'a>, v: i128) -> PositionlessResult<Self> {
@@ -44,7 +44,7 @@ impl<'a> IRNewValue<'a> {
 			None => return Err(PositionlessError::new("const_int_from_string failed!"))
 		};
 
-		return Ok(IRNewValue::new(val.into(), t))
+		return Ok(IRValue::new(val.into(), t))
 	}
 
 	pub fn from_bool(val: bool, t: &'a IRType<'a>) -> PositionlessResult<Self> {
@@ -53,7 +53,7 @@ impl<'a> IRNewValue<'a> {
 			_ => return Err(PositionlessError::new("from_bool got fed a non-boolean IRType instance! t != IRType::Bool!"))
 		};
 
-		return Ok(IRNewValue::new(inkwell_type.const_int(val as u64, false).into(), t))
+		return Ok(IRValue::new(inkwell_type.const_int(val as u64, false).into(), t))
 	}
 
 	/// Typeless obtain. Can be considered as an unsafe handle. Doesn't perform type checking
