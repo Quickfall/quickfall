@@ -2,3 +2,4 @@
 
 pub mod ptr;
 pub mod funcs;
+pub mod staticvars;
