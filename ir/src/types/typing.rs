@@ -5,9 +5,10 @@ use std::{cell::Ref, collections::HashMap, ops::Add};
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, FunctionType, IntType, PointerType, StringRadix}, values::PointerValue};
 
-use crate::values::IRValue;
+use crate::values::{IRNewValue};
 
 /// Types of IR variables
+#[derive(PartialEq)]
 pub enum IRType<'a> {
 	Signed8(IntType<'a>),
 	Signed16(IntType<'a>),
@@ -25,8 +26,8 @@ pub enum IRType<'a> {
 
 	Bool(IntType<'a>),
 	
-	Struct(HashMap<String, Ref<'a, IRType<'a>>>), // fields
-	Layout(HashMap<String, Ref<'a, IRType<'a>>>) // fields
+	Struct(HashMap<String, &'a IRType<'a>>), // fields
+	Layout(HashMap<String, &'a IRType<'a>>) // fields
 }
 
 impl<'a> IRType<'a> {
@@ -150,21 +151,18 @@ impl<'a> IRType<'a> {
 		return ctx.ptr_type(AddressSpace::from(0u16));
 	}
 
-	pub fn make_numeric_stackvar(&self, builder: &Builder<'a>, name: String, initial_val: IRValue) -> PositionlessResult<PointerValue<'a>> {
+	pub fn make_numeric_stackvar(&self, builder: &Builder<'a>, name: String, initial_val: IRNewValue<'a>) -> PositionlessResult<PointerValue<'a>> {
 		let t = *self.get_inkwell_inttype()?;
 		let alloca = match builder.build_alloca(t, &name) {
 			Ok(v) => v,
 			Err(_) => return Err(PositionlessError::new("build_alloca failed!!"))
 		};
 
-		let v = initial_val.expects_numeric_value(self.get_bitsize(), self.is_signed())?;
-
-		let val = match t.const_int_from_string(&v.to_string(), StringRadix::Decimal) {
+		let val = match initial_val.obtain_as_int(self) {
 			Some(v) => v,
-			None => return Err(PositionlessError::new("const_int_from_string failed!!"))
+			None => return Err(PositionlessError::new("Value is incompatible with type!"))
 		};
 	
-		
 	 	if builder.build_store(alloca, val).is_err() {
 			return Err(PositionlessError::new("build_store failed!!"));
 		}

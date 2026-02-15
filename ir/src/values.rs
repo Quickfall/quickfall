@@ -159,8 +159,8 @@ impl<'a> IRNewValue<'a> {
 	}
 
 	/// Obtains the value as an integer value. Returns None if the value is incompatible with integers
-	pub fn obtain_as_int(&self) -> Option<IntValue<'a>> {
-		if !self.t.is_numeric_type() {
+	pub fn obtain_as_int(&self, t: &'a IRType<'a>) -> Option<IntValue<'a>> {
+		if !self.t.is_numeric_type() || t != self.t {
 			return None;
 		}
 
