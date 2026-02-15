@@ -4,12 +4,12 @@ use inkwell::{basic_block::BasicBlock, builder::Builder, context::Context, modul
 use crate::types::typing::IRType;
 
 pub struct IRFunction<'a> {
-	inkwell_func: FunctionValue<'a>,
+	pub inkwell_func: FunctionValue<'a>,
 	ret_type: &'a IRType<'a>,
 	args: Vec<&'a IRType<'a>>,
 	name: String,
 
-	entry: BasicBlock<'a>
+	entry: Option<BasicBlock<'a>>
 }
 
 impl<'a> IRFunction<'a> {
@@ -17,15 +17,32 @@ impl<'a> IRFunction<'a> {
 
 		let block = ctx.append_basic_block(func, "entry");
 
-		return IRFunction { inkwell_func: func, ret_type, args, name, entry: block }
+		return IRFunction { inkwell_func: func, ret_type, args, name, entry: Some(block) }
+	}
+
+	pub fn new_shadow(name: String, func: FunctionValue<'a>, ret_type: &'a IRType<'a>, args: Vec<&'a IRType<'a>>) -> Self {
+		return IRFunction { inkwell_func: func, ret_type, args, name, entry: None }
+	}
+
+	pub fn create_shadow(name: String, module: &Module<'a>, ret_type: &'a IRType<'a>, args: Vec<&'a IRType<'a>>) -> PositionlessResult<Self> {
+		let mut kargs = vec![];
+
+		for k in &args {
+			kargs.push(k.get_inkwell_basetype()?);
+		}
+
+		let t = ret_type.get_inkwell_inttype()?.fn_type(&kargs, false);
+
+		let func = module.add_function(&name, t, None);
+
+		return Ok(IRFunction::new_shadow(name, func, ret_type, args));
 	}
 
 	pub fn create(ctx: &'a Context, name: String, module: &Module<'a>, ret_type: &'a IRType<'a>, args: Vec<&'a IRType<'a>>) -> PositionlessResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
-			let irtype = *k.get_inkwell_inttype()?;
-			kargs.push(irtype.into());
+			kargs.push(k.get_inkwell_basetype()?);
 		}
 
 		let t = ret_type.get_inkwell_inttype()?.fn_type(&kargs, false);
@@ -37,7 +54,11 @@ impl<'a> IRFunction<'a> {
 
 	/// Prepares the addition of the function body.
 	pub fn prepare_body_filling(&self, builder: &Builder<'a>) {
-		builder.position_at_end(self.entry);
+		if self.entry.is_none() {
+			return;
+		}
+
+		builder.position_at_end(self.entry.unwrap());
 	}
 
 	pub fn get_nth_arg(&self, ind: u32) -> PositionlessResult<BasicValueEnum<'a>> {
@@ -55,6 +76,7 @@ impl<'a> IRFunction<'a> {
 		}
 
 		return Ok(self.get_nth_arg(ind)?.into_int_value());
+
 	}
 
 }

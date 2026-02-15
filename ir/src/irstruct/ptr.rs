@@ -17,7 +17,7 @@ impl<'a> IRPointer<'a> {
 	pub fn create(builder: &Builder<'a>, name: String, t: &'a IRType<'a>, initial: IRValue) -> PositionlessResult<Self> {
 		let ptr = t.make_numeric_stackvar(builder, name.clone(), initial)?;
 
-		return Ok(IRPointer { inkwell_ptr: ptr, t, name: name });
+		return Ok(IRPointer { inkwell_ptr: ptr, t, name: name.clone() });
 	}
 
 	pub fn load_val_int(&self, builder: &Builder<'a>) -> PositionlessResult<IntValue<'a>> {

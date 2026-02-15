@@ -41,10 +41,10 @@ pub enum ASTTreeNode {
 	IfElseStatement { cond: Option<Box<ASTTreeNode>>, body: Vec<Box<ASTTreeNode>>, else_statement: Option<Box<ASTTreeNode>> },
 	ElseStatement { body: Vec<Box<ASTTreeNode>> },
 
+	ReturnStatement { val: Option<Box<ASTTreeNode>> },
+
 	WhileBlock { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 	ForBlock { initial_state: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
-
-    Return { value: Option<Box<ASTTreeNode>> },
 
     FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
     FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, returnType: Option<TypeHash> },

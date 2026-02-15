@@ -3,7 +3,7 @@
 use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{ast::{parse_ast_node_in_body, tree::{ASTTreeNode, FunctionDeclarationArgument}}};
+use crate::ast::{parse_ast_node_in_body, parse_ast_value, tree::{ASTTreeNode, FunctionDeclarationArgument}};
 
 pub mod decl;
 pub mod call;
@@ -56,4 +56,12 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize) -> Po
 	tokens[*ind].expects(LexerTokenType::ParenClose)?;
 
 	Ok(args)
+}
+
+pub fn parse_function_return_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+	*ind += 1;
+
+	let val = parse_ast_value(tokens, ind)?;
+
+	return Ok(Box::new(ASTTreeNode::ReturnStatement { val: Some(val) }))
 }

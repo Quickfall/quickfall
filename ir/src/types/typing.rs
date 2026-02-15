@@ -1,9 +1,9 @@
 //! IR Type structures
 
-use std::{cell::Ref, collections::HashMap};
+use std::{cell::Ref, collections::HashMap, ops::Add};
 
 use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{builder::Builder, types::{BasicType, FunctionType, IntType, StringRadix}, values::PointerValue};
+use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, FunctionType, IntType, PointerType, StringRadix}, values::PointerValue};
 
 use crate::values::IRValue;
 
@@ -21,6 +21,8 @@ pub enum IRType<'a> {
 	Unsigned64(IntType<'a>),
 	Unsigned128(IntType<'a>),
 
+	Pointer(PointerType<'a>),
+
 	Bool(IntType<'a>),
 	
 	Struct(HashMap<String, Ref<'a, IRType<'a>>>), // fields
@@ -36,6 +38,7 @@ impl<'a> IRType<'a> {
 			IRType::Signed32(_) | IRType::Unsigned32(_) => return 32, 
 			IRType::Signed64(_) | IRType::Unsigned64(_) => return 64, 
 			IRType::Signed128(_) | IRType::Unsigned128(_) => return 128,
+			IRType::Pointer(_) => return 64,
 
 			IRType::Struct(v) => {
 				let mut sz: usize = 0;
@@ -107,6 +110,25 @@ impl<'a> IRType<'a> {
 		return -2_i128.pow(self.get_bitsize() as u32) - 1;
 	}
 
+	pub fn get_inkwell_basetype(&self) -> PositionlessResult<BasicMetadataTypeEnum<'a>> {
+		match self {
+			IRType::Unsigned8(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			IRType::Unsigned16(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			IRType::Unsigned32(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			IRType::Unsigned64(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			IRType::Unsigned128(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			IRType::Signed8(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			IRType::Signed16(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			IRType::Signed32(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			IRType::Signed64(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			IRType::Signed128(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+
+			IRType::Pointer(v) => Ok(BasicMetadataTypeEnum::from(*v)),
+			
+			_ => Err(PositionlessError::new("Given IR type doesn't have any Inkwell type!!!"))
+		}
+	}
+
 	pub fn get_inkwell_inttype(&self) -> PositionlessResult<&IntType<'a>> {
 		match self {
 			IRType::Unsigned8(v) => Ok(v),
@@ -122,6 +144,10 @@ impl<'a> IRType<'a> {
 
 			_ => return Err(PositionlessError::new("get_inkwell_inttype was used with a non int typed IRType!"))
 		}
+	}
+
+	pub fn get_inkwell_pointertype(ctx: &'a Context) -> PointerType<'a> {
+		return ctx.ptr_type(AddressSpace::from(0u16));
 	}
 
 	pub fn make_numeric_stackvar(&self, builder: &Builder<'a>, name: String, initial_val: IRValue) -> PositionlessResult<PointerValue<'a>> {
