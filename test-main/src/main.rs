@@ -1,7 +1,7 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 use inkwell::{context::Context, module::Module};
-use ir::{irstruct::{funcs::IRFunction, ptr::IRPointer}, types::{POINTER_TYPE_HASH, SIGNED32_TYPE_HASH, UNSIGNED32_TYPE_HASH, storage::IRTypeStorage, typing::IRType}, values::{IRValue}};
+use ir::{irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED32_TYPE_HASH, UNSIGNED32_TYPE_HASH, storage::IRTypeStorage, typing::IRType}, values::IRValue};
 use parser::ast::func;
 
 fn main() {
@@ -36,9 +36,9 @@ fn main() {
 
 	let fmt_str = builder.build_global_string_ptr("Haiiiii, the value is %d\n", "fmt_str").unwrap();
 
-	let ptr = IRPointer::create(&builder, String::from("test"), t, IRValue::from_unsigned(t, 286).unwrap()).unwrap();
+	let ptr = IRPointer::create(&builder, String::from("test"), t, IRValueRef::from_val(IRValue::from_unsigned(t, 286).unwrap())).unwrap();
 	
-	let val = ptr.load(&builder).unwrap().obtain();
+	let val = ptr.load(&builder, t).unwrap().obtain();
 
 	let _ = builder.build_call(
 		printf_func.inkwell_func, 
