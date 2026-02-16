@@ -38,7 +38,7 @@ fn main() {
 
 	let ptr = IRPointer::create(&builder, String::from("test"), t, IRValue::from_unsigned(t, 286).unwrap()).unwrap();
 	
-	let val = ptr.load_val_int(&builder).unwrap();
+	let val = ptr.load(&builder).unwrap().obtain();
 
 	let _ = builder.build_call(
 		printf_func.inkwell_func, 

@@ -8,6 +8,7 @@ use crate::types::typing::IRType;
 /// The new IR value system. Allows for a close interaction with inkwell rather than a more AST-side one.
 /// # Safety
 /// IRValue enforces a strict typing system for values. An instance of `IRType` is required for every gather and will fail if the provided type isn't the variable's.
+#[derive(Clone)]
 pub struct IRValue<'a> {
 	inkwell_val: BasicValueEnum<'a>,
 	t: &'a IRType<'a>, 
