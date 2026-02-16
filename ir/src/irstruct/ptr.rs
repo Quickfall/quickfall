@@ -1,5 +1,5 @@
 use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{builder::Builder, values::{BasicValue, IntValue, PointerValue}};
+use inkwell::{builder::Builder, values::{BasicValue, BasicValueEnum, IntValue, PointerValue}};
 
 use crate::{types::typing::IRType, values::{IRValue}};
 
@@ -20,13 +20,13 @@ impl<'a> IRPointer<'a> {
 		return Ok(IRPointer { inkwell_ptr: ptr, t, name: name.clone() });
 	}
 
-	pub fn load_val_int(&self, builder: &Builder<'a>) -> PositionlessResult<IntValue<'a>> {
-		if !self.t.is_numeric_type() {
-			return Err(PositionlessError::new("Requires a numeric type!"));
+	pub fn load(&self, builder: &Builder<'a>, t: &'a IRType<'a>) -> PositionlessResult<IRValue<'a>> {
+		if self.t != t {
+			return Err(PositionlessError::new("Provided IRType isn't the same!"));
 		}
 
 		match builder.build_load(*self.t.get_inkwell_inttype()?, self.inkwell_ptr, &self.name) {
-			Ok(v) => return Ok(v.into_int_value()),
+			Ok(v) => return Ok(IRValue::new(v, t)),
 			Err(_) => return Err(PositionlessError::new("build_load failed!"))
 		}
 	} 
