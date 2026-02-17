@@ -59,7 +59,9 @@ impl<'a> IRValueRef<'a> {
 				return Ok(ptr.inkwell_ptr);
 			}
 
-			_ => return Err(PositionlessError::new("Cannot obtain pointer from this IR value kind!"))
+			IRValueRefKind::Global(_, g) => {
+				return Ok(g.as_string_ref()?.as_pointer_value());
+			}
 		}
 	}
 
