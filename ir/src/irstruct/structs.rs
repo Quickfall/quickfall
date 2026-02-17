@@ -35,7 +35,7 @@ impl<'a> IRStructuredType<'a> {
 	}
 
 	pub fn get_pointer_for_field_index(&'a self, builder: &'a Builder<'a>, instance: &'a IRPointer<'a>, ind: u32) -> PositionlessResult<IRPointer<'a>> {
-		if ind <= 0 || ind >= self.field_types.len() as u32 {
+		if ind >= self.field_types.len() as u32 {
 			return Err(PositionlessError::new("Invalid index given to get_pointer_for_field_index"));
 		}
 
