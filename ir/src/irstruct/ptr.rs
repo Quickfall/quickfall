@@ -21,7 +21,7 @@ impl<'a> IRPointer<'a> {
 	}
 
 	pub fn load(&self, builder: &Builder<'a>, t: &'a IRType<'a>) -> PositionlessResult<IRValue<'a>> {
-		if self.t != t {
+		if !self.t.is_same(t) {
 			return Err(PositionlessError::new("Provided IRType isn't the same!"));
 		}
 
