@@ -3,7 +3,7 @@
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::{builder::Builder, types::{AnyTypeEnum, BasicTypeEnum}};
 
-use crate::{irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::IRType, values::{IRValue}};
+use crate::{ctx::IRContext, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::IRType, values::IRValue};
 
 pub enum IRValueRefKind<'a> {
 	Ptr(&'a IRType<'a>, IRPointer<'a>),
@@ -27,10 +27,10 @@ impl<'a> IRValueRef<'a> {
 		return matches!(self.kind, IRValueRefKind::Ptr(_, _))
 	}
 
-	pub fn obtain(&self, builder: &'a Builder<'a>) -> PositionlessResult<IRValue<'a>> {
+	pub fn obtain(&self, ctx: &'a IRContext<'a>) -> PositionlessResult<IRValue<'a>> {
 		match &self.kind {
 			IRValueRefKind::Ptr(t, ptr) => {
-				ptr.load(builder, t)
+				ptr.load(ctx, t)
 			},
 
 			IRValueRefKind::Val(v) => Ok(IRValue::clone(v)),

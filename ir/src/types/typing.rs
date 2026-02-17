@@ -5,7 +5,7 @@ use std::{cell::Ref, collections::HashMap, ops::Add};
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, BasicTypeEnum, FunctionType, IntType, PointerType, StringRadix}, values::PointerValue};
 
-use crate::{irstruct::structs::IRStructuredType, values::IRValue};
+use crate::{ctx::IRContext, irstruct::structs::IRStructuredType, values::IRValue};
 
 /// Types of IR variables
 pub enum IRType<'a> {
@@ -132,9 +132,9 @@ impl<'a> IRType<'a> {
 		}
 	}
 
-	pub fn get_inkwell_instance_basetype(&self, ctx: &'a Context) -> PositionlessResult<BasicTypeEnum<'a>> {
+	pub fn get_inkwell_instance_basetype(&self, ctx: &'a IRContext<'a>) -> PositionlessResult<BasicTypeEnum<'a>> {
 		match self {
-			IRType::Struct(_) | IRType::Layout(_) => Ok(ctx.ptr_type(AddressSpace::from(0)).into()),
+			IRType::Struct(_) | IRType::Layout(_) => Ok(ctx.ptr_type.into()),
 			_ => self.get_inkwell_basetype()
 		}
 	}
