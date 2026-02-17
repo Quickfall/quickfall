@@ -60,6 +60,10 @@ impl<'a> IRValueRef<'a> {
 			}
 
 			IRValueRefKind::Global(_, g) => {
+				if g.is_compiletime_replaceable() {
+					return Ok(g.as_val()?.into_pointer_value())
+				}
+
 				return Ok(g.as_string_ref()?.as_pointer_value());
 			}
 		}
