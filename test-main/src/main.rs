@@ -27,9 +27,14 @@ fn main() {
 	let int_type = storage.get(SIGNED32_TYPE_HASH).unwrap();
 	let ptr_type = storage.get(POINTER_TYPE_HASH).unwrap();
 
-	let sample_struct = IRType::Struct(
-		IRStructuredType::new(&irctx, String::from("myTestStruct"), true, vec![(8417845746417243860, int_type)]).unwrap()
+	let sample_substruct = IRType::Struct(
+		IRStructuredType::new(&irctx, String::from("uwuStruct"), true, vec![(8417845746417243860, int_type)]).unwrap()
 	);
+
+	let sample_struct = IRType::Struct(
+		IRStructuredType::new(&irctx, String::from("myTestStruct"), true, vec![(8417845746417243860, &sample_substruct)]).unwrap()
+	);
+
 	//storage.insert(15869126390205824132, sample_struct);
 
 
@@ -45,12 +50,14 @@ fn main() {
 	// Struct test
 	let structInstance = IRPointer::create(&irctx, String::from("test"), &sample_struct, None).unwrap();
 
+	let subStructPtr = sample_struct.get_structured_type_descriptor().unwrap().get_pointer_for_field_index(&irctx, &structInstance, 0).unwrap();
+	let subStructVarPtr = sample_substruct.get_structured_type_descriptor().unwrap().get_pointer_for_field_index(&irctx, &subStructPtr, 0).unwrap();
 
-	let firstFieldPointer = sample_struct.get_structured_type_descriptor().unwrap().get_pointer_for_field_index(&irctx, &structInstance, 0).unwrap();
+	subStructVarPtr.store(&irctx.builder, int_type.get_inkwell_inttype().unwrap().const_int(1288, false));
 
-	firstFieldPointer.store(&irctx.builder, int_type.get_inkwell_inttype().unwrap().const_int(125, false));
+	let val = subStructVarPtr.load(&irctx, int_type).unwrap().obtain();
 
-	let val = (&firstFieldPointer).load(&irctx, &int_type).unwrap().obtain();
+	//firstFieldPointer.store(&irctx.builder, int_type.get_inkwell_inttype().unwrap().const_int(125, false));
 	
 	// End struct test
 	

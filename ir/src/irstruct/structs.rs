@@ -39,7 +39,7 @@ impl<'a> IRStructuredType<'a> {
 			return Err(PositionlessError::new("Invalid index given to get_pointer_for_field_index"));
 		}
 
-		let field_ptr = match ctx.builder.build_struct_gep(self.inkwell_type, instance.load_from_inkwell_type(ctx, ctx.ptr_type.into())?.obtain().into_pointer_value(), ind, "field_ptr") {
+		let field_ptr = match ctx.builder.build_struct_gep(self.inkwell_type, instance.inkwell_ptr, ind, "field_ptr") {
 			Ok(v) => v,
 			Err(_) => return Err(PositionlessError::new("build_struct_gep failed!"))
 		};
