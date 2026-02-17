@@ -14,8 +14,18 @@ impl<'a> IRPointer<'a> {
 		return IRPointer { inkwell_ptr: ptr, name, t }
 	}
 
-	pub fn create(builder: &'a Builder<'a>, name: String, t: &'a IRType<'a>, initial: IRValueRef<'a>) -> PositionlessResult<Self> {
-		let ptr = t.make_numeric_stackvar(builder, name.clone(), initial.obtain(builder)?)?;
+	pub fn create(builder: &'a Builder<'a>, name: String, t: &'a IRType<'a>, initial: Option<IRValueRef<'a>>) -> PositionlessResult<Self> {
+		let ptr = match builder.build_alloca(t.get_inkwell_basetype()?, &name) {
+			Ok(v) => v,
+			Err(_) => return Err(PositionlessError::new("build_alloca failed!"))
+		};
+
+		if initial.is_some() {
+			match builder.build_store(ptr, initial.unwrap().obtain(builder)?.obtain()) {
+				Err(_) => return Err(PositionlessError::new("build_store failed!")),
+				Ok(_) => {} 
+			};
+		}
 
 		return Ok(IRPointer { inkwell_ptr: ptr, t, name: name.clone() });
 	}
@@ -42,8 +52,11 @@ impl<'a> IRPointer<'a> {
 		}
 	}
 
-	pub fn store<V: BasicValue<'a>>(&self, builder: &Builder<'a>, val: V) {
-		builder.build_store(self.inkwell_ptr, val);
+	pub fn store<V: BasicValue<'a>>(&self, builder: &Builder<'a>, val: V) -> bool {
+		return match builder.build_store(self.inkwell_ptr, val) {
+			Ok(_) => true,
+			Err(_) => false
+		}
 	}
 
 }

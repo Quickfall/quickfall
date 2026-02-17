@@ -1,7 +1,7 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 use inkwell::{context::Context, module::Module};
-use ir::{irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED32_TYPE_HASH, UNSIGNED32_TYPE_HASH, storage::IRTypeStorage, typing::IRType}, values::IRValue};
+use ir::{irstruct::{funcs::IRFunction, ptr::IRPointer, structs::IRStructuredType}, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED32_TYPE_HASH, UNSIGNED32_TYPE_HASH, storage::IRTypeStorage, typing::IRType}, values::IRValue};
 use parser::ast::func;
 
 fn main() {
@@ -16,7 +16,7 @@ fn main() {
 
 	let context = Context::create();
 
-	let storage = IRTypeStorage::new(&context);
+	let mut storage = IRTypeStorage::new(&context);
 
 	let module= context.create_module("main_module");
 	let builder = context.create_builder();
@@ -24,6 +24,9 @@ fn main() {
 	let t = storage.get(UNSIGNED32_TYPE_HASH).unwrap();
 	let int_type = storage.get(SIGNED32_TYPE_HASH).unwrap();
 	let ptr_type = storage.get(POINTER_TYPE_HASH).unwrap();
+
+	let sample_struct_test_type = IRStructuredType::new(&context, String::from("myTestStruct"), true, vec![(8417845746417243860, int_type)]).unwrap();
+	//storage.insert(15869126390205824132, IRType::Struct(sample_struct_test_type));
 
 	let i32_type = context.i32_type();
 	
