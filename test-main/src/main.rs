@@ -25,8 +25,11 @@ fn main() {
 	let int_type = storage.get(SIGNED32_TYPE_HASH).unwrap();
 	let ptr_type = storage.get(POINTER_TYPE_HASH).unwrap();
 
-	let sample_struct_test_type = IRStructuredType::new(&context, String::from("myTestStruct"), true, vec![(8417845746417243860, int_type)]).unwrap();
-	//storage.insert(15869126390205824132, IRType::Struct(sample_struct_test_type));
+	let sample_struct = IRType::Struct(
+		IRStructuredType::new(&context, String::from("myTestStruct"), true, vec![(8417845746417243860, int_type)]).unwrap()
+	);
+	//storage.insert(15869126390205824132, sample_struct);
+
 
 	let i32_type = context.i32_type();
 	
@@ -35,13 +38,18 @@ fn main() {
 	let func = IRFunction::create(&context, String::from("main"), &module, t, vec![t, t]).expect("Couldn't make IR function");
 	func.prepare_body_filling(&builder);
 
-
 	let fmt_str = builder.build_global_string_ptr("Haiiiii, the value is %d\n", "fmt_str").unwrap();
 
-	let ptr = IRPointer::create(&builder, String::from("test"), t, IRValueRef::from_val(IRValue::from_unsigned(t, 286).unwrap())).unwrap();
-	
-	let val = ptr.load(&builder, t).unwrap().obtain();
+	// Struct test
+	let structInstance = IRPointer::create(&builder, String::from("test"), &sample_struct, None).unwrap();
+	let firstFieldPointer = sample_struct.get_structured_type_descriptor().unwrap().get_pointer_for_field_index(&builder, &structInstance, 0).unwrap();
 
+	firstFieldPointer.store(&builder, int_type.get_inkwell_inttype().unwrap().const_int(125, false));
+
+	let val = (&firstFieldPointer).load(&builder, &int_type).unwrap().obtain();
+	
+	// End struct test
+	
 	let _ = builder.build_call(
 		printf_func.inkwell_func, 
    &[
@@ -49,7 +57,7 @@ fn main() {
 			val.into(),
 		], 
 		"printf_call"
-);
+	);
 
 	builder.build_return(Some(&i32_type.const_zero()));
 

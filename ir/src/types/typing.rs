@@ -124,6 +124,9 @@ impl<'a> IRType<'a> {
 			IRType::Signed128(v) => Ok(BasicTypeEnum::from(*v)),
 
 			IRType::Pointer(v) => Ok(BasicTypeEnum::from(*v)),
+
+			IRType::Struct(a) => Ok(BasicTypeEnum::from(a.inkwell_type)),
+			IRType::Layout(a) => Ok(BasicTypeEnum::from(a.inkwell_type)),
 			
 			_ => Err(PositionlessError::new("Given IR type doesn't have any Inkwell type!!!"))
 		}
@@ -143,7 +146,10 @@ impl<'a> IRType<'a> {
 			IRType::Signed128(v) => Ok(BasicMetadataTypeEnum::from(*v)),
 
 			IRType::Pointer(v) => Ok(BasicMetadataTypeEnum::from(*v)),
-			
+
+			IRType::Struct(a) => Ok(BasicMetadataTypeEnum::from(a.inkwell_type)),
+			IRType::Layout(a) => Ok(BasicMetadataTypeEnum::from(a.inkwell_type)),
+
 			_ => Err(PositionlessError::new("Given IR type doesn't have any Inkwell type!!!"))
 		}
 	}
@@ -209,6 +215,14 @@ impl<'a> IRType<'a> {
 			(IRType::Layout(a), IRType::Layout(b)) => a.name == b.name && a.is_layout == b.is_layout,
 
 			_ => false
+		}
+	}
+
+	pub fn get_structured_type_descriptor(&'a self) -> PositionlessResult<&'a IRStructuredType<'a>> {
+		return match self {
+			IRType::Struct(e) => Ok(e),
+			IRType::Layout(e) => Ok(e),
+			_ => Err(PositionlessError::new("Given IRType doesn't have a structured type descriptor!"))
 		}
 	}
 
