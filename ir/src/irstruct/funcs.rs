@@ -1,5 +1,5 @@
 use commons::err::{PositionedError, PositionlessError, PositionlessResult};
-use inkwell::{basic_block::BasicBlock, builder::Builder, context::Context, module::Module, values::{BasicValueEnum, FunctionValue, IntValue}};
+use inkwell::{basic_block::BasicBlock, builder::Builder, context::Context, module::Module, types::BasicType, values::{BasicValueEnum, FunctionValue, IntValue}};
 
 use crate::types::typing::IRType;
 
@@ -28,10 +28,10 @@ impl<'a> IRFunction<'a> {
 		let mut kargs = vec![];
 
 		for k in &args {
-			kargs.push(k.get_inkwell_basetype()?);
+			kargs.push(k.get_inkwell_base_metadatatype()?);
 		}
 
-		let t = ret_type.get_inkwell_inttype()?.fn_type(&kargs, false);
+		let t = ret_type.get_inkwell_basetype()?.fn_type(&kargs, false);
 
 		let func = module.add_function(&name, t, None);
 
@@ -42,10 +42,10 @@ impl<'a> IRFunction<'a> {
 		let mut kargs = vec![];
 
 		for k in &args {
-			kargs.push(k.get_inkwell_basetype()?);
+			kargs.push(k.get_inkwell_base_metadatatype()?);
 		}
 
-		let t = ret_type.get_inkwell_inttype()?.fn_type(&kargs, false);
+		let t = ret_type.get_inkwell_basetype()?.fn_type(&kargs, false);
 
 		let func = module.add_function(&name, t, None);
 

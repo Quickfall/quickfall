@@ -3,7 +3,7 @@
 use std::{cell::Ref, collections::HashMap, ops::Add};
 
 use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, FunctionType, IntType, PointerType, StringRadix}, values::PointerValue};
+use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, BasicTypeEnum, FunctionType, IntType, PointerType, StringRadix}, values::PointerValue};
 
 use crate::values::{IRValue};
 
@@ -111,7 +111,26 @@ impl<'a> IRType<'a> {
 		return -2_i128.pow(self.get_bitsize() as u32) - 1;
 	}
 
-	pub fn get_inkwell_basetype(&self) -> PositionlessResult<BasicMetadataTypeEnum<'a>> {
+	pub fn get_inkwell_basetype(&self) -> PositionlessResult<BasicTypeEnum<'a>> {
+		match self {
+			IRType::Unsigned8(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Unsigned16(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Unsigned32(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Unsigned64(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Unsigned128(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Signed8(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Signed16(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Signed32(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Signed64(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Signed128(v) => Ok(BasicTypeEnum::from(*v)),
+
+			IRType::Pointer(v) => Ok(BasicTypeEnum::from(*v)),
+			
+			_ => Err(PositionlessError::new("Given IR type doesn't have any Inkwell type!!!"))
+		}
+	}
+
+	pub fn get_inkwell_base_metadatatype(&self) -> PositionlessResult<BasicMetadataTypeEnum<'a>> {
 		match self {
 			IRType::Unsigned8(v) => Ok(BasicMetadataTypeEnum::from(*v)),
 			IRType::Unsigned16(v) => Ok(BasicMetadataTypeEnum::from(*v)),

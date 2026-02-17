@@ -3,3 +3,4 @@
 pub mod ptr;
 pub mod funcs;
 pub mod staticvars;
+pub mod structs;

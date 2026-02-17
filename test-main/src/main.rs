@@ -25,7 +25,6 @@ fn main() {
 	let int_type = storage.get(SIGNED32_TYPE_HASH).unwrap();
 	let ptr_type = storage.get(POINTER_TYPE_HASH).unwrap();
 
-
 	let i32_type = context.i32_type();
 	
 	let printf_func = IRFunction::create_shadow(String::from("printf"), &module, int_type, vec![ptr_type]).unwrap();
