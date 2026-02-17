@@ -5,6 +5,7 @@ use inkwell::{builder::Builder, context::Context, types::{BasicTypeEnum, StructT
 
 use crate::{irstruct::ptr::IRPointer, types::typing::IRType};
 
+#[derive(PartialEq)]
 pub struct IRStructuredType<'a> {
 	pub inkwell_type: StructType<'a>,
 	pub field_to_index: HashedMap<u32>,

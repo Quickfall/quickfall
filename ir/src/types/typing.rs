@@ -5,10 +5,9 @@ use std::{cell::Ref, collections::HashMap, ops::Add};
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, BasicTypeEnum, FunctionType, IntType, PointerType, StringRadix}, values::PointerValue};
 
-use crate::values::{IRValue};
+use crate::{irstruct::structs::IRStructuredType, values::IRValue};
 
 /// Types of IR variables
-#[derive(PartialEq)]
 pub enum IRType<'a> {
 	Signed8(IntType<'a>),
 	Signed16(IntType<'a>),
@@ -26,8 +25,8 @@ pub enum IRType<'a> {
 
 	Bool(IntType<'a>),
 	
-	Struct(HashMap<String, &'a IRType<'a>>), // fields
-	Layout(HashMap<String, &'a IRType<'a>>) // fields
+	Struct(IRStructuredType<'a>),
+	Layout(IRStructuredType<'a>)
 }
 
 impl<'a> IRType<'a> {
@@ -187,6 +186,30 @@ impl<'a> IRType<'a> {
 		}
 
 		return Ok(alloca);
+	}
+
+	/// Checks if the given type instance is the same type as the given one without having to use `PartialEq`
+	pub fn is_same(&'a self, t: &'a IRType<'a>) -> bool {
+		return match(self, t) {
+			(IRType::Signed8(_), IRType::Signed8(_)) => true,
+			(IRType::Signed16(_), IRType::Signed16(_)) => true,
+			(IRType::Signed32(_), IRType::Signed32(_)) => true,
+			(IRType::Signed64(_), IRType::Signed64(_)) => true,
+			(IRType::Signed128(_), IRType::Signed128(_)) => true,
+
+			(IRType::Unsigned8(_), IRType::Unsigned8(_)) => true,
+			(IRType::Unsigned16(_), IRType::Unsigned16(_)) => true,
+			(IRType::Unsigned32(_), IRType::Unsigned32(_)) => true,
+			(IRType::Unsigned64(_), IRType::Unsigned64(_)) => true,
+			(IRType::Unsigned128(_), IRType::Unsigned128(_)) => true,
+
+			(IRType::Bool(_), IRType::Bool(_)) => true,
+
+			(IRType::Struct(a), IRType::Struct(b)) => a.name == b.name && a.is_layout == b.is_layout,
+			(IRType::Layout(a), IRType::Layout(b)) => a.name == b.name && a.is_layout == b.is_layout
+
+			_ => false
+		}
 	}
 
 }
