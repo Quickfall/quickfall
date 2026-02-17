@@ -7,3 +7,4 @@ edition = "2024"
 inkwell = { version = "0.8.0", features = ["llvm21-1"]}
 commons = { path = "../commons" }
 lexer = { path = "../lexer" }
+parser = { path = "../parser" }

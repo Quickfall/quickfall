@@ -1,7 +1,7 @@
 //! Static variable related code
 
 use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{builder::Builder, context::Context, types::StringRadix, values::{BasicValueEnum, GlobalValue, IntValue}};
+use inkwell::{builder::Builder, values::{BasicValueEnum, GlobalValue}};
 
 use crate::{types::typing::IRType, values::IRValue};
 

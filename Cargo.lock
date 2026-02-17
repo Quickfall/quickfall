@@ -71,6 +71,7 @@ dependencies = [
  "commons",
  "inkwell",
  "lexer",
+ "parser",
 ]
 
 [[package]]
