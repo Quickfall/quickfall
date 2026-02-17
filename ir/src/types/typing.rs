@@ -45,8 +45,8 @@ impl<'a> IRType<'a> {
 
 				// TODO: add bool compacting
 
-				for (_, ir_type) in v {
-					sz += ir_type.get_bitsize();					
+				for t in &v.field_types {
+					sz += t.get_bitsize();
 				}
 
 				return sz;
@@ -55,8 +55,8 @@ impl<'a> IRType<'a> {
 			IRType::Layout(v) => {
 				let mut sz: usize = 0;
 
-				for (_, ir_type) in v {
-					sz += ir_type.get_bitsize();
+				for t in &v.field_types {
+					sz += t.get_bitsize();
 				}
 
 				return sz;
@@ -206,7 +206,7 @@ impl<'a> IRType<'a> {
 			(IRType::Bool(_), IRType::Bool(_)) => true,
 
 			(IRType::Struct(a), IRType::Struct(b)) => a.name == b.name && a.is_layout == b.is_layout,
-			(IRType::Layout(a), IRType::Layout(b)) => a.name == b.name && a.is_layout == b.is_layout
+			(IRType::Layout(a), IRType::Layout(b)) => a.name == b.name && a.is_layout == b.is_layout,
 
 			_ => false
 		}
