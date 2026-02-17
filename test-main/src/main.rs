@@ -1,18 +1,19 @@
-use std::hash::{DefaultHasher, Hash, Hasher};
+use std::{env, hash::{DefaultHasher, Hash, Hasher}};
 
 use inkwell::{context::Context, module::Module};
 use ir::{ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer, structs::IRStructuredType}, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED32_TYPE_HASH, UNSIGNED32_TYPE_HASH, storage::IRTypeStorage, typing::IRType}, values::IRValue};
-use parser::ast::func;
+use lexer::lexer::lexer_parse_file;
+use parser::{ast::func, parse_ast_ctx};
 
 fn main() {
-	//let args: Vec<String> = env::args().collect();
-    //let file_path: &String = &args[1];
+	let args: Vec<String> = env::args().collect();
+    let file_path: &String = &args[1];
 
-	//let lexer_res = lexer_parse_file(file_path).expect("Bad lexer!");
+	let lexer_res = lexer_parse_file(file_path).expect("Bad lexer!");
 
-	//let ctx = parse_ast_ctx(&lexer_res);
+	let ctx = parse_ast_ctx(&lexer_res);
 
-	//println!("{:#?}", ctx);
+	println!("{:#?}", ctx);
 
 	let context = Context::create();
 

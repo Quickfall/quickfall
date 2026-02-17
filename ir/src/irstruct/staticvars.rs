@@ -5,10 +5,11 @@ use inkwell::{builder::Builder, values::{BasicValueEnum, GlobalValue}};
 
 use crate::{types::typing::IRType, values::IRValue};
 
+#[derive(Clone)]
 pub struct IRStaticVariable<'a> {
 	inkwell: Option<GlobalValue<'a>>,
 	val: Option<BasicValueEnum<'a>>,
-	t: &'a IRType<'a>,
+	pub t: &'a IRType<'a>,
 	pub name: String
 }
 

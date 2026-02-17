@@ -3,9 +3,10 @@ use inkwell::{builder::Builder, context::Context, types::BasicTypeEnum, values::
 
 use crate::{ctx::IRContext, refs::IRValueRef, types::typing::IRType, values::IRValue};
 
+#[derive(Clone)]
 pub struct IRPointer<'a> {
 	pub inkwell_ptr: PointerValue<'a>, // Only use this directly within structs
-	t: &'a IRType<'a>,
+	pub t: &'a IRType<'a>,
 	pub name: String
 }
 

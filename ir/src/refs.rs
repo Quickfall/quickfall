@@ -1,7 +1,7 @@
 //! IR value reference definitions
 
 use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{builder::Builder, types::{AnyTypeEnum, BasicTypeEnum}};
+use inkwell::{builder::Builder, types::{AnyTypeEnum, BasicTypeEnum}, values::PointerValue};
 
 use crate::{ctx::IRContext, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::IRType, values::IRValue};
 
@@ -22,6 +22,14 @@ impl<'a> IRValueRef<'a> {
 		return IRValueRef { kind: IRValueRefKind::Val(val) }
 	}
 
+	pub fn from_static(val: IRStaticVariable<'a>) -> Self {
+		return IRValueRef { kind: IRValueRefKind::Global(val.t, val) }
+	}
+
+	pub fn from_pointer(ptr: IRPointer<'a>) -> Self {
+		return IRValueRef { kind: IRValueRefKind::Ptr(ptr.t, ptr) }
+	}
+
 	/// Determines if aqcuiring the values require a load instruction or any instruction at all to obtain the value from.
 	pub fn requires_load(&self) -> bool {
 		return matches!(self.kind, IRValueRefKind::Ptr(_, _))
@@ -38,6 +46,13 @@ impl<'a> IRValueRef<'a> {
 			IRValueRefKind::Global(t, global) => {
 				Ok(IRValue::new(global.as_val()?, t))
 			}
+		}
+	}
+
+	pub fn obtain_pointer(&self, ctx: &'a IRContext<'a>) -> PositionlessResult<PointerValue<'a>> {
+		match &self.kind {
+			IRValueRefKind::Ptr(_, ptr) => return Ok(ptr.inkwell_ptr),
+			_ => return Err(PositionlessError::new("Cannot obtain pointer from this IR value kind!"))
 		}
 	}
 
