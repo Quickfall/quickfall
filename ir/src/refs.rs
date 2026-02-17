@@ -52,6 +52,13 @@ impl<'a> IRValueRef<'a> {
 	pub fn obtain_pointer(&self, ctx: &'a IRContext<'a>) -> PositionlessResult<PointerValue<'a>> {
 		match &self.kind {
 			IRValueRefKind::Ptr(_, ptr) => return Ok(ptr.inkwell_ptr),
+
+			IRValueRefKind::Val(v) => {
+				let ptr = IRPointer::create(&ctx, String::from("_val_toptr"), v.t, Some(IRValueRef::from_val(IRValue::clone(v))))?;
+
+				return Ok(ptr.inkwell_ptr);
+			}
+
 			_ => return Err(PositionlessError::new("Cannot obtain pointer from this IR value kind!"))
 		}
 	}

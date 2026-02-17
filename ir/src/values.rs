@@ -11,7 +11,7 @@ use crate::types::typing::IRType;
 #[derive(Clone)]
 pub struct IRValue<'a> {
 	inkwell_val: BasicValueEnum<'a>,
-	t: &'a IRType<'a>, 
+	pub t: &'a IRType<'a>, 
 }
 
 impl<'a> IRValue<'a> {
