@@ -132,6 +132,13 @@ impl<'a> IRType<'a> {
 		}
 	}
 
+	pub fn get_inkwell_instance_basetype(&self, ctx: &'a Context) -> PositionlessResult<BasicTypeEnum<'a>> {
+		match self {
+			IRType::Struct(_) | IRType::Layout(_) => Ok(ctx.ptr_type(AddressSpace::from(0)).into()),
+			_ => self.get_inkwell_basetype()
+		}
+	}
+
 	pub fn get_inkwell_base_metadatatype(&self) -> PositionlessResult<BasicMetadataTypeEnum<'a>> {
 		match self {
 			IRType::Unsigned8(v) => Ok(BasicMetadataTypeEnum::from(*v)),
@@ -223,6 +230,13 @@ impl<'a> IRType<'a> {
 			IRType::Struct(e) => Ok(e),
 			IRType::Layout(e) => Ok(e),
 			_ => Err(PositionlessError::new("Given IRType doesn't have a structured type descriptor!"))
+		}
+	}
+
+	pub fn has_structured_type_descriptor(&'a self) -> bool {
+		return match self {
+			IRType::Struct(_) | IRType::Layout(_) => true,
+			_ => false
 		}
 	}
 

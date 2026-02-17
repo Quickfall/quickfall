@@ -1,7 +1,7 @@
 //! IR representation of structure types (structs, layouts...)
 
 use commons::{err::{PositionlessError, PositionlessResult}, utils::map::HashedMap};
-use inkwell::{builder::Builder, context::Context, types::{BasicTypeEnum, StructType}};
+use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicTypeEnum, StructType}};
 
 use crate::{irstruct::ptr::IRPointer, types::typing::IRType};
 
@@ -34,12 +34,12 @@ impl<'a> IRStructuredType<'a> {
 		return Ok(Self { inkwell_type, field_to_index: map, name, is_layout: layout, field_types })
 	}
 
-	pub fn get_pointer_for_field_index(&'a self, builder: &'a Builder<'a>, instance: &'a IRPointer<'a>, ind: u32) -> PositionlessResult<IRPointer<'a>> {
+	pub fn get_pointer_for_field_index(&'a self, ctx: &'a Context, builder: &'a Builder<'a>, instance: &'a IRPointer<'a>, ind: u32) -> PositionlessResult<IRPointer<'a>> {
 		if ind >= self.field_types.len() as u32 {
 			return Err(PositionlessError::new("Invalid index given to get_pointer_for_field_index"));
 		}
 
-		let field_ptr = match builder.build_struct_gep(self.inkwell_type, instance.load_from_inkwell_type(builder, self.inkwell_type.into())?.obtain().into_pointer_value(), ind, "field_ptr") {
+		let field_ptr = match builder.build_struct_gep(self.inkwell_type, instance.load_from_inkwell_type(builder, ctx.ptr_type(AddressSpace::from(0)).into())?.obtain().into_pointer_value(), ind, "field_ptr") {
 			Ok(v) => v,
 			Err(_) => return Err(PositionlessError::new("build_struct_gep failed!"))
 		};
@@ -49,12 +49,12 @@ impl<'a> IRStructuredType<'a> {
 		return Ok(IRPointer::new(field_ptr, field_type, String::from("__inner_field_ptr")));
 	}
 
-	pub fn get_pointer_for_field(&'a self, builder: &'a Builder<'a>, instance: &'a IRPointer<'a>, hash: u64) -> PositionlessResult<IRPointer<'a>> {
+	pub fn get_pointer_for_field(&'a self, ctx: &'a Context, builder: &'a Builder<'a>, instance: &'a IRPointer<'a>, hash: u64) -> PositionlessResult<IRPointer<'a>> {
 		let k = match self.field_to_index.get(hash) {
 			Some(v) => *v,
 			None => return Err(PositionlessError::new(&format!("The given string hash {} doesn't represent any field in the struct {}", hash, self.name)))
 		};
 
-		return self.get_pointer_for_field_index(builder, instance, k);
+		return self.get_pointer_for_field_index(ctx, builder, instance, k);
 	}
 } 

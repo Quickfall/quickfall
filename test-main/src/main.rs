@@ -42,7 +42,9 @@ fn main() {
 
 	// Struct test
 	let structInstance = IRPointer::create(&builder, String::from("test"), &sample_struct, None).unwrap();
-	let firstFieldPointer = sample_struct.get_structured_type_descriptor().unwrap().get_pointer_for_field_index(&builder, &structInstance, 0).unwrap();
+
+
+	let firstFieldPointer = sample_struct.get_structured_type_descriptor().unwrap().get_pointer_for_field_index(&context, &builder, &structInstance, 0).unwrap();
 
 	firstFieldPointer.store(&builder, int_type.get_inkwell_inttype().unwrap().const_int(125, false));
 
