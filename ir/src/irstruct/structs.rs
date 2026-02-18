@@ -1,14 +1,15 @@
 //! IR representation of structure types (structs, layouts...)
 
 use commons::{err::{PositionlessError, PositionlessResult}, utils::map::HashedMap};
-use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicTypeEnum, StructType}};
+use inkwell::{types::{BasicTypeEnum, StructType}};
 
-use crate::{ctx::IRContext, irstruct::ptr::IRPointer, types::typing::IRType};
+use crate::{ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer}, types::typing::IRType};
 
 pub struct IRStructuredType<'a> {
 	pub inkwell_type: StructType<'a>,
 	pub field_to_index: HashedMap<u32>,
 	pub field_types: Vec<&'a IRType<'a>>,
+	pub functions: HashedMap<IRFunction<'a>>,
 	pub name: String,
 	pub is_layout: bool
 }
@@ -31,7 +32,27 @@ impl<'a> IRStructuredType<'a> {
 
 		let inkwell_type = ctx.inkwell_ctx.struct_type(&typeVec, !layout);
 
-		return Ok(Self { inkwell_type, field_to_index: map, name, is_layout: layout, field_types })
+		return Ok(Self { inkwell_type, field_to_index: map, name, is_layout: layout, field_types, functions: HashedMap::new(0) })
+	}
+
+	pub fn append_function(&'a mut self, hash: u64, func: IRFunction<'a>) -> PositionlessResult<bool> {
+		if self.is_layout {
+			return Err(PositionlessError::new("Cannot declare functions inside of a layout!"));
+		}
+
+		self.functions.put(hash, func);
+		return Ok(true);
+	}
+
+	pub fn get_function(&'a self, hash: u64) -> PositionlessResult<&'a IRFunction<'a>> {
+		if self.is_layout {
+			return Err(PositionlessError::new("Cannot use typed-functions inside of a layout!"));
+		}
+
+		return match self.functions.get(hash) {
+			Some(v) => Ok(v),
+			None => Err(PositionlessError::new("Function was not founc within the struct!"))
+		}
 	}
 
 	pub fn get_pointer_for_field_index(&'a self, ctx: &'a IRContext<'a>, instance: &'a IRPointer<'a>, ind: u32) -> PositionlessResult<IRPointer<'a>> {

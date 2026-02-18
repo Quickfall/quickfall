@@ -50,10 +50,21 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 		ASTTreeNode::FunctionCall { func, args } => {
 			let mut arguments = vec![];
 
-			for arg in *args {
-				arguments.push(parse_ir_value(lctx, ctx, arg)?);
+			// TODO: support struct functions here
+
+			for arg in &args[0..args.len()] {
+				arguments.push(parse_ir_value(lctx, ctx, arg.clone())?);
 			}
-			
+
+			let f = ctx.get_funtion(func.hash)?;
+
+			let res = f.call(ctx, arguments, true)?;
+
+			if res.is_none() {
+				return Err(PositionlessError::new(&format!("Cannot use the result of function {} as a value as it is void!", func.val)));
+			}
+
+			return Ok(IRValueRef::from_pointer(res.unwrap()));
 		}
 
 		_ => return Err(PositionlessError::new("The given node cannot be parsed as a value!"))
