@@ -1,16 +1,18 @@
 //! Type storage
 
+use std::rc::Rc;
+
 use commons::utils::map::HashedMap;
 use inkwell::{AddressSpace, context::Context};
 
 use crate::types::{BOOL_TYPE_HASH, POINTER_TYPE_HASH, SIGNED8_TYPE_HASH, SIGNED16_TYPE_HASH, SIGNED32_TYPE_HASH, SIGNED64_TYPE_HASH, SIGNED128_TYPE_HASH, UNSIGNED8_TYPE_HASH, UNSIGNED16_TYPE_HASH, UNSIGNED32_TYPE_HASH, UNSIGNED64_TYPE_HASH, UNSIGNED128_TYPE_HASH, typing::IRType};
 
-pub struct IRTypeStorage<'a> {
-	map: HashedMap<IRType<'a>>
+pub struct IRTypeStorage {
+	map: HashedMap<Rc<IRType>>
 }
 
-impl<'a> IRTypeStorage<'a> {
-	pub fn new(ctx: &'a Context) -> Self {
+impl IRTypeStorage {
+	pub fn new(ctx: Context) -> Self {
 		let mut sto = IRTypeStorage {map: HashedMap::new(12)}; // 12 primitive types
 
 		sto.insert(UNSIGNED8_TYPE_HASH, IRType::Unsigned8(ctx.i8_type()));
@@ -32,11 +34,11 @@ impl<'a> IRTypeStorage<'a> {
 		return sto;
 	}
 
-	pub fn insert(&mut self, hash: u64, t: IRType<'a>) {
-		self.map.put(hash, t);
+	pub fn insert(&mut self, hash: u64, t: IRType) {
+		self.map.put(hash, Rc::new(t));
 	}
 
-	pub fn get(&self, hash: u64) -> Option<&IRType<'a>> {
-		return self.map.get(hash);
+	pub fn get(&self, hash: u64) -> Option<Rc<IRType>> {
+		return self.map.get(hash).cloned();
 	}
 }

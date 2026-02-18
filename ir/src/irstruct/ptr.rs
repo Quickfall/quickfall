@@ -1,22 +1,25 @@
+use std::rc::Rc;
+
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::{builder::Builder, context::Context, types::BasicTypeEnum, values::{BasicValue, BasicValueEnum, IntValue, PointerValue}};
 
 use crate::{ctx::IRContext, refs::IRValueRef, types::typing::IRType, values::IRValue};
 
 #[derive(Clone)]
-pub struct IRPointer<'a> {
-	pub inkwell_ptr: PointerValue<'a>, // Only use this directly within structs
-	pub t: &'a IRType<'a>,
+pub struct IRPointer {
+	owned: Rc<Context>,
+	pub inkwell_ptr: PointerValue<'static>, // Only use this directly within structs
+	pub t: Rc<IRType>,
 	pub name: String
 }
 
-impl<'a> IRPointer<'a> {
-	pub fn new(ptr: PointerValue<'a>, t: &'a IRType<'a>, name: String) -> Self {
-		return IRPointer { inkwell_ptr: ptr, name, t }
+impl IRPointer {
+	pub fn new(ptr: PointerValue<'static>, ctx: &IRContext, t: Rc<IRType>, name: String) -> Self {
+		return IRPointer { inkwell_ptr: ptr, owned: ctx.inkwell_ctx.clone(), name, t }
 	}
 
-	pub fn create(ctx: &'a IRContext<'a>, name: String, t: &'a IRType<'a>, initial: Option<IRValueRef<'a>>) -> PositionlessResult<Self> {
-		let ptr = match ctx.builder.build_alloca(t.get_inkwell_basetype()?, &name) {
+	pub fn create(ctx: &IRContext, name: String, t: Rc<IRType>, initial: Option<IRValueRef>) -> PositionlessResult<Self> {
+		let ptr = match ctx.builder.build_alloca(t.get_inkwell_basetype()?.inner, &name) {
 			Ok(v) => v,
 			Err(_) => return Err(PositionlessError::new("build_alloca failed!"))
 		};

@@ -1,35 +1,56 @@
 //! IR Type structures
 
-use std::{cell::Ref, collections::HashMap, ops::Add};
+use std::{cell::Ref, collections::HashMap, mem::transmute, ops::Add, rc::Rc};
 
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, BasicTypeEnum, FunctionType, IntType, PointerType, StringRadix}, values::PointerValue};
 
 use crate::{ctx::IRContext, irstruct::structs::IRStructuredType, values::IRValue};
 
+pub struct OwnedIntType {
+	pub inner: IntType<'static>,
+	_ctx: Rc<Context>
+}
+
+pub struct OwnedPointerType {
+	pub inner: PointerType<'static>,
+	_ctx: Rc<Context>
+}
+
+pub struct OwnedTypeEnum {
+	pub inner: BasicTypeEnum<'static>,
+	_ctx: Rc<Context>
+}
+
+impl OwnedTypeEnum {
+	pub fn new(ctx: &Rc<Context>, inner: BasicTypeEnum) -> Self {
+		return OwnedTypeEnum { inner: unsafe { transmute(inner) }, _ctx: ctx.clone() }
+	}
+}
+
 /// Types of IR variables
-pub enum IRType<'a> {
-	Signed8(IntType<'a>),
-	Signed16(IntType<'a>),
-	Signed32(IntType<'a>),
-	Signed64(IntType<'a>), 
-	Signed128(IntType<'a>),
+pub enum IRType {
+	Signed8(OwnedIntType),
+	Signed16(OwnedIntType),
+	Signed32(OwnedIntType),
+	Signed64(OwnedIntType), 
+	Signed128(OwnedIntType),
 
-	Unsigned8(IntType<'a>),
-	Unsigned16(IntType<'a>),
-	Unsigned32(IntType<'a>),
-	Unsigned64(IntType<'a>),
-	Unsigned128(IntType<'a>),
+	Unsigned8(OwnedIntType),
+	Unsigned16(OwnedIntType),
+	Unsigned32(OwnedIntType),
+	Unsigned64(OwnedIntType),
+	Unsigned128(OwnedIntType),
 
-	Pointer(PointerType<'a>),
+	Pointer(OwnedPointerType),
 
-	Bool(IntType<'a>),
+	Bool(OwnedIntType),
 	
 	Struct(IRStructuredType<'a>),
 	Layout(IRStructuredType<'a>)
 }
 
-impl<'a> IRType<'a> {
+impl IRType {
 	/// Gets the size in bits of a given IR element
 	pub fn get_bitsize(&self) -> usize {
 		match self {
@@ -110,20 +131,20 @@ impl<'a> IRType<'a> {
 		return -2_i128.pow(self.get_bitsize() as u32) - 1;
 	}
 
-	pub fn get_inkwell_basetype(&self) -> PositionlessResult<BasicTypeEnum<'a>> {
+	pub fn get_inkwell_basetype(&self) -> PositionlessResult<OwnedTypeEnum> {
 		match self {
-			IRType::Unsigned8(v) => Ok(BasicTypeEnum::from(*v)),
-			IRType::Unsigned16(v) => Ok(BasicTypeEnum::from(*v)),
-			IRType::Unsigned32(v) => Ok(BasicTypeEnum::from(*v)),
-			IRType::Unsigned64(v) => Ok(BasicTypeEnum::from(*v)),
-			IRType::Unsigned128(v) => Ok(BasicTypeEnum::from(*v)),
-			IRType::Signed8(v) => Ok(BasicTypeEnum::from(*v)),
-			IRType::Signed16(v) => Ok(BasicTypeEnum::from(*v)),
-			IRType::Signed32(v) => Ok(BasicTypeEnum::from(*v)),
-			IRType::Signed64(v) => Ok(BasicTypeEnum::from(*v)),
-			IRType::Signed128(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Unsigned8(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
+			IRType::Unsigned16(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
+			IRType::Unsigned32(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
+			IRType::Unsigned64(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
+			IRType::Unsigned128(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
+			IRType::Signed8(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
+			IRType::Signed16(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
+			IRType::Signed32(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
+			IRType::Signed64(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
+			IRType::Signed128(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
 
-			IRType::Pointer(v) => Ok(BasicTypeEnum::from(*v)),
+			IRType::Pointer(v) => Ok(OwnedTypeEnum::new(&v._ctx, BasicTypeEnum::from(v.inner))),
 
 			IRType::Struct(a) => Ok(BasicTypeEnum::from(a.inkwell_type)),
 			IRType::Layout(a) => Ok(BasicTypeEnum::from(a.inkwell_type)),
@@ -132,7 +153,7 @@ impl<'a> IRType<'a> {
 		}
 	}
 
-	pub fn get_inkwell_instance_basetype(&self, ctx: &'a IRContext<'a>) -> PositionlessResult<BasicTypeEnum<'a>> {
+	pub fn get_inkwell_instance_basetype(&self, ctx: &IRContext) -> PositionlessResult<BasicTypeEnum<'a>> {
 		match self {
 			IRType::Struct(_) | IRType::Layout(_) => Ok(ctx.ptr_type.into()),
 			_ => self.get_inkwell_basetype()

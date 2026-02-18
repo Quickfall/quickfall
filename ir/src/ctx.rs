@@ -1,5 +1,7 @@
 //! IR context related code
 
+use std::{mem::transmute, rc::Rc};
+
 use commons::{err::{PositionlessError, PositionlessResult}, utils::map::HashedMap};
 use inkwell::{AddressSpace, builder::Builder, context::Context, module::Module, types::{PointerType, VoidType}};
 
@@ -7,15 +9,15 @@ use crate::{irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVa
 
 /// The global IR context.
 /// Basically holds anything related to the current IR compilation (eg: functions, types, global vars)
-pub struct IRContext<'a> {
-	pub inkwell_ctx: &'a Context,
-	pub builder: Builder<'a>,
-	pub ptr_type: PointerType<'a>,
-	pub void_type: VoidType<'a>,
+pub struct IRContext {
+	pub inkwell_ctx: Rc<Context>,
+	pub builder: Builder<'static>,
+	pub ptr_type: PointerType<'static>,
+	pub void_type: VoidType<'static>,
 
-	pub module: Module<'a>,
+	pub module: Module<'static>,
 
-	pub type_storage: IRTypeStorage<'a>,
+	pub type_storage: IRTypeStorage,
 
 	pub functions: HashedMap<IRFunction<'a>>,
 	pub static_vars: HashedMap<IRStaticVariable<'a>>
@@ -64,19 +66,19 @@ impl<'a> IRContext<'a> {
 
 }
 
-pub struct LocalIRVariable<'a> {
-	pub ptr: IRPointer<'a>,
+pub struct LocalIRVariable {
+	pub ptr: IRPointer,
 	pub depth: usize // Depth is depth in body.
 }
 
 /// The local IR context.
 /// Holds anything held and created in the given body (eg: vars).
-pub struct IRLocalContext<'a> {
-	pub vars: HashedMap<LocalIRVariable<'a>>,
+pub struct IRLocalContext {
+	pub vars: HashedMap<LocalIRVariable>,
 	pub current_depth: usize, // Starts at 0 where 0 is function body
 }
 
-impl<'a> IRLocalContext<'a> {
+impl IRLocalContext {
 	pub fn new() -> Self {
 		return IRLocalContext { vars: HashedMap::new(0), current_depth: 0 }
 	}	

@@ -1,22 +1,24 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, rc::Rc};
 
 use commons::err::{PositionedError, PositionlessError, PositionlessResult};
 use inkwell::{basic_block::BasicBlock, builder::Builder, context::Context, module::Module, types::BasicType, values::{BasicValueEnum, FunctionValue, IntValue}};
 
 use crate::{ctx::{IRContext, IRLocalContext}, irstruct::ptr::IRPointer, refs::IRValueRef, types::typing::IRType, values::IRValue};
 
-pub struct IRFunction<'a> {
-	pub inkwell_func: FunctionValue<'a>,
-	ret_type: Option<&'a IRType<'a>>,
-	args: Vec<&'a IRType<'a>>,
+pub struct IRFunction {
+	inkwell_ctx: Rc<Context>,
+
+	pub inkwell_func: FunctionValue<'static>,
+	ret_type: Option<Rc<IRType>>,
+	args: Vec<Rc<IRType>>,
 	name: String,
 
-	pub lctx: RefCell<IRLocalContext<'a>>,
+	pub lctx: IRLocalContext<'a>,
 
-	entry: Option<BasicBlock<'a>>
+	entry: Option<BasicBlock<'static>>
 }
 
-impl<'a> IRFunction<'a> {
+impl IRFunction {
 	pub fn new(ctx: &'a IRContext, name: String, func: FunctionValue<'a>, ret_type: Option<&'a IRType<'a>>, args: Vec<&'a IRType<'a>>) -> Self {
 
 		let block = ctx.inkwell_ctx.append_basic_block(func, "entry");
