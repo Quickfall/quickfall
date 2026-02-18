@@ -52,7 +52,7 @@ impl<'a> IRFunction<'a> {
 		return Ok(IRFunction::new(ctx, name, func, ret_type, args));
 	}
 
-	pub fn call(&'a self, ctx: &'a IRContext<'a>, args: Vec<IRValueRef<'a>>) -> PositionlessResult<Option<IRPointer<'a>>> {
+	pub fn call(&'a self, ctx: &'a IRContext<'a>, args: Vec<IRValueRef<'a>>, grab_return: bool) -> PositionlessResult<Option<IRPointer<'a>>> {
 		let mut inkwell_args = vec![];
 
 		for arg in args {
@@ -63,6 +63,10 @@ impl<'a> IRFunction<'a> {
 			Ok(v) => v,
 			Err(_) => return Err(PositionlessError::new("build_call failed!"))
 		};
+
+		if !grab_return {
+			return Ok(None);
+		}
 
 		let val = match call.try_as_basic_value().basic() {
 			Some(v) => v,
