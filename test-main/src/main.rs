@@ -29,6 +29,9 @@ fn main() {
 	let int_type = storage.get(SIGNED32_TYPE_HASH).unwrap();
 	let ptr_type = storage.get(POINTER_TYPE_HASH).unwrap();
 
+	let printf_func = IRFunction::create_shadow(&irctx, String::from("printf"), &module, Some(int_type), vec![ptr_type]).unwrap();
+
+
 	let sample_substruct = IRType::Struct(
 		IRStructuredType::new(&irctx, String::from("uwuStruct"), true, vec![(8417845746417243860, int_type)]).unwrap()
 	);
@@ -42,9 +45,7 @@ fn main() {
 
 	let i32_type = context.i32_type();
 	
-	let printf_func = IRFunction::create_shadow(String::from("printf"), &module, int_type, vec![ptr_type]).unwrap();
-
-	let func = IRFunction::create(&context, String::from("main"), &module, t, vec![t, t]).expect("Couldn't make IR function");
+	let func = IRFunction::create(&irctx, String::from("main"), &module, Some(t), vec![t, t]).expect("Couldn't make IR function");
 	func.prepare_body_filling(&irctx.builder);
 
 	let fmt_str = IRStaticVariable::from_str(&irctx.builder, "Haiiiii, the value is %d\n", String::from("fmt_str"), int_type).unwrap();
@@ -64,7 +65,7 @@ fn main() {
 	
 	// End struct test
 	
-	printf_func.call(&irctx, vec![IRValueRef::from_static(fmt_str), IRValueRef::from_pointer(structInstance)]);
+	printf_func.call(&irctx, vec![IRValueRef::from_static(fmt_str), IRValueRef::from_pointer(structInstance)], false);
 	
 	irctx.builder.build_return(Some(&i32_type.const_zero()));
 

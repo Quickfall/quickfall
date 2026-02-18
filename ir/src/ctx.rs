@@ -1,8 +1,5 @@
 //! IR context related code
 
-use core::hash;
-use std::ops::Add;
-
 use commons::{err::{PositionlessError, PositionlessResult}, utils::map::HashedMap};
 use inkwell::{AddressSpace, builder::Builder, context::Context, types::{PointerType, VoidType}};
 
@@ -28,8 +25,8 @@ impl<'a> IRContext<'a> {
 	}
 
 	pub fn add_variable(&'a mut self, hash: u64, var: IRStaticVariable<'a>) -> PositionlessResult<bool> {
-		if self.static_vars.get(hash).is_some() {
-			return Err(PositionlessError::new(&format!("Variable named {} is already registered in the current context.", hash)));
+		if self.is_key_taken(hash) {
+			return Err(PositionlessError::new("There already is an element named like this!"));
 		}
 
 		self.static_vars.put(hash, var);
@@ -42,6 +39,27 @@ impl<'a> IRContext<'a> {
 			None => return Err(PositionlessError::new("Invalid variable name"))
 		};
 	}
+
+	pub fn is_key_taken(&'a self, hash: u64) -> bool {
+		return self.functions.get(hash).is_some() || self.static_vars.get(hash).is_some() || self.type_storage.get(hash).is_some();
+	}
+
+	pub fn get_funtion(&'a self, hash: u64) -> PositionlessResult<&'a IRFunction<'a>> {
+		return match self.functions.get(hash) {
+			Some(v) => Ok(v),
+			None => Err(PositionlessError::new("Invalid function name!"))
+		}
+	}
+
+	pub fn add_function(&'a mut self, hash: u64, func: IRFunction<'a>) -> PositionlessResult<bool> {
+		if self.is_key_taken(hash) {
+			return Err(PositionlessError::new("There already is an element named like this!"));
+		}
+
+		self.functions.put(hash, func);
+		return Ok(true);
+	}
+
 }
 
 pub struct LocalIRVariable<'a> {

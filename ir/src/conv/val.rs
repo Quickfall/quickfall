@@ -47,6 +47,15 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 			return Ok(var);
 		},
 
+		ASTTreeNode::FunctionCall { func, args } => {
+			let mut arguments = vec![];
+
+			for arg in *args {
+				arguments.push(parse_ir_value(lctx, ctx, arg)?);
+			}
+			
+		}
+
 		_ => return Err(PositionlessError::new("The given node cannot be parsed as a value!"))
 	}
 }
