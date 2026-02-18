@@ -49,6 +49,13 @@ impl<'a> IRValueRef<'a> {
 		}
 	}
 
+	pub fn as_pointer(&self) -> PositionlessResult<IRPointer<'a>> {
+		match &self.kind {
+			IRValueRefKind::Ptr(t, ptr) => return Ok(ptr.clone()),
+			_ => return Err(PositionlessError::new("Cannot cast said value reference as a pointer!"))
+		};
+	}
+
 	pub fn obtain_pointer(&self, ctx: &'a IRContext<'a>) -> PositionlessResult<PointerValue<'a>> {
 		match &self.kind {
 			IRValueRefKind::Ptr(_, ptr) => return Ok(ptr.inkwell_ptr),

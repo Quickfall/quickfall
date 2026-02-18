@@ -71,7 +71,7 @@ pub struct LocalIRVariable<'a> {
 /// Holds anything held and created in the given body (eg: vars).
 pub struct IRLocalContext<'a> {
 	pub vars: HashedMap<LocalIRVariable<'a>>,
-	pub current_depth: usize // Starts at 0 where 0 is function body
+	pub current_depth: usize, // Starts at 0 where 0 is function body
 }
 
 impl<'a> IRLocalContext<'a> {

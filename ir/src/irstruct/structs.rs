@@ -70,6 +70,30 @@ impl<'a> IRStructuredType<'a> {
 		return Ok(IRPointer::new(field_ptr, field_type, String::from("__inner_field_ptr")));
 	}
 
+	pub fn get_pointer_for_field_index_noref(&'a self, ctx: &'a IRContext<'a>, instance: IRPointer<'a>, ind: u32) -> PositionlessResult<IRPointer<'a>> {
+		if ind >= self.field_types.len() as u32 {
+			return Err(PositionlessError::new("Invalid index given to get_pointer_for_field_index"));
+		}
+
+		let field_ptr = match ctx.builder.build_struct_gep(self.inkwell_type, instance.inkwell_ptr, ind, "field_ptr") {
+			Ok(v) => v,
+			Err(_) => return Err(PositionlessError::new("build_struct_gep failed!"))
+		};
+
+		let field_type = self.field_types[ind as usize];
+
+		return Ok(IRPointer::new(field_ptr, field_type, String::from("__inner_field_ptr")));
+	}
+
+	pub fn get_pointer_for_field_noref(&'a self, ctx: &'a IRContext<'a>, instance: IRPointer<'a>, hash: u64) -> PositionlessResult<IRPointer<'a>> {
+		let k = match self.field_to_index.get(hash) {
+			Some(v) => *v,
+			None => return Err(PositionlessError::new(&format!("The given string hash {} doesn't represent any field in the struct {}", hash, self.name)))
+		};
+
+		return self.get_pointer_for_field_index_noref(ctx, instance, k);
+	}
+
 	pub fn get_pointer_for_field(&'a self, ctx: &'a IRContext<'a>, instance: &'a IRPointer<'a>, hash: u64) -> PositionlessResult<IRPointer<'a>> {
 		let k = match self.field_to_index.get(hash) {
 			Some(v) => *v,

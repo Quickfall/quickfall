@@ -3,7 +3,7 @@
 use commons::{err::{PositionlessError, PositionlessResult}};
 use inkwell::{types::StringRadix, values::{BasicValueEnum, IntValue}};
 
-use crate::types::typing::IRType;
+use crate::{irstruct::ptr::IRPointer, types::typing::IRType};
 
 /// The new IR value system. Allows for a close interaction with inkwell rather than a more AST-side one.
 /// # Safety

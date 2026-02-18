@@ -17,7 +17,7 @@ pub fn get_variable_ref<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>
 	};
 }
 
-pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, node: Box<ASTTreeNode>, left: Option<&'a IRPointer<'a>>) -> PositionlessResult<IRValueRef<'a>> {
+pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, node: Box<ASTTreeNode>, left: Option<IRPointer<'a>>) -> PositionlessResult<IRValueRef<'a>> {
 	match node.as_ref() {
 		ASTTreeNode::IntegerLit(v) => {
 			let t = ctx.type_storage.get(SIGNED64_TYPE_HASH);
@@ -42,12 +42,10 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 		},
 
 		ASTTreeNode::VariableReference(e) => {
-			if left.is_some() {
-				let instance_ptr = left.unwrap();
+			if left.as_ref().is_some() {
+				let struct_t = left.as_ref().unwrap().t.get_structured_type_descriptor()?;
 
-				let struct_t = instance_ptr.t.get_structured_type_descriptor()?;
-
-				let ptr = struct_t.get_pointer_for_field(ctx, instance_ptr, e.hash)?;
+				let ptr = struct_t.get_pointer_for_field_noref(ctx, left.unwrap(), e.hash)?;
 
 				return Ok(IRValueRef::from_pointer(ptr));
 			}
@@ -60,11 +58,9 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 		ASTTreeNode::FunctionCall { func, args } => {
 			let mut arguments = vec![];
 
-			if left.is_some() {
-				arguments.push(IRValueRef::from_pointer(IRPointer::clone(left.unwrap())));
+			if left.as_ref().is_some() {
+				arguments.push(IRValueRef::from_pointer(left.as_ref().unwrap().clone()));
 			}			
-
-			// TODO: support struct functions here
 
 			for arg in &args[0..args.len()] {
 				arguments.push(parse_ir_value(lctx, ctx, arg.clone(), None)?);
@@ -73,7 +69,7 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 			let res: Option<IRPointer<'a>>;
 	
 			if left.is_some() {
-				let descriptor = left.unwrap().t.get_structured_type_descriptor()?;
+				let descriptor = left.as_ref().unwrap().t.get_structured_type_descriptor()?;
 
 				let f = descriptor.get_function(func.hash)?;
 
@@ -89,6 +85,20 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 			}
 
 			return Ok(IRValueRef::from_pointer(res.unwrap()));
+		},
+
+		ASTTreeNode::StructLRFunction { l, r } => {
+			let l_val = parse_ir_value(lctx, ctx, l.clone(), None)?;
+			let l_ptr = l_val.as_pointer()?;
+			
+			return parse_ir_value(lctx, ctx, r.clone(), Some(l_ptr));
+		},
+
+		ASTTreeNode::StructLRVariable { l, r } => {
+			let l_val = parse_ir_value(lctx, ctx, l.clone(), None)?;
+			let l_ptr = l_val.as_pointer()?;
+
+			return parse_ir_value(lctx, ctx, r.clone(), Some(l_ptr));
 		}
 
 		_ => return Err(PositionlessError::new("The given node cannot be parsed as a value!"))
