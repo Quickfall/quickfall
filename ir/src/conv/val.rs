@@ -4,7 +4,7 @@ use commons::err::{PositionedError, PositionedResult, PositionlessError, Positio
 use inkwell::values::BasicValue;
 use parser::ast::tree::ASTTreeNode;
 
-use crate::{ctx::{IRContext, IRLocalContext}, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, math::make_math_operation, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED64_TYPE_HASH}, values::IRValue};
+use crate::{bools::{make_bool_cmp_int, make_bool_xor}, ctx::{IRContext, IRLocalContext}, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, math::make_math_operation, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED64_TYPE_HASH}, values::IRValue};
 
 pub fn get_variable_ref<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, hash: u64) -> PositionlessResult<IRValueRef<'a>> {
 	match ctx.get_variable(hash) {
@@ -116,6 +116,25 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 			}
 
 			return Ok(IRValueRef::from_val(IRValue::new(out.into(), t)));
+		},
+
+		ASTTreeNode::OperatorBasedConditionMember { lval, rval, operator } => {
+			let l_val = parse_ir_value(lctx, ctx, lval.clone(), None)?;
+			let r_val = parse_ir_value(lctx, ctx, rval.clone(), None)?;
+
+			let cmp = make_bool_cmp_int(ctx, l_val, r_val, operator.clone())?;
+
+			return Ok(IRValueRef::from_val(cmp));
+		},
+
+		ASTTreeNode::BooleanBasedConditionMember { val, negate } => {
+			let v = parse_ir_value(lctx, ctx, val.clone(), None)?;
+
+			if *negate {
+				return Ok(IRValueRef::from_val(make_bool_xor(ctx, v)?))
+			}
+
+			return Ok(v);
 		}
 
 		ASTTreeNode::StructLRFunction { l, r } => {
