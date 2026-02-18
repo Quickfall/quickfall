@@ -23,7 +23,9 @@ pub fn parse_ir_function_decl<'a>(ctx: &mut IRContext, node: Box<ASTTreeNode>) -
 			arguments.push(t);
 		}
 
-		let func = IRFunction::create(ctx, func_name.val, &ctx.module, return_type, arguments)?;
+		let mut func = IRFunction::create(ctx, func_name.val, &ctx.module, return_type, arguments)?;
+
+		parse_ir_body(ctx, &mut func, body)?;
 
 		ctx.add_function(func_name.hash, func);
 
@@ -31,6 +33,16 @@ pub fn parse_ir_function_decl<'a>(ctx: &mut IRContext, node: Box<ASTTreeNode>) -
 	}
 
 	return Err(PositionlessError::new("Given node in parse_ir_function_decl wasn't a function decl!"));
+}
+
+pub fn parse_ir_body(ctx: &IRContext, func: &mut IRFunction, nodes: Vec<Box<ASTTreeNode>>) -> PositionlessResult<bool> {
+	for node in nodes {
+		parse_ir_function_body_member(ctx, func, node)?;
+	}
+
+	func.lctx.end_nested_body_depth();
+
+	return Ok(true);
 }
 
 pub fn parse_ir_function_body_member<'a>(ctx: &IRContext, func: &mut IRFunction, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
@@ -41,17 +53,13 @@ pub fn parse_ir_function_body_member<'a>(ctx: &IRContext, func: &mut IRFunction,
 				None => return Err(PositionlessError::new(&format!("Cannot find variable type {} in type storage!", var_name.val)))
 			};
 
-			{
-				let initial = if let Some(v) = value {
-					Some(parse_ir_value(Some(&func.lctx), ctx, v, None)?)
-				} else {
-					None
-				};
-			}
+			let initial = if let Some(v) = value {
+				Some(parse_ir_value(Some(&func.lctx), ctx, v, None)?)
+			} else {
+				None
+			};
 
-			let ptr = IRPointer::create(ctx, var_name.val.clone(), var_t.clone(), None)?;
-
-			let ptr = IRPointer::create(ctx, var_name.val, var_t, None)?;
+			let ptr = IRPointer::create(ctx, var_name.val, var_t, initial)?;
 
 			func.lctx.add_variable(var_name.hash, ptr);
 

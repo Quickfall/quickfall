@@ -3,9 +3,9 @@ use std::sync::Condvar;
 use commons::err::{PositionlessError, PositionlessResult};
 use parser::ast::tree::ASTTreeNode;
 
-use crate::{conv::val::parse_ir_value, ctx::{IRContext, IRLocalContext}, irstruct::funcs::IRFunction, types::BOOL_TYPE_HASH};
+use crate::{conv::{func::parse_ir_body, val::parse_ir_value}, ctx::{IRContext, IRLocalContext}, irstruct::funcs::IRFunction, types::BOOL_TYPE_HASH};
 
-pub fn parse_if_statement_ir(func: &IRFunction, ctx: &IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
+pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
 	if let ASTTreeNode::IfStatement { cond, body, branches, depth } = *node {
 		let mut ir_branches = vec![];
 
@@ -45,6 +45,10 @@ pub fn parse_if_statement_ir(func: &IRFunction, ctx: &IRContext, node: Box<ASTTr
 			Err(_) => return Err(PositionlessError::new("build_conditional_branch initial failed!"))
 		};
 
+		ctx.builder.position_at_end(initial_branch);
+
+		parse_ir_body(ctx, func, body)?;
+
 		let mut ind = 0;
 		for branch in branches {
 			match *branch {
@@ -65,7 +69,7 @@ pub fn parse_if_statement_ir(func: &IRFunction, ctx: &IRContext, node: Box<ASTTr
 
 					ctx.builder.position_at_end(ir_branches[ind + 1]);
 
-					// TODO: write body here
+					parse_ir_body(ctx, func, body)?;
 
 					match ctx.builder.build_unconditional_branch(ir_branches[ir_branches.len() - 1]) {
 						Ok(_) => {},
@@ -78,7 +82,7 @@ pub fn parse_if_statement_ir(func: &IRFunction, ctx: &IRContext, node: Box<ASTTr
 				ASTTreeNode::ElseStatement { body } => {
 					ctx.builder.position_at_end(ir_branches[ind]);
 
-					// TODO: write body here
+					parse_ir_body(ctx, func, body)?;
 
 					match ctx.builder.build_unconditional_branch(ir_branches[ir_branches.len() - 1]) {
 						Ok(_) => {},
