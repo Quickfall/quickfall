@@ -1,9 +1,10 @@
 //! AST value -> IR value conversion
 
 use commons::err::{PositionedError, PositionedResult, PositionlessError, PositionlessResult};
+use inkwell::values::BasicValue;
 use parser::ast::tree::ASTTreeNode;
 
-use crate::{ctx::{IRContext, IRLocalContext}, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED64_TYPE_HASH}, values::IRValue};
+use crate::{ctx::{IRContext, IRLocalContext}, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, math::make_math_operation, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED64_TYPE_HASH}, values::IRValue};
 
 pub fn get_variable_ref<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, hash: u64) -> PositionlessResult<IRValueRef<'a>> {
 	match ctx.get_variable(hash) {
@@ -86,6 +87,36 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 
 			return Ok(IRValueRef::from_pointer(res.unwrap()));
 		},
+
+		ASTTreeNode::MathResult { lval, rval, operator, assigns } => {
+			let left = parse_ir_value(lctx, ctx, lval.clone(), None)?;
+			let right = parse_ir_value(lctx, ctx, rval.clone(), None)?;
+
+			let t = left.get_type();
+
+			let l_val = match left.obtain(ctx)?.obtain_as_int(t) {
+				Some(v) => v,
+				None => return Err(PositionlessError::new("lval on math operation wasn't a number!")),
+			};
+
+			let r_val = match right.obtain(ctx)?.obtain_as_int(t) {
+				Some(v) => v,
+				None => return Err(PositionlessError::new("lval on math operation wasn't a number!")),
+			};
+
+			let out = make_math_operation(&ctx.builder, l_val, r_val, String::from("_math"), operator.clone())?;
+
+			if *assigns {
+				if left.as_pointer().is_err() {
+					return Err(PositionlessError::new("Assignments were enabled on math operation while left value wasn't a variable!"));
+				}
+
+				let ptr = left.as_pointer()?;
+				ptr.store(&ctx.builder, out.as_basic_value_enum());
+			}
+
+			return Ok(IRValueRef::from_val(IRValue::new(out.into(), t)));
+		}
 
 		ASTTreeNode::StructLRFunction { l, r } => {
 			let l_val = parse_ir_value(lctx, ctx, l.clone(), None)?;

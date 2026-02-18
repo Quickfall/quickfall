@@ -49,6 +49,14 @@ impl<'a> IRValueRef<'a> {
 		}
 	}
 
+	pub fn get_type(&self) -> &'a IRType<'a> {
+		return match &self.kind {
+			IRValueRefKind::Val(v) => v.t,
+			IRValueRefKind::Ptr(t, _) => return *t,
+			IRValueRefKind::Global(t, _) => return *t
+		}
+	}
+
 	pub fn as_pointer(&self) -> PositionlessResult<IRPointer<'a>> {
 		match &self.kind {
 			IRValueRefKind::Ptr(t, ptr) => return Ok(ptr.clone()),
