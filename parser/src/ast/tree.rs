@@ -37,7 +37,7 @@ pub enum ASTTreeNode {
     VarValueChange { var: Box<ASTTreeNode>, value: Box<ASTTreeNode> },
 	VarIncrement { var: Box<ASTTreeNode>, increment_by: Option<Box<ASTTreeNode>> }, // Default is by 1
 
-	IfStatement { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>>, else_statement: Option<Box<ASTTreeNode>> },
+	IfStatement { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>>, else_statement: Option<Box<ASTTreeNode>>, depth: usize },
 	IfElseStatement { cond: Option<Box<ASTTreeNode>>, body: Vec<Box<ASTTreeNode>>, else_statement: Option<Box<ASTTreeNode>> },
 	ElseStatement { body: Vec<Box<ASTTreeNode>> },
 

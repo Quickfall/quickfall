@@ -34,18 +34,22 @@ pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Position
 
 	let mut else_statement = None;
 
+	let mut depth = 1;
+
 	if tokens[*ind].tok_type == LexerTokenType::Else {
 
-		else_statement = Some(parse_else_statement(tokens, ind)?);
+		else_statement = Some(parse_else_statement(tokens, ind, &mut depth)?);
 	}
 
-	return Ok(Box::new(ASTTreeNode::IfStatement { cond, body, else_statement }));
+	return Ok(Box::new(ASTTreeNode::IfStatement { cond, body, else_statement, depth }));
 }
 
-pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize, depth: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
 	*ind += 1;
 
 	let mut cond = None;
+
+	*depth += 1;
 
 	if tokens[*ind].tok_type == LexerTokenType::If {
 		*ind += 1;
@@ -63,7 +67,7 @@ pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Positi
 		let mut else_statement = None;
 
 		if tokens[*ind].tok_type == LexerTokenType::Else {
-			else_statement = Some(parse_else_statement(tokens, ind)?);
+			else_statement = Some(parse_else_statement(tokens, ind, depth)?);
 		}
 
 		return Ok(Box::new(ASTTreeNode::IfElseStatement { cond, body, else_statement: else_statement }));
