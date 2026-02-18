@@ -5,7 +5,7 @@ use crate::{ctx::IRContext, irstruct::ptr::IRPointer, refs::IRValueRef, types::t
 
 pub struct IRFunction<'a> {
 	pub inkwell_func: FunctionValue<'a>,
-	ret_type: &'a IRType<'a>,
+	ret_type: Option<&'a IRType<'a>>,
 	args: Vec<&'a IRType<'a>>,
 	name: String,
 
@@ -13,39 +13,45 @@ pub struct IRFunction<'a> {
 }
 
 impl<'a> IRFunction<'a> {
-	pub fn new(ctx: &'a Context, name: String, func: FunctionValue<'a>, ret_type: &'a IRType<'a>, args: Vec<&'a IRType<'a>>) -> Self {
+	pub fn new(ctx: &'a IRContext, name: String, func: FunctionValue<'a>, ret_type: Option<&'a IRType<'a>>, args: Vec<&'a IRType<'a>>) -> Self {
 
-		let block = ctx.append_basic_block(func, "entry");
+		let block = ctx.inkwell_ctx.append_basic_block(func, "entry");
 
 		return IRFunction { inkwell_func: func, ret_type, args, name, entry: Some(block) }
 	}
 
-	pub fn new_shadow(name: String, func: FunctionValue<'a>, ret_type: &'a IRType<'a>, args: Vec<&'a IRType<'a>>) -> Self {
+	pub fn new_shadow(name: String, func: FunctionValue<'a>, ret_type: Option<&'a IRType<'a>>, args: Vec<&'a IRType<'a>>) -> Self {
 		return IRFunction { inkwell_func: func, ret_type, args, name, entry: None }
 	}
 
-	pub fn create_shadow(name: String, module: &Module<'a>, ret_type: &'a IRType<'a>, args: Vec<&'a IRType<'a>>) -> PositionlessResult<Self> {
+	pub fn create_shadow(ctx: &'a IRContext, name: String, module: &Module<'a>, ret_type: Option<&'a IRType<'a>>, args: Vec<&'a IRType<'a>>) -> PositionlessResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
 			kargs.push(k.get_inkwell_base_metadatatype()?);
 		}
 
-		let t = ret_type.get_inkwell_basetype()?.fn_type(&kargs, false);
+		let t = match ret_type {
+			Some(ret) => ret.get_inkwell_basetype()?.fn_type(&kargs, false),
+			None => ctx.void_type.fn_type(&kargs, false)
+		};
 
 		let func = module.add_function(&name, t, None);
 
 		return Ok(IRFunction::new_shadow(name, func, ret_type, args));
 	}
 
-	pub fn create(ctx: &'a Context, name: String, module: &Module<'a>, ret_type: &'a IRType<'a>, args: Vec<&'a IRType<'a>>) -> PositionlessResult<Self> {
+	pub fn create(ctx: &'a IRContext, name: String, module: &Module<'a>, ret_type: Option<&'a IRType<'a>>, args: Vec<&'a IRType<'a>>) -> PositionlessResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
 			kargs.push(k.get_inkwell_base_metadatatype()?);
 		}
 
-		let t = ret_type.get_inkwell_basetype()?.fn_type(&kargs, false);
+		let t = match ret_type {
+			Some(ret) => ret.get_inkwell_basetype()?.fn_type(&kargs, false),
+			None => ctx.void_type.fn_type(&kargs, false)
+		};
 
 		let func = module.add_function(&name, t, None);
 
@@ -68,14 +74,19 @@ impl<'a> IRFunction<'a> {
 			return Ok(None);
 		}
 
+		let return_type = match self.ret_type {
+			Some(ret) => ret,
+			None => return Ok(None)
+		};
+
 		let val = match call.try_as_basic_value().basic() {
 			Some(v) => v,
 			None => return Ok(None)
 		};
 
-		let val = IRValue::new(val, self.ret_type);
+		let val = IRValue::new(val, return_type);
 
-		let pointer = IRPointer::create(ctx, format!("function_ret_{}", self.name), self.ret_type, Some(IRValueRef::from_val(val)))?;
+		let pointer = IRPointer::create(ctx, format!("function_ret_{}", self.name), return_type, Some(IRValueRef::from_val(val)))?;
 
 		return Ok(Some(pointer));
 	}
