@@ -1,7 +1,7 @@
 use commons::err::{PositionedError, PositionlessError, PositionlessResult};
 use inkwell::{basic_block::BasicBlock, builder::Builder, context::Context, module::Module, types::BasicType, values::{BasicValueEnum, FunctionValue, IntValue}};
 
-use crate::types::typing::IRType;
+use crate::{ctx::IRContext, irstruct::ptr::IRPointer, refs::IRValueRef, types::typing::IRType, values::IRValue};
 
 pub struct IRFunction<'a> {
 	pub inkwell_func: FunctionValue<'a>,
@@ -50,6 +50,30 @@ impl<'a> IRFunction<'a> {
 		let func = module.add_function(&name, t, None);
 
 		return Ok(IRFunction::new(ctx, name, func, ret_type, args));
+	}
+
+	pub fn call(&'a self, ctx: &'a IRContext<'a>, args: Vec<IRValueRef<'a>>) -> PositionlessResult<Option<IRPointer<'a>>> {
+		let mut inkwell_args = vec![];
+
+		for arg in args {
+			inkwell_args.push(arg.obtain(ctx)?.obtain().into());
+		}
+
+		let call = match ctx.builder.build_call(self.inkwell_func, &inkwell_args, &self.name) {
+			Ok(v) => v,
+			Err(_) => return Err(PositionlessError::new("build_call failed!"))
+		};
+
+		let val = match call.try_as_basic_value().basic() {
+			Some(v) => v,
+			None => return Ok(None)
+		};
+
+		let val = IRValue::new(val, self.ret_type);
+
+		let pointer = IRPointer::create(ctx, format!("function_ret_{}", self.name), self.ret_type, Some(IRValueRef::from_val(val)))?;
+
+		return Ok(Some(pointer));
 	}
 
 	/// Prepares the addition of the function body.

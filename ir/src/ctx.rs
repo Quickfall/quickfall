@@ -6,7 +6,7 @@ use std::ops::Add;
 use commons::{err::{PositionlessError, PositionlessResult}, utils::map::HashedMap};
 use inkwell::{AddressSpace, builder::Builder, context::Context, types::PointerType};
 
-use crate::irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable};
+use crate::{irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, types::storage::IRTypeStorage};
 
 /// The global IR context.
 /// Basically holds anything related to the current IR compilation (eg: functions, types, global vars)
@@ -15,13 +15,15 @@ pub struct IRContext<'a> {
 	pub builder: Builder<'a>,
 	pub ptr_type: PointerType<'a>,
 
+	pub type_storage: IRTypeStorage<'a>,
+
 	pub functions: HashedMap<IRFunction<'a>>,
 	pub static_vars: HashedMap<IRStaticVariable<'a>>
 }
 
 impl<'a> IRContext<'a> {
 	pub fn new(builder: Builder<'a>, ctx: &'a Context) -> Self {
-		return IRContext { inkwell_ctx: ctx, builder, ptr_type: ctx.ptr_type(AddressSpace::from(0)), functions: HashedMap::new(0), static_vars: HashedMap::new(0) }
+		return IRContext { inkwell_ctx: ctx, builder, ptr_type: ctx.ptr_type(AddressSpace::from(0)), functions: HashedMap::new(0), static_vars: HashedMap::new(0), type_storage: IRTypeStorage::new(&ctx) }
 	}
 
 	pub fn add_variable(&'a mut self, hash: u64, var: IRStaticVariable<'a>) -> PositionlessResult<bool> {

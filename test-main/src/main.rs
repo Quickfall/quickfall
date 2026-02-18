@@ -1,7 +1,8 @@
+use core::fmt;
 use std::{env, hash::{DefaultHasher, Hash, Hasher}};
 
 use inkwell::{context::Context, module::Module};
-use ir::{ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer, structs::IRStructuredType}, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED32_TYPE_HASH, UNSIGNED32_TYPE_HASH, storage::IRTypeStorage, typing::IRType}, values::IRValue};
+use ir::{ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable, structs::IRStructuredType}, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED32_TYPE_HASH, UNSIGNED32_TYPE_HASH, storage::IRTypeStorage, typing::IRType}, values::IRValue};
 use lexer::lexer::lexer_parse_file;
 use parser::{ast::func, parse_ast_ctx};
 
@@ -46,7 +47,8 @@ fn main() {
 	let func = IRFunction::create(&context, String::from("main"), &module, t, vec![t, t]).expect("Couldn't make IR function");
 	func.prepare_body_filling(&irctx.builder);
 
-	let fmt_str = &irctx.builder.build_global_string_ptr("Haiiiii, the value is %d\n", "fmt_str").unwrap();
+	let fmt_str = IRStaticVariable::from_str(&irctx.builder, "Haiiiii, the value is %d\n", String::from("fmt_str"), int_type).unwrap();
+	//let fmt_str = &irctx.builder.build_global_string_ptr("Haiiiii, the value is %d\n", "fmt_str").unwrap();
 
 	// Struct test
 	let structInstance = IRPointer::create(&irctx, String::from("test"), &sample_struct, None).unwrap();
@@ -62,15 +64,8 @@ fn main() {
 	
 	// End struct test
 	
-	let _ = irctx.builder.build_call(
-		printf_func.inkwell_func, 
-   &[
-			fmt_str.as_pointer_value().into(),
-			val.into(),
-		], 
-		"printf_call"
-	);
-
+	printf_func.call(&irctx, vec![IRValueRef::from_static(fmt_str), IRValueRef::from_pointer(structInstance)]);
+	
 	irctx.builder.build_return(Some(&i32_type.const_zero()));
 
 	module.print_to_file("output.ll").unwrap();

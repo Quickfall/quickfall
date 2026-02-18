@@ -32,15 +32,11 @@ impl<'a> IRStaticVariable<'a> {
 	}
 
 	pub fn as_val(&self) -> PositionlessResult<BasicValueEnum<'a>> {
-		if !self.is_compiletime_replaceable() {
-			return Err(PositionlessError::new("Tried using as_int_val on a non-compiletime determined global val"));
+		if self.val.is_some() {
+			return Ok(self.val.unwrap());
 		}
 
-		if !self.t.is_numeric_type() {
-			return Err(PositionlessError::new("Tried using as_int_val on a non-integer global value type!"));
-		}
-
-		return Ok(self.val.unwrap());
+		return Ok(self.as_string_ref()?.as_pointer_value().into())
 	}
 
 	pub fn as_string_ref(&self) -> PositionlessResult<GlobalValue<'a>> {
