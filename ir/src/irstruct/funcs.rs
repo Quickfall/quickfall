@@ -1,13 +1,17 @@
+use std::cell::RefCell;
+
 use commons::err::{PositionedError, PositionlessError, PositionlessResult};
 use inkwell::{basic_block::BasicBlock, builder::Builder, context::Context, module::Module, types::BasicType, values::{BasicValueEnum, FunctionValue, IntValue}};
 
-use crate::{ctx::IRContext, irstruct::ptr::IRPointer, refs::IRValueRef, types::typing::IRType, values::IRValue};
+use crate::{ctx::{IRContext, IRLocalContext}, irstruct::ptr::IRPointer, refs::IRValueRef, types::typing::IRType, values::IRValue};
 
 pub struct IRFunction<'a> {
 	pub inkwell_func: FunctionValue<'a>,
 	ret_type: Option<&'a IRType<'a>>,
 	args: Vec<&'a IRType<'a>>,
 	name: String,
+
+	pub lctx: RefCell<IRLocalContext<'a>>,
 
 	entry: Option<BasicBlock<'a>>
 }
@@ -17,11 +21,11 @@ impl<'a> IRFunction<'a> {
 
 		let block = ctx.inkwell_ctx.append_basic_block(func, "entry");
 
-		return IRFunction { inkwell_func: func, ret_type, args, name, entry: Some(block) }
+		return IRFunction { inkwell_func: func, ret_type, args, name, entry: Some(block), lctx: IRLocalContext::new().into() }
 	}
 
 	pub fn new_shadow(name: String, func: FunctionValue<'a>, ret_type: Option<&'a IRType<'a>>, args: Vec<&'a IRType<'a>>) -> Self {
-		return IRFunction { inkwell_func: func, ret_type, args, name, entry: None }
+		return IRFunction { inkwell_func: func, ret_type, args, name, entry: None, lctx: IRLocalContext::new().into() }
 	}
 
 	pub fn create_shadow(ctx: &'a IRContext, name: String, module: &Module<'a>, ret_type: Option<&'a IRType<'a>>, args: Vec<&'a IRType<'a>>) -> PositionlessResult<Self> {

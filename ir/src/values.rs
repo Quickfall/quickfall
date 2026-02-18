@@ -1,5 +1,7 @@
 //! IR value representation definitons
 
+use std::cell::{Ref, RefCell};
+
 use commons::{err::{PositionlessError, PositionlessResult}};
 use inkwell::{types::StringRadix, values::{BasicValueEnum, IntValue}};
 
@@ -11,13 +13,13 @@ use crate::{irstruct::ptr::IRPointer, types::typing::IRType};
 #[derive(Clone)]
 pub struct IRValue<'a> {
 	inkwell_val: BasicValueEnum<'a>,
-	pub t: &'a IRType<'a>, 
+	pub t: IRType<'a>,
 }
 
 impl<'a> IRValue<'a> {
 	/// Creates a new untracked instance
-	pub fn new(inkwell_val: BasicValueEnum<'a>, t: &'a IRType<'a>) -> Self {
-		return IRValue { inkwell_val, t }
+	pub fn new(inkwell_val: BasicValueEnum<'a>, t: &IRType<'a>) -> Self {
+		return IRValue { inkwell_val, t: t.clone() }
 	}
 
 	pub fn from_unsigned(t: &'a IRType<'a>, v: u128) -> PositionlessResult<Self> {

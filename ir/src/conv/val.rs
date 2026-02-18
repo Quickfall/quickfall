@@ -1,10 +1,10 @@
 //! AST value -> IR value conversion
 
-use commons::err::{PositionedError, PositionedResult, PositionlessError, PositionlessResult};
+use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::values::BasicValue;
 use parser::ast::tree::ASTTreeNode;
 
-use crate::{bools::{make_bool_cmp_int, make_bool_xor}, ctx::{IRContext, IRLocalContext}, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, math::make_math_operation, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED64_TYPE_HASH}, values::IRValue};
+use crate::{bools::{make_bool_cmp_int, make_bool_xor}, ctx::{IRContext, IRLocalContext}, irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, math::make_math_operation, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED64_TYPE_HASH}, values::IRValue};
 
 pub fn get_variable_ref<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, hash: u64) -> PositionlessResult<IRValueRef<'a>> {
 	match ctx.get_variable(hash) {
@@ -18,7 +18,7 @@ pub fn get_variable_ref<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>
 	};
 }
 
-pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, node: Box<ASTTreeNode>, left: Option<IRPointer<'a>>) -> PositionlessResult<IRValueRef<'a>> {
+pub fn parse_ir_value<'a>(func: Option<&'a IRFunction<'a>>, ctx: &'a IRContext<'a>, node: Box<ASTTreeNode>, left: Option<IRPointer<'a>>) -> PositionlessResult<IRValueRef<'a>> {
 	match node.as_ref() {
 		ASTTreeNode::IntegerLit(v) => {
 			let t = ctx.type_storage.get(SIGNED64_TYPE_HASH);
@@ -51,7 +51,7 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 				return Ok(IRValueRef::from_pointer(ptr));
 			}
 
-			let var = get_variable_ref(lctx, ctx, e.hash)?;
+			let var = get_variable_ref(&func.unwrap().lctx.borrow(), ctx, e.hash)?;
 
 			return Ok(var);
 		},
