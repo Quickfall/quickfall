@@ -42,6 +42,16 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 		},
 
 		ASTTreeNode::VariableReference(e) => {
+			if left.is_some() {
+				let instance_ptr = left.unwrap();
+
+				let struct_t = instance_ptr.t.get_structured_type_descriptor()?;
+
+				let ptr = struct_t.get_pointer_for_field(ctx, instance_ptr, e.hash)?;
+
+				return Ok(IRValueRef::from_pointer(ptr));
+			}
+
 			let var = get_variable_ref(lctx, ctx, e.hash)?;
 
 			return Ok(var);
