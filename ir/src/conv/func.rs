@@ -1,16 +1,18 @@
+use std::rc::Rc;
+
 use commons::err::{PositionlessError, PositionlessResult};
 use parser::ast::tree::ASTTreeNode;
 
 use crate::{conv::val::parse_ir_value, ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType};
 
-pub fn parse_ir_function_decl<'a>(ctx: &'a IRContext<'a>, node: Box<ASTTreeNode>) -> PositionlessResult<IRFunction<'a>> {
+pub fn parse_ir_function_decl<'a>(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<Rc<IRFunction>> {
 	if let ASTTreeNode::FunctionDeclaration { func_name, args, body, returnType } = *node {
 		let return_type = match returnType {
 			Some(h) => ctx.type_storage.get(h),
 			None => None
 		};
 
-		let mut arguments: Vec<&'a IRType<'a>> = vec![];
+		let mut arguments: Vec<Rc<IRType>> = vec![];
 
 		for k in args {
 			let t = match ctx.type_storage.get(k.argument_type) {
@@ -23,16 +25,15 @@ pub fn parse_ir_function_decl<'a>(ctx: &'a IRContext<'a>, node: Box<ASTTreeNode>
 
 		let func = IRFunction::create(ctx, func_name.val, &ctx.module, return_type, arguments)?;
 
-		return Ok(func);
+		ctx.add_function(func_name.hash, func);
+
+		return ctx.get_funtion(func_name.hash);
 	}
 
 	return Err(PositionlessError::new("Given node in parse_ir_function_decl wasn't a function decl!"));
 }
 
-pub fn parse_ir_function_body_member<'a>(ctx: &'a IRContext<'a>, func: &'a mut IRFunction<'a>, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
-
-	let mut lctx = func.lctx.borrow_mut();
-
+pub fn parse_ir_function_body_member<'a>(ctx: &IRContext, func: &mut IRFunction, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
 	match *node {
 		ASTTreeNode::VarDeclaration { var_name, var_type, value } => {
 			let var_t = match ctx.type_storage.get(var_type) {
@@ -42,17 +43,17 @@ pub fn parse_ir_function_body_member<'a>(ctx: &'a IRContext<'a>, func: &'a mut I
 
 			{
 				let initial = if let Some(v) = value {
-					Some(parse_ir_value(&mut lctx, ctx, v, None)?)
+					Some(parse_ir_value(Some(&func.lctx), ctx, v, None)?)
 				} else {
 					None
 				};
 			}
 
-			let ptr = IRPointer::create(ctx, var_name.val.clone(), var_t, None)?;
+			let ptr = IRPointer::create(ctx, var_name.val.clone(), var_t.clone(), None)?;
 
 			let ptr = IRPointer::create(ctx, var_name.val, var_t, None)?;
 
-			lctx.add_variable(var_name.hash, ptr);
+			func.lctx.add_variable(var_name.hash, ptr);
 
 			return Ok(true);
 		},

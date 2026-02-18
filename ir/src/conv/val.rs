@@ -1,14 +1,16 @@
 //! AST value -> IR value conversion
 
+use std::rc::Rc;
+
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::values::BasicValue;
 use parser::ast::tree::ASTTreeNode;
 
-use crate::{bools::{make_bool_cmp_int, make_bool_xor}, ctx::{IRContext, IRLocalContext}, irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, math::make_math_operation, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED64_TYPE_HASH}, values::IRValue};
+use crate::{bools::{make_bool_cmp_int, make_bool_xor}, ctx::{IRContext, IRLocalContext}, irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, math::make_math_operation, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED64_TYPE_HASH, typing::OwnedValueEnum}, values::IRValue};
 
-pub fn get_variable_ref<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, hash: u64) -> PositionlessResult<IRValueRef<'a>> {
+pub fn get_variable_ref(lctx: &IRLocalContext, ctx: &IRContext, hash: u64) -> PositionlessResult<IRValueRef> {
 	match ctx.get_variable(hash) {
-		Ok(v) => return Ok(IRValueRef::from_static(IRStaticVariable::clone(v))),
+		Ok(v) => return Ok(IRValueRef::from_static(v.clone())),
 		Err(_) => {}
 	};
 
@@ -18,7 +20,7 @@ pub fn get_variable_ref<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>
 	};
 }
 
-pub fn parse_ir_value<'a>(func: Option<&'a IRFunction<'a>>, ctx: &'a IRContext<'a>, node: Box<ASTTreeNode>, left: Option<IRPointer<'a>>) -> PositionlessResult<IRValueRef<'a>> {
+pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: Box<ASTTreeNode>, left: Option<IRPointer>) -> PositionlessResult<IRValueRef> {
 	match node.as_ref() {
 		ASTTreeNode::IntegerLit(v) => {
 			let t = ctx.type_storage.get(SIGNED64_TYPE_HASH);
@@ -27,7 +29,7 @@ pub fn parse_ir_value<'a>(func: Option<&'a IRFunction<'a>>, ctx: &'a IRContext<'
 				return Err(PositionlessError::new("Invalid type storage! si64 not found!"));
 			}
 
-			return Ok(IRValueRef::from_val(IRValue::from_signed(t.unwrap(), *v as i128)?));
+			return Ok(IRValueRef::from_val(IRValue::from_signed(ctx, t.unwrap(), *v as i128)?));
 		},
 
 		ASTTreeNode::StringLit(v) => {
@@ -37,9 +39,9 @@ pub fn parse_ir_value<'a>(func: Option<&'a IRFunction<'a>>, ctx: &'a IRContext<'
 				return Err(PositionlessError::new("Invalid type storage! pointer not found!"));
 			}
 
-			let global = IRStaticVariable::from_str(&ctx.builder, v, String::from("__string_literal"), t.unwrap())?;
+			let global = IRStaticVariable::from_str(&ctx, v, String::from("__string_literal"), t.unwrap())?;
 
-			return Ok(IRValueRef::from_static(global));
+			return Ok(IRValueRef::from_static(Rc::new(global)));
 		},
 
 		ASTTreeNode::VariableReference(e) => {
@@ -51,7 +53,7 @@ pub fn parse_ir_value<'a>(func: Option<&'a IRFunction<'a>>, ctx: &'a IRContext<'
 				return Ok(IRValueRef::from_pointer(ptr));
 			}
 
-			let var = get_variable_ref(&func.unwrap().lctx.borrow(), ctx, e.hash)?;
+			let var = get_variable_ref(&lctx.unwrap(), ctx, e.hash)?;
 
 			return Ok(var);
 		},
@@ -67,10 +69,11 @@ pub fn parse_ir_value<'a>(func: Option<&'a IRFunction<'a>>, ctx: &'a IRContext<'
 				arguments.push(parse_ir_value(lctx, ctx, arg.clone(), None)?);
 			}
 
-			let res: Option<IRPointer<'a>>;
+			let res: Option<IRPointer>;
 	
 			if left.is_some() {
-				let descriptor = left.as_ref().unwrap().t.get_structured_type_descriptor()?;
+				let t = left.as_ref().unwrap().t.clone();
+				let descriptor = t.get_structured_type_descriptor()?;
 
 				let f = descriptor.get_function(func.hash)?;
 
@@ -94,13 +97,13 @@ pub fn parse_ir_value<'a>(func: Option<&'a IRFunction<'a>>, ctx: &'a IRContext<'
 
 			let t = left.get_type();
 
-			let l_val = match left.obtain(ctx)?.obtain_as_int(t) {
-				Some(v) => v,
+			let l_val = match left.obtain(ctx)?.obtain_as_int(ctx, t.clone()) {
+				Some(v) => *v,
 				None => return Err(PositionlessError::new("lval on math operation wasn't a number!")),
 			};
 
-			let r_val = match right.obtain(ctx)?.obtain_as_int(t) {
-				Some(v) => v,
+			let r_val = match right.obtain(ctx)?.obtain_as_int(ctx, t.clone()) {
+				Some(v) => *v,
 				None => return Err(PositionlessError::new("lval on math operation wasn't a number!")),
 			};
 
@@ -112,10 +115,10 @@ pub fn parse_ir_value<'a>(func: Option<&'a IRFunction<'a>>, ctx: &'a IRContext<'
 				}
 
 				let ptr = left.as_pointer()?;
-				ptr.store(&ctx.builder, out.as_basic_value_enum());
+				ptr.store(ctx, out.as_basic_value_enum());
 			}
 
-			return Ok(IRValueRef::from_val(IRValue::new(out.into(), t)));
+			return Ok(IRValueRef::from_val(IRValue::new(OwnedValueEnum::new(&ctx.inkwell_ctx, out.into()), t)));
 		},
 
 		ASTTreeNode::OperatorBasedConditionMember { lval, rval, operator } => {
