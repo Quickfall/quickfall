@@ -17,7 +17,7 @@ pub fn get_variable_ref<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>
 	};
 }
 
-pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, node: Box<ASTTreeNode>) -> PositionlessResult<IRValueRef<'a>> {
+pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, node: Box<ASTTreeNode>, left: Option<&'a IRPointer<'a>>) -> PositionlessResult<IRValueRef<'a>> {
 	match node.as_ref() {
 		ASTTreeNode::IntegerLit(v) => {
 			let t = ctx.type_storage.get(SIGNED64_TYPE_HASH);
@@ -50,15 +50,29 @@ pub fn parse_ir_value<'a>(lctx: &'a IRLocalContext<'a>, ctx: &'a IRContext<'a>, 
 		ASTTreeNode::FunctionCall { func, args } => {
 			let mut arguments = vec![];
 
+			if left.is_some() {
+				arguments.push(IRValueRef::from_pointer(IRPointer::clone(left.unwrap())));
+			}			
+
 			// TODO: support struct functions here
 
 			for arg in &args[0..args.len()] {
-				arguments.push(parse_ir_value(lctx, ctx, arg.clone())?);
+				arguments.push(parse_ir_value(lctx, ctx, arg.clone(), None)?);
 			}
 
-			let f = ctx.get_funtion(func.hash)?;
+			let res: Option<IRPointer<'a>>;
+	
+			if left.is_some() {
+				let descriptor = left.unwrap().t.get_structured_type_descriptor()?;
 
-			let res = f.call(ctx, arguments, true)?;
+				let f = descriptor.get_function(func.hash)?;
+
+				res = f.call(ctx, arguments, true)?;
+			} else {
+				let f = ctx.get_funtion(func.hash)?;
+
+				res = f.call(ctx, arguments, true)?;
+			}
 
 			if res.is_none() {
 				return Err(PositionlessError::new(&format!("Cannot use the result of function {} as a value as it is void!", func.val)));
