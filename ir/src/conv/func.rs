@@ -66,7 +66,7 @@ pub fn parse_ir_function_body_member<'a>(ctx: &IRContext, func: &mut IRFunction,
 			println!("Var name: {}", var_name.val.clone());
 
 			let initial = if let Some(v) = value {
-				Some(parse_ir_value(Some(&func.lctx), ctx, v, None)?)
+				Some(parse_ir_value(Some(&func.lctx), ctx, v, None, true)?)
 			} else {
 				None
 			};
@@ -93,7 +93,7 @@ pub fn parse_ir_function_body_member<'a>(ctx: &IRContext, func: &mut IRFunction,
 				return Err(PositionlessError::new("Cannot use a math expression in IR body if it is not assignments!"))
 			}
 
-			parse_ir_value(Some(&func.lctx), ctx, node, None)?;
+			parse_ir_value(Some(&func.lctx), ctx, node, None, false)?;
 			return Ok(true);
 		}
 

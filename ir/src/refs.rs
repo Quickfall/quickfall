@@ -10,7 +10,8 @@ use crate::{ctx::IRContext, irstruct::{ptr::IRPointer, staticvars::IRStaticVaria
 pub enum IRValueRefKind {
 	Ptr(Rc<IRType>, IRPointer),
 	Val(IRValue),
-	Global(Rc<IRType>, Rc<IRStaticVariable>)
+	Global(Rc<IRType>, Rc<IRStaticVariable>),
+	TempString(String)
 }
 
 /// The IR value reference. Basically represents any value whatsoever, can handle every shape of values and is used for uniform handling. 
@@ -20,6 +21,10 @@ pub struct IRValueRef {
 }
 
 impl IRValueRef {
+	pub fn from_tempstr(str: String) -> Self {
+		return IRValueRef { kind: IRValueRefKind::TempString(str) }
+	}
+	
 	pub fn from_val(val: IRValue) -> Self {
 		return IRValueRef { kind: IRValueRefKind::Val(val) }
 	}
@@ -47,7 +52,9 @@ impl IRValueRef {
 
 			IRValueRefKind::Global(t, global) => {
 				Ok(IRValue::new(global.as_val()?, t.clone()))
-			}
+			},
+
+			_ => return Err(PositionlessError::new("Cannot use obtain on said IR value type!"))
 		}
 	}
 
@@ -55,10 +62,11 @@ impl IRValueRef {
 		return match &self.kind {
 			IRValueRefKind::Val(v) => v.t.clone(),
 			IRValueRefKind::Ptr(t, _) => return t.clone(),
-			IRValueRefKind::Global(t, _) => return t.clone()
+			IRValueRefKind::Global(t, _) => return t.clone(),
+			_ => panic!("Used get_type on temp string type!!")
 		}
 	}
-
+	
 	pub fn as_pointer(&self) -> PositionlessResult<IRPointer> {
 		match &self.kind {
 			IRValueRefKind::Ptr(t, ptr) => return Ok(ptr.clone()),
@@ -82,7 +90,16 @@ impl IRValueRef {
 				}
 
 				return Ok(OwnedPointerValue::new(&ctx.inkwell_ctx, g.as_string_ref()?.as_pointer_value()));
-			}
+			},
+
+			_ => return Err(PositionlessError::new("Cannot use obtain_pointer on given IR value type!"))
+		}
+	}
+
+	pub fn obtain_tempstr(&self) -> PositionlessResult<String> {
+		match &self.kind {
+			IRValueRefKind::TempString(e) => Ok(e.clone()),
+			_ => return Err(PositionlessError::new("Cannot get temp string from IR value type!"))
 		}
 	}
 

@@ -5,7 +5,7 @@ use std::{cell::Ref, collections::HashMap, mem::transmute, ops::Add, rc::Rc};
 use commons::utils::map::HashedMap;
 use inkwell::{AddressSpace, context::Context, types::{IntType, PointerType}};
 
-use crate::{ctx::IRContext, types::{BOOL_TYPE_HASH, POINTER_TYPE_HASH, SIGNED8_TYPE_HASH, SIGNED16_TYPE_HASH, SIGNED32_TYPE_HASH, SIGNED64_TYPE_HASH, SIGNED128_TYPE_HASH, UNSIGNED8_TYPE_HASH, UNSIGNED16_TYPE_HASH, UNSIGNED32_TYPE_HASH, UNSIGNED64_TYPE_HASH, UNSIGNED128_TYPE_HASH, typing::{IRType, OwnedIntType, OwnedPointerType}}, utils::SelfHash};
+use crate::{ctx::IRContext, types::{BOOL_TYPE_HASH, POINTER_TYPE_HASH, SIGNED8_TYPE_HASH, SIGNED16_TYPE_HASH, SIGNED32_TYPE_HASH, SIGNED64_TYPE_HASH, SIGNED128_TYPE_HASH, STATICSTR_TYPE_HASH, UNSIGNED8_TYPE_HASH, UNSIGNED16_TYPE_HASH, UNSIGNED32_TYPE_HASH, UNSIGNED64_TYPE_HASH, UNSIGNED128_TYPE_HASH, typing::{IRType, OwnedIntType, OwnedPointerType}}, utils::SelfHash};
 
 pub struct IRTypeStorage {
 	pub map: HashMap<SelfHash, Rc<IRType>>
@@ -37,6 +37,8 @@ impl IRTypeStorage {
 		sto.insert(SIGNED128_TYPE_HASH, IRType::Signed128(OwnedIntType::new(&ctx.inkwell_ctx, int128)));
 
 		sto.insert(POINTER_TYPE_HASH, IRType::Pointer(OwnedPointerType::new(&ctx.inkwell_ctx, ptr)));
+
+		sto.insert(STATICSTR_TYPE_HASH, IRType::StaticString(OwnedPointerType::new(&ctx.inkwell_ctx, ptr)));
 
 		sto.insert(BOOL_TYPE_HASH, IRType::Bool(OwnedIntType::new(&ctx.inkwell_ctx, bool)));
 

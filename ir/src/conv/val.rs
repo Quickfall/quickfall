@@ -20,7 +20,7 @@ pub fn get_variable_ref(lctx: &IRLocalContext, ctx: &IRContext, hash: u64) -> Po
 	};
 }
 
-pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: Box<ASTTreeNode>, left: Option<IRPointer>) -> PositionlessResult<IRValueRef> {
+pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: Box<ASTTreeNode>, left: Option<IRPointer>, in_var_decl: bool) -> PositionlessResult<IRValueRef> {
 	match node.as_ref() {
 		ASTTreeNode::IntegerLit(v) => {
 			let t = ctx.type_storage.get(SIGNED64_TYPE_HASH);
@@ -37,6 +37,11 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 
 			if !t.is_some() {
 				return Err(PositionlessError::new("Invalid type storage! pointer not found!"));
+			}
+
+			
+			if in_var_decl {
+				return Ok(IRValueRef::from_tempstr(v.clone()))
 			}
 
 			let global = IRStaticVariable::from_str(&ctx, v, String::from("__string_literal"), t.unwrap())?;
@@ -66,7 +71,7 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 			}			
 
 			for arg in &args[0..args.len()] {
-				arguments.push(parse_ir_value(lctx, ctx, arg.clone(), None)?);
+				arguments.push(parse_ir_value(lctx, ctx, arg.clone(), None, in_var_decl)?);
 			}
 
 			let res: Option<IRPointer>;
@@ -92,8 +97,8 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 		},
 
 		ASTTreeNode::MathResult { lval, rval, operator, assigns } => {
-			let left = parse_ir_value(lctx, ctx, lval.clone(), None)?;
-			let right = parse_ir_value(lctx, ctx, rval.clone(), None)?;
+			let left = parse_ir_value(lctx, ctx, lval.clone(), None, in_var_decl)?;
+			let right = parse_ir_value(lctx, ctx, rval.clone(), None, in_var_decl)?;
 
 			let t = left.get_type();
 
@@ -122,8 +127,8 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 		},
 
 		ASTTreeNode::OperatorBasedConditionMember { lval, rval, operator } => {
-			let l_val = parse_ir_value(lctx, ctx, lval.clone(), None)?;
-			let r_val = parse_ir_value(lctx, ctx, rval.clone(), None)?;
+			let l_val = parse_ir_value(lctx, ctx, lval.clone(), None, in_var_decl)?;
+			let r_val = parse_ir_value(lctx, ctx, rval.clone(), None, in_var_decl)?;
 
 			let cmp = make_bool_cmp_int(ctx, l_val, r_val, operator.clone())?;
 
@@ -131,7 +136,7 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 		},
 
 		ASTTreeNode::BooleanBasedConditionMember { val, negate } => {
-			let v = parse_ir_value(lctx, ctx, val.clone(), None)?;
+			let v = parse_ir_value(lctx, ctx, val.clone(), None, in_var_decl)?;
 
 			if *negate {
 				return Ok(IRValueRef::from_val(make_bool_xor(ctx, v)?))
@@ -141,17 +146,17 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 		}
 
 		ASTTreeNode::StructLRFunction { l, r } => {
-			let l_val = parse_ir_value(lctx, ctx, l.clone(), None)?;
+			let l_val = parse_ir_value(lctx, ctx, l.clone(), None, in_var_decl)?;
 			let l_ptr = l_val.as_pointer()?;
 			
-			return parse_ir_value(lctx, ctx, r.clone(), Some(l_ptr));
+			return parse_ir_value(lctx, ctx, r.clone(), Some(l_ptr), in_var_decl);
 		},
 
 		ASTTreeNode::StructLRVariable { l, r } => {
-			let l_val = parse_ir_value(lctx, ctx, l.clone(), None)?;
+			let l_val = parse_ir_value(lctx, ctx, l.clone(), None, in_var_decl)?;
 			let l_ptr = l_val.as_pointer()?;
 
-			return parse_ir_value(lctx, ctx, r.clone(), Some(l_ptr));
+			return parse_ir_value(lctx, ctx, r.clone(), Some(l_ptr), in_var_decl);
 		}
 
 		_ => return Err(PositionlessError::new("The given node cannot be parsed as a value!"))

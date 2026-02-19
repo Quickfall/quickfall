@@ -16,5 +16,7 @@ pub const POINTER_TYPE_HASH: u64 = 9259207781742941243;
 
 pub const BOOL_TYPE_HASH: u64 = 10699440025065254663;
 
+pub const STATICSTR_TYPE_HASH: u64 = 10484269008925909607;
+
 pub mod typing;
 pub mod storage;

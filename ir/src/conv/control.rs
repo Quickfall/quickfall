@@ -30,7 +30,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 		ir_branches.push(ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "out"));
 
-		let first_cond = parse_ir_value(Some(&func.lctx), ctx, cond, None)?;
+		let first_cond = parse_ir_value(Some(&func.lctx), ctx, cond, None, false)?;
 
 		let bool_type = ctx.type_storage.get(BOOL_TYPE_HASH).unwrap();
 
@@ -55,7 +55,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 				ASTTreeNode::IfElseStatement { cond, body } => {
 					ctx.builder.position_at_end(ir_branches[ind]);
 
-					let cond_val = parse_ir_value(Some(&func.lctx), ctx, cond.unwrap(), None)?;
+					let cond_val = parse_ir_value(Some(&func.lctx), ctx, cond.unwrap(), None, false)?;
 
 					let int_cond_val = match cond_val.obtain(ctx)?.obtain_as_bool() {
 						Some(v) => *v,
@@ -121,7 +121,7 @@ pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<
 
 		let bool_type = ctx.type_storage.get(BOOL_TYPE_HASH).expect("Boolean type wasn't found!");
 
-		let cond_val = parse_ir_value(Some(&func.lctx), ctx, cond, None)?;
+		let cond_val = parse_ir_value(Some(&func.lctx), ctx, cond, None, false)?;
 		let cond_int = cond_val.obtain(ctx)?.obtain_as_bool().expect("Cannot cast condition result as int");
 
 		ctx.builder.build_conditional_branch(*cond_int, for_body_block, post_block);
