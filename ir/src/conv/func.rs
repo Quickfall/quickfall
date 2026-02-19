@@ -3,7 +3,7 @@ use std::rc::Rc;
 use commons::err::{PositionlessError, PositionlessResult};
 use parser::ast::tree::ASTTreeNode;
 
-use crate::{conv::{control::parse_if_statement_ir, val::parse_ir_value}, ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType};
+use crate::{conv::{control::{parse_for_statement_ir, parse_if_statement_ir}, val::parse_ir_value}, ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType};
 
 pub fn parse_ir_function_decl<'a>(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<Rc<IRFunction>> {
 	if let ASTTreeNode::FunctionDeclaration { func_name, args, body, returnType } = *node {
@@ -77,6 +77,10 @@ pub fn parse_ir_function_body_member<'a>(ctx: &IRContext, func: &mut IRFunction,
 		ASTTreeNode::IfStatement { .. } => {
 			return parse_if_statement_ir(func, ctx, node);
 		},
+
+		ASTTreeNode::ForBlock {  .. } => {
+			return parse_for_statement_ir(func, ctx, node);
+		}
 
 		ASTTreeNode::MathResult { lval: _, rval: _ , operator: _, assigns } => {
 			if !assigns {
