@@ -47,7 +47,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 		ctx.builder.position_at_end(initial_branch);
 
 		func.lctx.increment_body_depth();
-		parse_ir_body(ctx, func, body)?;
+		parse_ir_body(ctx, func, body, true)?;
 
 		let mut ind = 0;
 		for branch in branches {
@@ -70,7 +70,8 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 					ctx.builder.position_at_end(ir_branches[ind + 1]);
 
 					func.lctx.increment_body_depth();
-					parse_ir_body(ctx, func, body)?;
+				
+					parse_ir_body(ctx, func, body, true)?;
 
 					match ctx.builder.build_unconditional_branch(ir_branches[ir_branches.len() - 1]) {
 						Ok(_) => {},
@@ -84,7 +85,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 					ctx.builder.position_at_end(ir_branches[ind]);
 
 					func.lctx.increment_body_depth();
-					parse_ir_body(ctx, func, body)?;
+					parse_ir_body(ctx, func, body, true)?;
 
 					match ctx.builder.build_unconditional_branch(ir_branches[ir_branches.len() - 1]) {
 						Ok(_) => {},
@@ -112,6 +113,8 @@ pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<
 
 		parse_ir_function_body_member(ctx, func, initial_state)?;
 
+		println!("Post initial state");
+
 		ctx.builder.build_unconditional_branch(for_cond_block);
 
 		ctx.builder.position_at_end(for_cond_block);
@@ -119,17 +122,20 @@ pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<
 		let bool_type = ctx.type_storage.get(BOOL_TYPE_HASH).expect("Boolean type wasn't found!");
 
 		let cond_val = parse_ir_value(Some(&func.lctx), ctx, cond, None)?;
-		let cond_int = cond_val.obtain(ctx)?.obtain_as_int(ctx, bool_type).expect("Cannot cast condition result as int");
+		let cond_int = cond_val.obtain(ctx)?.obtain_as_bool().expect("Cannot cast condition result as int");
 
 		ctx.builder.build_conditional_branch(*cond_int, for_body_block, post_block);
 		
 		ctx.builder.position_at_end(for_body_block);
 
-		parse_ir_body(ctx, func, body)?;
+		parse_ir_body(ctx, func, body, false)?;
 
 		parse_ir_function_body_member(ctx, func, increment)?;
 
+		ctx.builder.build_unconditional_branch(for_cond_block);
+
 		ctx.builder.position_at_end(post_block);
+		return Ok(true);
 	}
 
 

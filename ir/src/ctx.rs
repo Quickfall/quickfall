@@ -142,6 +142,7 @@ impl IRLocalContext {
 
 		for entry in self.vars.entries() {
 			if entry.1.depth > self.current_depth {
+				println!("Dropping variable in lctx with hash {}", entry.0);
 				hashToRemove.push(entry.0);
 			}
 		}
