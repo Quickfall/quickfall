@@ -50,7 +50,9 @@ pub enum ASTTreeNode {
 
     FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
     FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, returnType: Option<TypeHash> },
-	
+
+	ShadowFunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, returnType: Option<TypeHash> },
+
 	StructLRVariable { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>,},
 	StructLRFunction { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>, }
 }
@@ -65,7 +67,7 @@ impl ASTTreeNode {
 	}
 
 	pub fn is_tree_permissible(&self) -> bool {
-		return matches!(self, ASTTreeNode::FunctionDeclaration { .. } | ASTTreeNode::StaticVariableDeclaration { .. } | ASTTreeNode::StructLayoutDeclaration { .. })
+		return matches!(self, ASTTreeNode::FunctionDeclaration { .. } | ASTTreeNode::StaticVariableDeclaration { .. } | ASTTreeNode::ShadowFunctionDeclaration { .. }| ASTTreeNode::StructLayoutDeclaration { .. })
 	}
 
 	pub fn get_tree_name(&self) -> Option<WithHash<String>> {
@@ -73,6 +75,10 @@ impl ASTTreeNode {
 			ASTTreeNode::FunctionDeclaration { func_name, args, body, returnType } => {
 				return Some(WithHash::new(func_name.val.to_string()));
 			},
+
+			ASTTreeNode::ShadowFunctionDeclaration { func_name, args, returnType } => {
+				return Some(WithHash::new(func_name.val.to_string()))
+			}
 
 			ASTTreeNode::StaticVariableDeclaration { name, var_type, val } => {
 				return Some(WithHash::new(name.val.clone()));
