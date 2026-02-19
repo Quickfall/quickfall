@@ -1,4 +1,4 @@
-use core::fmt;
+use core::{fmt, hash};
 use std::{env, hash::{DefaultHasher, Hash, Hasher}, rc::Rc};
 
 use inkwell::{context::Context, module::Module};
@@ -16,6 +16,11 @@ fn main() {
 
 	let context = Rc::new(Context::create());
 	
+	let mut hasher=  DefaultHasher::new();
+	"ptr".hash(&mut hasher);
+
+	println!("{}", hasher.finish());
+
 	let mut irctx = IRContext::new(context);
 
 	for entry in ctx.iter_order {

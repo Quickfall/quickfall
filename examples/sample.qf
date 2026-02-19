@@ -1,5 +1,7 @@
 static staticstr bobby = "Hellossssss"
 
-func test() {
-	
+shadowfunc printf(ptr str_pointer)
+
+func main() {
+	printf(bobby)
 }

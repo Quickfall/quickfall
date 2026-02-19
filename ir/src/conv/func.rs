@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
 use commons::err::{PositionlessError, PositionlessResult};
-use parser::ast::{func, tree::ASTTreeNode};
+use parser::{ast::{func, tree::ASTTreeNode}, parse_ast_ctx};
 
-use crate::{conv::{control::{parse_for_statement_ir, parse_if_statement_ir}, val::parse_ir_value}, ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType};
+use crate::{conv::{control::{parse_for_statement_ir, parse_if_statement_ir}, val::parse_ir_value}, ctx::{IRContext, IRLocalContext}, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType};
 
 pub fn parse_ir_shadow_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<Rc<IRFunction>> {
 	if let ASTTreeNode::ShadowFunctionDeclaration { func_name, args, returnType } = *node {
@@ -83,7 +83,33 @@ pub fn parse_ir_body(ctx: &IRContext, func: &mut IRFunction, nodes: Vec<Box<ASTT
 	return Ok(true);
 }
 
-pub fn parse_ir_function_body_member<'a>(ctx: &IRContext, func: &mut IRFunction, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
+pub fn parse_ir_function_call(ctx: &IRContext, lctx: &IRLocalContext, node: Box<ASTTreeNode>, owner: Option<IRPointer>, grab_result: bool) -> PositionlessResult<Option<IRValueRef>> {
+	if let ASTTreeNode::FunctionCall { func, args } = *node {
+		let mut arguments = vec![];
+
+		if owner.as_ref().is_some() {
+			arguments.push(IRValueRef::from_pointer(owner.as_ref().unwrap().clone()));
+		}	
+
+		for v in args {
+			arguments.push(parse_ir_value(Some(lctx), ctx, v, None, false)?);
+		}
+
+		let func = ctx.get_funtion(func.hash)?;
+
+		let ret =func.call(ctx, arguments, grab_result)?;
+
+		if !grab_result || ret.is_none() {
+			return Ok(None);
+		}
+
+		return Ok(Some(IRValueRef::from_pointer(ret.unwrap())));
+	}
+
+	return Err(PositionlessError::new("Cannot parse ir function call as the node is not a function call"))
+}
+
+pub fn parse_ir_function_body_member(ctx: &IRContext, func: &mut IRFunction, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
 	match *node {
 		ASTTreeNode::VarDeclaration { var_name, var_type, value } => {
 			let var_t = match ctx.type_storage.get(var_type) {
@@ -107,6 +133,25 @@ pub fn parse_ir_function_body_member<'a>(ctx: &IRContext, func: &mut IRFunction,
 
 			return Ok(true);
 		},
+
+		ASTTreeNode::StructLRFunction { .. } =>  {
+			parse_ir_value(Some(&func.lctx), ctx, node, None, false)?;
+
+			return Ok(true)
+		},
+
+		ASTTreeNode::StructLRVariable { .. } => { 
+			parse_ir_value(Some(&func.lctx), ctx, node, None, false)?;
+
+			return Ok(true)
+		},
+
+		ASTTreeNode::FunctionCall { .. } => {
+			parse_ir_function_call(ctx, &func.lctx, node, None, false)?;
+			
+			return Ok(true)
+
+		}
 
 		ASTTreeNode::IfStatement { .. } => {
 			return parse_if_statement_ir(func, ctx, node);
