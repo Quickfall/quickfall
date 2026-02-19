@@ -29,7 +29,11 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 				return Err(PositionlessError::new("Invalid type storage! integer type indicator not found!"));
 			}
 
-			return Ok(IRValueRef::from_val(IRValue::from_signed(ctx, t.unwrap(), *v as i128)?));
+			if t.as_ref().unwrap().is_signed() {
+				return Ok(IRValueRef::from_val(IRValue::from_signed(ctx, t.as_ref().unwrap().clone(), *v as i128)?));
+			} else {
+				return Ok(IRValueRef::from_val(IRValue::from_unsigned(ctx, t.as_ref().unwrap().clone(), *v as u128)?));
+			}		
 		},
 
 		ASTTreeNode::StringLit(v) => {

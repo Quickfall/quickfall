@@ -1,9 +1,12 @@
 static staticstr bobby = "\nHellossssss %d"
 
 shadowfunc printf(ptr str_ptr) si32
+shadowfunc malloc(un64 sz) ptr
 
 func main() si32 {
 	var si32 test = 65_si32
+
+	malloc(544_un64)
 
 	printf(bobby, test)
 
