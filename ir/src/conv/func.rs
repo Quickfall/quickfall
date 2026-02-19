@@ -1,11 +1,39 @@
 use std::rc::Rc;
 
 use commons::err::{PositionlessError, PositionlessResult};
-use parser::ast::tree::ASTTreeNode;
+use parser::ast::{func, tree::ASTTreeNode};
 
 use crate::{conv::{control::{parse_for_statement_ir, parse_if_statement_ir}, val::parse_ir_value}, ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType};
 
-pub fn parse_ir_function_decl<'a>(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<Rc<IRFunction>> {
+pub fn parse_ir_shadow_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<Rc<IRFunction>> {
+	if let ASTTreeNode::ShadowFunctionDeclaration { func_name, args, returnType } = *node {
+		let return_type = match returnType {
+			Some(h) => ctx.type_storage.get(h),
+			None => None
+		};
+
+		let mut arguments: Vec<Rc<IRType>> = vec![];
+
+		for k in args {
+			let t = match ctx.type_storage.get(k.argument_type) {
+				Some(v) => v,
+				None => return Err(PositionlessError::new(&format!("Cannot get type with hash {} for argument {}!", k.argument_type, k.name.val)))
+			};
+
+			arguments.push(t);
+		}
+
+		let func = IRFunction::create_shadow(ctx, func_name.val.clone(), &ctx.module, return_type, arguments)?;
+
+		ctx.add_function(func_name.hash, func)?;
+
+		return Ok(ctx.get_funtion(func_name.hash)?);		
+	}	
+
+	return Err(PositionlessError::new("Cannot parse ir shadow funtion decl as the node is incompatible!"));
+}
+
+pub fn parse_ir_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<Rc<IRFunction>> {
 	if let ASTTreeNode::FunctionDeclaration { func_name, args, body, returnType } = *node {
 		let return_type = match returnType {
 			Some(h) => ctx.type_storage.get(h),

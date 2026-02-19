@@ -3,7 +3,7 @@
 use commons::err::{PositionlessError, PositionlessResult};
 use parser::ast::tree::ASTTreeNode;
 
-use crate::{conv::{func::parse_ir_function_decl, structs::parse_ir_struct_decl, val::parse_ir_value}, ctx::IRContext, irstruct::staticvars::IRStaticVariable, types::STATICSTR_TYPE_HASH};
+use crate::{conv::{func::{parse_ir_function_decl, parse_ir_shadow_function_decl}, structs::parse_ir_struct_decl, val::parse_ir_value}, ctx::IRContext, irstruct::staticvars::IRStaticVariable, types::STATICSTR_TYPE_HASH};
 
 pub mod val;
 pub mod func;
@@ -45,6 +45,12 @@ pub fn parse_ir_node_toplevel(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> Po
 
 			return Ok(true);
 		},
+
+		ASTTreeNode::ShadowFunctionDeclaration { .. } => {
+			parse_ir_shadow_function_decl(ctx, node)?;
+
+			return Ok(true);
+		}
 
 		ASTTreeNode::StructLayoutDeclaration { .. } =>  {
 			parse_ir_struct_decl(ctx, node)?;
