@@ -101,3 +101,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 	return Err(PositionlessError::new("Cannot parse if statement as this is not an if!"));
 }
+
+pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
+	return Err(PositionlessError::new("Cannot parse for statement as this is not an for!"));
+}

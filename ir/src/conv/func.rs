@@ -69,13 +69,22 @@ pub fn parse_ir_function_body_member<'a>(ctx: &IRContext, func: &mut IRFunction,
 
 			let ptr = IRPointer::create(ctx, var_name.val, var_t, initial)?;
 
-			func.lctx.add_variable(var_name.hash, ptr);
+			func.lctx.add_variable(var_name.hash, ptr)?;
 
 			return Ok(true);
 		},
 
 		ASTTreeNode::IfStatement { .. } => {
 			return parse_if_statement_ir(func, ctx, node);
+		},
+
+		ASTTreeNode::MathResult { lval: _, rval: _ , operator: _, assigns } => {
+			if !assigns {
+				return Err(PositionlessError::new("Cannot use a math expression in IR body if it is not assignments!"))
+			}
+
+			parse_ir_value(Some(&func.lctx), ctx, node, None)?;
+			return Ok(true);
 		}
 
 		_ => return Err(PositionlessError::new("Cannot parse said ASTNode as a function body member!"))
