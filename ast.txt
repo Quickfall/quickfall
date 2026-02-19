@@ -1,0 +1,198 @@
+Calling function call parsing on kwd abc
+Tok: Dot
+Tok: Var
+Calling function call parsing on kwd abs
+Tok: ComparingOperator(
+    HigherEqual,
+)
+Calling function call parsing on kwd def
+Tok: If
+Ok(
+    ParserCtx {
+        map: {
+            "main": FunctionDeclaration {
+                func_name: WithHash {
+                    val: "main",
+                    hash: 14467718814232352107,
+                },
+                args: [
+                    FunctionDeclarationArgument {
+                        name: WithHash {
+                            val: "myTestArg",
+                            hash: 14273091031817137443,
+                        },
+                        argument_type: 11583643502875509928,
+                    },
+                    FunctionDeclarationArgument {
+                        name: WithHash {
+                            val: "age",
+                            hash: 11942856677619760021,
+                        },
+                        argument_type: 11583643502875509928,
+                    },
+                ],
+                body: [
+                    VarDeclaration {
+                        var_name: WithHash {
+                            val: "test",
+                            hash: 14402189752926126668,
+                        },
+                        var_type: 11583643502875509928,
+                        value: Some(
+                            StructLRVariable {
+                                l: StructLRFunction {
+                                    l: VariableReference(
+                                        WithHash {
+                                            val: "test",
+                                            hash: 14402189752926126668,
+                                        },
+                                    ),
+                                    r: FunctionCall {
+                                        func: WithHash {
+                                            val: "abc",
+                                            hash: 17224545590736200989,
+                                        },
+                                        args: [],
+                                    },
+                                },
+                                r: VariableReference(
+                                    WithHash {
+                                        val: "test",
+                                        hash: 14402189752926126668,
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    VarDeclaration {
+                        var_name: WithHash {
+                            val: "test2",
+                            hash: 12720938724704517959,
+                        },
+                        var_type: 11583643502875509928,
+                        value: Some(
+                            OperatorBasedConditionMember {
+                                lval: StructLRFunction {
+                                    l: VariableReference(
+                                        WithHash {
+                                            val: "test",
+                                            hash: 14402189752926126668,
+                                        },
+                                    ),
+                                    r: FunctionCall {
+                                        func: WithHash {
+                                            val: "abs",
+                                            hash: 10550511239753159873,
+                                        },
+                                        args: [],
+                                    },
+                                },
+                                rval: StructLRFunction {
+                                    l: VariableReference(
+                                        WithHash {
+                                            val: "test",
+                                            hash: 14402189752926126668,
+                                        },
+                                    ),
+                                    r: FunctionCall {
+                                        func: WithHash {
+                                            val: "def",
+                                            hash: 9341360902760800985,
+                                        },
+                                        args: [],
+                                    },
+                                },
+                                operator: HigherEqual,
+                            },
+                        ),
+                    },
+                    IfStatement {
+                        cond: OperatorBasedConditionMember {
+                            lval: VariableReference(
+                                WithHash {
+                                    val: "test2",
+                                    hash: 12720938724704517959,
+                                },
+                            ),
+                            rval: VariableReference(
+                                WithHash {
+                                    val: "test",
+                                    hash: 14402189752926126668,
+                                },
+                            ),
+                            operator: HigherEqual,
+                        },
+                        body: [
+                            VarDeclaration {
+                                var_name: WithHash {
+                                    val: "age",
+                                    hash: 11942856677619760021,
+                                },
+                                var_type: 11583643502875509928,
+                                value: Some(
+                                    IntegerLit(
+                                        0,
+                                    ),
+                                ),
+                            },
+                        ],
+                        else_statement: Some(
+                            IfElseStatement {
+                                cond: Some(
+                                    OperatorBasedConditionMember {
+                                        lval: VariableReference(
+                                            WithHash {
+                                                val: "test2",
+                                                hash: 12720938724704517959,
+                                            },
+                                        ),
+                                        rval: VariableReference(
+                                            WithHash {
+                                                val: "test",
+                                                hash: 14402189752926126668,
+                                            },
+                                        ),
+                                        operator: Equal,
+                                    },
+                                ),
+                                body: [
+                                    VarDeclaration {
+                                        var_name: WithHash {
+                                            val: "age",
+                                            hash: 11942856677619760021,
+                                        },
+                                        var_type: 11583643502875509928,
+                                        value: Some(
+                                            IntegerLit(
+                                                63,
+                                            ),
+                                        ),
+                                    },
+                                ],
+                                else_statement: Some(
+                                    ElseStatement {
+                                        body: [
+                                            VarDeclaration {
+                                                var_name: WithHash {
+                                                    val: "age",
+                                                    hash: 11942856677619760021,
+                                                },
+                                                var_type: 11583643502875509928,
+                                                value: Some(
+                                                    IntegerLit(
+                                                        68,
+                                                    ),
+                                                ),
+                                            },
+                                        ],
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ],
+                returnType: None,
+            },
+        },
+    },
+)

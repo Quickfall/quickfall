@@ -70,6 +70,8 @@ version = "0.1.0"
 dependencies = [
  "commons",
  "inkwell",
+ "lexer",
+ "parser",
 ]
 
 [[package]]
@@ -171,6 +173,8 @@ dependencies = [
 name = "test-main"
 version = "0.1.0"
 dependencies = [
+ "inkwell",
+ "ir",
  "lexer",
  "parser",
 ]

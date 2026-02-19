@@ -18,7 +18,11 @@ pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> Positio
 	
 	while tokens[*ind].tok_type != LexerTokenType::ParenClose {
 		vals.push(parse_ast_value(tokens, ind)?);
-		
+
+		if tokens[*ind].tok_type == LexerTokenType::ParenClose {
+			break;
+		}
+
 		tokens[*ind].expects(LexerTokenType::Comma)?;
 
 		*ind += 1;

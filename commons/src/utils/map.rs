@@ -7,6 +7,7 @@ const BUCKET_TOMBSTONE: u8 = 0x01;
 
 const MAP_LOAD_FACTOR: f64 = 0.85;
 
+#[derive(Debug)]
 pub struct HashedMap<V> {
 	meta: Vec<u8>,
 	buckets: Vec<MaybeUninit<(u64, V)>>,
@@ -34,6 +35,9 @@ impl<V> HashedMap<V> {
 	}
 
 	pub fn put(&mut self, key: u64, val: V) {
+
+		println!("Hash {}", key);
+
 		let index = self.index_from_hash(key);
 		let fingerprint = self.fingerprint_from_hash(key);
 
@@ -113,6 +117,21 @@ impl<V> HashedMap<V> {
 
         return None;
 	}
+
+	pub fn entries(&self) -> Vec<&(u64, V)> {
+		let mut vec = Vec::new();
+
+		for i in 0..self.capacity {
+			if self.meta[i] == BUCKET_EMPTY || self.meta[i] == BUCKET_TOMBSTONE {
+				continue;
+			}
+
+			unsafe { vec.push(self.buckets[i].assume_init_ref()); }
+		}
+		
+		return vec;
+	}
+
 
 	pub fn erase(&mut self, key: u64) {
         let index = self.index_from_hash(key);

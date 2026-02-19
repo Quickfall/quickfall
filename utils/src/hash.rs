@@ -14,7 +14,7 @@ pub type TypeHash = u64;
 #[derive(Debug, PartialEq, Clone)]
 pub struct WithHash<K: Hash> {
     pub val: K,
-    hash: u64
+    pub hash: u64
 }
 
 impl <K: Hash> WithHash<K> {

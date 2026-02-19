@@ -5,8 +5,6 @@
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 use utils::hash::{TypeHash, WithHash};
 
-use crate::ast::func;
-
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
     pub name: WithHash<String>,
@@ -39,18 +37,22 @@ pub enum ASTTreeNode {
     VarValueChange { var: Box<ASTTreeNode>, value: Box<ASTTreeNode> },
 	VarIncrement { var: Box<ASTTreeNode>, increment_by: Option<Box<ASTTreeNode>> }, // Default is by 1
 
-	IfStatement { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>>, else_statement: Option<Box<ASTTreeNode>> },
-	IfElseStatement { cond: Option<Box<ASTTreeNode>>, body: Vec<Box<ASTTreeNode>>, else_statement: Option<Box<ASTTreeNode>> },
+	IfStatement { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>>, branches: Vec<Box<ASTTreeNode>>, depth: usize },
+	IfElseStatement { cond: Option<Box<ASTTreeNode>>, body: Vec<Box<ASTTreeNode>> },
 	ElseStatement { body: Vec<Box<ASTTreeNode>> },
+
+	ReturnStatement { val: Option<Box<ASTTreeNode>> },
+
+	StaticVariableDeclaration { name: WithHash<String>, var_type: TypeHash, val: Box<ASTTreeNode> },
 
 	WhileBlock { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 	ForBlock { initial_state: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 
-    Return { value: Option<Box<ASTTreeNode>> },
-
     FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
-    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>> },
-	
+    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, returnType: Option<TypeHash> },
+
+	ShadowFunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, returnType: Option<TypeHash> },
+
 	StructLRVariable { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>,},
 	StructLRFunction { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>, }
 }
@@ -65,13 +67,21 @@ impl ASTTreeNode {
 	}
 
 	pub fn is_tree_permissible(&self) -> bool {
-		return matches!(self, ASTTreeNode::FunctionDeclaration { .. } | ASTTreeNode::StructLayoutDeclaration { .. })
+		return matches!(self, ASTTreeNode::FunctionDeclaration { .. } | ASTTreeNode::StaticVariableDeclaration { .. } | ASTTreeNode::ShadowFunctionDeclaration { .. }| ASTTreeNode::StructLayoutDeclaration { .. })
 	}
 
 	pub fn get_tree_name(&self) -> Option<WithHash<String>> {
 		match self {
-			ASTTreeNode::FunctionDeclaration { func_name, args, body } => {
+			ASTTreeNode::FunctionDeclaration { func_name, args, body, returnType } => {
 				return Some(WithHash::new(func_name.val.to_string()));
+			},
+
+			ASTTreeNode::ShadowFunctionDeclaration { func_name, args, returnType } => {
+				return Some(WithHash::new(func_name.val.to_string()))
+			}
+
+			ASTTreeNode::StaticVariableDeclaration { name, var_type, val } => {
+				return Some(WithHash::new(name.val.clone()));
 			},
 
 			ASTTreeNode::StructLayoutDeclaration { name, layout, members } => {

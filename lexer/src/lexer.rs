@@ -8,6 +8,7 @@ use commons::Position;
 
 use crate::{LexerParseResult, LexerParsingError, token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
 
+const SHADOWFUNC_KEYWORD_HASH: u64 = 8856473617513302734;
 const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
 const RET_KEYWORD_HASH: u64 = 9222097151127739705;
 const VAR_KEYWORD_HASH: u64 = 10000921911505692860;
@@ -20,6 +21,7 @@ const IF_KEYWORD_HASH: u64 = 14565880314940941169;
 const ELSE_KEYWORD_HASH: u64 = 15870633062462684568;
 const WHILE_KEYWORD_HASH: u64 = 10666076348663826897;
 const FOR_KEYWORD_HASH: u64 = 8246706989536534387;
+const STATIC_KEYWORD_HASH: u64 = 15057913784433987235;
 
 /// Parses a file into a set of lexer tokens.
 /// 
@@ -246,7 +248,7 @@ fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
         end = start + i + c.len_utf8();
     }
 
-    let slice = &str[*ind..end];
+    let slice = &str[*ind + 1..end - 1];
 
     *ind = end;
     
@@ -277,6 +279,7 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 
     let token_type = match hash {
         FUNC_KEYWORD_HASH => LexerTokenType::Function,
+		SHADOWFUNC_KEYWORD_HASH => LexerTokenType::ShadowFunction,
         RET_KEYWORD_HASH => LexerTokenType::Return,
 		STRUCT_KEYWORD_HASH => LexerTokenType::Struct,
 		LAYOUT_KEYWORD_HASH => LexerTokenType::Layout,
@@ -288,6 +291,7 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 		ELSE_KEYWORD_HASH => LexerTokenType::Else,
 		WHILE_KEYWORD_HASH => LexerTokenType::While,
 		FOR_KEYWORD_HASH => LexerTokenType::For,
+		STATIC_KEYWORD_HASH => LexerTokenType::Static,
         _ => LexerTokenType::KEYWORD(slice.to_string(), hash)
     };
 

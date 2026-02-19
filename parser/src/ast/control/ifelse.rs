@@ -2,7 +2,7 @@
 //! Parsing for if and else statements
 //! 
 
-use commons::err::PositionedResult;
+use commons::err::{PositionedResult};
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{ast::{func::parse_node_body, parse_ast_value, tree::ASTTreeNode}};
@@ -32,20 +32,23 @@ pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Position
 		Err(e) => return Err(e)
 	};
 
-	let mut else_statement = None;
+	let mut depth = 1;
+	let mut branches: Vec<Box<ASTTreeNode>> = vec![];
 
 	if tokens[*ind].tok_type == LexerTokenType::Else {
 
-		else_statement = Some(parse_else_statement(tokens, ind)?);
+		parse_else_statement(tokens, ind, &mut depth, &mut branches)?;
 	}
 
-	return Ok(Box::new(ASTTreeNode::IfStatement { cond, body, else_statement }));
+	return Ok(Box::new(ASTTreeNode::IfStatement { cond, body, branches, depth }));
 }
 
-pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize, depth: &mut usize, branches: &mut Vec<Box<ASTTreeNode>>) -> PositionedResult<bool> {
 	*ind += 1;
 
 	let mut cond = None;
+
+	*depth += 1;
 
 	if tokens[*ind].tok_type == LexerTokenType::If {
 		*ind += 1;
@@ -60,14 +63,15 @@ pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Positi
 	};
 
 	if cond.is_some() {
-		let mut else_statement = None;
+		branches.push(Box::new(ASTTreeNode::IfElseStatement { cond, body }));
 
 		if tokens[*ind].tok_type == LexerTokenType::Else {
-			else_statement = Some(parse_else_statement(tokens, ind)?);
+			parse_else_statement(tokens, ind, depth, branches)?;
 		}
 
-		return Ok(Box::new(ASTTreeNode::IfElseStatement { cond, body, else_statement: else_statement }));
+		return Ok(true);
 	}
 
-	return Ok(Box::new(ASTTreeNode::ElseStatement { body }));
+	branches.push(Box::new(ASTTreeNode::ElseStatement { body }));
+	return Ok(true);
 }

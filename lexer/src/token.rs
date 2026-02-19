@@ -11,12 +11,15 @@ use crate::{LexerParseResult, LexerParsingError, toks::{comp::ComparingOperator,
 pub enum LexerTokenType {
     /// Represent the func keyword
     Function,
+	ShadowFunction,
 
 	Var,
 	Struct,
 	Layout,
 	Lay,
-		
+
+	Static,
+
 	/// 0: the operator
 	/// 1: does the operator affect the original variable!
 	MathOperator(MathOperator, bool),
