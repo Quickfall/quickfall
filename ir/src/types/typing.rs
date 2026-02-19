@@ -135,6 +135,8 @@ impl IRType {
 			IRType::Signed64(v) => Ok(OwnedTypeEnum::new(&v.owned, BasicTypeEnum::from(v.inner))),
 			IRType::Signed128(v) => Ok(OwnedTypeEnum::new(&v.owned, BasicTypeEnum::from(v.inner))),
 
+			IRType::Bool(v) => Ok(OwnedTypeEnum::new(&v.owned, BasicTypeEnum::from(v.inner))),
+
 			IRType::Pointer(v) => Ok(OwnedTypeEnum::new(&v.owned, BasicTypeEnum::from(v.inner))),
 
 			IRType::Struct(a) => Ok(OwnedTypeEnum::new(&a.owned, BasicTypeEnum::from(a.inkwell_type))),
@@ -163,6 +165,8 @@ impl IRType {
 			IRType::Signed32(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
 			IRType::Signed64(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
 			IRType::Signed128(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
+
+			IRType::Bool(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
 
 			IRType::Pointer(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
 

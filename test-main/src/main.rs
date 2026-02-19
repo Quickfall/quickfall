@@ -20,8 +20,8 @@ fn main() {
 	
 	let mut irctx = IRContext::new(context);
 
-	for entry in ctx.map {
-		parse_ir_node_toplevel(&mut irctx, entry.1).unwrap();
+	for entry in ctx.iter_order {
+		parse_ir_node_toplevel(&mut irctx, ctx.map.get(&entry).unwrap().clone()).unwrap();
 	}
 
 	irctx.module.print_to_file("output.ll").unwrap();

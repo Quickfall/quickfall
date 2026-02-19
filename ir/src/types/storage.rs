@@ -1,19 +1,19 @@
 //! Type storage
 
-use std::{cell::Ref, mem::transmute, ops::Add, rc::Rc};
+use std::{cell::Ref, collections::HashMap, mem::transmute, ops::Add, rc::Rc};
 
 use commons::utils::map::HashedMap;
 use inkwell::{AddressSpace, context::Context, types::{IntType, PointerType}};
 
-use crate::{ctx::IRContext, types::{BOOL_TYPE_HASH, POINTER_TYPE_HASH, SIGNED8_TYPE_HASH, SIGNED16_TYPE_HASH, SIGNED32_TYPE_HASH, SIGNED64_TYPE_HASH, SIGNED128_TYPE_HASH, UNSIGNED8_TYPE_HASH, UNSIGNED16_TYPE_HASH, UNSIGNED32_TYPE_HASH, UNSIGNED64_TYPE_HASH, UNSIGNED128_TYPE_HASH, typing::{IRType, OwnedIntType, OwnedPointerType}}};
+use crate::{ctx::IRContext, types::{BOOL_TYPE_HASH, POINTER_TYPE_HASH, SIGNED8_TYPE_HASH, SIGNED16_TYPE_HASH, SIGNED32_TYPE_HASH, SIGNED64_TYPE_HASH, SIGNED128_TYPE_HASH, UNSIGNED8_TYPE_HASH, UNSIGNED16_TYPE_HASH, UNSIGNED32_TYPE_HASH, UNSIGNED64_TYPE_HASH, UNSIGNED128_TYPE_HASH, typing::{IRType, OwnedIntType, OwnedPointerType}}, utils::SelfHash};
 
 pub struct IRTypeStorage {
-	map: HashedMap<Rc<IRType>>
+	pub map: HashMap<SelfHash, Rc<IRType>>
 }
 
 impl IRTypeStorage {
 	pub fn new(ctx: &IRContext) -> Self {
-		let mut sto = IRTypeStorage {map: HashedMap::new(12)}; // 12 primitive types
+		let mut sto = IRTypeStorage {map: HashMap::new()}; // 12 primitive types
 
 		let int8 = unsafe { transmute::<IntType, IntType<'static>>(ctx.inkwell_ctx.i8_type())};
 		let int16 = unsafe { transmute::<IntType, IntType<'static>>(ctx.inkwell_ctx.i16_type())};
@@ -44,10 +44,10 @@ impl IRTypeStorage {
 	}
 
 	pub fn insert(&mut self, hash: u64, t: IRType) {
-		self.map.put(hash, Rc::new(t));
+		self.map.insert(SelfHash { hash }, Rc::new(t));
 	}
 
 	pub fn get(&self, hash: u64) -> Option<Rc<IRType>> {
-		return self.map.get(hash).cloned();
+		return self.map.get(&SelfHash { hash }).cloned();
 	}
 }

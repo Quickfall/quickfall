@@ -35,6 +35,9 @@ impl<V> HashedMap<V> {
 	}
 
 	pub fn put(&mut self, key: u64, val: V) {
+
+		println!("Hash {}", key);
+
 		let index = self.index_from_hash(key);
 		let fingerprint = self.fingerprint_from_hash(key);
 

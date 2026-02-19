@@ -1,5 +1,13 @@
+struct hallos {
+	si64 bobby
+	bool yeshello
+}
+
 func test(si32 haii) {
 	var si64 abc = 0
+
+	var hallos myHallos
+	var bool myBool = myHallos.yeshello
 
 	for(si64 test = 0, test <= 0, test += 1) {
 		var si64 blob = 0

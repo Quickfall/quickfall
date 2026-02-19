@@ -1,6 +1,6 @@
 //! Codebase wide utilities. Are mostly used to escape the Inkwell lifecycle hell
 
-use std::{mem::transmute, ops::Deref, rc::Rc};
+use std::{hash::Hash, mem::transmute, ops::{Deref, DerefMut}, rc::Rc};
 
 use inkwell::context::Context;
 
@@ -39,11 +39,29 @@ pub struct LateInit<K> {
 	inner: Option<K>
 }
 
+#[derive(Eq, PartialEq)]
+pub struct SelfHash {
+	pub hash: u64
+}
+
+impl Hash for SelfHash {
+	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+		state.write_u64(self.hash);
+	}
+}
+
 impl<K> Deref for LateInit<K> {
 	type Target = K;
 
 	fn deref(&self) -> &Self::Target {
 		return &self.inner.as_ref().unwrap();
+	}
+}
+
+impl<K> DerefMut for LateInit<K> {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		let m = self.inner.as_mut();
+		return m.unwrap();
 	}
 }
 
