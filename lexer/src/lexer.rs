@@ -247,7 +247,7 @@ fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
         end = start + i + c.len_utf8();
     }
 
-    let slice = &str[*ind..end];
+    let slice = &str[*ind + 1..end - 1];
 
     *ind = end;
     
