@@ -86,14 +86,14 @@ impl IRContext {
 
 pub struct LocalIRVariable {
 	pub ptr: IRPointer,
-	pub depth: usize // Depth is depth in body.
+	pub depth: i64 // Depth is depth in body.
 }
 
 /// The local IR context.
 /// Holds anything held and created in the given body (eg: vars).
 pub struct IRLocalContext {
 	pub vars: HashedMap<LocalIRVariable>,
-	pub current_depth: usize, // Starts at 0 where 0 is function body
+	pub current_depth: i64, // Starts at 0 where 0 is function body
 }
 
 impl IRLocalContext {

@@ -25,7 +25,15 @@ pub fn parse_ir_function_decl<'a>(ctx: &mut IRContext, node: Box<ASTTreeNode>) -
 
 		let mut func = IRFunction::create(ctx, func_name.val, &ctx.module, return_type, arguments)?;
 
+		func.prepare_body_filling(ctx);
 		parse_ir_body(ctx, &mut func, body)?;
+
+		if func.ret_type.is_none() {
+			match ctx.builder.build_return(None) {
+				Ok(_) => {},
+				Err(_) => return Err(PositionlessError::new("build_return on void failed!"))
+			};
+		}
 
 		ctx.add_function(func_name.hash, func);
 

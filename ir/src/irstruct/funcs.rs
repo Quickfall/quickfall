@@ -9,7 +9,7 @@ pub struct IRFunction {
 	pub owned: Rc<Context>,
 
 	pub inkwell_func: FunctionValue<'static>,
-	ret_type: Option<Rc<IRType>>,
+	pub ret_type: Option<Rc<IRType>>,
 	args: Vec<Rc<IRType>>,
 	name: String,
 

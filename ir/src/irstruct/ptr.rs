@@ -21,7 +21,7 @@ impl IRPointer {
 	pub fn create(ctx: &IRContext, name: String, t: Rc<IRType>, initial: Option<IRValueRef>) -> PositionlessResult<Self> {
 		let ptr = match ctx.builder.build_alloca(t.get_inkwell_basetype()?.inner, &name) {
 			Ok(v) => v,
-			Err(_) => return Err(PositionlessError::new("build_alloca failed!"))
+			Err(e) => return Err(PositionlessError::new(&format!("build_alloca failed! {}", e)))
 		};
 
 		if initial.is_some() {

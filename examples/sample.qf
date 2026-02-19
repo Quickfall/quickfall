@@ -1,0 +1,3 @@
+func test(si32 haii) {
+	var si64 abc = 0
+}

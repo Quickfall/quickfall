@@ -47,6 +47,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 		ctx.builder.position_at_end(initial_branch);
 
+		func.lctx.increment_body_depth();
 		parse_ir_body(ctx, func, body)?;
 
 		let mut ind = 0;
@@ -69,6 +70,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 					ctx.builder.position_at_end(ir_branches[ind + 1]);
 
+					func.lctx.increment_body_depth();
 					parse_ir_body(ctx, func, body)?;
 
 					match ctx.builder.build_unconditional_branch(ir_branches[ir_branches.len() - 1]) {
@@ -82,6 +84,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 				ASTTreeNode::ElseStatement { body } => {
 					ctx.builder.position_at_end(ir_branches[ind]);
 
+					func.lctx.increment_body_depth();
 					parse_ir_body(ctx, func, body)?;
 
 					match ctx.builder.build_unconditional_branch(ir_branches[ir_branches.len() - 1]) {
