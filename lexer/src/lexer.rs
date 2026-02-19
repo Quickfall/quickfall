@@ -8,6 +8,7 @@ use commons::Position;
 
 use crate::{LexerParseResult, LexerParsingError, token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
 
+const SHADOWFUNC_KEYWORD_HASH: u64 = 8856473617513302734;
 const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
 const RET_KEYWORD_HASH: u64 = 9222097151127739705;
 const VAR_KEYWORD_HASH: u64 = 10000921911505692860;
@@ -278,6 +279,7 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 
     let token_type = match hash {
         FUNC_KEYWORD_HASH => LexerTokenType::Function,
+		SHADOWFUNC_KEYWORD_HASH => LexerTokenType::ShadowFunction,
         RET_KEYWORD_HASH => LexerTokenType::Return,
 		STRUCT_KEYWORD_HASH => LexerTokenType::Struct,
 		LAYOUT_KEYWORD_HASH => LexerTokenType::Layout,

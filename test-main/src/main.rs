@@ -1,4 +1,4 @@
-use core::fmt;
+use core::{fmt, hash};
 use std::{env, hash::{DefaultHasher, Hash, Hasher}, rc::Rc};
 
 use inkwell::{context::Context, module::Module};
@@ -14,15 +14,13 @@ fn main() {
 
 	let ctx = parse_ast_ctx(&lexer_res).unwrap();
 
-	let mut hasher = DefaultHasher::new();
-	"staticstr".hash(&mut hasher);
+	let context = Rc::new(Context::create());
+	
+	let mut hasher=  DefaultHasher::new();
+	"ptr".hash(&mut hasher);
 
 	println!("{}", hasher.finish());
 
-	//println!("{:#?}", ctx);
-
-	let context = Rc::new(Context::create());
-	
 	let mut irctx = IRContext::new(context);
 
 	for entry in ctx.iter_order {

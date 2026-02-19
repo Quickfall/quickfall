@@ -1,11 +1,11 @@
 //! IR context related code
 
-use std::{mem::transmute, ops::{Add, Deref, DerefMut}, rc::Rc};
+use std::{collections::HashMap, mem::transmute, ops::{Add, Deref, DerefMut}, rc::Rc};
 
 use commons::{err::{PositionlessError, PositionlessResult}, utils::map::HashedMap};
 use inkwell::{AddressSpace, builder::Builder, context::Context, module::Module, types::{PointerType, VoidType}};
 
-use crate::{irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, types::storage::IRTypeStorage, utils::LateInit};
+use crate::{irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, types::storage::IRTypeStorage, utils::{LateInit, SelfHash}};
 
 /// The global IR context.
 /// Basically holds anything related to the current IR compilation (eg: functions, types, global vars)
@@ -19,8 +19,8 @@ pub struct IRContext {
 
 	pub type_storage: LateInit<IRTypeStorage>,
 
-	pub functions: HashedMap<Rc<IRFunction>>,
-	pub static_vars: HashedMap<Rc<IRStaticVariable>>
+	pub functions: HashMap<SelfHash, Rc<IRFunction>>,
+	pub static_vars: HashMap<SelfHash, Rc<IRStaticVariable>>
 }
 
 impl IRContext {
@@ -34,8 +34,8 @@ impl IRContext {
 			inkwell_ctx: ctx.clone(), 
 			builder: unsafe { transmute::<Builder, Builder<'static>>(ctx.create_builder()) }, 
 			ptr_type,
-			functions: HashedMap::new(0), 
-			static_vars: HashedMap::new(0),
+			functions: HashMap::new(), 
+			static_vars: HashMap::new(),
 			type_storage: LateInit::new(),
 			void_type,
 			module
@@ -51,25 +51,25 @@ impl IRContext {
 			return Err(PositionlessError::new("There already is an element named like this!"));
 		}
 
-		self.static_vars.put(hash, Rc::new(var));
+		self.static_vars.insert(SelfHash { hash }, Rc::new(var));
 		return Ok(true);
 	}
 
 	pub fn get_variable(&self, hash: u64) -> PositionlessResult<Rc<IRStaticVariable>> {
-		return match self.static_vars.get(hash) {
+		return match self.static_vars.get(&SelfHash { hash }) {
 			Some(v) => Ok(v.clone()),
 			None => return Err(PositionlessError::new("Invalid variable name"))
 		};
 	}
 
 	pub fn is_key_taken(&self, hash: u64) -> bool {
-		return self.functions.get(hash).is_some() || self.static_vars.get(hash).is_some() || self.type_storage.get(hash).is_some();
+		return self.functions.get(&SelfHash { hash }).is_some() || self.static_vars.get(&SelfHash {hash}).is_some() || self.type_storage.get(hash).is_some();
 	}
 
 	pub fn get_funtion(&self, hash: u64) -> PositionlessResult<Rc<IRFunction>> {
-		return match self.functions.get(hash) {
+		return match self.functions.get(&SelfHash { hash }) {
 			Some(v) => Ok(v.clone()),
-			None => Err(PositionlessError::new("Invalid function name!"))
+			None => Err(PositionlessError::new(&format!("Invalid function name! Got hash {}", hash)))
 		}
 	}
 
@@ -78,7 +78,7 @@ impl IRContext {
 			return Err(PositionlessError::new("There already is an element named like this!"));
 		}
 
-		self.functions.put(hash, Rc::new(func));
+		self.functions.insert(SelfHash { hash }, Rc::new(func));
 		return Ok(true);
 	}
 
