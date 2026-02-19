@@ -54,7 +54,7 @@ pub enum LexerTokenType {
     ArrayOpen,
     ArrayClose,
 
-    IntLit(i64),
+    IntLit(i128, u64),
     StringLit(String),
 
     AngelBracketOpen,
@@ -93,9 +93,9 @@ impl LexerToken {
 		return Ok(true);
 	}
 
-	pub fn expects_int_lit(&self) -> PositionedResult<i64> {
+	pub fn expects_int_lit(&self) -> PositionedResult<(i128, u64)> {
 		match &self.tok_type {
-			LexerTokenType::IntLit(v) => return Ok(*v),
+			LexerTokenType::IntLit(v, h) => return Ok((*v, *h)),
 			_ => return Err(self.make_err("Expected int litteral here!"))
 		};
 	}

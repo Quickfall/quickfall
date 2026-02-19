@@ -224,7 +224,7 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
     }
 
     let slice = &str[*ind..end];
-    let num: i64 = match slice.parse() {
+    let num: i128 = match slice.parse() {
         Ok(v) => v,
         Err(_) => return Err(LexerParsingError::new("Couldn't parse int lit!".to_string(), *ind)),
     };
@@ -232,7 +232,29 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
     *ind = end;
 
 	let endpos = start_pos.increment_by(end - start);
-    return Ok(LexerToken::new(start_pos, endpos, LexerTokenType::IntLit(num)));
+
+	let mut hash = 7572830400006405400;
+
+	println!("{}", str.chars().nth(*ind + 1).unwrap());
+
+	if str.chars().nth(*ind).unwrap() == '_' {
+		*ind += 1;
+		
+		let tok = parse_keyword(str, ind, endpos.clone());
+		let k = match tok.expects_keyword() {
+			Ok(v) => v,
+			Err(_) => return Err(LexerParsingError::new("Expected keyword as int type specifier".to_string(), *ind))
+		};
+
+		println!("Hashee :{:?}", k);
+
+		hash = k.1;
+	}
+
+	println!("{}", str.chars().nth(*ind).unwrap());
+
+
+    return Ok(LexerToken::new(start_pos, endpos, LexerTokenType::IntLit(num, hash)));
 }
 
 fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> LexerToken {

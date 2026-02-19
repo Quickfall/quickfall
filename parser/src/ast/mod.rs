@@ -154,7 +154,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 			return Err(tokens[*ind].make_err(format!("Boolean negative requires either func or var access! Got {:#?}", ast).as_str()));
 		},
 
-		LexerTokenType::IntLit(_) => {
+		LexerTokenType::IntLit(_, _) => {
 			let int = parse_integer_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, int, false);
 		},

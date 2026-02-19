@@ -20,7 +20,7 @@ impl FunctionDeclarationArgument {
 /// The main AST node type in the AST parsing system.
 #[derive(Debug, PartialEq, Clone)]
 pub enum ASTTreeNode {
-    IntegerLit(i64),
+    IntegerLit { val: i128, hash: u64 },
     StringLit(String),
 
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ComparingOperator },

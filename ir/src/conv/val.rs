@@ -22,11 +22,11 @@ pub fn get_variable_ref(lctx: &IRLocalContext, ctx: &IRContext, hash: u64) -> Po
 
 pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: Box<ASTTreeNode>, left: Option<IRPointer>, in_var: bool) -> PositionlessResult<IRValueRef> {
 	match node.as_ref() {
-		ASTTreeNode::IntegerLit(v) => {
-			let t = ctx.type_storage.get(SIGNED64_TYPE_HASH);
-
+		ASTTreeNode::IntegerLit { val: v, hash} => {
+			let t = ctx.type_storage.get(*hash);
+		 
 			if !t.is_some() {
-				return Err(PositionlessError::new("Invalid type storage! si64 not found!"));
+				return Err(PositionlessError::new("Invalid type storage! integer type indicator not found!"));
 			}
 
 			return Ok(IRValueRef::from_val(IRValue::from_signed(ctx, t.unwrap(), *v as i128)?));

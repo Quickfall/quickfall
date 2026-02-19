@@ -64,7 +64,7 @@ pub fn parse_ir_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> Po
 		}
 
 		ctx.add_function(func_name.hash, func);
-
+		
 		return ctx.get_funtion(func_name.hash);
 	}
 
@@ -150,7 +150,20 @@ pub fn parse_ir_function_body_member(ctx: &IRContext, func: &mut IRFunction, nod
 			parse_ir_function_call(ctx, &func.lctx, node, None, false)?;
 			
 			return Ok(true)
+		},
 
+		ASTTreeNode::ReturnStatement { val } => {
+			if val.clone().is_none() || func.ret_type.is_none() {
+				ctx.builder.build_return(None);
+
+				return Ok(true);
+			}	
+
+			let val = parse_ir_value(Some(&func.lctx), ctx, val.unwrap(), None, true)?;
+
+			ctx.builder.build_return(Some(&val.obtain(ctx)?.obtain().inner));
+
+			return Ok(true);
 		}
 
 		ASTTreeNode::IfStatement { .. } => {

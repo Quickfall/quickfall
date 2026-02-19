@@ -1,7 +1,11 @@
-static staticstr bobby = "Hellossssss"
+static staticstr bobby = "\nHellossssss %d"
 
-shadowfunc printf(ptr str_pointer)
+shadowfunc printf(ptr str_ptr) si32
 
-func main() {
-	printf(bobby)
+func main() si32 {
+	var si32 test = 65_si32
+
+	printf(bobby, test)
+
+	ret 0_si32
 }
