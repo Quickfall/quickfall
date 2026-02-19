@@ -21,7 +21,7 @@ use commons::err::PositionedResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
-use crate::ast::{control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction, parse_function_return_statement}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::ASTTreeNode, types::parse_type_declaration, var::decl::parse_variable_declaration};
+use crate::ast::{control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::parse_function_declaraction, parse_function_return_statement}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::ASTTreeNode, types::parse_type_declaration, var::{decl::parse_variable_declaration, staticdecl::parse_static_function_declaration}};
 
 pub mod tree;
 pub mod func;
@@ -199,6 +199,10 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedRe
 		LexerTokenType::Struct => {
 			return parse_type_declaration(tokens, ind, false);
 		},
+
+		LexerTokenType::Static => {
+			return parse_static_function_declaration(tokens, ind);
+		}
 
 		LexerTokenType::Layout => {
 			return parse_type_declaration(tokens, ind, true);

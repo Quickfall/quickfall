@@ -20,6 +20,7 @@ const IF_KEYWORD_HASH: u64 = 14565880314940941169;
 const ELSE_KEYWORD_HASH: u64 = 15870633062462684568;
 const WHILE_KEYWORD_HASH: u64 = 10666076348663826897;
 const FOR_KEYWORD_HASH: u64 = 8246706989536534387;
+const STATIC_KEYWORD_HASH: u64 = 15057913784433987235;
 
 /// Parses a file into a set of lexer tokens.
 /// 
@@ -288,6 +289,7 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 		ELSE_KEYWORD_HASH => LexerTokenType::Else,
 		WHILE_KEYWORD_HASH => LexerTokenType::While,
 		FOR_KEYWORD_HASH => LexerTokenType::For,
+		STATIC_KEYWORD_HASH => LexerTokenType::Static,
         _ => LexerTokenType::KEYWORD(slice.to_string(), hash)
     };
 

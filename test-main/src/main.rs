@@ -14,7 +14,12 @@ fn main() {
 
 	let ctx = parse_ast_ctx(&lexer_res).unwrap();
 
-	println!("{:#?}", ctx);
+	let mut hasher = DefaultHasher::new();
+	"static".hash(&mut hasher);
+
+	println!("{}", hasher.finish());
+
+	//println!("{:#?}", ctx);
 
 	let context = Rc::new(Context::create());
 	

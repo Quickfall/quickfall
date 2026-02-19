@@ -32,7 +32,8 @@ pub enum IRType {
 	Unsigned32(OwnedIntType),
 	Unsigned64(OwnedIntType),
 	Unsigned128(OwnedIntType),
-
+	
+	StaticString(OwnedPointerType),
 	Pointer(OwnedPointerType),
 
 	Bool(OwnedIntType),
@@ -50,7 +51,7 @@ impl IRType {
 			IRType::Signed32(_) | IRType::Unsigned32(_) => return 32, 
 			IRType::Signed64(_) | IRType::Unsigned64(_) => return 64, 
 			IRType::Signed128(_) | IRType::Unsigned128(_) => return 128,
-			IRType::Pointer(_) => return 64,
+			IRType::Pointer(_) | IRType::StaticString(_) => return 64,
 
 			IRType::Struct(v) => {
 				let mut sz: usize = 0;
@@ -137,6 +138,8 @@ impl IRType {
 
 			IRType::Bool(v) => Ok(OwnedTypeEnum::new(&v.owned, BasicTypeEnum::from(v.inner))),
 
+			IRType::StaticString(v) => Ok(OwnedTypeEnum::new(&v.owned, BasicTypeEnum::from(v.inner))),
+
 			IRType::Pointer(v) => Ok(OwnedTypeEnum::new(&v.owned, BasicTypeEnum::from(v.inner))),
 
 			IRType::Struct(a) => Ok(OwnedTypeEnum::new(&a.owned, BasicTypeEnum::from(a.inkwell_type))),
@@ -167,6 +170,8 @@ impl IRType {
 			IRType::Signed128(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
 
 			IRType::Bool(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
+
+			IRType::StaticString(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
 
 			IRType::Pointer(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
 
@@ -214,6 +219,8 @@ impl IRType {
 			(IRType::Unsigned128(_), IRType::Unsigned128(_)) => true,
 
 			(IRType::Bool(_), IRType::Bool(_)) => true,
+
+			(IRType::StaticString(_), IRType::StaticString(_)) => true,
 
 			(IRType::Struct(a), IRType::Struct(b)) => a.name == b.name && a.is_layout == b.is_layout,
 			(IRType::Layout(a), IRType::Layout(b)) => a.name == b.name && a.is_layout == b.is_layout,

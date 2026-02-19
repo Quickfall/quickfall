@@ -43,6 +43,8 @@ pub enum ASTTreeNode {
 
 	ReturnStatement { val: Option<Box<ASTTreeNode>> },
 
+	StaticVariableDeclaration { name: WithHash<String>, var_type: TypeHash, val: Box<ASTTreeNode> },
+
 	WhileBlock { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 	ForBlock { initial_state: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 
