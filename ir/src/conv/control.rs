@@ -6,7 +6,7 @@ use parser::ast::tree::ASTTreeNode;
 use crate::{conv::{self, func::{parse_ir_body, parse_ir_function_body_member}, val::parse_ir_value}, ctx::{IRContext, IRLocalContext}, irstruct::funcs::IRFunction, types::BOOL_TYPE_HASH};
 
 pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
-	if let ASTTreeNode::IfStatement { cond, body, branches, depth } = *node {
+	if let ASTTreeNode::IfStatement { cond, body, branches, depth } = *node.clone() {
 		let mut ir_branches = vec![];
 
 		let initial_branch = ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "ifbranch_then");
@@ -21,12 +21,11 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 				},
 
 				ASTTreeNode::ElseStatement { body } => {
-					ir_branches.push(ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "ifelse_elseclause"))
-				},
+					ir_branches.push(ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "else_body"));
+				}
 
 				_ => {}
 			}
-			ir_branches.push(ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "ifbranch"));
 		}
 
 		ir_branches.push(ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "out"));
@@ -35,7 +34,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 		let bool_type = ctx.type_storage.get(BOOL_TYPE_HASH).unwrap();
 
-		let int = match first_cond.obtain(ctx)?.obtain_as_int(ctx, bool_type.clone()) {
+		let int = match first_cond.obtain(ctx)?.obtain_as_bool() {
 			Some(v) => *v,
 			None => return Err(PositionlessError::new("Cannot cast first cond as int"))
 		};
@@ -58,9 +57,9 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 					let cond_val = parse_ir_value(Some(&func.lctx), ctx, cond.unwrap(), None)?;
 
-					let int_cond_val = match cond_val.obtain(ctx)?.obtain_as_int(ctx, bool_type.clone()) {
+					let int_cond_val = match cond_val.obtain(ctx)?.obtain_as_bool() {
 						Some(v) => *v,
-						None => return Err(PositionlessError::new("Cannoit cast condition as int!"))
+						None => return Err(PositionlessError::new("Cannot cast condition as int!"))
 					};
 
 					match ctx.builder.build_conditional_branch(int_cond_val, ir_branches[ind + 1], ir_branches[ind + 2]) {
@@ -97,9 +96,12 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 			}
 		}
 
+		ctx.builder.position_at_end(ir_branches[ir_branches.len() - 1]);
+
+		return Ok(true);
 	}
 
-	return Err(PositionlessError::new("Cannot parse if statement as this is not an if!"));
+	return Err(PositionlessError::new(&format!("Cannot parse if statement as this is not an if! Instead got {:#?}", node.clone())));
 }
 
 pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {

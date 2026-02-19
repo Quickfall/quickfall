@@ -114,7 +114,7 @@ impl IRLocalContext {
 	pub fn get_variable(&self, hash: u64) -> PositionlessResult<&IRPointer> {
 		return match self.vars.get(hash) {
 			Some(v) => Ok(&v.ptr),
-			None => return Err(PositionlessError::new("Invalid variable name"))
+			None => return Err(PositionlessError::new(&format!("Invalid variable hash {}", hash)))
 		};
 	}
 

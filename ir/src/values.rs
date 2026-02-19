@@ -66,6 +66,8 @@ impl IRValue {
 
 	/// Obtains the value as an integer value. Returns None if the value is incompatible with integers
 	pub fn obtain_as_int(&self, ctx: &IRContext, t: Rc<IRType>) -> Option<OwnedIntValue> {
+		println!("is same as: {}", self.t.is_same(&t));
+
 		if !self.t.is_numeric_type() || !self.t.is_same(&t) {
 			return None;
 		}

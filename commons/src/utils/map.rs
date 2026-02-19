@@ -7,6 +7,7 @@ const BUCKET_TOMBSTONE: u8 = 0x01;
 
 const MAP_LOAD_FACTOR: f64 = 0.85;
 
+#[derive(Debug)]
 pub struct HashedMap<V> {
 	meta: Vec<u8>,
 	buckets: Vec<MaybeUninit<(u64, V)>>,

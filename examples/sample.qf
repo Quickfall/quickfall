@@ -1,3 +1,14 @@
 func test(si32 haii) {
 	var si64 abc = 0
+
+	if(abc >= 5) {
+		var si32 test = 128
+	} else if(abc == 0) {
+		var si32 testt = 0
+	} else if(abc >= 0) {
+		var si64 def = 69420
+	} 
+	else {
+		var si64 abcdef = 35
+	}
 }

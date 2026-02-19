@@ -6,7 +6,7 @@ use inkwell::context::Context;
 
 /// A type containing a counted reference to the Inkwell context. 
 /// This allows for the type to have the 'static lifecycle safely, allowing to safely use without annoying lifecycles.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct OwnedType<T: Clone> {
 	pub inner: T,
 	pub owned: Rc<Context>

@@ -5,6 +5,7 @@ use inkwell::{basic_block::BasicBlock, builder::Builder, context::Context, modul
 
 use crate::{ctx::{IRContext, IRLocalContext}, irstruct::ptr::IRPointer, refs::IRValueRef, types::typing::{IRType, OwnedIntValue, OwnedValueEnum}, values::IRValue};
 
+
 pub struct IRFunction {
 	pub owned: Rc<Context>,
 
