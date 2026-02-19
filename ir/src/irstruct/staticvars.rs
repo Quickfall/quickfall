@@ -3,9 +3,9 @@
 use std::rc::Rc;
 
 use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{builder::Builder, values::{BasicValueEnum, GlobalValue}};
+use inkwell::{builder::Builder, values::{BasicValueEnum, GlobalValue, IntValue}};
 
-use crate::{ctx::IRContext, types::typing::{IRType, OwnedGlobalValue, OwnedValueEnum}, values::IRValue};
+use crate::{ctx::IRContext, types::{SIGNED8_TYPE_HASH, typing::{IRType, OwnedGlobalValue, OwnedValueEnum}}, values::IRValue};
 
 #[derive(Clone)]
 pub struct IRStaticVariable {
@@ -17,12 +17,26 @@ pub struct IRStaticVariable {
 
 impl IRStaticVariable {
 	pub fn from_str(ctx: &IRContext, str: &str, name: String, t: Rc<IRType>) -> PositionlessResult<IRStaticVariable> {
-		let inkwell = match ctx.builder.build_global_string_ptr(str, &name) {
-			Ok(v) => v,
-			Err(_) => return Err(PositionlessError::new("build_global_string_ptr failed!!"))
-		};
+		let bytes = str.as_bytes();
 
-		return Ok(IRStaticVariable { inkwell: Some(OwnedGlobalValue::new(&ctx.inkwell_ctx, inkwell)), t, name, val: None });
+		let byte_type = ctx.type_storage.get(SIGNED8_TYPE_HASH).expect("Cannot find i8 in type storage!");
+		let i8_type = byte_type.get_inkwell_inttype()?;
+
+		let array_type = i8_type.array_type((bytes.len() + 1) as u32);
+
+		let global = ctx.module.add_global(array_type, None, &name);
+
+		global.set_linkage(inkwell::module::Linkage::Private);
+		global.set_constant(true);
+		global.set_unnamed_addr(true);
+
+		let mut vals: Vec<IntValue> = bytes.iter().map(|b| i8_type.const_int(*b as u64, false)).collect();
+
+		vals.push(i8_type.const_zero());
+
+		global.set_initializer(&i8_type.const_array(&vals));
+
+		return Ok(IRStaticVariable { inkwell: Some(OwnedGlobalValue::new(&ctx.inkwell_ctx, global)), t, name, val: None });
 	}
 
 	pub fn from_val(name: String, t: Rc<IRType>, val: IRValue) -> PositionlessResult<IRStaticVariable> {

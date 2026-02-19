@@ -65,13 +65,17 @@ impl ASTTreeNode {
 	}
 
 	pub fn is_tree_permissible(&self) -> bool {
-		return matches!(self, ASTTreeNode::FunctionDeclaration { .. } | ASTTreeNode::StructLayoutDeclaration { .. })
+		return matches!(self, ASTTreeNode::FunctionDeclaration { .. } | ASTTreeNode::StaticVariableDeclaration { .. } | ASTTreeNode::StructLayoutDeclaration { .. })
 	}
 
 	pub fn get_tree_name(&self) -> Option<WithHash<String>> {
 		match self {
 			ASTTreeNode::FunctionDeclaration { func_name, args, body, returnType } => {
 				return Some(WithHash::new(func_name.val.to_string()));
+			},
+
+			ASTTreeNode::StaticVariableDeclaration { name, var_type, val } => {
+				return Some(WithHash::new(name.val.clone()));
 			},
 
 			ASTTreeNode::StructLayoutDeclaration { name, layout, members } => {
