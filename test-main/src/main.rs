@@ -14,13 +14,6 @@ fn main() {
 
 	let ctx = parse_ast_ctx(&lexer_res).unwrap();
 
-	let mut hasher = DefaultHasher::new();
-	"shadowfunc".hash(&mut hasher);
-
-	println!("{}", hasher.finish());
-
-	//println!("{:#?}", ctx);
-
 	let context = Rc::new(Context::create());
 	
 	let mut irctx = IRContext::new(context);
