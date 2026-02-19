@@ -15,7 +15,7 @@ fn main() {
 	let ctx = parse_ast_ctx(&lexer_res).unwrap();
 
 	let mut hasher = DefaultHasher::new();
-	"staticstr".hash(&mut hasher);
+	"shadowfunc".hash(&mut hasher);
 
 	println!("{}", hasher.finish());
 
