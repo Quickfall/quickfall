@@ -1,5 +1,6 @@
 use std::{fs, io};
 
+#[derive(Clone)]
 pub struct ErrorPosition {
 	pub line: usize,
 

@@ -1,8 +1,9 @@
 //! Base-error related declarations
 
-use crate::errs::ErrorKind;
+use crate::errs::{ErrorKind, normal::CompilerError};
 
 /// Base errors are errors originating from the IR. They do not contain positions or other things
+#[derive(Clone)]
 pub struct BaseError {
 	pub kind: ErrorKind,
 	pub str: String,
@@ -18,6 +19,10 @@ impl BaseError {
 	}
 
 	pub fn critical(str: String) -> Self {
-		return BaseError { kind: ErrorKind::Critical, str }
+		let e =  BaseError { kind: ErrorKind::Critical, str };
+
+		CompilerError::from_base_posless(e.clone());
+
+		return e;
 	}
 }
