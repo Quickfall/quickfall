@@ -1,6 +1,8 @@
 use std::{fs, io};
 
-#[derive(Clone)]
+use commons::Position;
+
+#[derive(Clone, Debug)]
 pub struct ErrorPosition {
 	pub line: usize,
 
@@ -13,6 +15,10 @@ pub struct ErrorPosition {
 impl ErrorPosition {
 	pub fn new(path: String, line: usize, col: usize, end: usize) -> Self {
 		return ErrorPosition { line, col, size: end - col, file_path: path }
+	}
+
+	pub fn from_simple_position(pos: Position, size: usize) -> Self {
+		return ErrorPosition { line: pos.line, col: pos.col, size, file_path: pos.file_path }
 	}
 
 	pub fn get_line_str(&self) -> Result<String, io::Error> {

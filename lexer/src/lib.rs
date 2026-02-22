@@ -3,29 +3,29 @@
 //! The lexer is the first step of parsing within Quickfall.
 //! 
 
-use core::fmt;
+use commons::Position;
 
 pub mod token;
 pub mod lexer;
 pub mod toks;
 
-type LexerParseResult<T> = std::result::Result<T, LexerParsingError>;
-
-#[derive(Debug, Clone)]
-pub struct LexerParsingError {
-    reason: String,
-
-    position: usize
+pub struct SizedPosition {
+	pub pos: Position,
+	pub size: usize
 }
 
-impl LexerParsingError {
-    pub fn new(reason: String, pos: usize) -> Self {
-        LexerParsingError { reason, position: pos }
-    }
-}
+impl SizedPosition {
+	pub fn new(pos: Position, size: usize) -> Self {
+		return SizedPosition { pos, size }
+	}
 
-impl fmt::Display for LexerParsingError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Lexer Parsing Error: {} at position {}", self.reason, self.position)
-    }
+	pub fn get_line_str(&self) -> Result<String, std::io::Error> {
+		return self.pos.get_line_content();
+	}
+
+	pub fn get_str_slice(&self) -> Result<String, std::io::Error> {
+		return self.pos.get_line_content()[self.pos.col - 1..self.pos.col + self.size - 1];
+	}
+
+
 }

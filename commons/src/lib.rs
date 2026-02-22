@@ -12,7 +12,7 @@ pub struct Position {
 }
 
 impl Position {
-	fn get_line_content(&self) -> Result<String, Error> {
+	pub fn get_line_content(&self) -> Result<String, Error> {
 		let contents = fs::read_to_string(&self.file_path)?;
 
 		let spl: Vec<&str> = contents.split('\n').collect();
@@ -28,13 +28,5 @@ impl Position {
 
 	pub fn increment_by(&self, count: usize) -> Self {
 		return Position::new(self.file_path.clone(), self.line, self.col + count);
-	}
-}
-
-impl fmt::Display for Position {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		let _ = write!(f, "{}:{} in {}", self.line, self.col, self.file_path);
-
-		Ok(())
 	}
 }
