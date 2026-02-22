@@ -5,8 +5,9 @@
 use std::{fs, hash::{DefaultHasher, Hash, Hasher}};
 
 use commons::Position;
+use errors::{errors::{IO_ERROR_READ, PARSE_INT}, errs::{CompilerResult, ErrorKind, base::BaseError, normal::CompilerError}, pos::ErrorPosition};
 
-use crate::{LexerParseResult, LexerParsingError, token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
+use crate::{token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
 
 const SHADOWFUNC_KEYWORD_HASH: u64 = 8856473617513302734;
 const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
@@ -30,10 +31,10 @@ const STATIC_KEYWORD_HASH: u64 = 15057913784433987235;
 /// ```
 /// let result: LexerParseResult<Vec<LexerToken>> = lexer_parse_file("test_file.qf").expect("Lexer didn't work");
 /// ```
-pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>> {
+pub fn lexer_parse_file(file_path: &String) -> CompilerResult<Vec<LexerToken>> {
     let contents: String = match fs::read_to_string(file_path) {
         Ok(v) => v,
-        Err(_) => return Err(LexerParsingError::new("File couldn't be read!".to_string(), 0)),
+        Err(_) => return Err(CompilerError::from_base_posless(BaseError::critical(IO_ERROR_READ.to_string()))),
     };
 
     let mut tokens: Vec<LexerToken> = Vec::new();
@@ -126,7 +127,7 @@ pub fn lexer_parse_file(file_path: &String) -> LexerParseResult<Vec<LexerToken>>
     Ok(tokens)
 }
 
-fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) -> LexerParseResult<LexerToken> {
+fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) -> CompilerResult<LexerToken> {
 	let operator_char = contents.chars().nth(*ind).unwrap();
 
 	let operator = match operator_char {
@@ -134,7 +135,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 		'-' => MathOperator::SUBSTRACT,
 		'*' => MathOperator::MULTIPLY,
 		'/' => MathOperator::DIVIDE,
-		_ => return Err(LexerParsingError::new(String::from("Invalid operator sign!"), 0))
+		_ => return Err(CompilerError::new(ErrorKind::Error, format!(PARSE_OPERATOR, operator_char.to_string()), ErrorPosition::from_simple_position(start_pos, 1)))
 	};
 
 	*ind += 1;
@@ -142,7 +143,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	let assigns = match contents.chars().nth(*ind) {
 		Some(v) => {
 			if v != ' ' && v != '=' {
-				return Err(LexerParsingError::new(String::from("Invalid operator second sign!"), 0));
+				return Err(CompilerError::new(ErrorKind::Error, format!(PARSE_OPERATOR, contents.chars.nth(*ind).to_string()), ErrorPosition::from_simple_position(start_pos, 2)))
 			}
 
 			v == '='
@@ -160,9 +161,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 		increment_count += 1;
 	}
 
-	let end = start_pos.increment_by(increment_count);
-
-	return Ok(LexerToken::new(start_pos, end, LexerTokenType::MathOperator(operator, assigns)));
+	return Ok(LexerToken::new(start_pos, increment_count, LexerTokenType::MathOperator(operator, assigns)));
 
 }
 
@@ -172,8 +171,6 @@ fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	let second_char = contents.chars().nth(*ind).unwrap();
 
 	*ind += 1;
-
-	let end = start_pos.increment_by(2);
 
 	if second_char != '=' && second_char != ' ' {
 		return None;
@@ -185,23 +182,23 @@ fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 				return None;
 			}
 
-			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::Equal)));
+			return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::Equal)));
 		},
 
 		'>' => {
 			if second_char == '=' {
-				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::HigherEqual)));
+				return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::HigherEqual)));
 			}
 
-			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::Higher)));
+			return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::Higher)));
 		},
 		
 		'<' => {
 			if second_char == '=' {
-				return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::LowerEqual)));
+				return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::LowerEqual)));
 			}
 
-			return Some(LexerToken::new(start_pos, end, LexerTokenType::ComparingOperator(ComparingOperator::Lower)));
+			return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::Lower)));
 		},
 
 		_ => {
@@ -211,7 +208,7 @@ fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 
 }
 
-fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> LexerParseResult<LexerToken> {
+fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> CompilerResult<LexerToken> {
     let start = *ind + 1;
     let mut end: usize = start;
     
@@ -226,16 +223,16 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
     let slice = &str[*ind..end];
     let num: i128 = match slice.parse() {
         Ok(v) => v,
-        Err(_) => return Err(LexerParsingError::new("Couldn't parse int lit!".to_string(), *ind)),
+        Err(_) => return Err(CompilerError::new(ErrorKind::Error, PARSE_INT.to_string(), ErrorPosition::from_simple_position(start_pos, end - start)))
     };
 
     *ind = end;
 
-	let endpos = start_pos.increment_by(end - start);
-
 	let mut hash = 7572830400006405400;
 
 	println!("{}", str.chars().nth(*ind + 1).unwrap());
+
+	let endpos = start_pos.increment_by(end - start);
 
 	if str.chars().nth(*ind).unwrap() == '_' {
 		*ind += 1;
@@ -243,10 +240,8 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
 		let tok = parse_keyword(str, ind, endpos.clone());
 		let k = match tok.expects_keyword() {
 			Ok(v) => v,
-			Err(_) => return Err(LexerParsingError::new("Expected keyword as int type specifier".to_string(), *ind))
+			Err(e) => return Err(e)
 		};
-
-		println!("Hashee :{:?}", k);
 
 		hash = k.1;
 	}
@@ -254,7 +249,7 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
 	println!("{}", str.chars().nth(*ind).unwrap());
 
 
-    return Ok(LexerToken::new(start_pos, endpos, LexerTokenType::IntLit(num, hash)));
+    return Ok(LexerToken::new(start_pos, end - start, LexerTokenType::IntLit(num, hash)));
 }
 
 fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> LexerToken {
@@ -274,8 +269,7 @@ fn parse_string_token(str: &String, ind: &mut usize, start_pos: Position) -> Lex
 
     *ind = end;
     
-	let endpos: Position = start_pos.increment_by(end - start);
-    return LexerToken::new(start_pos, endpos, LexerTokenType::StringLit(slice.to_string()));
+    return LexerToken::new(start_pos, end - start, LexerTokenType::StringLit(slice.to_string()));
 }
 
 fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerToken {
@@ -317,6 +311,5 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
         _ => LexerTokenType::KEYWORD(slice.to_string(), hash)
     };
 
-	let endpos: Position = start_pos.increment_by(end - start);
-	return LexerToken::new(start_pos, endpos, token_type);
+	return LexerToken::new(start_pos, end - start, token_type);
 }

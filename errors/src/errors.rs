@@ -22,7 +22,7 @@ pub const IO_ERROR_READ: &str = "Couldn't read the file!";
 pub const MATH_OP_NO_ASSIGN: &str = "This context enforces the usage of assigments in math operations. Please remove this operation or make it assigned";
 
 // IR
-pub const IR_OBTAIN_TYPE: &str = "Cannot use this vaue as a {}";
+pub const IR_OBTAIN_TYPE: &str = "Cannot use this value as a {}";
 pub const IR_EXPECTED_TYPE: &str = "Expected type {} but got type {}";
 pub const IR_OBTAIN_COND: &str = "Cannot use this value as a condition boolean.";
 

@@ -130,7 +130,7 @@ impl LexerToken {
 	}
 
 	pub fn make_err(&self, err: String, kind: ErrorKind) -> CompilerError {
-		return CompilerError::new(kind, err, ErrorPosition::from_simple_position(self.pos, self.pos_size));
+		return CompilerError::new(kind, err, ErrorPosition::from_simple_position(self.pos.clone(), self.pos_size));
 	}
 
 	pub fn as_keyword(&self) -> CompilerResult<(String, u64)> {

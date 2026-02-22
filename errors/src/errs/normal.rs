@@ -19,7 +19,7 @@ impl CompilerError {
 	}
 
 	pub fn new(kind: ErrorKind, str: String, pos: ErrorPosition) -> Self {
-		let err = CompilerError { kind, str, pos: Some(base)};
+		let err = CompilerError { kind, str, pos: Some(pos)};
 
 		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
 
