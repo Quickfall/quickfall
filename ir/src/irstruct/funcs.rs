@@ -13,6 +13,7 @@ pub struct IRFunction {
 	pub ret_type: Option<Rc<IRType>>,
 	pub args: Vec<(Rc<IRType>, u64)>,
 	name: String,
+	pub hash: u64,
 
 	pub lctx: IRLocalContext,
 
@@ -20,18 +21,18 @@ pub struct IRFunction {
 }
 
 impl IRFunction {
-	pub fn new(ctx: &IRContext, name: String, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> Self {
+	pub fn new(ctx: &IRContext, name: String, hash: u64, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> Self {
 
 		let block = ctx.inkwell_ctx.append_basic_block(func, "entry");
 
-		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, entry: Some(unsafe { transmute(block) }), lctx: IRLocalContext::new().into() }
+		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, hash, entry: Some(unsafe { transmute(block) }), lctx: IRLocalContext::new().into() }
 	}
 
-	pub fn new_shadow(ctx: &IRContext, name: String, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> Self {
-		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, entry: None, lctx: IRLocalContext::new().into() }
+	pub fn new_shadow(ctx: &IRContext, name: String, hash: u64, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> Self {
+		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, hash, entry: None, lctx: IRLocalContext::new().into() }
 	}
 
-	pub fn create_shadow(ctx: &IRContext, name: String, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
+	pub fn create_shadow(ctx: &IRContext, name: String, hash: u64, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
@@ -45,10 +46,10 @@ impl IRFunction {
 
 		let func = module.add_function(&name, t, None);
 
-		return Ok(IRFunction::new_shadow(ctx, name, func, ret_type, args));
+		return Ok(IRFunction::new_shadow(ctx, name, hash, func, ret_type, args));
 	}
 
-	pub fn create(ctx: &IRContext, name: String, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
+	pub fn create(ctx: &IRContext, name: String, hash: u64, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
@@ -62,7 +63,7 @@ impl IRFunction {
 
 		let func = module.add_function(&name, t, None);
 
-		return Ok(IRFunction::new(ctx, name, func, ret_type, args));
+		return Ok(IRFunction::new(ctx, name, hash, func, ret_type, args));
 	}
 
 	pub fn call(&self, ctx: &IRContext, args: Vec<IRValueRef>, grab_return: bool) -> PositionlessResult<Option<IRPointer>> {

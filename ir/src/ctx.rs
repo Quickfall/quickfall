@@ -66,7 +66,7 @@ impl IRContext {
 		return self.functions.get(&SelfHash { hash }).is_some() || self.static_vars.get(&SelfHash {hash}).is_some() || self.type_storage.get(hash).is_some();
 	}
 
-	pub fn get_funtion(&self, hash: u64) -> PositionlessResult<Rc<IRFunction>> {
+	pub fn get_function(&self, hash: u64) -> PositionlessResult<Rc<IRFunction>> {
 		return match self.functions.get(&SelfHash { hash }) {
 			Some(v) => Ok(v.clone()),
 			None => Err(PositionlessError::new(&format!("Invalid function name! Got hash {}", hash)))

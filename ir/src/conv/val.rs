@@ -25,7 +25,7 @@ pub fn get_variable_ref(lctx: &IRLocalContext, ctx: &IRContext, hash: u64) -> Po
 	}
 }
 
-pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: Box<ASTTreeNode>, left: Option<IRPointer>, in_var: bool) -> PositionlessResult<IRValueRef> {
+pub fn parse_ir_value<'a>(f: Option<&IRFunction>, ctx: &IRContext, node: Box<ASTTreeNode>, left: Option<IRPointer>, in_var: bool) -> PositionlessResult<IRValueRef> {
 	match node.as_ref() {
 		ASTTreeNode::IntegerLit { val: v, hash} => {
 			let t = ctx.type_storage.get(*hash);
@@ -67,18 +67,18 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 				return Ok(IRValueRef::from_pointer(ptr));
 			}
 
-			let var = get_variable_ref(&lctx.unwrap(), ctx, e.hash)?;
+			let var = get_variable_ref(&f.unwrap().lctx, ctx, e.hash)?;
 
 			return Ok(var);
 		},
 
 		ASTTreeNode::FunctionCall { func, args } => {
 
-			if lctx.is_none() {
+			if f.is_none() {
 				return Err(PositionlessError::new("Cannot use function calls outside of a function!"))
 			}
 
-			let k = parse_ir_function_call(ctx, lctx.unwrap(), node, left, in_var)?;
+			let k = parse_ir_function_call(ctx, f.unwrap(), node, left, in_var)?;
 
 			if k.is_none() {
 				return Err(PositionlessError::new("Function call returns void! cannot use as a value!"));
@@ -88,8 +88,8 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 		},
 
 		ASTTreeNode::MathResult { lval, rval, operator, assigns } => {
-			let left = parse_ir_value(lctx, ctx, lval.clone(), None, in_var)?;
-			let right = parse_ir_value(lctx, ctx, rval.clone(), None, in_var)?;
+			let left = parse_ir_value(f, ctx, lval.clone(), None, in_var)?;
+			let right = parse_ir_value(f, ctx, rval.clone(), None, in_var)?;
 
 			let t = left.get_type();
 
@@ -118,8 +118,8 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 		},
 
 		ASTTreeNode::OperatorBasedConditionMember { lval, rval, operator } => {
-			let l_val = parse_ir_value(lctx, ctx, lval.clone(), None, in_var)?;
-			let r_val = parse_ir_value(lctx, ctx, rval.clone(), None, in_var)?;
+			let l_val = parse_ir_value(f, ctx, lval.clone(), None, in_var)?;
+			let r_val = parse_ir_value(f, ctx, rval.clone(), None, in_var)?;
 
 			let cmp = make_bool_cmp_int(ctx, l_val, r_val, operator.clone())?;
 
@@ -127,7 +127,7 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 		},
 
 		ASTTreeNode::BooleanBasedConditionMember { val, negate } => {
-			let v = parse_ir_value(lctx, ctx, val.clone(), None, in_var)?;
+			let v = parse_ir_value(f, ctx, val.clone(), None, in_var)?;
 
 			if *negate {
 				return Ok(IRValueRef::from_val(make_bool_xor(ctx, v)?))
@@ -137,17 +137,17 @@ pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: 
 		}
 
 		ASTTreeNode::StructLRFunction { l, r } => {
-			let l_val = parse_ir_value(lctx, ctx, l.clone(), None, in_var)?;
+			let l_val = parse_ir_value(f, ctx, l.clone(), None, in_var)?;
 			let l_ptr = l_val.as_pointer()?;
 			
-			return parse_ir_value(lctx, ctx, r.clone(), Some(l_ptr), in_var);
+			return parse_ir_value(f, ctx, r.clone(), Some(l_ptr), in_var);
 		},
 
 		ASTTreeNode::StructLRVariable { l, r } => {
-			let l_val = parse_ir_value(lctx, ctx, l.clone(), None, in_var)?;
+			let l_val = parse_ir_value(f, ctx, l.clone(), None, in_var)?;
 			let l_ptr = l_val.as_pointer()?;
 
-			return parse_ir_value(lctx, ctx, r.clone(), Some(l_ptr), in_var);
+			return parse_ir_value(f, ctx, r.clone(), Some(l_ptr), in_var);
 		}
 
 		_ => return Err(PositionlessError::new("The given node cannot be parsed as a value!"))
