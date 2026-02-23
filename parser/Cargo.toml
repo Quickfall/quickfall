@@ -7,3 +7,4 @@ edition = "2024"
 utils = { path = "../utils" }
 lexer = { path = "../lexer" }
 commons = { path = "../commons" }
+errors = { path = "../errors" }

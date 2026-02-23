@@ -3,33 +3,13 @@ use std::{fs, io};
 use commons::Position;
 
 #[derive(Clone, Debug)]
-pub struct ErrorPosition {
-	pub line: usize,
-
-	pub col: usize,
-	pub size: usize,
-
-	pub file_path: String
+pub struct BoundPosition {
+	pub start: Position,
+	pub end: Position
 }
 
-impl ErrorPosition {
-	pub fn new(path: String, line: usize, col: usize, end: usize) -> Self {
-		return ErrorPosition { line, col, size: end - col, file_path: path }
-	}
-
-	pub fn from_simple_position(pos: Position, size: usize) -> Self {
-		return ErrorPosition { line: pos.line, col: pos.col, size, file_path: pos.file_path }
-	}
-
-	pub fn get_line_str(&self) -> Result<String, io::Error> {
-		let contents = fs::read_to_string(&self.file_path)?;
-
-		let split: Vec<&str> = contents.split("\n").collect();
-
-		return Ok(split[self.line].to_string())
-	}
-
-	pub fn get_line_slice(&self) -> Result<String, io::Error> {
-		return Ok(self.get_line_str()?[self.col - 1..self.col + self.size - 1].to_string());
+impl BoundPosition {
+	pub fn from_size(start: Position, size: usize) -> Self {
+		return BoundPosition { start: start.clone(), end: start.increment_by(size) }
 	}
 }

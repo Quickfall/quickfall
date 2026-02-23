@@ -1,18 +1,18 @@
 //! AST parsing for number & string literals
 
-use commons::err::{PositionedResult};
+use errors::errs::CompilerResult;
 use lexer::token::{LexerToken};
 
 use crate::{ast::tree::ASTTreeNode};
 
-pub fn parse_integer_literal(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+pub fn parse_integer_literal(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
 	let val = tokens[*ind].expects_int_lit()?;
 	*ind += 1;
 
 	return Ok(Box::new(ASTTreeNode::IntegerLit { val: val.0, hash: val.1 }));
 }
 
-pub fn parse_string_literal(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+pub fn parse_string_literal(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
 	let val = tokens[*ind].expects_string_lit()?;
 	*ind += 1;
 

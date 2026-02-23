@@ -5,7 +5,8 @@
 use std::{fs, hash::{DefaultHasher, Hash, Hasher}};
 
 use commons::Position;
-use errors::{errors::{IO_ERROR_READ, PARSE_INT}, errs::{CompilerResult, ErrorKind, base::BaseError, normal::CompilerError}, pos::ErrorPosition};
+use errors::{EXPECTED_TOKEN, IO_ERROR_READ, PARSE_INT, PARSE_OPERATOR, PARSE_STRING, pos::BoundPosition };
+use errors::{errs::{CompilerResult, ErrorKind, base::BaseError, normal::CompilerError}};
 
 use crate::{token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
 
@@ -34,7 +35,7 @@ const STATIC_KEYWORD_HASH: u64 = 15057913784433987235;
 pub fn lexer_parse_file(file_path: &String) -> CompilerResult<Vec<LexerToken>> {
     let contents: String = match fs::read_to_string(file_path) {
         Ok(v) => v,
-        Err(_) => return Err(CompilerError::from_base_posless(BaseError::critical(IO_ERROR_READ.to_string()))),
+        Err(_) => return Err(CompilerError::from_base_posless(BaseError::critical(IO_ERROR_READ!().to_string()))),
     };
 
     let mut tokens: Vec<LexerToken> = Vec::new();
@@ -135,7 +136,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 		'-' => MathOperator::SUBSTRACT,
 		'*' => MathOperator::MULTIPLY,
 		'/' => MathOperator::DIVIDE,
-		_ => return Err(CompilerError::new(ErrorKind::Error, format!(PARSE_OPERATOR, operator_char.to_string()), ErrorPosition::from_simple_position(start_pos, 1)))
+		_ => return Err(CompilerError::new(ErrorKind::Error, format!(PARSE_OPERATOR!(), operator_char.to_string()), BoundPosition::from_size(start_pos, 1)))
 	};
 
 	*ind += 1;
@@ -143,7 +144,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	let assigns = match contents.chars().nth(*ind) {
 		Some(v) => {
 			if v != ' ' && v != '=' {
-				return Err(CompilerError::new(ErrorKind::Error, format!(PARSE_OPERATOR, contents.chars.nth(*ind).to_string()), ErrorPosition::from_simple_position(start_pos, 2)))
+				return Err(CompilerError::new(ErrorKind::Error, format!(PARSE_OPERATOR!(), contents.chars().nth(*ind).unwrap()), BoundPosition::from_size(start_pos, 2)));
 			}
 
 			v == '='
@@ -223,12 +224,12 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Com
     let slice = &str[*ind..end];
     let num: i128 = match slice.parse() {
         Ok(v) => v,
-        Err(_) => return Err(CompilerError::new(ErrorKind::Error, PARSE_INT.to_string(), ErrorPosition::from_simple_position(start_pos, end - start)))
+        Err(_) => return Err(CompilerError::new(ErrorKind::Error, PARSE_INT!().to_string(), BoundPosition::from_size(start_pos, end - start)))
     };
 
     *ind = end;
 
-	let mut hash = 7572830400006405400;
+	let mut hash = 7572830400006405400; // s64
 
 	println!("{}", str.chars().nth(*ind + 1).unwrap());
 

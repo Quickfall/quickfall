@@ -3,7 +3,7 @@ use std::{fs, io::Error};
 
 pub mod utils;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Position {
 	pub line: usize,
 	pub col: usize,

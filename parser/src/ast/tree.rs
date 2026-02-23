@@ -2,7 +2,8 @@
 //! AST tree related definitions.
 //! 
 
-use lexer::toks::{comp::ComparingOperator, math::MathOperator};
+use commons::Position;
+use lexer::{token::LexerToken, toks::{comp::ComparingOperator, math::MathOperator}};
 use utils::hash::{TypeHash, WithHash};
 
 #[derive(Debug, PartialEq, Clone)]
@@ -19,7 +20,7 @@ impl FunctionDeclarationArgument {
 
 /// The main AST node type in the AST parsing system.
 #[derive(Debug, PartialEq, Clone)]
-pub enum ASTTreeNode {
+pub enum ASTTreeNodeKind {
     IntegerLit { val: i128, hash: u64 },
     StringLit(String),
 
@@ -57,43 +58,62 @@ pub enum ASTTreeNode {
 	StructLRFunction { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>, }
 }
 
-impl ASTTreeNode {
+impl ASTTreeNodeKind {
 	pub fn is_function_call(&self) -> bool {
-		return matches!(self, ASTTreeNode::FunctionCall { .. } | ASTTreeNode::StructLRFunction { .. } )
+		return matches!(self, ASTTreeNodeKind::FunctionCall { .. } | ASTTreeNodeKind::StructLRFunction { .. } )
 	}
 
 	pub fn is_var_access(&self) -> bool {
-		return matches!(self, ASTTreeNode::VariableReference { .. } | ASTTreeNode::StructLRVariable { .. })
+		return matches!(self, ASTTreeNodeKind::VariableReference { .. } | ASTTreeNodeKind::StructLRVariable { .. })
 	}
 
 	pub fn is_tree_permissible(&self) -> bool {
-		return matches!(self, ASTTreeNode::FunctionDeclaration { .. } | ASTTreeNode::StaticVariableDeclaration { .. } | ASTTreeNode::ShadowFunctionDeclaration { .. }| ASTTreeNode::StructLayoutDeclaration { .. })
+		return matches!(self, ASTTreeNodeKind::FunctionDeclaration { .. } | ASTTreeNodeKind::StaticVariableDeclaration { .. } | ASTTreeNodeKind::ShadowFunctionDeclaration { .. }| ASTTreeNodeKind::StructLayoutDeclaration { .. })
 	}
 
 	pub fn get_tree_name(&self) -> Option<WithHash<String>> {
 		match self {
-			ASTTreeNode::FunctionDeclaration { func_name, args, body, returnType } => {
+			ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, returnType } => {
 				return Some(WithHash::new(func_name.val.to_string()));
 			},
 
-			ASTTreeNode::ShadowFunctionDeclaration { func_name, args, returnType } => {
+			ASTTreeNodeKind::ShadowFunctionDeclaration { func_name, args, returnType } => {
 				return Some(WithHash::new(func_name.val.to_string()))
 			}
 
-			ASTTreeNode::StaticVariableDeclaration { name, var_type, val } => {
+			ASTTreeNodeKind::StaticVariableDeclaration { name, var_type, val } => {
 				return Some(WithHash::new(name.val.clone()));
 			},
 
-			ASTTreeNode::StructLayoutDeclaration { name, layout, members } => {
+			ASTTreeNodeKind::StructLayoutDeclaration { name, layout, members } => {
 				return Some(WithHash::new(name.val.to_string()));
 			},
 
-			ASTTreeNode::VarDeclaration { var_name, var_type, value } => {
+			ASTTreeNodeKind::VarDeclaration { var_name, var_type, value } => {
 				return Some(WithHash::new(var_name.val.to_string()));
 			},
 
 			_ => return None
 		}
 	}
+}
 
+/// The complete AST tree node. Contains positions and more.
+#[derive(Debug, PartialEq, Clone)]
+pub struct ASTTreeNode {
+	pub kind: ASTTreeNodeKind,
+	pub start: Position,
+	pub end: Position
+}
+
+impl ASTTreeNode {
+	pub fn from_toks(kind: ASTTreeNodeKind, start: &LexerToken, end: &LexerToken) -> Self {
+		return ASTTreeNode { kind, start: start.pos.clone(), end: end.get_end_pos() }
+	}
+}
+
+macro_rules! make_node {
+	($kind:expr, $s:expr, $e:expr) => {
+		Box::new(ASTTreeNode::from_toks(kind, s, e))
+	};
 }
