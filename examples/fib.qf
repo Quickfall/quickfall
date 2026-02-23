@@ -1,0 +1,8 @@
+func fib(si32 i) si32 {
+	if(i <= 1_si32) {
+		ret 1
+	}
+
+	var si32 test = fib(i - 1_si32) + fib(i - 2_si32)
+	ret test
+}

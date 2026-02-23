@@ -92,7 +92,7 @@ pub fn parse_ir_body(ctx: &IRContext, func: &mut IRFunction, nodes: Vec<Box<ASTT
 }
 
 pub fn parse_ir_function_call(ctx: &IRContext, f: &IRFunction, node: Box<ASTTreeNode>, owner: Option<IRPointer>, grab_result: bool) -> PositionlessResult<Option<IRValueRef>> {
-	if let ASTTreeNode::FunctionCall { func, args } = *node {
+	if let ASTTreeNode::FunctionCall { func: ff, args } = *node {
 		let mut arguments = vec![];
 
 		if owner.as_ref().is_some() {
@@ -103,9 +103,16 @@ pub fn parse_ir_function_call(ctx: &IRContext, f: &IRFunction, node: Box<ASTTree
 			arguments.push(parse_ir_value(Some(&f), ctx, v, None, false)?);
 		}
 
-		let func = ctx.get_function(func.hash)?;
 
-		let ret = func.call(ctx, arguments, grab_result)?;
+		let ret;
+
+		if ff.hash == f.hash {
+			ret = f.call(ctx, arguments, grab_result)?;
+		} else {
+			let func = ctx.get_function(ff.hash)?;
+
+			ret = func.call(ctx, arguments, grab_result)?;
+		}
 
 		if !grab_result || ret.is_none() {
 			return Ok(None);
