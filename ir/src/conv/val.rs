@@ -16,8 +16,13 @@ pub fn get_variable_ref(lctx: &IRLocalContext, ctx: &IRContext, hash: u64) -> Po
 
 	match lctx.get_variable(hash) {
 		Ok(v) => return Ok(IRValueRef::from_pointer(IRPointer::clone(v))),
-		Err(_) => return Err(PositionlessError::new(&format!("Cannot find variable with hash {} in the current context", hash)))
+		Err(_) => {}
 	};
+
+	match lctx.get_argument(hash) {
+		Ok(v) => return Ok(IRValueRef::from_val(IRValue::clone(v))),
+		Err(_) => return Err(PositionlessError::new(&format!("Cannot find variable with hash {} in the current context", hash)))
+	}
 }
 
 pub fn parse_ir_value<'a>(lctx: Option<&IRLocalContext>, ctx: &IRContext, node: Box<ASTTreeNode>, left: Option<IRPointer>, in_var: bool) -> PositionlessResult<IRValueRef> {

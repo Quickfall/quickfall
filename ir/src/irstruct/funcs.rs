@@ -11,7 +11,7 @@ pub struct IRFunction {
 
 	pub inkwell_func: FunctionValue<'static>,
 	pub ret_type: Option<Rc<IRType>>,
-	args: Vec<Rc<IRType>>,
+	pub args: Vec<(Rc<IRType>, u64)>,
 	name: String,
 
 	pub lctx: IRLocalContext,
@@ -20,22 +20,22 @@ pub struct IRFunction {
 }
 
 impl IRFunction {
-	pub fn new(ctx: &IRContext, name: String, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<Rc<IRType>>) -> Self {
+	pub fn new(ctx: &IRContext, name: String, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> Self {
 
 		let block = ctx.inkwell_ctx.append_basic_block(func, "entry");
 
 		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, entry: Some(unsafe { transmute(block) }), lctx: IRLocalContext::new().into() }
 	}
 
-	pub fn new_shadow(ctx: &IRContext, name: String, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<Rc<IRType>>) -> Self {
+	pub fn new_shadow(ctx: &IRContext, name: String, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> Self {
 		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, entry: None, lctx: IRLocalContext::new().into() }
 	}
 
-	pub fn create_shadow(ctx: &IRContext, name: String, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<Rc<IRType>>) -> PositionlessResult<Self> {
+	pub fn create_shadow(ctx: &IRContext, name: String, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
-			kargs.push(*k.get_inkwell_base_metadatatype()?);
+			kargs.push(*k.0.get_inkwell_base_metadatatype()?);
 		}
 
 		let t = match &ret_type {
@@ -48,11 +48,11 @@ impl IRFunction {
 		return Ok(IRFunction::new_shadow(ctx, name, func, ret_type, args));
 	}
 
-	pub fn create(ctx: &IRContext, name: String, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<Rc<IRType>>) -> PositionlessResult<Self> {
+	pub fn create(ctx: &IRContext, name: String, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
-			kargs.push(*k.get_inkwell_base_metadatatype()?);
+			kargs.push(*k.0.get_inkwell_base_metadatatype()?);
 		}
 
 		let t = match &ret_type {
@@ -117,7 +117,7 @@ impl IRFunction {
 	}
 
 	pub fn get_nth_arg_int(&self, ind: u32) -> PositionlessResult<OwnedIntValue> {
-		if !self.args[ind as usize].is_numeric_type() {
+		if !self.args[ind as usize].0.is_numeric_type() {
 			return Err(PositionlessError::new("Tried getting nth argument but given argument's type isn't numeric!"));
 		}
 
