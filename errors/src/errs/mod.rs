@@ -12,7 +12,7 @@ thread_local! {
 	static ERR_STORAGE: RefCell<ErrorStorage> = RefCell::new(ErrorStorage { errs: Vec::new() });
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ErrorKind {
 	Warn,
 	Error,

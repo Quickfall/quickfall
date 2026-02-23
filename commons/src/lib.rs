@@ -29,3 +29,11 @@ impl Position {
 		return Position::new(self.file_path.clone(), self.line, self.col + count);
 	}
 }
+
+impl fmt::Display for Position {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let _ = write!(f, "{}:{} in {}", self.line, self.col, self.file_path);
+
+		Ok(())
+	}
+}

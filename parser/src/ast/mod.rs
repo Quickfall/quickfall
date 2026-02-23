@@ -19,7 +19,7 @@
 
 use commons::Position;
 use utils::hash;
-use errors::{PARSE_VALUE, UNEXPECTED_TOKEN, UNUSED_VAR_ACCESS, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
+use errors::{PARSE_VALUE, UNEXPECTED_TOKEN, UNUSED_VAR_ACCESS, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
 use lexer::token::{self, LexerToken, LexerTokenType};
 use utils::hash::{WithHash};
 
@@ -71,10 +71,15 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 				return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLRFunction { l: original?, r: r_member }, start, end)))
 			}
 
-			let start = original?.start.clone();
+			match original {
+				Ok(_) => {},
+				Err(_) => return Err(CompilerError::new(ErrorKind::Error, "original was false".to_string(), BoundPosition::from_size(tokens[*ind].pos.clone(), 1)))
+			}
+
+			let start = original.as_ref().unwrap().start.clone();
 			let end = tokens[*ind].get_end_pos();
 
-			let r_member = Box::new(ASTTreeNode::new(ASTTreeNodeKind::VariableReference(WithHash::new(s.clone())), start, end));
+			let r_member = Box::new(ASTTreeNode::new(ASTTreeNodeKind::VariableReference(WithHash::new(s.clone())), start.clone(), end));
 
 			*ind += 1;
 
@@ -160,7 +165,8 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 			let ast = parse_ast_value(tokens, ind)?;
 
 			if ast.kind.is_function_call() || ast.kind.is_var_access() {
-				return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::BooleanBasedConditionMember { val: ast, negate: true }, Position::clone(&tokens[*ind].pos), ast.end.clone())))
+				let end = ast.end.clone();
+				return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::BooleanBasedConditionMember { val: ast, negate: true }, Position::clone(&tokens[*ind].pos), end)))
 			}
 
 			return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), ast), ErrorKind::Error));
