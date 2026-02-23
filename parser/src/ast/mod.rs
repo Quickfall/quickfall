@@ -17,11 +17,13 @@
 //! AST parsing functions that aren't requiring a keyword will start at the actual start of the expression unless stated otherwise.
 //! 
 
+use commons::Position;
+use utils::hash;
 use errors::{PARSE_VALUE, UNEXPECTED_TOKEN, UNUSED_VAR_ACCESS, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
-use lexer::token::{LexerToken, LexerTokenType};
-use utils::hash::WithHash;
+use lexer::token::{self, LexerToken, LexerTokenType};
+use utils::hash::{WithHash};
 
-use crate::ast::{control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::{parse_function_declaraction, parse_shadow_function_declaration}, parse_function_return_statement}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::{ASTTreeNode, ASTTreeNodeKind}, types::parse_type_declaration, var::{decl::parse_variable_declaration, staticdecl::parse_static_function_declaration}};
+use crate::{ast::{control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::{parse_function_declaraction, parse_shadow_function_declaration}, parse_function_return_statement}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::{ASTTreeNode, ASTTreeNodeKind}, types::parse_type_declaration, var::{decl::parse_variable_declaration, staticdecl::parse_static_function_declaration}}, make_node};
 
 pub mod tree;
 pub mod func;
@@ -35,7 +37,7 @@ pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, origi
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Dot => {
 			let original = original?;
-			if !original.is_function_call() && !original.is_var_access() {
+			if !original.kind.is_function_call() && !original.kind.is_var_access() {
 				return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), original), ErrorKind::Error));
 			}
 
@@ -63,15 +65,22 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 				println!("Calling function call parsing on kwd {}", s);
 
 				let r_member = parse_function_call(tokens, ind)?;
+				let start = original.as_ref().unwrap().start.clone();
+				let end = r_member.end.clone();
 
-				return Ok(Box::new(ASTTreeNode::StructLRFunction { l: original?, r: r_member }))
+				return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLRFunction { l: original?, r: r_member }, start, end)))
 			}
 
-			let r_member = Box::new(ASTTreeNode::VariableReference(WithHash::new(s.clone())));
+			let start = original?.start.clone();
+			let end = tokens[*ind].get_end_pos();
+
+			let r_member = Box::new(ASTTreeNode::new(ASTTreeNodeKind::VariableReference(WithHash::new(s.clone())), start, end));
 
 			*ind += 1;
 
-			return Ok(Box::new(ASTTreeNode::StructLRVariable { l: original?, r: r_member }));
+			let end_r = r_member.end.clone();
+
+			return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLRVariable { l: original?, r: r_member }, start, end_r)));
 		},
 
 		_ => return original
@@ -115,8 +124,11 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			*ind += 1;
 			let right_val = parse_ast_value(tokens, ind)?;
 
-			return Ok(Box::new(ASTTreeNode::OperatorBasedConditionMember { lval: k, rval: right_val, operator }));
-		}
+			let start_pos = k.start.clone();
+			let end_pos = right_val.end.clone();
+
+			return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::OperatorBasedConditionMember { lval: k, rval: right_val, operator }, start_pos, end_pos)));
+		},
 
 		_ => return original
 	}
@@ -148,7 +160,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 			let ast = parse_ast_value(tokens, ind)?;
 
 			if ast.kind.is_function_call() || ast.kind.is_var_access() {
-				return Ok(Box::new(ASTTreeNode::BooleanBasedConditionMember { val: ast, negate: true }))
+				return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::BooleanBasedConditionMember { val: ast, negate: true }, Position::clone(&tokens[*ind].pos), ast.end.clone())))
 			}
 
 			return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), ast), ErrorKind::Error));
@@ -170,7 +182,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 				return parse_ast_value_post_l(tokens, ind, call, false);
 			}
 
-			let n = Ok(Box::new(ASTTreeNode::from_toks(ASTTreeNodeKind::VariableReference(WithHash::new(String::clone(str))), &tokens[*ind], &tokens[*ind])));
+			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(hash!(str.clone())), &tokens[*ind], &tokens[*ind]));
 
 			*ind += 1;
 
@@ -248,9 +260,7 @@ pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> Comp
 				return parse_ast_value_post_l(tokens, ind, call, true);
 			}
 
-			let n = Ok(Box::new(
-				ASTTreeNode::from_toks(ASTTreeNodeKind::VariableReference(WithHash::new(String::clone(str))), &tokens[*ind], &tokens[*ind])
-			));
+			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(hash!(str.clone())), &tokens[*ind], &tokens[*ind]));
 
 			*ind += 1;
 

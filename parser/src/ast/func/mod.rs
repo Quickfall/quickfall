@@ -1,14 +1,14 @@
 //! AST parsing for function related elements (function declarations, arguments, calls, ...)
 
-use commons::err::PositionedResult;
+use errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::ast::{parse_ast_node_in_body, parse_ast_value, tree::{ASTTreeNode, FunctionDeclarationArgument}};
+use crate::ast::{parse_ast_node_in_body, parse_ast_value, tree::{ASTTreeNode, ASTTreeNodeKind, FunctionDeclarationArgument}};
 
 pub mod decl;
 pub mod call;
 
-pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Vec<Box<ASTTreeNode>>> {
+pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Vec<Box<ASTTreeNode>>> {
     *ind += 1;
 
     let mut tok: &LexerToken = &tokens[*ind];
@@ -29,7 +29,7 @@ pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedR
 
 
 /// Parses functions arguments.
-pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Vec<FunctionDeclarationArgument>> {
+pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Vec<FunctionDeclarationArgument>> {
 	*ind += 1;
 
 	let mut args: Vec<FunctionDeclarationArgument> = Vec::new();
@@ -58,10 +58,14 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize) -> Po
 	Ok(args)
 }
 
-pub fn parse_function_return_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+pub fn parse_function_return_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+	let start = tokens[*ind].pos.clone();
+
 	*ind += 1;
 
 	let val = parse_ast_value(tokens, ind)?;
 
-	return Ok(Box::new(ASTTreeNode::ReturnStatement { val: Some(val) }))
+	let end = tokens[*ind].get_end_pos();
+
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ReturnStatement { val: Some(val) }, start, end)))
 }

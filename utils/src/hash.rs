@@ -84,3 +84,10 @@ fn utils_get_hash<K: Hash>(val: &K) -> TypeHash {
     val.hash(&mut hasher);
     hasher.finish()
 }   
+
+#[macro_export]
+macro_rules! hash {
+	($e:expr) => {
+		WithHash::new($e)
+	};
+}

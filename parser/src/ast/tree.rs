@@ -107,13 +107,14 @@ pub struct ASTTreeNode {
 }
 
 impl ASTTreeNode {
-	pub fn from_toks(kind: ASTTreeNodeKind, start: &LexerToken, end: &LexerToken) -> Self {
-		return ASTTreeNode { kind, start: start.pos.clone(), end: end.get_end_pos() }
+	pub fn new(kind: ASTTreeNodeKind, start: Position, end: Position) -> Self {
+		return ASTTreeNode { kind, start, end }
 	}
 }
 
+#[macro_export]
 macro_rules! make_node {
 	($kind:expr, $s:expr, $e:expr) => {
-		Box::new(ASTTreeNode::from_toks(kind, s, e))
+		Box::new(ASTTreeNode::new($kind, $s.pos.clone(), $e.get_end_pos()))
 	};
 }
