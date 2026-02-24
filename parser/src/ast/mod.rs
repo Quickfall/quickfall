@@ -44,8 +44,6 @@ pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, origi
 			*ind += 1;
 			let r = parse_ast_value_dotacess_chain_member(tokens, ind, Ok(original))?;
 
-			println!("Tok: {:#?}", tokens[*ind].tok_type);
-
 			if tokens[*ind].tok_type == LexerTokenType::Dot {
 				return parse_ast_value_dotacess(tokens, ind, Ok(r)); // Continue the chain until finished
 			}
@@ -61,9 +59,6 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 	match &tokens[*ind].tok_type {
 		LexerTokenType::KEYWORD(s, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
-
-				println!("Calling function call parsing on kwd {}", s);
-
 				let r_member = parse_function_call(tokens, ind)?;
 				let start = original.as_ref().unwrap().start.clone();
 				let end = r_member.end.clone();

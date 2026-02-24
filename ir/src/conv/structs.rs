@@ -34,9 +34,6 @@ pub fn parse_ir_struct_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> Comp
 			ctx.type_storage.insert(name.hash, IRType::Struct(struct_type));
 		}
 
-		println!("name: {} -> {}", name.val.clone(), name.hash);
-		println!("opt: {}", ctx.type_storage.get(name.hash).is_none());
-
 		let res = match ctx.type_storage.get(name.hash) {
 			Some(v) => v,
 			None => return Err(CompilerError::from_ast(ErrorKind::Error, IR_FIND_TYPE!().to_string(), &node.start, &node.end))

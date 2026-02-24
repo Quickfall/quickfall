@@ -231,8 +231,6 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Com
 
 	let mut hash = 7572830400006405400; // s64
 
-	println!("{}", str.chars().nth(*ind + 1).unwrap());
-
 	let endpos = start_pos.increment_by(end - start);
 
 	if str.chars().nth(*ind).unwrap() == '_' {
@@ -246,9 +244,6 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Com
 
 		hash = k.1;
 	}
-
-	println!("{}", str.chars().nth(*ind).unwrap());
-
 
     return Ok(LexerToken::new(start_pos, end - start, LexerTokenType::IntLit(num, hash)));
 }

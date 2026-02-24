@@ -121,8 +121,6 @@ pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<
 
 		parse_ir_function_body_member(ctx, func, initial_state)?;
 
-		println!("Post initial state");
-
 		match ctx.builder.build_unconditional_branch(for_cond_block) {
 			Ok(_) => {},
 			Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_unconditional_branch", e), &node.start, &node.end))
