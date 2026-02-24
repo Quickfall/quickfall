@@ -2,7 +2,7 @@
 
 use std::{cell::{Ref, RefCell}, rc::Rc};
 
-use commons::{err::{PositionlessError, PositionlessResult}};
+use errors::{INKWELL_FUNC_FAILED, IR_TYPE_BOOL, IR_TYPE_SIGNED, IR_TYPE_UNSIGNED, errs::{BaseResult, CompilerResult, base::BaseError}};
 use inkwell::{types::StringRadix, values::{BasicValueEnum, IntValue}};
 
 use crate::{ctx::IRContext, irstruct::ptr::IRPointer, types::typing::{IRType, OwnedIntType, OwnedIntValue, OwnedValueEnum}};
@@ -22,38 +22,38 @@ impl IRValue {
 		return IRValue { inkwell_val, t: t.clone() }
 	}
 
-	pub fn from_unsigned(ctx: &IRContext, t: Rc<IRType>, v: u128) -> PositionlessResult<Self> {
+	pub fn from_unsigned(ctx: &IRContext, t: Rc<IRType>, v: u128) -> BaseResult<Self> {
 		if !t.is_numeric_type() || t.is_signed() {
-			return Err(PositionlessError::new("The given type cannot be applied to make an unsigned!"));
+			return Err(BaseError::err(IR_TYPE_UNSIGNED!().to_string()));
 		}
 
 		let int_type = t.get_inkwell_inttype()?;
 		let val = match int_type.const_int_from_string(&v.to_string(), StringRadix::Decimal) {
 			Some(v) => v,
-			None => return Err(PositionlessError::new("const_int_from_string failed!"))
+			None => return Err(BaseError::critical(format!(INKWELL_FUNC_FAILED!(), "const_int_from_string", "e")))
 		};
 
 		return Ok(IRValue::new(OwnedValueEnum::new(&ctx.inkwell_ctx, val.into()), t));
 	}
 
-	pub fn from_signed(ctx: &IRContext, t: Rc<IRType>, v: i128) -> PositionlessResult<Self> {
+	pub fn from_signed(ctx: &IRContext, t: Rc<IRType>, v: i128) -> BaseResult<Self> {
 		if !t.is_numeric_type() || !t.is_signed() {
-			return Err(PositionlessError::new("The given type cannot be applied to make a signed!"));
+			return Err(BaseError::err(IR_TYPE_SIGNED!().to_string()));
 		}
 
 		let int_type = t.get_inkwell_inttype()?;
 		let val = match int_type.const_int_from_string(&v.to_string(), StringRadix::Decimal) {
 			Some(v) => v,
-			None => return Err(PositionlessError::new("const_int_from_string failed!"))
+			None => return Err(BaseError::critical(format!(INKWELL_FUNC_FAILED!(), "const_int_from_string", "e")))
 		};
 
 		return Ok(IRValue::new(OwnedValueEnum::new(&ctx.inkwell_ctx, val.into()), t));
 	}
 
-	pub fn from_bool(val: bool, ctx: &IRContext, t: Rc<IRType>) -> PositionlessResult<Self> {
+	pub fn from_bool(val: bool, ctx: &IRContext, t: Rc<IRType>) -> BaseResult<Self> {
 		let inkwell_type = match t.as_ref() {
 			IRType::Bool(ty) => ty,
-			_ => return Err(PositionlessError::new("from_bool got fed a non-boolean IRType instance! t != IRType::Bool!"))
+			_ => return Err(BaseError::err(IR_TYPE_BOOL!().to_string()))
 		};
 
 		return Ok(IRValue::new(OwnedValueEnum::new(&ctx.inkwell_ctx, inkwell_type.const_int(val as u64, false).into()),t));

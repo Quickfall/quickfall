@@ -1,12 +1,10 @@
-use std::sync::Condvar;
+use errors::{INKWELL_FUNC_FAILED, IR_INVALID_NODE_TYPE, IR_OBTAIN_COND, IR_TYPE_BOOL, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
+use parser::ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 
-use commons::err::{PositionlessError, PositionlessResult};
-use parser::ast::tree::ASTTreeNode;
+use crate::{conv::{func::{parse_ir_body, parse_ir_function_body_member}, val::parse_ir_value}, ctx::{IRContext}, irstruct::funcs::IRFunction};
 
-use crate::{conv::{self, func::{parse_ir_body, parse_ir_function_body_member}, val::parse_ir_value}, ctx::{IRContext, IRLocalContext}, irstruct::funcs::IRFunction, types::BOOL_TYPE_HASH};
-
-pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
-	if let ASTTreeNode::IfStatement { cond, body, branches, depth } = *node.clone() {
+pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<ASTTreeNode>) -> CompilerResult<bool> {
+	if let ASTTreeNodeKind::IfStatement { cond, body, branches, depth: _ } = node.kind.clone() {
 		let mut ir_branches = vec![];
 
 		let initial_branch = ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "ifbranch_then");
@@ -14,13 +12,13 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 		let b = branches.clone();
 
 		for branch in b {
-			match *branch {
-				ASTTreeNode::IfElseStatement { cond, body } => {
+			match branch.kind {
+				ASTTreeNodeKind::IfElseStatement { cond: _, body: _ } => {
 					ir_branches.push(ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "ifelse_condition"));
 					ir_branches.push(ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "ifelse_then"));
 				},
 
-				ASTTreeNode::ElseStatement { body } => {
+				ASTTreeNodeKind::ElseStatement { body: _ } => {
 					ir_branches.push(ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "else_body"));
 				}
 
@@ -32,16 +30,20 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 		let first_cond = parse_ir_value(Some(&func), ctx, cond, None, false)?;
 
-		let bool_type = ctx.type_storage.get(BOOL_TYPE_HASH).unwrap();
+		let ob = match first_cond.obtain(ctx) {
+			Ok(v) => v,
+			Err(b) => return Err(CompilerError::from_base(b, &node.start, &node.end))
+		};
+		
 
-		let int = match first_cond.obtain(ctx)?.obtain_as_bool() {
+		let int = match ob.obtain_as_bool() {
 			Some(v) => *v,
-			None => return Err(PositionlessError::new("Cannot cast first cond as int"))
+			None => return Err(CompilerError::from_ast(ErrorKind::Error, IR_OBTAIN_COND!().to_string(), &node.start, &node.end))
 		};
 
 		match ctx.builder.build_conditional_branch(int, initial_branch, ir_branches[0]) {
 			Ok(_) => {},
-			Err(_) => return Err(PositionlessError::new("build_conditional_branch initial failed!"))
+			Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_conditional_branch", e), &node.start, &node.end))
 		};
 
 		ctx.builder.position_at_end(initial_branch);
@@ -51,20 +53,26 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 		let mut ind = 0;
 		for branch in branches {
-			match *branch {
-				ASTTreeNode::IfElseStatement { cond, body } => {
+			match branch.kind {
+				ASTTreeNodeKind::IfElseStatement { cond, body } => {
 					ctx.builder.position_at_end(ir_branches[ind]);
 
 					let cond_val = parse_ir_value(Some(&func), ctx, cond.unwrap(), None, false)?;
 
-					let int_cond_val = match cond_val.obtain(ctx)?.obtain_as_bool() {
+					let ob = match cond_val.obtain(ctx) {
+						Ok(v) => v,
+						Err(b) => return Err(CompilerError::from_base(b, &node.start, &node.end))
+					};
+					
+
+					let int_cond_val = match ob.obtain_as_bool() {
 						Some(v) => *v,
-						None => return Err(PositionlessError::new("Cannot cast condition as int!"))
+						None => return Err(CompilerError::from_ast(ErrorKind::Error, IR_OBTAIN_COND!().to_string(), &branch.start, &branch.end))
 					};
 
 					match ctx.builder.build_conditional_branch(int_cond_val, ir_branches[ind + 1], ir_branches[ind + 2]) {
 						Ok(_) => {},
-						Err(_) => return Err(PositionlessError::new("build_conditional_branch nested failed!"))
+						Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_conditional_branch", e), &branch.start, &branch.end))
 					}
 
 					ctx.builder.position_at_end(ir_branches[ind + 1]);
@@ -75,13 +83,13 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 					match ctx.builder.build_unconditional_branch(ir_branches[ir_branches.len() - 1]) {
 						Ok(_) => {},
-						Err(_) => return Err(PositionlessError::new("build_conditional_branch nested failed!"))
+						Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_unconditional_branch", e), &branch.start, &branch.end))
 					}
 
 					ind += 2;
 				},
 
-				ASTTreeNode::ElseStatement { body } => {
+				ASTTreeNodeKind::ElseStatement { body } => {
 					ctx.builder.position_at_end(ir_branches[ind]);
 
 					func.lctx.increment_body_depth();
@@ -89,7 +97,7 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 
 					match ctx.builder.build_unconditional_branch(ir_branches[ir_branches.len() - 1]) {
 						Ok(_) => {},
-						Err(_) => return Err(PositionlessError::new("build_conditional_branch nested failed!"))
+						Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_unconditional_branch", e), &branch.start, &branch.end))
 					}
 				},
 
@@ -102,11 +110,11 @@ pub fn parse_if_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<A
 		return Ok(true);
 	}
 
-	return Err(PositionlessError::new(&format!("Cannot parse if statement as this is not an if! Instead got {:#?}", node.clone())));
+	return Err(CompilerError::from_ast(ErrorKind::Critical, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end));
 }
 
-pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<bool> {
-	if let ASTTreeNode::ForBlock { initial_state, cond, increment, body } = *node {
+pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<ASTTreeNode>) -> CompilerResult<bool> {
+	if let ASTTreeNodeKind::ForBlock { initial_state, cond, increment, body } = node.kind {
 		let for_cond_block = ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "for_cond");
 		let for_body_block = ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "for_inner");
 		let post_block = ctx.inkwell_ctx.append_basic_block(func.inkwell_func, "for_out");
@@ -115,16 +123,29 @@ pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<
 
 		println!("Post initial state");
 
-		ctx.builder.build_unconditional_branch(for_cond_block);
+		match ctx.builder.build_unconditional_branch(for_cond_block) {
+			Ok(_) => {},
+			Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_unconditional_branch", e), &node.start, &node.end))
+		}
 
 		ctx.builder.position_at_end(for_cond_block);
 
-		let bool_type = ctx.type_storage.get(BOOL_TYPE_HASH).expect("Boolean type wasn't found!");
-
 		let cond_val = parse_ir_value(Some(&func), ctx, cond, None, false)?;
-		let cond_int = cond_val.obtain(ctx)?.obtain_as_bool().expect("Cannot cast condition result as int");
 
-		ctx.builder.build_conditional_branch(*cond_int, for_body_block, post_block);
+		let ob = match cond_val.obtain(ctx) {
+			Ok(v) => v,
+			Err(b) => return Err(CompilerError::from_base(b, &node.start, &node.end))
+		};
+
+		let cond_int = match ob.obtain_as_bool() {
+			Some(v) => v,
+			None => return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_BOOL!().to_string(), &node.start, &node.end))
+		};
+
+		match ctx.builder.build_conditional_branch(*cond_int, for_body_block, post_block) {
+			Ok(_) => {},
+			Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_conditional_branch", e), &node.start, &node.end))
+		}
 		
 		ctx.builder.position_at_end(for_body_block);
 
@@ -132,12 +153,15 @@ pub fn parse_for_statement_ir(func: &mut IRFunction, ctx: &IRContext, node: Box<
 
 		parse_ir_function_body_member(ctx, func, increment)?;
 
-		ctx.builder.build_unconditional_branch(for_cond_block);
+		match ctx.builder.build_unconditional_branch(for_cond_block) {
+			Ok(_) => {},
+			Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_unconditional_branch", e), &node.start, &node.end))
+		}
 
 		ctx.builder.position_at_end(post_block);
 		return Ok(true);
 	}
 
 
-	return Err(PositionlessError::new("Cannot parse for statement as this is not an for!"));
+	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end));
 }

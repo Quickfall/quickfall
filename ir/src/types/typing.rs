@@ -2,7 +2,7 @@
 
 use std::{cell::Ref, collections::HashMap, mem::transmute, ops::Add, rc::Rc};
 
-use commons::err::{PositionlessError, PositionlessResult};
+use errors::{IR_TYPE_NO_INKWELL_TYPE, IR_TYPE_WRONG_KIND, errs::{BaseResult, base::BaseError}};
 use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, BasicTypeEnum, FunctionType, IntType, PointerType, StringRadix}, values::{BasicValueEnum, GlobalValue, IntValue, PointerValue}};
 
 use crate::{ctx::IRContext, irstruct::structs::IRStructuredType, utils::OwnedType, values::IRValue};
@@ -123,7 +123,7 @@ impl IRType {
 		return -2_i128.pow(self.get_bitsize() as u32) - 1;
 	}
 
-	pub fn get_inkwell_basetype(&self) -> PositionlessResult<OwnedTypeEnum> {
+	pub fn get_inkwell_basetype(&self) -> BaseResult<OwnedTypeEnum> {
 		match self {
 			IRType::Unsigned8(v) => Ok(OwnedTypeEnum::new(&v.owned, BasicTypeEnum::from(v.inner))),
 			IRType::Unsigned16(v) => Ok(OwnedTypeEnum::new(&v.owned, BasicTypeEnum::from(v.inner))),
@@ -145,18 +145,18 @@ impl IRType {
 			IRType::Struct(a) => Ok(OwnedTypeEnum::new(&a.owned, BasicTypeEnum::from(a.inkwell_type))),
 			IRType::Layout(a) => Ok(OwnedTypeEnum::new(&a.owned, BasicTypeEnum::from(a.inkwell_type))),
 			
-			_ => Err(PositionlessError::new("Given IR type doesn't have any Inkwell type!!!"))
+			_ => Err(BaseError::critical(IR_TYPE_NO_INKWELL_TYPE!().to_string()))
 		}
 	}
 
-	pub fn get_inkwell_instance_basetype(&self, ctx: &IRContext) -> PositionlessResult<OwnedTypeEnum> {
+	pub fn get_inkwell_instance_basetype(&self, ctx: &IRContext) -> BaseResult<OwnedTypeEnum> {
 		match self {
 			IRType::Struct(_) | IRType::Layout(_) => Ok(OwnedTypeEnum::new(&ctx.inkwell_ctx, ctx.ptr_type.into())),
 			_ => self.get_inkwell_basetype()
 		}
 	}
 
-	pub fn get_inkwell_base_metadatatype(&self) -> PositionlessResult<OwnedMetadataTypeEnum> {
+	pub fn get_inkwell_base_metadatatype(&self) -> BaseResult<OwnedMetadataTypeEnum> {
 		match self {
 			IRType::Unsigned8(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
 			IRType::Unsigned16(v) => Ok(OwnedMetadataTypeEnum::new(&v.owned, BasicMetadataTypeEnum::from(v.inner))),
@@ -178,11 +178,11 @@ impl IRType {
 			IRType::Struct(a) => Ok(OwnedMetadataTypeEnum::new(&a.owned, BasicMetadataTypeEnum::from(a.inkwell_type))),
 			IRType::Layout(a) => Ok(OwnedMetadataTypeEnum::new(&a.owned, BasicMetadataTypeEnum::from(a.inkwell_type))),
 
-			_ => Err(PositionlessError::new("Given IR type doesn't have any Inkwell type!!!"))
+			_ => Err(BaseError::critical(IR_TYPE_NO_INKWELL_TYPE!().to_string()))
 		}
 	}
 
-	pub fn get_inkwell_inttype(&self) -> PositionlessResult<&OwnedIntType> {
+	pub fn get_inkwell_inttype(&self) -> BaseResult<&OwnedIntType> {
 		match self {
 			IRType::Unsigned8(v) => Ok(v),
 			IRType::Unsigned16(v) => Ok(v),
@@ -195,7 +195,7 @@ impl IRType {
 			IRType::Signed64(v) => Ok(v),
 			IRType::Signed128(v) => Ok(v),
 
-			_ => return Err(PositionlessError::new("get_inkwell_inttype was used with a non int typed IRType!"))
+			_ => return Err(BaseError::critical(IR_TYPE_WRONG_KIND!().to_string()))
 		}
 	}
 
@@ -229,11 +229,11 @@ impl IRType {
 		}
 	}
 
-	pub fn get_structured_type_descriptor(&self) -> PositionlessResult<Rc<IRStructuredType>> {
+	pub fn get_structured_type_descriptor(&self) -> BaseResult<Rc<IRStructuredType>> {
 		return match self {
 			IRType::Struct(e) => Ok(e.clone()),
 			IRType::Layout(e) => Ok(e.clone()),
-			_ => Err(PositionlessError::new("Given IRType doesn't have a structured type descriptor!"))
+			_ => Err(BaseError::critical(IR_TYPE_WRONG_KIND!().to_string()))
 		}
 	}
 

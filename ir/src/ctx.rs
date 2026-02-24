@@ -2,7 +2,8 @@
 
 use std::{collections::HashMap, mem::transmute, ops::{Add, Deref, DerefMut}, rc::Rc};
 
-use commons::{err::{PositionlessError, PositionlessResult}, utils::map::HashedMap};
+use commons::{utils::map::HashedMap};
+use errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_FUNCTION, IR_FIND_VARIABLE, errs::{BaseResult, base::BaseError}};
 use inkwell::{AddressSpace, builder::Builder, context::Context, module::Module, types::{PointerType, VoidType}};
 
 use crate::{irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, types::storage::IRTypeStorage, utils::{LateInit, SelfHash}, values::IRValue};
@@ -46,19 +47,19 @@ impl IRContext {
 		return ir;
 	}
 
-	pub fn add_variable(&mut self, hash: u64, var: IRStaticVariable) -> PositionlessResult<bool> {
+	pub fn add_variable(&mut self, hash: u64, var: IRStaticVariable) -> BaseResult<bool> {
 		if self.is_key_taken(hash) {
-			return Err(PositionlessError::new("There already is an element named like this!"));
+			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
 		self.static_vars.insert(SelfHash { hash }, Rc::new(var));
 		return Ok(true);
 	}
 
-	pub fn get_variable(&self, hash: u64) -> PositionlessResult<Rc<IRStaticVariable>> {
+	pub fn get_variable(&self, hash: u64) -> BaseResult<Rc<IRStaticVariable>> {
 		return match self.static_vars.get(&SelfHash { hash }) {
 			Some(v) => Ok(v.clone()),
-			None => return Err(PositionlessError::new("Invalid variable name"))
+			None => return Err(BaseError::err(IR_FIND_VARIABLE!().to_string()))
 		};
 	}
 
@@ -66,16 +67,16 @@ impl IRContext {
 		return self.functions.get(&SelfHash { hash }).is_some() || self.static_vars.get(&SelfHash {hash}).is_some() || self.type_storage.get(hash).is_some();
 	}
 
-	pub fn get_function(&self, hash: u64) -> PositionlessResult<Rc<IRFunction>> {
+	pub fn get_function(&self, hash: u64) -> BaseResult<Rc<IRFunction>> {
 		return match self.functions.get(&SelfHash { hash }) {
 			Some(v) => Ok(v.clone()),
-			None => Err(PositionlessError::new(&format!("Invalid function name! Got hash {}", hash)))
+			None => return Err(BaseError::err(IR_FIND_FUNCTION!().to_string()))
 		}
 	}
 
-	pub fn add_function(&mut self, hash: u64, func: IRFunction) -> PositionlessResult<bool> {
+	pub fn add_function(&mut self, hash: u64, func: IRFunction) -> BaseResult<bool> {
 		if self.is_key_taken(hash) {
-			return Err(PositionlessError::new("There already is an element named like this!"));
+			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
 		self.functions.insert(SelfHash { hash }, Rc::new(func));
@@ -103,35 +104,35 @@ impl IRLocalContext {
 	}	
 
 	/// Attempts to add a variable in the current local context. Will return an error if the operation is impossible
-	pub fn add_variable(&mut self, hash: u64, var: IRPointer) -> PositionlessResult<bool> {
+	pub fn add_variable(&mut self, hash: u64, var: IRPointer) -> BaseResult<bool> {
 		if self.vars.get(hash).is_some() {
-			return Err(PositionlessError::new(&format!("Variable named {} is already registered in the current context.", hash)));
+			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
 		self.vars.put(hash, LocalIRVariable { ptr: var, depth: self.current_depth });
 		return Ok(true);
 	}
 
-	pub fn add_argument(&mut self, hash: u64, val: IRValue) -> PositionlessResult<bool> {
+	pub fn add_argument(&mut self, hash: u64, val: IRValue) -> BaseResult<bool> {
 		if self.arguments.get(hash).is_some() {
-			return Err(PositionlessError::new(&format!("Argument named {} is already present in the current scope!", hash)))
+			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
 		self.arguments.put(hash, val);
 		return Ok(true);
 	}
 
-	pub fn get_variable(&self, hash: u64) -> PositionlessResult<&IRPointer> {
+	pub fn get_variable(&self, hash: u64) -> BaseResult<&IRPointer> {
 		return match self.vars.get(hash) {
 			Some(v) => Ok(&v.ptr),
-			None => return Err(PositionlessError::new(&format!("Invalid variable hash {}", hash)))
+			None => return Err(BaseError::err(IR_FIND_VARIABLE!().to_string()))
 		};
 	}
 
-	pub fn get_argument(&self, hash: u64) -> PositionlessResult<&IRValue> {
+	pub fn get_argument(&self, hash: u64) -> BaseResult<&IRValue> {
 		return match self.arguments.get(hash) {
 			Some(v) => Ok(v),
-			None => return Err(PositionlessError::new(&format!("Invalid argument hash {}", hash)))
+			None => return Err(BaseError::err(IR_FIND_VARIABLE!().to_string()))
 		}
 	}
 

@@ -13,6 +13,10 @@ impl BoundPosition {
 	pub fn from_size(start: Position, size: usize) -> Self {
 		return BoundPosition { start: start.clone(), end: start.increment_by(size) }
 	}
+	
+	pub fn new(start: Position, end: Position) -> Self {
+		return Self { start, end }
+	}
 
 	pub fn get_bound(&self) -> String {
 		let contents = match fs::read_to_string(&self.start.file_path) {

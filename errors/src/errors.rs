@@ -80,11 +80,26 @@ macro_rules! MATH_OP_NO_ASSIGN {
 // IR
 
 #[macro_export]
+macro_rules! INVALID_EXPR {
+	() => {
+		"Invalid expression here. Please correct it"
+	};
+}
+
+#[macro_export]
 macro_rules! IR_OBTAIN_TYPE {
 	() => {
 		"Cannot use this value as a {}"
 	};
 }
+
+#[macro_export]
+macro_rules! IR_DIFF_TYPE {
+	() => {
+		"Both types aren't matching!"
+	};
+}
+
 
 #[macro_export]
 macro_rules! IR_EXPECTED_TYPE {
@@ -178,6 +193,13 @@ macro_rules! IR_FIND_TYPE {
 }
 
 #[macro_export]
+macro_rules! IR_REQ_VARIABLE_ASSIGN {
+	() => {
+		"A variable is required here to use assigments"
+	};
+}
+
+#[macro_export]
 macro_rules! IR_STATIC_VAR_WRONG_OP {
 	() => {
 		"Cannot obtain string reference if value is compile-time replacable.\nPlease send a bug report at https://github.com/quickfall/quickfall"
@@ -206,6 +228,20 @@ macro_rules! IR_FIELD {
 }
 
 #[macro_export]
+macro_rules! NO_PERMITTED_OUTSIDE_FUNC {
+	() => {
+		"The following is not permitted outside of a function. Please move this inside of a function"
+	};
+}
+
+#[macro_export]
+macro_rules! FUNC_RETVOID_USE_VAL {
+	() => {
+		"Cannot use this function's return as a value as said function returns void."
+	};
+}
+
+#[macro_export]
 macro_rules! IR_FIND_PRIMITIVE_TYPE {
 	() => {
 		"Cannot find said primitive type in the type storage.\nPlease send a bug report at https://github.com/quickfall/quickfall"
@@ -217,6 +253,20 @@ macro_rules! IR_FIND_PRIMITIVE_TYPE {
 macro_rules! INKWELL_FUNC_FAILED {
 	() => {
 		"Inkwell function {} failed.\nPlease send a bug report at https://github.com/quickfall/quickfall, err: {}"
+	};
+}
+
+#[macro_export]
+macro_rules! IR_TYPE_NO_INKWELL_TYPE {
+	() => {
+		"The given IR type doesn't have an Inkwell / LLVM IR type equivalent. This is a near-impossible error.\nPlease send a bug report at https://github.com/quickfall/quickfall immeditately"
+	};
+}
+
+#[macro_export]
+macro_rules! IR_TYPE_WRONG_KIND {
+	() => {
+		"Assumed wrong kind of IR type!\nPlease send a bug report at https://github.com/quickfall/quickfall"
 	};
 }
 

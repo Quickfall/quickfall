@@ -1,6 +1,6 @@
 use std::{cell::RefCell, mem::transmute, ops::{Deref, DerefMut}, rc::Rc};
 
-use commons::err::{PositionedError, PositionlessError, PositionlessResult};
+use errors::{INKWELL_FUNC_FAILED, errs::{BaseResult, base::BaseError}};
 use inkwell::{basic_block::BasicBlock, builder::Builder, context::Context, module::Module, types::BasicType, values::{BasicValueEnum, FunctionValue, IntValue}};
 
 use crate::{ctx::{IRContext, IRLocalContext}, irstruct::ptr::IRPointer, refs::IRValueRef, types::typing::{IRType, OwnedIntValue, OwnedValueEnum}, values::IRValue};
@@ -32,7 +32,7 @@ impl IRFunction {
 		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, hash, entry: None, lctx: IRLocalContext::new().into() }
 	}
 
-	pub fn create_shadow(ctx: &IRContext, name: String, hash: u64, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
+	pub fn create_shadow(ctx: &IRContext, name: String, hash: u64, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> BaseResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
@@ -49,7 +49,7 @@ impl IRFunction {
 		return Ok(IRFunction::new_shadow(ctx, name, hash, func, ret_type, args));
 	}
 
-	pub fn create(ctx: &IRContext, name: String, hash: u64, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
+	pub fn create(ctx: &IRContext, name: String, hash: u64, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> BaseResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
@@ -66,7 +66,7 @@ impl IRFunction {
 		return Ok(IRFunction::new(ctx, name, hash, func, ret_type, args));
 	}
 
-	pub fn call(&self, ctx: &IRContext, args: Vec<IRValueRef>, grab_return: bool) -> PositionlessResult<Option<IRValue>> {
+	pub fn call(&self, ctx: &IRContext, args: Vec<IRValueRef>, grab_return: bool) -> BaseResult<Option<IRValue>> {
 		let mut inkwell_args = vec![];
 
 		for arg in args {
@@ -75,7 +75,7 @@ impl IRFunction {
 
 		let call = match ctx.builder.build_call(self.inkwell_func, &inkwell_args, &self.name) {
 			Ok(v) => v,
-			Err(_) => return Err(PositionlessError::new("build_call failed!"))
+			Err(e) => return Err(BaseError::critical(format!(INKWELL_FUNC_FAILED!(), "build_call", e)))
 		};
 
 		if !grab_return {
@@ -106,18 +106,18 @@ impl IRFunction {
 		ctx.builder.position_at_end(self.entry.unwrap());
 	}
 
-	pub fn get_nth_arg(&self, ind: u32) -> PositionlessResult<OwnedValueEnum> {
+	pub fn get_nth_arg(&self, ind: u32) -> BaseResult<OwnedValueEnum> {
 		let res = match self.inkwell_func.get_nth_param(ind) {
 			Some(v) => v,
-			None => return Err(PositionlessError::new("Couldn't get nth param using get_nth_param"))
+			None => return Err(BaseError::critical("Couldn't get nth param using get_nth_param".to_string()))
 		};
 
 		return Ok(OwnedValueEnum::new(&self.owned, res));
 	}
 
-	pub fn get_nth_arg_int(&self, ind: u32) -> PositionlessResult<OwnedIntValue> {
+	pub fn get_nth_arg_int(&self, ind: u32) -> BaseResult<OwnedIntValue> {
 		if !self.args[ind as usize].0.is_numeric_type() {
-			return Err(PositionlessError::new("Tried getting nth argument but given argument's type isn't numeric!"));
+			return Err(BaseError::critical("Tried getting nth argument but given argument's type isn't numeric!".to_string()));
 		}
 
 		return Ok(OwnedIntValue::new(&self.owned, self.get_nth_arg(ind)?.into_int_value()));

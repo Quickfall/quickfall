@@ -1,6 +1,7 @@
 use core::fmt;
 
 use colored::Colorize;
+use commons::Position;
 
 use crate::{IO_ERROR_READ, errs::{ERR_STORAGE, ErrorKind, base::BaseError}, pos::BoundPosition};
 
@@ -14,8 +15,8 @@ pub struct CompilerError {
 }
 
 impl CompilerError {
-	pub fn from_base(base: BaseError, pos: BoundPosition) -> Self {
-		let err = CompilerError { kind: base.kind, str: base.str, pos: Some(pos) };
+	pub fn from_base(base: BaseError, start: &Position, end: &Position) -> Self {
+		let err = CompilerError { kind: base.kind, str: base.str, pos: Some(BoundPosition { start: start.clone(), end: end.clone() }) };
 
 		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
 
@@ -28,6 +29,10 @@ impl CompilerError {
 		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
 
 		return err;
+	}
+
+	pub fn from_ast(kind: ErrorKind, str: String, start: &Position, end: &Position) -> Self {
+		return Self::new(kind, str, BoundPosition { start: start.clone(), end: end.clone() })
 	}
 
 	pub fn from_base_posless(base: BaseError) -> Self {
