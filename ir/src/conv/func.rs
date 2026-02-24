@@ -3,7 +3,7 @@ use std::rc::Rc;
 use commons::err::{PositionlessError, PositionlessResult};
 use parser::{ast::{func, tree::ASTTreeNode}, parse_ast_ctx};
 
-use crate::{conv::{control::{parse_for_statement_ir, parse_if_statement_ir}, val::parse_ir_value}, ctx::{IRContext, IRLocalContext}, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType};
+use crate::{conv::{control::{parse_for_statement_ir, parse_if_statement_ir}, val::parse_ir_value}, ctx::{IRContext, IRLocalContext}, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType, values::IRValue};
 
 pub fn parse_ir_shadow_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> PositionlessResult<Rc<IRFunction>> {
 	if let ASTTreeNode::ShadowFunctionDeclaration { func_name, args, returnType } = *node {
@@ -12,7 +12,7 @@ pub fn parse_ir_shadow_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>
 			None => None
 		};
 
-		let mut arguments: Vec<Rc<IRType>> = vec![];
+		let mut arguments: Vec<(Rc<IRType>, u64)> = vec![];
 
 		for k in args {
 			let t = match ctx.type_storage.get(k.argument_type) {
@@ -20,14 +20,14 @@ pub fn parse_ir_shadow_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>
 				None => return Err(PositionlessError::new(&format!("Cannot get type with hash {} for argument {}!", k.argument_type, k.name.val)))
 			};
 
-			arguments.push(t);
+			arguments.push((t, k.name.hash));
 		}
 
-		let func = IRFunction::create_shadow(ctx, func_name.val.clone(), &ctx.module, return_type, arguments)?;
+		let func = IRFunction::create_shadow(ctx, func_name.val.clone(), func_name.hash, &ctx.module, return_type, arguments)?;
 
 		ctx.add_function(func_name.hash, func)?;
 
-		return Ok(ctx.get_funtion(func_name.hash)?);		
+		return Ok(ctx.get_function(func_name.hash)?);		
 	}	
 
 	return Err(PositionlessError::new("Cannot parse ir shadow funtion decl as the node is incompatible!"));
@@ -40,7 +40,7 @@ pub fn parse_ir_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> Po
 			None => None
 		};
 
-		let mut arguments: Vec<Rc<IRType>> = vec![];
+		let mut arguments: Vec<(Rc<IRType>, u64)> = vec![];
 
 		for k in args {
 			let t = match ctx.type_storage.get(k.argument_type) {
@@ -48,10 +48,18 @@ pub fn parse_ir_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> Po
 				None => return Err(PositionlessError::new(&format!("Cannot get type with hash {} for argument {}!", k.argument_type, k.name.val)))
 			};
 
-			arguments.push(t);
+			arguments.push((t, k.name.hash));
 		}
 
-		let mut func = IRFunction::create(ctx, func_name.val, &ctx.module, return_type, arguments)?;
+		let mut func = IRFunction::create(ctx, func_name.val,func_name.hash, &ctx.module, return_type, arguments)?;
+
+		let mut ind = 0;
+		for argument in &func.args {
+			let val = func.get_nth_arg(ind)?;
+
+			func.lctx.add_argument(argument.1, IRValue::new(val, argument.0.clone()))?;
+			ind += 1;
+		}
 
 		func.prepare_body_filling(ctx);
 		parse_ir_body(ctx, &mut func, body, true)?;
@@ -63,9 +71,9 @@ pub fn parse_ir_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> Po
 			};
 		}
 
-		ctx.add_function(func_name.hash, func);
+		ctx.add_function(func_name.hash, func)?;
 		
-		return ctx.get_funtion(func_name.hash);
+		return ctx.get_function(func_name.hash);
 	}
 
 	return Err(PositionlessError::new("Given node in parse_ir_function_decl wasn't a function decl!"));
@@ -83,8 +91,8 @@ pub fn parse_ir_body(ctx: &IRContext, func: &mut IRFunction, nodes: Vec<Box<ASTT
 	return Ok(true);
 }
 
-pub fn parse_ir_function_call(ctx: &IRContext, lctx: &IRLocalContext, node: Box<ASTTreeNode>, owner: Option<IRPointer>, grab_result: bool) -> PositionlessResult<Option<IRValueRef>> {
-	if let ASTTreeNode::FunctionCall { func, args } = *node {
+pub fn parse_ir_function_call(ctx: &IRContext, f: &IRFunction, node: Box<ASTTreeNode>, owner: Option<IRPointer>, grab_result: bool) -> PositionlessResult<Option<IRValueRef>> {
+	if let ASTTreeNode::FunctionCall { func: ff, args } = *node {
 		let mut arguments = vec![];
 
 		if owner.as_ref().is_some() {
@@ -92,12 +100,19 @@ pub fn parse_ir_function_call(ctx: &IRContext, lctx: &IRLocalContext, node: Box<
 		}	
 
 		for v in args {
-			arguments.push(parse_ir_value(Some(lctx), ctx, v, None, false)?);
+			arguments.push(parse_ir_value(Some(&f), ctx, v, None, false)?);
 		}
 
-		let func = ctx.get_funtion(func.hash)?;
 
-		let ret =func.call(ctx, arguments, grab_result)?;
+		let ret;
+
+		if ff.hash == f.hash {
+			ret = f.call(ctx, arguments, grab_result)?;
+		} else {
+			let func = ctx.get_function(ff.hash)?;
+
+			ret = func.call(ctx, arguments, grab_result)?;
+		}
 
 		if !grab_result || ret.is_none() {
 			return Ok(None);
@@ -120,7 +135,7 @@ pub fn parse_ir_function_body_member(ctx: &IRContext, func: &mut IRFunction, nod
 			println!("Var name: {}", var_name.val.clone());
 
 			let initial = if let Some(v) = value {
-				Some(parse_ir_value(Some(&func.lctx), ctx, v, None, true)?)
+				Some(parse_ir_value(Some(&func), ctx, v, None, true)?)
 			} else {
 				None
 			};
@@ -135,19 +150,19 @@ pub fn parse_ir_function_body_member(ctx: &IRContext, func: &mut IRFunction, nod
 		},
 
 		ASTTreeNode::StructLRFunction { .. } =>  {
-			parse_ir_value(Some(&func.lctx), ctx, node, None, false)?;
+			parse_ir_value(Some(&func), ctx, node, None, false)?;
 
 			return Ok(true)
 		},
 
 		ASTTreeNode::StructLRVariable { .. } => { 
-			parse_ir_value(Some(&func.lctx), ctx, node, None, false)?;
+			parse_ir_value(Some(&func), ctx, node, None, false)?;
 
 			return Ok(true)
 		},
 
 		ASTTreeNode::FunctionCall { .. } => {
-			parse_ir_function_call(ctx, &func.lctx, node, None, false)?;
+			parse_ir_function_call(ctx, &func, node, None, false)?;
 			
 			return Ok(true)
 		},
@@ -159,7 +174,7 @@ pub fn parse_ir_function_body_member(ctx: &IRContext, func: &mut IRFunction, nod
 				return Ok(true);
 			}	
 
-			let val = parse_ir_value(Some(&func.lctx), ctx, val.unwrap(), None, true)?;
+			let val = parse_ir_value(Some(&func), ctx, val.unwrap(), None, true)?;
 
 			ctx.builder.build_return(Some(&val.obtain(ctx)?.obtain().inner));
 
@@ -179,7 +194,7 @@ pub fn parse_ir_function_body_member(ctx: &IRContext, func: &mut IRFunction, nod
 				return Err(PositionlessError::new("Cannot use a math expression in IR body if it is not assignments!"))
 			}
 
-			parse_ir_value(Some(&func.lctx), ctx, node, None, false)?;
+			parse_ir_value(Some(&func), ctx, node, None, false)?;
 			return Ok(true);
 		}
 
