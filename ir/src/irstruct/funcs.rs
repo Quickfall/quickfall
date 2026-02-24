@@ -66,7 +66,7 @@ impl IRFunction {
 		return Ok(IRFunction::new(ctx, name, hash, func, ret_type, args));
 	}
 
-	pub fn call(&self, ctx: &IRContext, args: Vec<IRValueRef>, grab_return: bool) -> PositionlessResult<Option<IRPointer>> {
+	pub fn call(&self, ctx: &IRContext, args: Vec<IRValueRef>, grab_return: bool) -> PositionlessResult<Option<IRValue>> {
 		let mut inkwell_args = vec![];
 
 		for arg in args {
@@ -94,9 +94,7 @@ impl IRFunction {
 
 		let val = IRValue::new(OwnedValueEnum::new(&ctx.inkwell_ctx, val), return_type.clone());
 
-		let pointer = IRPointer::create(ctx, format!("function_ret_{}", self.name), return_type, Some(IRValueRef::from_val(val)))?;
-
-		return Ok(Some(pointer));
+		return Ok(Some(val));
 	}
 
 	/// Prepares the addition of the function body.

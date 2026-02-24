@@ -118,7 +118,7 @@ pub fn parse_ir_function_call(ctx: &IRContext, f: &IRFunction, node: Box<ASTTree
 			return Ok(None);
 		}
 
-		return Ok(Some(IRValueRef::from_pointer(ret.unwrap())));
+		return Ok(Some(IRValueRef::from_val(ret.unwrap())));
 	}
 
 	return Err(PositionlessError::new("Cannot parse ir function call as the node is not a function call"))
