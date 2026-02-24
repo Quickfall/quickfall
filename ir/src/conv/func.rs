@@ -1,13 +1,13 @@
 use std::rc::Rc;
 
 use errors::{INKWELL_FUNC_FAILED, IR_FIND_TYPE, IR_INVALID_NODE_TYPE, MATH_OP_NO_ASSIGN, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
-use parser::{ast::{func, tree::{ASTTreeNode, ASTTreeNodeKind}}, parse_ast_ctx};
+use parser::{ast::{tree::{ASTTreeNode, ASTTreeNodeKind}}};
 
-use crate::{conv::{control::{parse_for_statement_ir, parse_if_statement_ir}, val::parse_ir_value}, ctx::{IRContext, IRLocalContext}, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType, values::IRValue};
+use crate::{conv::{control::{parse_for_statement_ir, parse_if_statement_ir}, val::parse_ir_value}, ctx::{IRContext}, irstruct::{funcs::IRFunction, ptr::IRPointer}, refs::IRValueRef, types::typing::IRType, values::IRValue};
 
 pub fn parse_ir_shadow_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> CompilerResult<Rc<IRFunction>> {
-	if let ASTTreeNodeKind::ShadowFunctionDeclaration { func_name, args, returnType } = node.kind {
-		let return_type = match returnType {
+	if let ASTTreeNodeKind::ShadowFunctionDeclaration { func_name, args, return_type } = node.kind {
+		let return_type = match return_type {
 			Some(h) => ctx.type_storage.get(h),
 			None => None
 		};
@@ -43,8 +43,8 @@ pub fn parse_ir_shadow_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>
 }
 
 pub fn parse_ir_function_decl(ctx: &mut IRContext, node: Box<ASTTreeNode>) -> CompilerResult<Rc<IRFunction>> {
-	if let ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, returnType } = node.kind {
-		let return_type = match returnType {
+	if let ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, return_type } = node.kind {
+		let return_type = match return_type {
 			Some(h) => ctx.type_storage.get(h),
 			None => None
 		};
@@ -184,7 +184,7 @@ pub fn parse_ir_function_body_member(ctx: &IRContext, func: &mut IRFunction, nod
 			};
 
 			match func.lctx.add_variable(var_name.hash, ptr) {
-				Ok(v) => {},
+				Ok(_) => {},
 				Err(b) => return Err(CompilerError::from_base(b, &node.start, &node.end))
 			};
 
@@ -211,7 +211,10 @@ pub fn parse_ir_function_body_member(ctx: &IRContext, func: &mut IRFunction, nod
 
 		ASTTreeNodeKind::ReturnStatement { val } => {
 			if val.clone().is_none() || func.ret_type.is_none() {
-				ctx.builder.build_return(None);
+				match ctx.builder.build_return(None) {
+					Ok(_) => {},
+					Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_return", e), &node.start, &node.end))
+				};
 
 				return Ok(true);
 			}	
@@ -223,7 +226,10 @@ pub fn parse_ir_function_body_member(ctx: &IRContext, func: &mut IRFunction, nod
 				Err(b) => return Err(CompilerError::from_base(b, &node.start, &node.end))
 			};
 
-			ctx.builder.build_return(Some(&ob.obtain().inner));
+			match ctx.builder.build_return(Some(&ob.obtain().inner)) {
+				Ok(_) => {},
+				Err(e) => return Err(CompilerError::from_ast(ErrorKind::Error, format!(INKWELL_FUNC_FAILED!(), "build_return", e), &node.start, &node.end))
+			};
 
 			return Ok(true);
 		}

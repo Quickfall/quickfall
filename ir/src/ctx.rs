@@ -1,6 +1,6 @@
 //! IR context related code
 
-use std::{collections::HashMap, mem::transmute, ops::{Add, Deref, DerefMut}, rc::Rc};
+use std::{collections::HashMap, mem::transmute, rc::Rc};
 
 use commons::{utils::map::HashedMap};
 use errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_FUNCTION, IR_FIND_VARIABLE, errs::{BaseResult, base::BaseError}};
@@ -156,16 +156,16 @@ impl IRLocalContext {
 	pub fn end_nested_body_depth(&mut self) {
 		self.current_depth -= 1;
 
-		let mut hashToRemove: Vec<u64> = vec![];
+		let mut hash_to_remove: Vec<u64> = vec![];
 
 		for entry in self.vars.entries() {
 			if entry.1.depth > self.current_depth {
 				println!("Dropping variable in lctx with hash {}", entry.0);
-				hashToRemove.push(entry.0);
+				hash_to_remove.push(entry.0);
 			}
 		}
 
-		for hash in hashToRemove {
+		for hash in hash_to_remove {
 			self.vars.erase(hash);
 		}
 	}

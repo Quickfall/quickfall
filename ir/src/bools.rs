@@ -4,7 +4,7 @@ use errors::{INKWELL_FUNC_FAILED, IR_FIND_PRIMITIVE_TYPE, IR_INVALID_INT_COMP_VA
 use inkwell::IntPredicate;
 use lexer::toks::comp::ComparingOperator;
 
-use crate::{ctx::IRContext, refs::IRValueRef, types::{BOOL_TYPE_HASH, typing::{OwnedIntType, OwnedIntValue, OwnedValueEnum}}, values::IRValue};
+use crate::{ctx::IRContext, refs::IRValueRef, types::{BOOL_TYPE_HASH, typing::{OwnedValueEnum}}, values::IRValue};
 
 pub fn make_bool_xor(ctx: &IRContext, b: IRValueRef) -> BaseResult<IRValue> {
 	let val = b.obtain(ctx)?;

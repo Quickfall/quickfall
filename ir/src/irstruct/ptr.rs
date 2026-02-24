@@ -1,10 +1,11 @@
 use std::rc::Rc;
 
 use errors::{INKWELL_FUNC_FAILED, IR_DIFF_TYPE, errs::{BaseResult, base::BaseError}};
-use inkwell::{builder::Builder, context::Context, types::BasicTypeEnum, values::{BasicValue, BasicValueEnum, IntValue, PointerValue}};
+use inkwell::{context::Context, values::{BasicValueEnum, PointerValue}};
 
-use crate::{ctx::IRContext, refs::IRValueRef, types::typing::{IRType, OwnedTypeEnum, OwnedValueEnum}, values::IRValue};
+use crate::{ctx::IRContext, refs::IRValueRef, types::typing::{IRType, OwnedValueEnum}, values::IRValue};
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub struct IRPointer {
 	owned: Rc<Context>,

@@ -3,9 +3,8 @@
 use std::rc::Rc;
 
 use errors::{IR_VALUE_REF_TEMP_TYPE, errs::{BaseResult, base::BaseError}};
-use inkwell::{builder::Builder, types::{AnyTypeEnum, BasicTypeEnum}, values::PointerValue};
 
-use crate::{ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::{IRType, OwnedPointerValue}, values::IRValue};
+use crate::{ctx::IRContext, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::{IRType, OwnedPointerValue}, values::IRValue};
 
 pub enum IRValueRefKind {
 	Ptr(Rc<IRType>, IRPointer),
@@ -69,7 +68,7 @@ impl IRValueRef {
 	
 	pub fn as_pointer(&self) -> BaseResult<IRPointer> {
 		match &self.kind {
-			IRValueRefKind::Ptr(t, ptr) => return Ok(ptr.clone()),
+			IRValueRefKind::Ptr(_, ptr) => return Ok(ptr.clone()),
 			_ => return Err(BaseError::critical(IR_VALUE_REF_TEMP_TYPE!().to_string()))
 		};
 	}

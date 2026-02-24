@@ -1,9 +1,9 @@
-use std::{cell::RefCell, mem::transmute, ops::{Deref, DerefMut}, rc::Rc};
+use std::{mem::transmute, rc::Rc};
 
 use errors::{INKWELL_FUNC_FAILED, errs::{BaseResult, base::BaseError}};
-use inkwell::{basic_block::BasicBlock, builder::Builder, context::Context, module::Module, types::BasicType, values::{BasicValueEnum, FunctionValue, IntValue}};
+use inkwell::{basic_block::BasicBlock, context::Context, module::Module, types::BasicType, values::{FunctionValue}};
 
-use crate::{ctx::{IRContext, IRLocalContext}, irstruct::ptr::IRPointer, refs::IRValueRef, types::typing::{IRType, OwnedIntValue, OwnedValueEnum}, values::IRValue};
+use crate::{ctx::{IRContext, IRLocalContext}, refs::IRValueRef, types::typing::{IRType, OwnedIntValue, OwnedValueEnum}, values::IRValue};
 
 
 pub struct IRFunction {

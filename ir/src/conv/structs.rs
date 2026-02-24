@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use errors::{INVALID_EXPR, IR_FIND_TYPE, errs::{CompilerResult, ErrorKind, base::BaseError, normal::CompilerError}};
+use errors::{INVALID_EXPR, IR_FIND_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 use parser::ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 
 use crate::{ctx::IRContext, irstruct::structs::IRStructuredType, types::typing::IRType};

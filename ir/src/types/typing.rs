@@ -1,11 +1,11 @@
 //! IR Type structures
 
-use std::{cell::Ref, collections::HashMap, mem::transmute, ops::Add, rc::Rc};
+use std::{rc::Rc};
 
-use errors::{IR_TYPE_NO_INKWELL_TYPE, IR_TYPE_WRONG_KIND, errs::{BaseResult, base::BaseError}};
-use inkwell::{AddressSpace, builder::Builder, context::Context, types::{BasicMetadataTypeEnum, BasicType, BasicTypeEnum, FunctionType, IntType, PointerType, StringRadix}, values::{BasicValueEnum, GlobalValue, IntValue, PointerValue}};
+use errors::{IR_TYPE_WRONG_KIND, errs::{BaseResult, base::BaseError}};
+use inkwell::{types::{BasicMetadataTypeEnum, BasicTypeEnum, IntType, PointerType}, values::{BasicValueEnum, GlobalValue, IntValue, PointerValue}};
 
-use crate::{ctx::IRContext, irstruct::structs::IRStructuredType, utils::OwnedType, values::IRValue};
+use crate::{ctx::IRContext, irstruct::structs::IRStructuredType, utils::OwnedType};
 
 pub type OwnedIntType = OwnedType<IntType<'static>>;
 pub type OwnedPointerType = OwnedType<PointerType<'static>>;
@@ -144,8 +144,6 @@ impl IRType {
 
 			IRType::Struct(a) => Ok(OwnedTypeEnum::new(&a.owned, BasicTypeEnum::from(a.inkwell_type))),
 			IRType::Layout(a) => Ok(OwnedTypeEnum::new(&a.owned, BasicTypeEnum::from(a.inkwell_type))),
-			
-			_ => Err(BaseError::critical(IR_TYPE_NO_INKWELL_TYPE!().to_string()))
 		}
 	}
 
@@ -177,8 +175,6 @@ impl IRType {
 
 			IRType::Struct(a) => Ok(OwnedMetadataTypeEnum::new(&a.owned, BasicMetadataTypeEnum::from(a.inkwell_type))),
 			IRType::Layout(a) => Ok(OwnedMetadataTypeEnum::new(&a.owned, BasicMetadataTypeEnum::from(a.inkwell_type))),
-
-			_ => Err(BaseError::critical(IR_TYPE_NO_INKWELL_TYPE!().to_string()))
 		}
 	}
 

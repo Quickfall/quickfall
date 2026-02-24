@@ -20,7 +20,7 @@
 use commons::Position;
 use utils::hash;
 use errors::{PARSE_VALUE, UNEXPECTED_TOKEN, UNUSED_VAR_ACCESS, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
-use lexer::token::{self, LexerToken, LexerTokenType};
+use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::{WithHash};
 
 use crate::{ast::{control::{forloop::parse_for_loop, ifelse::parse_if_statement, whileblock::parse_while_block}, func::{call::parse_function_call, decl::{parse_function_declaraction, parse_shadow_function_declaration}, parse_function_return_statement}, literals::{parse_integer_literal, parse_string_literal}, math::parse_math_operation, tree::{ASTTreeNode, ASTTreeNodeKind}, types::parse_type_declaration, var::{decl::parse_variable_declaration, staticdecl::parse_static_function_declaration}}, make_node};
@@ -59,7 +59,7 @@ pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, origi
 
 pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut usize, original: CompilerResult<Box<ASTTreeNode>>) -> CompilerResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
-		LexerTokenType::KEYWORD(s, hsh) => {
+		LexerTokenType::KEYWORD(s, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
 
 				println!("Calling function call parsing on kwd {}", s);

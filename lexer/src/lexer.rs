@@ -5,7 +5,7 @@
 use std::{fs, hash::{DefaultHasher, Hash, Hasher}};
 
 use commons::Position;
-use errors::{EXPECTED_TOKEN, IO_ERROR_READ, PARSE_INT, PARSE_OPERATOR, PARSE_STRING, pos::BoundPosition };
+use errors::{IO_ERROR_READ, PARSE_INT, PARSE_OPERATOR, pos::BoundPosition };
 use errors::{errs::{CompilerResult, ErrorKind, base::BaseError, normal::CompilerError}};
 
 use crate::{token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};

@@ -1,9 +1,8 @@
 //! Type storage
 
-use std::{cell::Ref, collections::HashMap, mem::transmute, ops::Add, rc::Rc};
+use std::{collections::HashMap, mem::transmute, rc::Rc};
 
-use commons::utils::map::HashedMap;
-use inkwell::{AddressSpace, context::Context, types::{IntType, PointerType}};
+use inkwell::{AddressSpace, types::{IntType, PointerType}};
 
 use crate::{ctx::IRContext, types::{BOOL_TYPE_HASH, POINTER_TYPE_HASH, SIGNED8_TYPE_HASH, SIGNED16_TYPE_HASH, SIGNED32_TYPE_HASH, SIGNED64_TYPE_HASH, SIGNED128_TYPE_HASH, STATICSTR_TYPE_HASH, UNSIGNED8_TYPE_HASH, UNSIGNED16_TYPE_HASH, UNSIGNED32_TYPE_HASH, UNSIGNED64_TYPE_HASH, UNSIGNED128_TYPE_HASH, typing::{IRType, OwnedIntType, OwnedPointerType}}, utils::SelfHash};
 

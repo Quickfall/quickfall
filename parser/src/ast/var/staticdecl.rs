@@ -2,7 +2,7 @@ use errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
-use crate::ast::{parse_ast_value, tree::{ASTTreeNode, ASTTreeNodeKind}, var};
+use crate::ast::{parse_ast_value, tree::{ASTTreeNode, ASTTreeNodeKind}};
 
 pub fn parse_static_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();

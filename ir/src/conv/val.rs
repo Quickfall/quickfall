@@ -6,7 +6,7 @@ use errors::{FUNC_RETVOID_USE_VAL, INVALID_EXPR, IR_FIND_PRIMITIVE_TYPE, IR_FIND
 use inkwell::values::BasicValue;
 use parser::ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 
-use crate::{bools::{make_bool_cmp_int, make_bool_xor}, conv::func::parse_ir_function_call, ctx::{IRContext, IRLocalContext}, irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, math::make_math_operation, refs::IRValueRef, types::{POINTER_TYPE_HASH, SIGNED64_TYPE_HASH, typing::OwnedValueEnum}, values::IRValue};
+use crate::{bools::{make_bool_cmp_int, make_bool_xor}, conv::func::parse_ir_function_call, ctx::{IRContext, IRLocalContext}, irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, math::make_math_operation, refs::IRValueRef, types::{POINTER_TYPE_HASH, typing::OwnedValueEnum}, values::IRValue};
 
 pub fn get_variable_ref(lctx: &IRLocalContext, ctx: &IRContext, hash: u64) -> BaseResult<IRValueRef> {
 	match ctx.get_variable(hash) {
@@ -90,7 +90,7 @@ pub fn parse_ir_value<'a>(f: Option<&IRFunction>, ctx: &IRContext, node: Box<AST
 			return Ok(var);
 		},
 
-		ASTTreeNodeKind::FunctionCall { func, args } => {
+		ASTTreeNodeKind::FunctionCall { func: _, args: _ } => {
 
 			if f.is_none() {
 				return Err(CompilerError::from_ast(ErrorKind::Error, NO_PERMITTED_OUTSIDE_FUNC!().to_string(), &node.start, &node.end))

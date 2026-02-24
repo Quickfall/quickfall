@@ -1,11 +1,11 @@
 //! IR value representation definitons
 
-use std::{cell::{Ref, RefCell}, rc::Rc};
+use std::{rc::Rc};
 
-use errors::{INKWELL_FUNC_FAILED, IR_TYPE_BOOL, IR_TYPE_SIGNED, IR_TYPE_UNSIGNED, errs::{BaseResult, CompilerResult, base::BaseError}};
-use inkwell::{types::StringRadix, values::{BasicValueEnum, IntValue}};
+use errors::{INKWELL_FUNC_FAILED, IR_TYPE_BOOL, IR_TYPE_SIGNED, IR_TYPE_UNSIGNED, errs::{BaseResult, base::BaseError}};
+use inkwell::{types::StringRadix};
 
-use crate::{ctx::IRContext, irstruct::ptr::IRPointer, types::typing::{IRType, OwnedIntType, OwnedIntValue, OwnedValueEnum}};
+use crate::{ctx::IRContext, types::typing::{IRType, OwnedIntValue, OwnedValueEnum}};
 
 /// The new IR value system. Allows for a close interaction with inkwell rather than a more AST-side one.
 /// # Safety

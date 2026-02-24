@@ -6,7 +6,7 @@ use commons::{utils::map::HashedMap};
 use errors::{INKWELL_FUNC_FAILED, IR_FIELD, IR_FIND_FUNCTION, IR_LAYOUT_FUNC_USAGE, IR_LAYOUT_FUNCS, errs::{BaseResult, base::BaseError}};
 use inkwell::{context::Context, types::{BasicTypeEnum, StructType}};
 
-use crate::{ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer}, types::typing::{IRType, OwnedTypeEnum}};
+use crate::{ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer}, types::typing::{IRType}};
 
 pub struct IRStructuredType {
 	pub owned: Rc<Context>,
@@ -21,7 +21,7 @@ pub struct IRStructuredType {
 impl IRStructuredType {
 	pub fn new(ctx: &IRContext, name: String, layout: bool, fields: Vec<(u64, Rc<IRType>)>) -> BaseResult<Self>  {
 		let mut map = HashedMap::new(fields.len());
-		let mut typeVec: Vec<BasicTypeEnum> = Vec::new();
+		let mut type_vec: Vec<BasicTypeEnum> = Vec::new();
 		let mut field_types: Vec<Rc<IRType>> = Vec::new();
 
 		let mut ind = 0;
@@ -29,12 +29,12 @@ impl IRStructuredType {
 			map.put(entry.0, ind);
 
 			field_types.push(entry.1.clone());
-			typeVec.push(entry.1.as_ref().get_inkwell_basetype()?.inner.into());
+			type_vec.push(entry.1.as_ref().get_inkwell_basetype()?.inner.into());
 
 			ind += ind;
 		}
 
-		let inkwell_type = ctx.inkwell_ctx.struct_type(&typeVec, !layout);
+		let inkwell_type = ctx.inkwell_ctx.struct_type(&type_vec, !layout);
 
 		return Ok(Self { owned: ctx.inkwell_ctx.clone(), inkwell_type: unsafe { transmute(inkwell_type) }, field_to_index: map, name, is_layout: layout, field_types, functions: HashedMap::new(0) })
 	}

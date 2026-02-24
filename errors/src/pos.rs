@@ -1,4 +1,4 @@
-use std::{fs, io};
+use std::{fs};
 
 use colored::Colorize;
 use commons::Position;

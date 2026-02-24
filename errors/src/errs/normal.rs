@@ -60,19 +60,19 @@ impl fmt::Display for CompilerError {
 		} else {
 			writeln!(f, "{} at {}:{}", self.get_kind_str(), self.pos.as_ref().unwrap().start, self.pos.as_ref().unwrap().end)?;
 
-			let startLine = match self.pos.as_ref().unwrap().start.get_line_content() {
+			let start_line = match self.pos.as_ref().unwrap().start.get_line_content() {
 				Ok(v) => v,
 				Err(_) => IO_ERROR_READ!().to_string()
 			};
 
-			let endLine = match self.pos.as_ref().unwrap().end.get_line_content() {
+			let end_line = match self.pos.as_ref().unwrap().end.get_line_content() {
 				Ok(v) => v,
 				Err(_) => IO_ERROR_READ!().to_string()
 			};
 
-			let before = &startLine[0..self.pos.as_ref().unwrap().start.col - 1];
+			let before = &start_line[0..self.pos.as_ref().unwrap().start.col - 1];
 			let target = self.pos.as_ref().unwrap().get_bound().cyan().underline();
-			let after = &endLine[self.pos.as_ref().unwrap().end.col - 1..];
+			let after = &end_line[self.pos.as_ref().unwrap().end.col - 1..];
 
 			writeln!(f, "{}{}{}", before, target, after)?;
 		}

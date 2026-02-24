@@ -3,7 +3,7 @@
 //! 
 
 use commons::Position;
-use lexer::{token::LexerToken, toks::{comp::ComparingOperator, math::MathOperator}};
+use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
 use utils::hash::{TypeHash, WithHash};
 
 #[derive(Debug, PartialEq, Clone)]
@@ -50,9 +50,9 @@ pub enum ASTTreeNodeKind {
 	ForBlock { initial_state: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 
     FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
-    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, returnType: Option<TypeHash> },
+    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, return_type: Option<TypeHash> },
 
-	ShadowFunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, returnType: Option<TypeHash> },
+	ShadowFunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, return_type: Option<TypeHash> },
 
 	StructLRVariable { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>,},
 	StructLRFunction { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>, }
@@ -73,23 +73,23 @@ impl ASTTreeNodeKind {
 
 	pub fn get_tree_name(&self) -> Option<WithHash<String>> {
 		match self {
-			ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, returnType } => {
+			ASTTreeNodeKind::FunctionDeclaration { func_name, args: _, body: _, return_type: _ } => {
 				return Some(WithHash::new(func_name.val.to_string()));
 			},
 
-			ASTTreeNodeKind::ShadowFunctionDeclaration { func_name, args, returnType } => {
+			ASTTreeNodeKind::ShadowFunctionDeclaration { func_name, args: _, return_type: _ } => {
 				return Some(WithHash::new(func_name.val.to_string()))
 			}
 
-			ASTTreeNodeKind::StaticVariableDeclaration { name, var_type, val } => {
+			ASTTreeNodeKind::StaticVariableDeclaration { name, var_type: _, val: _ } => {
 				return Some(WithHash::new(name.val.clone()));
 			},
 
-			ASTTreeNodeKind::StructLayoutDeclaration { name, layout, members } => {
+			ASTTreeNodeKind::StructLayoutDeclaration { name, layout: _, members: _ } => {
 				return Some(WithHash::new(name.val.to_string()));
 			},
 
-			ASTTreeNodeKind::VarDeclaration { var_name, var_type, value } => {
+			ASTTreeNodeKind::VarDeclaration { var_name, var_type: _, value: _ } => {
 				return Some(WithHash::new(var_name.val.to_string()));
 			},
 

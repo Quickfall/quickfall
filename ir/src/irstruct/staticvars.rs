@@ -3,7 +3,7 @@
 use std::rc::Rc;
 
 use errors::{IR_STATIC_VAR_WRONG_OP, errs::{BaseResult, base::BaseError}};
-use inkwell::{builder::Builder, values::{BasicValueEnum, GlobalValue, IntValue}};
+use inkwell::{values::{IntValue}};
 
 use crate::{ctx::IRContext, types::{SIGNED8_TYPE_HASH, typing::{IRType, OwnedGlobalValue, OwnedValueEnum}}, values::IRValue};
 

@@ -17,11 +17,11 @@ pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 
 	*ind += 1;
 
-	let mut retType = None;
+	let mut ret_type = None;
 	let end;
 
 	if tokens[*ind].is_keyword() {
-		retType = Some(tokens[*ind].expects_keyword()?.1);
+		ret_type = Some(tokens[*ind].expects_keyword()?.1);
 		*ind += 1;
 
 		end = tokens[*ind].get_end_pos().clone();
@@ -29,7 +29,7 @@ pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 		end = tokens[*ind - 1].get_end_pos().clone();
 	}
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ShadowFunctionDeclaration { func_name: WithHash::new(function_name.0), args, returnType: retType }, start, end)))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ShadowFunctionDeclaration { func_name: WithHash::new(function_name.0), args, return_type: ret_type }, start, end)))
 }
 
 pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
@@ -45,10 +45,10 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) ->
 
 	*ind += 1;
 
-	let mut retType = None;
+	let mut ret_type = None;
 
 	if tokens[*ind].is_keyword() {
-		retType = Some(tokens[*ind].expects_keyword()?.1);
+		ret_type = Some(tokens[*ind].expects_keyword()?.1);
 		*ind += 1;
 	}
 
@@ -58,5 +58,5 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) ->
 
 	let end = tokens[*ind - 1].get_end_pos();
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionDeclaration { func_name: WithHash::new(function_name.0), args, body, returnType: retType }, start, end)));
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionDeclaration { func_name: WithHash::new(function_name.0), args, body, return_type: ret_type }, start, end)));
 }
