@@ -5,7 +5,7 @@ use std::rc::Rc;
 use commons::err::{PositionlessError, PositionlessResult};
 use inkwell::{builder::Builder, types::{AnyTypeEnum, BasicTypeEnum}, values::PointerValue};
 
-use crate::{ctx::IRContext, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::{IRType, OwnedPointerValue}, values::IRValue};
+use crate::{ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::{IRType, OwnedPointerValue}, values::IRValue};
 
 pub enum IRValueRefKind {
 	Ptr(Rc<IRType>, IRPointer),
@@ -52,7 +52,7 @@ impl IRValueRef {
 
 			IRValueRefKind::Global(t, global) => {
 				Ok(IRValue::new(global.as_val()?, t.clone()))
-			},
+			}
 
 			_ => return Err(PositionlessError::new("Cannot use obtain on said IR value type!"))
 		}

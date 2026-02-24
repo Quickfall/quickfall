@@ -11,8 +11,9 @@ pub struct IRFunction {
 
 	pub inkwell_func: FunctionValue<'static>,
 	pub ret_type: Option<Rc<IRType>>,
-	args: Vec<Rc<IRType>>,
+	pub args: Vec<(Rc<IRType>, u64)>,
 	name: String,
+	pub hash: u64,
 
 	pub lctx: IRLocalContext,
 
@@ -20,22 +21,22 @@ pub struct IRFunction {
 }
 
 impl IRFunction {
-	pub fn new(ctx: &IRContext, name: String, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<Rc<IRType>>) -> Self {
+	pub fn new(ctx: &IRContext, name: String, hash: u64, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> Self {
 
 		let block = ctx.inkwell_ctx.append_basic_block(func, "entry");
 
-		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, entry: Some(unsafe { transmute(block) }), lctx: IRLocalContext::new().into() }
+		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, hash, entry: Some(unsafe { transmute(block) }), lctx: IRLocalContext::new().into() }
 	}
 
-	pub fn new_shadow(ctx: &IRContext, name: String, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<Rc<IRType>>) -> Self {
-		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, entry: None, lctx: IRLocalContext::new().into() }
+	pub fn new_shadow(ctx: &IRContext, name: String, hash: u64, func: FunctionValue, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> Self {
+		return IRFunction { owned: ctx.inkwell_ctx.clone(), inkwell_func: unsafe { transmute(func)}, ret_type, args, name, hash, entry: None, lctx: IRLocalContext::new().into() }
 	}
 
-	pub fn create_shadow(ctx: &IRContext, name: String, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<Rc<IRType>>) -> PositionlessResult<Self> {
+	pub fn create_shadow(ctx: &IRContext, name: String, hash: u64, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
-			kargs.push(*k.get_inkwell_base_metadatatype()?);
+			kargs.push(*k.0.get_inkwell_base_metadatatype()?);
 		}
 
 		let t = match &ret_type {
@@ -45,14 +46,14 @@ impl IRFunction {
 
 		let func = module.add_function(&name, t, None);
 
-		return Ok(IRFunction::new_shadow(ctx, name, func, ret_type, args));
+		return Ok(IRFunction::new_shadow(ctx, name, hash, func, ret_type, args));
 	}
 
-	pub fn create(ctx: &IRContext, name: String, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<Rc<IRType>>) -> PositionlessResult<Self> {
+	pub fn create(ctx: &IRContext, name: String, hash: u64, module: &Module, ret_type: Option<Rc<IRType>>, args: Vec<(Rc<IRType>, u64)>) -> PositionlessResult<Self> {
 		let mut kargs = vec![];
 
 		for k in &args {
-			kargs.push(*k.get_inkwell_base_metadatatype()?);
+			kargs.push(*k.0.get_inkwell_base_metadatatype()?);
 		}
 
 		let t = match &ret_type {
@@ -62,10 +63,10 @@ impl IRFunction {
 
 		let func = module.add_function(&name, t, None);
 
-		return Ok(IRFunction::new(ctx, name, func, ret_type, args));
+		return Ok(IRFunction::new(ctx, name, hash, func, ret_type, args));
 	}
 
-	pub fn call(&self, ctx: &IRContext, args: Vec<IRValueRef>, grab_return: bool) -> PositionlessResult<Option<IRPointer>> {
+	pub fn call(&self, ctx: &IRContext, args: Vec<IRValueRef>, grab_return: bool) -> PositionlessResult<Option<IRValue>> {
 		let mut inkwell_args = vec![];
 
 		for arg in args {
@@ -93,9 +94,7 @@ impl IRFunction {
 
 		let val = IRValue::new(OwnedValueEnum::new(&ctx.inkwell_ctx, val), return_type.clone());
 
-		let pointer = IRPointer::create(ctx, format!("function_ret_{}", self.name), return_type, Some(IRValueRef::from_val(val)))?;
-
-		return Ok(Some(pointer));
+		return Ok(Some(val));
 	}
 
 	/// Prepares the addition of the function body.
@@ -117,7 +116,7 @@ impl IRFunction {
 	}
 
 	pub fn get_nth_arg_int(&self, ind: u32) -> PositionlessResult<OwnedIntValue> {
-		if !self.args[ind as usize].is_numeric_type() {
+		if !self.args[ind as usize].0.is_numeric_type() {
 			return Err(PositionlessError::new("Tried getting nth argument but given argument's type isn't numeric!"));
 		}
 

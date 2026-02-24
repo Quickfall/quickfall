@@ -5,7 +5,7 @@ use std::{collections::HashMap, mem::transmute, ops::{Add, Deref, DerefMut}, rc:
 use commons::{err::{PositionlessError, PositionlessResult}, utils::map::HashedMap};
 use inkwell::{AddressSpace, builder::Builder, context::Context, module::Module, types::{PointerType, VoidType}};
 
-use crate::{irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, types::storage::IRTypeStorage, utils::{LateInit, SelfHash}};
+use crate::{irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, types::storage::IRTypeStorage, utils::{LateInit, SelfHash}, values::IRValue};
 
 /// The global IR context.
 /// Basically holds anything related to the current IR compilation (eg: functions, types, global vars)
@@ -66,7 +66,7 @@ impl IRContext {
 		return self.functions.get(&SelfHash { hash }).is_some() || self.static_vars.get(&SelfHash {hash}).is_some() || self.type_storage.get(hash).is_some();
 	}
 
-	pub fn get_funtion(&self, hash: u64) -> PositionlessResult<Rc<IRFunction>> {
+	pub fn get_function(&self, hash: u64) -> PositionlessResult<Rc<IRFunction>> {
 		return match self.functions.get(&SelfHash { hash }) {
 			Some(v) => Ok(v.clone()),
 			None => Err(PositionlessError::new(&format!("Invalid function name! Got hash {}", hash)))
@@ -93,12 +93,13 @@ pub struct LocalIRVariable {
 /// Holds anything held and created in the given body (eg: vars).
 pub struct IRLocalContext {
 	pub vars: HashedMap<LocalIRVariable>,
+	pub arguments: HashedMap<IRValue>,
 	pub current_depth: i64, // Starts at 0 where 0 is function body
 }
 
 impl IRLocalContext {
 	pub fn new() -> Self {
-		return IRLocalContext { vars: HashedMap::new(0), current_depth: 0 }
+		return IRLocalContext { vars: HashedMap::new(0), arguments: HashedMap::new(0), current_depth: 0 }
 	}	
 
 	/// Attempts to add a variable in the current local context. Will return an error if the operation is impossible
@@ -111,11 +112,27 @@ impl IRLocalContext {
 		return Ok(true);
 	}
 
+	pub fn add_argument(&mut self, hash: u64, val: IRValue) -> PositionlessResult<bool> {
+		if self.arguments.get(hash).is_some() {
+			return Err(PositionlessError::new(&format!("Argument named {} is already present in the current scope!", hash)))
+		}
+
+		self.arguments.put(hash, val);
+		return Ok(true);
+	}
+
 	pub fn get_variable(&self, hash: u64) -> PositionlessResult<&IRPointer> {
 		return match self.vars.get(hash) {
 			Some(v) => Ok(&v.ptr),
 			None => return Err(PositionlessError::new(&format!("Invalid variable hash {}", hash)))
 		};
+	}
+
+	pub fn get_argument(&self, hash: u64) -> PositionlessResult<&IRValue> {
+		return match self.arguments.get(hash) {
+			Some(v) => Ok(v),
+			None => return Err(PositionlessError::new(&format!("Invalid argument hash {}", hash)))
+		}
 	}
 
 	pub fn increment_body_depth(&mut self) {
