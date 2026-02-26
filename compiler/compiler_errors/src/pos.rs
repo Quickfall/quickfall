@@ -1,7 +1,7 @@
 use std::{fs};
 
 use colored::Colorize;
-use commons::Position;
+use compiler_utils::Position;
 
 #[derive(Clone, Debug)]
 pub struct BoundPosition {

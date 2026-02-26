@@ -2,9 +2,9 @@
 //! Module containing lexer token-based utilities and classes
 //! 
 
-use errors::EXPECTED_TOKEN;
-use commons::{Position};
-use errors::{errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
+use compiler_errors::EXPECTED_TOKEN;
+use compiler_utils::{Position};
+use compiler_errors::{errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
 
 use crate::{toks::{comp::ComparingOperator, math::MathOperator}};
 

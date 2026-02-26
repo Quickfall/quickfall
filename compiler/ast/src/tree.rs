@@ -2,9 +2,9 @@
 //! AST tree related definitions.
 //! 
 
-use commons::Position;
+use compiler_utils::Position;
 use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
-use utils::hash::{TypeHash, WithHash};
+use compiler_utils::hash::{TypeHash, WithHash};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {

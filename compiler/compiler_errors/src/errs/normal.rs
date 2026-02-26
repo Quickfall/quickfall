@@ -1,7 +1,7 @@
 use core::fmt;
 
 use colored::Colorize;
-use commons::Position;
+use compiler_utils::Position;
 
 use crate::{IO_ERROR_READ, errs::{ERR_STORAGE, ErrorKind, base::BaseError}, pos::BoundPosition};
 

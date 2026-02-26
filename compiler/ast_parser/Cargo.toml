@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+ast = { path = "../ast" }
+compiler_errors = { path = "../compiler_errors" }
+compiler_utils = { path = "../compiler_utils" }
+lexer = { path = "../lexer" }
