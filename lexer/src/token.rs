@@ -2,9 +2,11 @@
 //! Module containing lexer token-based utilities and classes
 //! 
 
-use commons::{Position, err::{PositionedError, PositionedResult}};
+use errors::EXPECTED_TOKEN;
+use commons::{Position};
+use errors::{errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
 
-use crate::{LexerParseResult, LexerParsingError, toks::{comp::ComparingOperator, math::MathOperator}};
+use crate::{toks::{comp::ComparingOperator, math::MathOperator}};
 
 /// The token type for the lexer
 #[derive(PartialEq, Debug)]
@@ -67,75 +69,75 @@ pub enum LexerTokenType {
 #[derive(Debug)]
 pub struct LexerToken {
 	pub tok_type: LexerTokenType,
-	pub pos: Position, // Valid tokens require a position
-	pub end_pos: Position
+	pub pos: Position,
+	pub pos_size: usize
 }
 
 impl LexerToken {
 	pub fn make_single_sized(pos: Position, t: LexerTokenType) -> Self {
-		let end = pos.increment_by(1);
-		return LexerToken { tok_type: t, pos, end_pos: end };
+		
+		return LexerToken { tok_type: t, pos, pos_size: 1 };
 	}
 
-	pub fn new(start: Position, end: Position, t: LexerTokenType) -> Self {
-		return LexerToken { tok_type:t , pos: start, end_pos: end }
+	pub fn new(start: Position, size: usize, t: LexerTokenType) -> Self {
+		return LexerToken { tok_type:t , pos: start, pos_size: size }
 	}
 
 	pub fn is(&self, t: LexerTokenType) -> bool {
 		return self.tok_type == t;
 	}
 
-	pub fn expects(&self, t: LexerTokenType) -> PositionedResult<bool> {
+	pub fn expects(&self, t: LexerTokenType) -> CompilerResult<bool> {
 		if self.tok_type != t {
-			return Err(PositionedError::new(self.pos.clone(), self.end_pos.clone(), format!("Expected {:#?} token but instead got {:#?}!", t, self.tok_type)))
+			return Err(self.make_err(format!(EXPECTED_TOKEN!(), t, self.tok_type), ErrorKind::Error));
 		}
 
 		return Ok(true);
 	}
 
-	pub fn expects_int_lit(&self) -> PositionedResult<(i128, u64)> {
+	pub fn expects_int_lit(&self) -> CompilerResult<(i128, u64)> {
 		match &self.tok_type {
 			LexerTokenType::IntLit(v, h) => return Ok((*v, *h)),
-			_ => return Err(self.make_err("Expected int litteral here!"))
+			_ => return Err(self.make_err(format!(EXPECTED_TOKEN!(), "int literal", self.tok_type), ErrorKind::Error))
 		};
 	}
 
-	pub fn expects_comp_operator(&self) -> PositionedResult<ComparingOperator> {
+	pub fn expects_comp_operator(&self) -> CompilerResult<ComparingOperator> {
 		match &self.tok_type {
 			LexerTokenType::ComparingOperator(op) => return Ok(op.clone()),
-			_ => return Err(self.make_err("Expected comparing operator here!"))
+			_ => return Err(self.make_err(format!(EXPECTED_TOKEN!(), "comparing operator", self.tok_type), ErrorKind::Error))
 		};
 	}
 
-	pub fn expects_math_operator(&self) -> PositionedResult<(MathOperator, bool)> {
+	pub fn expects_math_operator(&self) -> CompilerResult<(MathOperator, bool)> {
 		match &self.tok_type {
 			LexerTokenType::MathOperator(a, b) => return Ok((a.clone(), *b)),
-			_ => return Err(self.make_err("Expected math operator here!"))
+			_ => return Err(self.make_err(format!(EXPECTED_TOKEN!(), "math operator", self.tok_type), ErrorKind::Error))
 		};
 	}
 
-	pub fn expects_string_lit(&self) -> PositionedResult<String> {
+	pub fn expects_string_lit(&self) -> CompilerResult<String> {
 		match &self.tok_type {
 			LexerTokenType::StringLit(v) => return Ok(v.to_string()),
-			_ => return Err(self.make_err("Expected string litteral here!"))
+			_ => return Err(self.make_err(format!(EXPECTED_TOKEN!(), "string literal", self.tok_type), ErrorKind::Error))
 		};
 	}
 
-	pub fn expects_keyword(&self) -> PositionedResult<(String, u64)> {
+	pub fn expects_keyword(&self) -> CompilerResult<(String, u64)> {
 		match &self.tok_type {
 			LexerTokenType::KEYWORD(s, h) => return Ok((s.to_string(), *h)),
-			_ => return Err(self.make_err("Expected keyword here!"))
+			_ => return Err(self.make_err(format!(EXPECTED_TOKEN!(), "keyword", self.tok_type), ErrorKind::Error))
 		};
 	}
 
-	pub fn make_err(&self, err: &str) -> PositionedError {
-		return PositionedError::new(self.pos.clone(), self.end_pos.clone(), String::from(err));
+	pub fn make_err(&self, err: String, kind: ErrorKind) -> CompilerError {
+		return CompilerError::new(kind, err, BoundPosition::from_size(self.pos.clone(), self.pos_size));
 	}
 
-	pub fn as_keyword(&self) -> LexerParseResult<(String, u64)> {
+	pub fn as_keyword(&self) -> CompilerResult<(String, u64)> {
 		match &self.tok_type {
 			LexerTokenType::KEYWORD(str, hash) => Ok((str.clone(), *hash)),
-			_ => Err(LexerParsingError::new(String::from("Token is not a keyword!"), 0))
+			_ => Err(self.make_err(format!(EXPECTED_TOKEN!(), "keyword", self.tok_type), ErrorKind::Error))
 		}
 	}
 
@@ -145,4 +147,9 @@ impl LexerToken {
 			_ => false
 		}
 	}
+
+	pub fn get_end_pos(&self) -> Position {
+		return self.pos.increment_by(self.pos_size);
+	}
+
 }

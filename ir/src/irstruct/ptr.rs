@@ -1,10 +1,11 @@
 use std::rc::Rc;
 
-use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{builder::Builder, context::Context, types::BasicTypeEnum, values::{BasicValue, BasicValueEnum, IntValue, PointerValue}};
+use errors::{INKWELL_FUNC_FAILED, IR_DIFF_TYPE, errs::{BaseResult, base::BaseError}};
+use inkwell::{context::Context, values::{BasicValueEnum, PointerValue}};
 
-use crate::{ctx::IRContext, refs::IRValueRef, types::typing::{IRType, OwnedTypeEnum, OwnedValueEnum}, values::IRValue};
+use crate::{ctx::IRContext, refs::IRValueRef, types::typing::{IRType, OwnedValueEnum}, values::IRValue};
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub struct IRPointer {
 	owned: Rc<Context>,
@@ -18,15 +19,15 @@ impl IRPointer {
 		return IRPointer { inkwell_ptr: ptr, owned: ctx.inkwell_ctx.clone(), name, t }
 	}
 
-	pub fn create(ctx: &IRContext, name: String, t: Rc<IRType>, initial: Option<IRValueRef>) -> PositionlessResult<Self> {
+	pub fn create(ctx: &IRContext, name: String, t: Rc<IRType>, initial: Option<IRValueRef>) -> BaseResult<Self> {
 		let ptr = match ctx.builder.build_alloca(t.get_inkwell_basetype()?.inner, &name) {
 			Ok(v) => v,
-			Err(e) => return Err(PositionlessError::new(&format!("build_alloca failed! {}", e)))
+			Err(e) => return Err(BaseError::critical(format!(INKWELL_FUNC_FAILED!(), "build_alloca", e)))
 		};
 
 		if initial.is_some() {
 			match ctx.builder.build_store(ptr, *initial.unwrap().obtain(ctx)?.obtain()) {
-				Err(_) => return Err(PositionlessError::new("build_store failed!")),
+				Err(e) => return Err(BaseError::critical(format!(INKWELL_FUNC_FAILED!(), "build_store", e))),
 				Ok(_) => {} 
 			};
 		}
@@ -34,14 +35,14 @@ impl IRPointer {
 		return Ok(IRPointer { owned: ctx.inkwell_ctx.clone(), inkwell_ptr: ptr, t, name: name.clone() });
 	}
 
-	pub fn load(&self, ctx: &IRContext, t: Rc<IRType>) -> PositionlessResult<IRValue> {
+	pub fn load(&self, ctx: &IRContext, t: Rc<IRType>) -> BaseResult<IRValue> {
 		if !self.t.is_same(&t) {
-			return Err(PositionlessError::new("Provided IRType isn't the same!"));
+			return Err(BaseError::err(IR_DIFF_TYPE!().to_string()));
 		}
 
 		match ctx.builder.build_load(*self.t.get_inkwell_instance_basetype(ctx)?, self.inkwell_ptr, &self.name) {
 			Ok(v) => return Ok(IRValue::new(OwnedValueEnum::new(&ctx.inkwell_ctx, v), t)),
-			Err(_) => return Err(PositionlessError::new("build_load failed!"))
+			Err(e) => return Err(BaseError::critical(format!(INKWELL_FUNC_FAILED!(), "build_load", e)))
 		}
 	} 
 	

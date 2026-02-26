@@ -2,10 +2,9 @@
 
 use std::rc::Rc;
 
-use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{builder::Builder, types::{AnyTypeEnum, BasicTypeEnum}, values::PointerValue};
+use errors::{IR_VALUE_REF_TEMP_TYPE, errs::{BaseResult, base::BaseError}};
 
-use crate::{ctx::IRContext, irstruct::{funcs::IRFunction, ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::{IRType, OwnedPointerValue}, values::IRValue};
+use crate::{ctx::IRContext, irstruct::{ptr::IRPointer, staticvars::IRStaticVariable}, types::typing::{IRType, OwnedPointerValue}, values::IRValue};
 
 pub enum IRValueRefKind {
 	Ptr(Rc<IRType>, IRPointer),
@@ -42,7 +41,7 @@ impl IRValueRef {
 		return matches!(self.kind, IRValueRefKind::Ptr(_, _))
 	}
 
-	pub fn obtain(&self, ctx: &IRContext) -> PositionlessResult<IRValue> {
+	pub fn obtain(&self, ctx: &IRContext) -> BaseResult<IRValue> {
 		match &self.kind {
 			IRValueRefKind::Ptr(t, ptr) => {
 				ptr.load(ctx, t.clone())
@@ -54,7 +53,7 @@ impl IRValueRef {
 				Ok(IRValue::new(global.as_val()?, t.clone()))
 			}
 
-			_ => return Err(PositionlessError::new("Cannot use obtain on said IR value type!"))
+			_ => return Err(BaseError::critical(IR_VALUE_REF_TEMP_TYPE!().to_string()))
 		}
 	}
 
@@ -67,14 +66,14 @@ impl IRValueRef {
 		}
 	}
 	
-	pub fn as_pointer(&self) -> PositionlessResult<IRPointer> {
+	pub fn as_pointer(&self) -> BaseResult<IRPointer> {
 		match &self.kind {
-			IRValueRefKind::Ptr(t, ptr) => return Ok(ptr.clone()),
-			_ => return Err(PositionlessError::new("Cannot cast said value reference as a pointer!"))
+			IRValueRefKind::Ptr(_, ptr) => return Ok(ptr.clone()),
+			_ => return Err(BaseError::critical(IR_VALUE_REF_TEMP_TYPE!().to_string()))
 		};
 	}
 
-	pub fn obtain_pointer(&self, ctx: &IRContext) -> PositionlessResult<OwnedPointerValue> {
+	pub fn obtain_pointer(&self, ctx: &IRContext) -> BaseResult<OwnedPointerValue> {
 		match &self.kind {
 			IRValueRefKind::Ptr(_, ptr) => return Ok(OwnedPointerValue::new(&ctx.inkwell_ctx, ptr.inkwell_ptr)),
 
@@ -92,14 +91,14 @@ impl IRValueRef {
 				return Ok(OwnedPointerValue::new(&ctx.inkwell_ctx, g.as_string_ref()?.as_pointer_value()));
 			},
 
-			_ => return Err(PositionlessError::new("Cannot use obtain_pointer on given IR value type!"))
+			_ => return Err(BaseError::critical(IR_VALUE_REF_TEMP_TYPE!().to_string()))
 		}
 	}
 
-	pub fn obtain_tempstr(&self) -> PositionlessResult<String> {
+	pub fn obtain_tempstr(&self) -> BaseResult<String> {
 		match &self.kind {
 			IRValueRefKind::TempString(e) => Ok(e.clone()),
-			_ => return Err(PositionlessError::new("Cannot get temp string from IR value type!"))
+			_ => return Err(BaseError::critical(IR_VALUE_REF_TEMP_TYPE!().to_string()))
 		}
 	}
 

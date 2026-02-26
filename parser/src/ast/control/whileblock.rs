@@ -1,9 +1,11 @@
-use commons::err::PositionedResult;
+use errors::errs::CompilerResult;
 use lexer::token::LexerToken;
 
-use crate::{ast::{control::ifelse::parse_condition_member, func::parse_node_body, tree::ASTTreeNode}};
+use crate::ast::{control::ifelse::parse_condition_member, func::parse_node_body, tree::{ASTTreeNode, ASTTreeNodeKind}};
 
-pub fn parse_while_block(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+pub fn parse_while_block(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+	let start = tokens[*ind].pos.clone();
+
 	*ind += 1;
 
 	let cond = parse_condition_member(tokens, ind)?;
@@ -15,5 +17,7 @@ pub fn parse_while_block(tokens: &Vec<LexerToken>, ind: &mut usize) -> Positione
 		Err(e) => return Err(e)
 	};
 
-	return Ok(Box::new(ASTTreeNode::WhileBlock { cond, body }));
+	let end = tokens[*ind - 1].get_end_pos().clone();
+
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::WhileBlock { cond, body }, start, end)));
 }

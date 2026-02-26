@@ -25,7 +25,7 @@ impl<V> HashedMap<V> {
 
 		let mut buckets: Vec<MaybeUninit<(u64, V)>> = Vec::with_capacity(cap);
 
-		let mut meta: Vec<u8> = vec![BUCKET_EMPTY; cap];
+		let meta: Vec<u8> = vec![BUCKET_EMPTY; cap];
 
 		unsafe {
             buckets.set_len(cap);
@@ -35,9 +35,6 @@ impl<V> HashedMap<V> {
 	}
 
 	pub fn put(&mut self, key: u64, val: V) {
-
-		println!("Hash {}", key);
-
 		let index = self.index_from_hash(key);
 		let fingerprint = self.fingerprint_from_hash(key);
 
@@ -76,9 +73,7 @@ impl<V> HashedMap<V> {
             let ref mut bucket = self.buckets[target];
             let prefilled_table = self.meta[target] == fingerprint;
 
-            unsafe {
-                bucket.write((key, val));
-            }
+            bucket.write((key, val));
 
             if !prefilled_table {
                 self.meta[target] = fingerprint;
@@ -143,9 +138,7 @@ impl<V> HashedMap<V> {
                     let bucket: &(u64, V) = self.buckets[i].assume_init_ref();
 
                     if bucket.0 == key {
-                        unsafe {
-                            self.buckets[i] = MaybeUninit::uninit();
-                        }
+                        self.buckets[i] = MaybeUninit::uninit();
 
                         self.meta[i] = BUCKET_TOMBSTONE;
                     }

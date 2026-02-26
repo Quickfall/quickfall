@@ -1,10 +1,9 @@
 use core::fmt;
 use std::{fs, io::Error};
 
-pub mod err;
 pub mod utils;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Position {
 	pub line: usize,
 	pub col: usize,
@@ -12,7 +11,7 @@ pub struct Position {
 }
 
 impl Position {
-	fn get_line_content(&self) -> Result<String, Error> {
+	pub fn get_line_content(&self) -> Result<String, Error> {
 		let contents = fs::read_to_string(&self.file_path)?;
 
 		let spl: Vec<&str> = contents.split('\n').collect();

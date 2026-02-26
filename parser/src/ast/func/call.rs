@@ -1,10 +1,11 @@
-use commons::err::PositionedResult;
+use errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
 use utils::hash::WithHash;
 
-use crate::{ast::{parse_ast_value, tree::ASTTreeNode}};
+use crate::ast::{parse_ast_value, tree::{ASTTreeNode, ASTTreeNodeKind}};
 
-pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+	let start = tokens[*ind].pos.clone();
 
 	let func = WithHash::new(tokens[*ind].as_keyword().unwrap().0);
 
@@ -28,7 +29,9 @@ pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> Positio
 		*ind += 1;
 	}
 
+	let end = tokens[*ind].get_end_pos().clone();
+
 	*ind += 1;
 
-	return Ok(Box::new(ASTTreeNode::FunctionCall { func , args: vals }))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionCall { func , args: vals }, start, end)))
 }

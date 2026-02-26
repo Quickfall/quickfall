@@ -1,9 +1,11 @@
-use commons::err::PositionedResult;
+use errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::ast::{func::parse_node_body, parse_ast_node_in_body, parse_ast_value, tree::ASTTreeNode, var::decl::parse_variable_declaration};
+use crate::ast::{func::parse_node_body, parse_ast_node_in_body, parse_ast_value, tree::{ASTTreeNode, ASTTreeNodeKind}, var::decl::parse_variable_declaration};
 
-pub fn parse_for_loop(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedResult<Box<ASTTreeNode>> {
+pub fn parse_for_loop(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+	let start = tokens[*ind].pos.clone();
+
 	*ind += 1;
 
 	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
@@ -27,5 +29,7 @@ pub fn parse_for_loop(tokens: &Vec<LexerToken>, ind: &mut usize) -> PositionedRe
 
 	let body = parse_node_body(tokens, ind)?;
 
-	return Ok(Box::new(ASTTreeNode::ForBlock { initial_state: initial, cond, increment, body }));
+	let end = tokens[*ind - 1].get_end_pos();
+
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ForBlock { initial_state: initial, cond, increment, body }, start, end)));
 }

@@ -35,6 +35,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "errors"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "commons",
+]
+
+[[package]]
 name = "find-msvc-tools"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -69,6 +77,7 @@ name = "ir"
 version = "0.1.0"
 dependencies = [
  "commons",
+ "errors",
  "inkwell",
  "lexer",
  "parser",
@@ -85,6 +94,7 @@ name = "lexer"
 version = "0.1.0"
 dependencies = [
  "commons",
+ "errors",
 ]
 
 [[package]]
@@ -118,6 +128,7 @@ name = "parser"
 version = "0.1.0"
 dependencies = [
  "commons",
+ "errors",
  "lexer",
  "utils",
 ]

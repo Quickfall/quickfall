@@ -1,8 +1,8 @@
 [package]
-name = "lexer"
+name = "errors"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 commons = { path = "../commons" }
-errors = { path = "../errors" }
+colored = "3.1.1"

@@ -2,8 +2,8 @@
 
 use std::rc::Rc;
 
-use commons::err::{PositionlessError, PositionlessResult};
-use inkwell::{builder::Builder, values::{BasicValueEnum, GlobalValue, IntValue}};
+use errors::{IR_STATIC_VAR_WRONG_OP, errs::{BaseResult, base::BaseError}};
+use inkwell::{values::{IntValue}};
 
 use crate::{ctx::IRContext, types::{SIGNED8_TYPE_HASH, typing::{IRType, OwnedGlobalValue, OwnedValueEnum}}, values::IRValue};
 
@@ -16,7 +16,7 @@ pub struct IRStaticVariable {
 }
 
 impl IRStaticVariable {
-	pub fn from_str(ctx: &IRContext, str: &str, name: String, t: Rc<IRType>) -> PositionlessResult<IRStaticVariable> {
+	pub fn from_str(ctx: &IRContext, str: &str, name: String, t: Rc<IRType>) -> BaseResult<IRStaticVariable> {
 		let bytes = str.as_bytes();
 
 		let byte_type = ctx.type_storage.get(SIGNED8_TYPE_HASH).expect("Cannot find i8 in type storage!");
@@ -39,7 +39,7 @@ impl IRStaticVariable {
 		return Ok(IRStaticVariable { inkwell: Some(OwnedGlobalValue::new(&ctx.inkwell_ctx, global)), t, name, val: None });
 	}
 
-	pub fn from_val(name: String, t: Rc<IRType>, val: IRValue) -> PositionlessResult<IRStaticVariable> {
+	pub fn from_val(name: String, t: Rc<IRType>, val: IRValue) -> BaseResult<IRStaticVariable> {
 		return Ok(IRStaticVariable { val: Some(val.obtain()), inkwell: None, t, name })
 	}
 
@@ -47,7 +47,7 @@ impl IRStaticVariable {
 		return self.val.is_some();
 	}
 
-	pub fn as_val(&self) -> PositionlessResult<OwnedValueEnum> {
+	pub fn as_val(&self) -> BaseResult<OwnedValueEnum> {
 		if self.val.is_some() {
 			return Ok(self.val.as_ref().unwrap().clone());
 		}
@@ -55,9 +55,9 @@ impl IRStaticVariable {
 		return Ok(OwnedValueEnum::new(&self.inkwell.as_ref().unwrap().owned, self.as_string_ref()?.as_pointer_value().into()));
 	}
 
-	pub fn as_string_ref(&self) -> PositionlessResult<OwnedGlobalValue> {
+	pub fn as_string_ref(&self) -> BaseResult<OwnedGlobalValue> {
 		if self.is_compiletime_replaceable() {
-			return Err(PositionlessError::new("Tried using as_string_ref on a compiletime determined global var"));
+			return Err(BaseError::critical(IR_STATIC_VAR_WRONG_OP!().to_string()));
 		}
 
 		return Ok(self.inkwell.clone().unwrap())

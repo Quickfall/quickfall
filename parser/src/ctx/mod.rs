@@ -14,7 +14,7 @@ impl ParserCtx {
 	}
 
 	pub fn insert(&mut self, name: String, node: Box<ASTTreeNode>) -> bool {
-		if !node.is_tree_permissible() {
+		if !node.kind.is_tree_permissible() {
 			return false;
 		}
 
