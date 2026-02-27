@@ -137,6 +137,13 @@ macro_rules! IR_FIND_VARIABLE {
 }
 
 #[macro_export]
+macro_rules! IR_OUTSIDE_ERA {
+	() => {
+		"Tried invoking element outside of it's definition era."
+	};
+}
+
+#[macro_export]
 macro_rules! IR_TYPE_UNSIGNED {
 	() => {
 		"Expected an unsigned numeric data type. Change the type here.\nPlease send a bug report at https://github.com/quickfall/quickfall"
