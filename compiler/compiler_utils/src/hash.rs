@@ -91,3 +91,14 @@ macro_rules! hash {
 		WithHash::new($e)
 	};
 }
+
+#[derive(Eq, PartialEq)]
+pub struct SelfHash {
+	pub hash: u64
+}
+
+impl Hash for SelfHash {
+	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+		state.write_u64(self.hash);
+	}
+}

@@ -1,6 +1,6 @@
 use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use compiler_errors::{UNEXPECTED_TOKEN, UNUSED_VAR_ACCESS, errs::{CompilerResult, ErrorKind}};
-use compiler_utils::hash;
+use compiler_utils::hash::{WithHash};
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{control::{for_loop::parse_for_loop, if_else::parse_if_statement, while_block::parse_while_block}, functions::{parse_function_call, parse_function_declaraction, returns::parse_function_return_statement, shadow::parse_shadow_function_declaration}, structs::parse_type_declaration, value::parse_ast_value_post_l, variables::{decl::parse_variable_declaration, static_decl::parse_static_variable_declaration}};
@@ -70,7 +70,7 @@ pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> Comp
 				return parse_ast_value_post_l(tokens, ind, call, true);
 			}
 
-			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(hash!(str.clone())), &tokens[*ind], &tokens[*ind]));
+			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(WithHash::new(str.clone())), &tokens[*ind], &tokens[*ind]));
 
 			*ind += 1;
 
