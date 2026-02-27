@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap};
 
-use compiler_errors::{IR_ALREADY_EXISTING_ELEM, errs::{BaseResult, base::BaseError}};
+use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA, errs::{BaseResult, base::BaseError}};
 use compiler_utils::hash::SelfHash;
 
 /// The function HIR context. Contains a mapping from element name hash to element index and other variable information. 
@@ -90,6 +90,24 @@ impl HIRBranchedContext {
 		let end = self.ending_eras[&start_branch];
 
 		return end <= self.current_branch;
+	}
+
+	/// Obtains the variable index from the hash if it's available, otherwise returns an error explaining why it failed
+	pub fn obtain(&self, hash: u64) -> BaseResult<usize> {
+		let identity = SelfHash { hash };
+
+		match self.hash_to_ind.get(&identity) {
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string())),
+			Some(ind) => {
+				let ind = *ind;
+
+				if !self.is_alive(ind) {
+					return Err(BaseError::err(IR_OUTSIDE_ERA!().to_string()))
+				}
+
+				return Ok(ind)
+			}
+		}
 	}
 
 }

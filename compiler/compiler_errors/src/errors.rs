@@ -123,16 +123,9 @@ macro_rules! IR_ALREADY_EXISTING_ELEM {
 }
 
 #[macro_export]
-macro_rules! IR_FIND_FUNCTION {
+macro_rules! IR_FIND_ELEMENT {
 	() => {
-		"Cannot find function in the current context."
-	};
-}
-
-#[macro_export]
-macro_rules! IR_FIND_VARIABLE {
-	() => {
-		"Cannot find variable in the current context."
+		"Cannot find element in the current context."
 	};
 }
 
