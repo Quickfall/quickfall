@@ -1,0 +1,36 @@
+//! Shadow function parsing
+
+use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
+use compiler_errors::errs::CompilerResult;
+use compiler_utils::hash::WithHash;
+use lexer::token::{LexerToken, LexerTokenType};
+
+use crate::functions::arguments::parse_function_arguments;
+
+pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+	let start = tokens[*ind].pos.clone();
+
+	*ind += 1;
+	let function_name = tokens[*ind].expects_keyword()?;
+
+	*ind += 1;
+	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
+
+	let args = parse_function_arguments(tokens, ind)?;
+
+	*ind += 1;
+
+	let mut ret_type = None;
+	let end;
+
+	if tokens[*ind].is_keyword() {
+		ret_type = Some(tokens[*ind].expects_keyword()?.1);
+		*ind += 1;
+
+		end = tokens[*ind].get_end_pos().clone();
+	} else {
+		end = tokens[*ind - 1].get_end_pos().clone();
+	}
+
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ShadowFunctionDeclaration { func_name: WithHash::new(function_name.0), args, return_type: ret_type }, start, end)))
+}

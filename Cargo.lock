@@ -4,15 +4,33 @@ version = 4
 
 [[package]]
 name = "anyhow"
-version = "1.0.101"
+version = "1.0.102"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f0e0fee31ef5ed1ba1316088939cea399010ed7731dba877ed44aeb407a75ea"
+checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+
+[[package]]
+name = "ast"
+version = "0.1.0"
+dependencies = [
+ "compiler_utils",
+ "lexer",
+]
+
+[[package]]
+name = "ast_parser"
+version = "0.1.0"
+dependencies = [
+ "ast",
+ "compiler_errors",
+ "compiler_utils",
+ "lexer",
+]
 
 [[package]]
 name = "cc"
-version = "1.2.55"
+version = "1.2.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47b26a0954ae34af09b50f0de26458fa95369a0d478d8236d3f93082b219bd29"
+checksum = "aebf35691d1bfb0ac386a69bac2fde4dd276fb618cf8bf4f5318fe285e821bb2"
 dependencies = [
  "find-msvc-tools",
  "shlex",
@@ -28,19 +46,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "commons"
+name = "compiler_errors"
 version = "0.1.0"
 dependencies = [
  "colored",
+ "compiler_utils",
 ]
 
 [[package]]
-name = "errors"
+name = "compiler_main"
 version = "0.1.0"
-dependencies = [
- "colored",
- "commons",
-]
+
+[[package]]
+name = "compiler_utils"
+version = "0.1.0"
 
 [[package]]
 name = "find-msvc-tools"
@@ -73,17 +92,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ir"
-version = "0.1.0"
-dependencies = [
- "commons",
- "errors",
- "inkwell",
- "lexer",
- "parser",
-]
-
-[[package]]
 name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -93,15 +101,15 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 name = "lexer"
 version = "0.1.0"
 dependencies = [
- "commons",
- "errors",
+ "compiler_errors",
+ "compiler_utils",
 ]
 
 [[package]]
 name = "libc"
-version = "0.2.181"
+version = "0.2.182"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "459427e2af2b9c839b132acb702a1c654d95e10f8c326bfc2ad11310e458b1c5"
+checksum = "6800badb6cb2082ffd7b6a67e6125bb39f18782f793520caee8cb8846be06112"
 
 [[package]]
 name = "llvm-sys"
@@ -124,14 +132,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
-name = "parser"
+name = "pastel_ir"
 version = "0.1.0"
 dependencies = [
- "commons",
- "errors",
- "lexer",
- "utils",
+ "compiler_errors",
+ "compiler_utils",
+ "inkwell",
 ]
+
+[[package]]
+name = "pastel_parser"
+version = "0.1.0"
 
 [[package]]
 name = "proc-macro2"
@@ -171,23 +182,13 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "syn"
-version = "2.0.114"
+version = "2.0.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4d107df263a3013ef9b1879b0df87d706ff80f65a86ea879bd9c31f9b307c2a"
+checksum = "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99"
 dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "test-main"
-version = "0.1.0"
-dependencies = [
- "inkwell",
- "ir",
- "lexer",
- "parser",
 ]
 
 [[package]]
@@ -212,13 +213,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.23"
+version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "537dd038a89878be9b64dd4bd1b260315c1bb94f4d784956b81e27a088d9a09e"
-
-[[package]]
-name = "utils"
-version = "0.1.0"
+checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
 name = "windows-link"

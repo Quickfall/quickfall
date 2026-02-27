@@ -1,2 +1,2 @@
 [workspace]
-members = ["commons", "errors", "ir","lexer", "parser", "test-main", "utils"]
+members = ["compiler/ast", "compiler/ast_parser", "compiler/compiler_errors", "compiler/compiler_main", "compiler/compiler_utils", "compiler/lexer"]
