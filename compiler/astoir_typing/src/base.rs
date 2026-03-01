@@ -32,8 +32,59 @@ pub enum BaseType {
 }
 
 impl BaseType {
+	pub fn is_number(&self) -> bool {
+		return match self {
+			BaseType::NumericIntegerType(_, _) => true,
+			BaseType::FixedPointNumberType(_, _, _) => true,
+			BaseType::FloatingNumberType(_, _, _) => true,
+
+			_ => false
+		}
+	}
+
+	/// Get the size in bits
+	pub fn get_size(&self) -> usize {
+		return match self {
+			BaseType::Boolean => 1,
+			BaseType::ArbitraryType(n) => *n as usize,
+			BaseType::FixedPointNumberType(a, b, _) => (*a + b) as usize,
+			BaseType::FloatingNumberType(a, b, _) => (*a + b) as usize,
+			BaseType::NumericIntegerType(a, t) => *a as usize,
+
+			BaseType::Struct(_) => 0
+		}
+	}
+
+	pub fn is_floating(&self) -> bool {
+		return match self {
+			BaseType::FixedPointNumberType(_, _,_ ) => true,
+			BaseType::FloatingNumberType(_, _, _) => true,
+
+			_ => false
+		}
+	}
+
+	pub fn is_integer(&self) -> bool {
+		return match self {
+			BaseType::NumericIntegerType(_, _) => true,
+
+			_ => false
+		}
+	}
+
 	pub fn can_transmute_into(&self, into: &BaseType) -> bool {
-		return false;
+		if self.is_number() {
+			if self.is_floating() != into.is_floating() && !into.is_floating() {
+				// Disallow float -> int transmutations
+				return false;
+			}
+
+			if self.get_size() > into.get_size() {
+				return false; 
+			}
+		}
+
+		return true;
 	}
 
 	pub fn can_cast_into(&self, info: &BaseType) -> bool {
