@@ -2,3 +2,5 @@
 
 pub mod base;
 pub mod complete;
+pub mod storage;
+pub mod hashes;
