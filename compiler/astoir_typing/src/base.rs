@@ -26,6 +26,9 @@ pub enum BaseType {
 	/// 0: size in bits 
 	ArbitraryType(u64),
 
+	/// A pointer address type
+	Pointer,
+
 	/// A structured type
 	/// 0: is the struct a layout
 	Struct(bool)
@@ -50,7 +53,7 @@ impl BaseType {
 			BaseType::FixedPointNumberType(a, b, _) => (*a + b) as usize,
 			BaseType::FloatingNumberType(a, b, _) => (*a + b) as usize,
 			BaseType::NumericIntegerType(a, t) => *a as usize,
-
+			BaseType::Pointer => size_of::<usize>(),
 			BaseType::Struct(_) => 0
 		}
 	}

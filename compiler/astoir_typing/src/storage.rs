@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, errs::{BaseResult, base::BaseError}};
 use compiler_utils::hash::SelfHash;
 
-use crate::{base::BaseType, hashes::{SIGNED_INTEGER_8, SIGNED_INTEGER_16, SIGNED_INTEGER_32, SIGNED_INTEGER_64, SIGNED_INTEGER_128}};
+use crate::{base::BaseType, hashes::{BOOLEAN_TYPE, POINTER_TYPE, SIGNED_INTEGER_8, SIGNED_INTEGER_16, SIGNED_INTEGER_32, SIGNED_INTEGER_64, SIGNED_INTEGER_128, UNSIGNED_INTEGER_8, UNSIGNED_INTEGER_16, UNSIGNED_INTEGER_32, UNSIGNED_INTEGER_64, UNSIGNED_INTEGER_128}};
 
 pub struct TypeStorage {
 	pub hash_to_ind: HashMap<SelfHash, usize>,
@@ -18,11 +18,23 @@ impl TypeStorage {
 	pub fn new() -> BaseResult<Self> {
 		let mut storage = TypeStorage { hash_to_ind: HashMap::new(), types: vec![], curr_ind: 0 };
 
+		storage.register_type(BOOLEAN_TYPE, BaseType::Boolean)?;
+		storage.register_type(POINTER_TYPE, BaseType::Pointer)?;
+
 		storage.register_type(SIGNED_INTEGER_8, BaseType::NumericIntegerType(8, true))?;
 		storage.register_type(SIGNED_INTEGER_16, BaseType::NumericIntegerType(16, true))?;
 		storage.register_type(SIGNED_INTEGER_32, BaseType::NumericIntegerType(32, true))?;
 		storage.register_type(SIGNED_INTEGER_64, BaseType::NumericIntegerType(64, true))?;
 		storage.register_type(SIGNED_INTEGER_128, BaseType::NumericIntegerType(128, true))?;
+
+		storage.register_type(UNSIGNED_INTEGER_8, BaseType::NumericIntegerType(8, false))?;
+		storage.register_type(UNSIGNED_INTEGER_16, BaseType::NumericIntegerType(16, false))?;
+		storage.register_type(UNSIGNED_INTEGER_32, BaseType::NumericIntegerType(32, false))?;
+		storage.register_type(UNSIGNED_INTEGER_64, BaseType::NumericIntegerType(64, false))?;
+		storage.register_type(UNSIGNED_INTEGER_128, BaseType::NumericIntegerType(128, false))?;	
+
+
+
 
 		return Ok(storage);
 	}
