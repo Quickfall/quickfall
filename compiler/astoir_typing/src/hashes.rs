@@ -20,6 +20,7 @@ pub const SIGNED_FLOATING_POINT_8: u64 = hash!("f8");
 pub const SIGNED_FLOATING_POINT_16: u64 = hash!("f16");
 pub const SIGNED_FLOATING_POINT_32: u64 = hash!("f32");
 pub const SIGNED_FLOATING_POINT_64: u64 = hash!("f64");
+pub const SIGNED_FLOATING_POINT_80: u64 = hash!("f80");
 pub const SIGNED_FLOATING_POINT_128: u64 = hash!("f128");
 pub const SIGNED_FLOATING_POINT_ANYSIZE: u64 = hash!("f");
 
@@ -34,6 +35,7 @@ pub const UNSIGNED_FLOATING_POINT_8: u64 = hash!("uf8");
 pub const UNSIGNED_FLOATING_POINT_16: u64 = hash!("uf16");
 pub const UNSIGNED_FLOATING_POINT_32: u64 = hash!("uf32");
 pub const UNSIGNED_FLOATING_POINT_64: u64 = hash!("uf64");
+pub const UNSIGNED_FLOATING_POINT_80: u64 = hash!("uf80");
 pub const UNSIGNED_FLOATING_POINT_128: u64 = hash!("uf128");
 pub const UNSIGNED_FLOATING_POINT_ANYSIZE: u64 = hash!("uf");
 
