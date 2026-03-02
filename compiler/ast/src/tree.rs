@@ -24,6 +24,8 @@ pub enum ASTTreeNodeKind {
     IntegerLit { val: i128, hash: u64 },
     StringLit(String),
 
+	ComplexType { t_hash: u64, size_definitions: Vec<usize>, extended_types: Vec<u64> },
+
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ComparingOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
 
