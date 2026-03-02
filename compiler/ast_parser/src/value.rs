@@ -159,7 +159,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 				return parse_ast_value_post_l(tokens, ind, call, false);
 			}
 
-			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(hash!(str.clone())), &tokens[*ind], &tokens[*ind]));
+			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(WithHash::new(str.clone())), &tokens[*ind], &tokens[*ind]));
 
 			*ind += 1;
 
