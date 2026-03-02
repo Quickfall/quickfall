@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, errs::{BaseResult, base::BaseError}};
 use compiler_utils::hash::SelfHash;
 
-use crate::{base::BaseType, hashes::{BOOLEAN_TYPE, POINTER_TYPE, SIGNED_INTEGER_8, SIGNED_INTEGER_16, SIGNED_INTEGER_32, SIGNED_INTEGER_64, SIGNED_INTEGER_128, UNSIGNED_INTEGER_8, UNSIGNED_INTEGER_16, UNSIGNED_INTEGER_32, UNSIGNED_INTEGER_64, UNSIGNED_INTEGER_128}};
+use crate::{base::BaseType, hashes::{BOOLEAN_TYPE, POINTER_TYPE, SIGNED_FIXED_POINT_8, SIGNED_FIXED_POINT_16, SIGNED_FIXED_POINT_32, SIGNED_FIXED_POINT_64, SIGNED_FIXED_POINT_128, SIGNED_FLOATING_POINT_8, SIGNED_FLOATING_POINT_16, SIGNED_FLOATING_POINT_32, SIGNED_FLOATING_POINT_64, SIGNED_FLOATING_POINT_128, SIGNED_INTEGER_8, SIGNED_INTEGER_16, SIGNED_INTEGER_32, SIGNED_INTEGER_64, SIGNED_INTEGER_128, UNSIGNED_FIXED_POINT_8, UNSIGNED_FIXED_POINT_16, UNSIGNED_FIXED_POINT_32, UNSIGNED_FIXED_POINT_64, UNSIGNED_FIXED_POINT_128, UNSIGNED_FLOATING_POINT_8, UNSIGNED_FLOATING_POINT_16, UNSIGNED_FLOATING_POINT_32, UNSIGNED_FLOATING_POINT_64, UNSIGNED_FLOATING_POINT_128, UNSIGNED_INTEGER_8, UNSIGNED_INTEGER_16, UNSIGNED_INTEGER_32, UNSIGNED_INTEGER_64, UNSIGNED_INTEGER_128}};
 
 pub struct TypeStorage {
 	pub hash_to_ind: HashMap<SelfHash, usize>,
@@ -33,8 +33,29 @@ impl TypeStorage {
 		storage.register_type(UNSIGNED_INTEGER_64, BaseType::NumericIntegerType(64, false))?;
 		storage.register_type(UNSIGNED_INTEGER_128, BaseType::NumericIntegerType(128, false))?;	
 
+		storage.register_type(SIGNED_FLOATING_POINT_8, BaseType::FloatingNumberType(4, 4, true))?;
+		storage.register_type(SIGNED_FLOATING_POINT_16, BaseType::FloatingNumberType(5, 11, true))?;
+		storage.register_type(SIGNED_FLOATING_POINT_32, BaseType::FloatingNumberType(8, 25, true))?;
+		storage.register_type(SIGNED_FLOATING_POINT_64, BaseType::FloatingNumberType(11, 53, true))?;
+		storage.register_type(SIGNED_FLOATING_POINT_128, BaseType::FloatingNumberType(15, 113, true))?;
 
+		storage.register_type(UNSIGNED_FLOATING_POINT_8, BaseType::FloatingNumberType(4, 4, false))?;
+		storage.register_type(UNSIGNED_FLOATING_POINT_16, BaseType::FloatingNumberType(5, 11, false))?;
+		storage.register_type(UNSIGNED_FLOATING_POINT_32, BaseType::FloatingNumberType(8, 25, false))?;
+		storage.register_type(UNSIGNED_FLOATING_POINT_64, BaseType::FloatingNumberType(11, 53, false))?;
+		storage.register_type(UNSIGNED_FLOATING_POINT_128, BaseType::FloatingNumberType(15, 113, false))?;
 
+		storage.register_type(SIGNED_FIXED_POINT_8, BaseType::FixedPointNumberType(4, 4, true))?;
+		storage.register_type(SIGNED_FIXED_POINT_16, BaseType::FixedPointNumberType(8, 8, true))?;
+		storage.register_type(SIGNED_FIXED_POINT_32, BaseType::FixedPointNumberType(16, 16, true))?;
+		storage.register_type(SIGNED_FIXED_POINT_64, BaseType::FixedPointNumberType(32, 32, true))?;
+		storage.register_type(SIGNED_FIXED_POINT_128, BaseType::FixedPointNumberType(64, 64, true))?;
+
+		storage.register_type(UNSIGNED_FIXED_POINT_8, BaseType::FixedPointNumberType(4, 4, false))?;
+		storage.register_type(UNSIGNED_FIXED_POINT_16, BaseType::FixedPointNumberType(8, 8, false))?;
+		storage.register_type(UNSIGNED_FIXED_POINT_32, BaseType::FixedPointNumberType(16, 16, false))?;
+		storage.register_type(UNSIGNED_FIXED_POINT_64, BaseType::FixedPointNumberType(32, 32, false))?;
+		storage.register_type(UNSIGNED_FIXED_POINT_128, BaseType::FixedPointNumberType(64, 64, false))?;
 
 		return Ok(storage);
 	}
