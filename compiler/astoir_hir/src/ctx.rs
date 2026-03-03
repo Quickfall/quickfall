@@ -1,6 +1,6 @@
 //! The context definitions for the AstoIR HIR layer.
 
-use std::{collections::HashMap, ops::Index};
+use std::{collections::HashMap};
 
 use astoir_typing::complete::CompleteType;
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
