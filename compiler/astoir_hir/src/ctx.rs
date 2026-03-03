@@ -1,9 +1,10 @@
 //! The context definitions for the AstoIR HIR layer.
 
-use std::{collections::HashMap};
+use std::{collections::HashMap, ops::Index};
 
-use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA, errs::{BaseResult, base::BaseError}};
-use compiler_utils::hash::SelfHash;
+use astoir_typing::complete::CompleteType;
+use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
+use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 
 /// The function HIR context. Contains a mapping from element name hash to element index and other variable information. 
 /// Uses a branch based system to contain variables.
@@ -56,14 +57,14 @@ impl HIRBranchedContext {
 	}
 
 	/// Introduces a new variable in the current branch era.
-	pub fn introduce_variable(&mut self, hash: u64) -> BaseResult<usize> {
+	pub fn introduce_variable(&mut self, hash: u64, t: CompleteType) -> BaseResult<usize> {
 		let identity = SelfHash { hash };
 
 		if self.hash_to_ind.contains_key(&identity) {
 			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
-		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch };
+		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t };
 		self.variables.push(var);
 
 		let ind: usize = self.current_element_index;
@@ -92,6 +93,16 @@ impl HIRBranchedContext {
 		return end <= self.current_branch;
 	}
 
+	pub fn is_dropped_before(&self, ind: usize) -> bool {
+		let start_branch: usize = self.variables[ind].introduced_in_era;
+
+		return self.ending_eras[&start_branch] < self.current_branch;
+	}
+
+	pub fn get_ending_era(&self, ind: usize) -> usize {
+		return self.ending_eras[&self.variables[ind].introduced_in_era];
+	}
+
 	/// Obtains the variable index from the hash if it's available, otherwise returns an error explaining why it failed
 	pub fn obtain(&self, hash: u64) -> BaseResult<usize> {
 		let identity = SelfHash { hash };
@@ -102,7 +113,11 @@ impl HIRBranchedContext {
 				let ind = *ind;
 
 				if !self.is_alive(ind) {
-					return Err(BaseError::err(IR_OUTSIDE_ERA!().to_string()))
+					if self.is_dropped_before(ind) {
+						return Err(BaseError::err(format!(IR_OUTSIDE_ERA_HIGHER!(), self.get_ending_era(ind))))
+					} else {
+						return Err(BaseError::err(format!(IR_OUTSIDE_ERA_LOWER!(), self.variables[ind].introduced_in_era)))
+					}
 				}
 
 				return Ok(ind)
@@ -114,5 +129,21 @@ impl HIRBranchedContext {
 
 pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
-	// TODO: add type here
+	pub variable_type: CompleteType
+}
+
+pub struct HIRContextFunction {
+	pub arguments: Vec<CompleteType>,
+	pub return_type: Option<CompleteType>
+}
+
+pub struct HIRContext {
+	pub functions: IndexStorage<HIRContextFunction>, 
+	pub static_variables: IndexStorage<CompleteType>
+}
+
+impl HIRContext {
+	pub fn new() -> Self {
+		return HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new() }
+	}
 }

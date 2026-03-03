@@ -1,5 +1,5 @@
 use compiler_utils::hash::{WithHash};
-use compiler_utils::{Position, hash};
+use compiler_utils::{Position};
 
 use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use compiler_errors::{PARSE_VALUE, UNEXPECTED_TOKEN, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};

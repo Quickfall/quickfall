@@ -52,7 +52,7 @@ impl BaseType {
 			BaseType::ArbitraryType(n) => *n as usize,
 			BaseType::FixedPointNumberType(a, b, _) => (*a + b) as usize,
 			BaseType::FloatingNumberType(a, b, _) => (*a + b) as usize,
-			BaseType::NumericIntegerType(a, t) => *a as usize,
+			BaseType::NumericIntegerType(a, _) => *a as usize,
 			BaseType::Pointer => size_of::<usize>(),
 			BaseType::Struct(_) => 0
 		}
@@ -90,7 +90,7 @@ impl BaseType {
 		return true;
 	}
 
-	pub fn can_cast_into(&self, info: &BaseType) -> bool {
+	pub fn can_cast_into(&self, _info: &BaseType) -> bool {
 		return false;
 	}
 

@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use astoir_typing::complete::CompleteType;
-use compiler_errors::{IR_FIELD, errs::{BaseResult, CompilerResult, base::BaseError, normal::CompilerError}};
+use compiler_errors::{IR_FIELD, errs::{BaseResult, base::BaseError}};
 use compiler_utils::hash::SelfHash;
 
 pub struct StructTypeContainer {

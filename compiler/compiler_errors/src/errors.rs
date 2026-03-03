@@ -130,11 +130,19 @@ macro_rules! IR_FIND_ELEMENT {
 }
 
 #[macro_export]
-macro_rules! IR_OUTSIDE_ERA {
+macro_rules! IR_OUTSIDE_ERA_LOWER {
 	() => {
-		"Tried invoking element outside of it's definition era."
+		"Tried invoking element outside of it's definition era. Variable is introduced in era {}"
 	};
 }
+
+#[macro_export]
+macro_rules! IR_OUTSIDE_ERA_HIGHER {
+	() => {
+		"Tried invoking element outside of it's definition era. Variable is dropped in era {}"
+	};
+}
+
 
 #[macro_export]
 macro_rules! IR_TYPE_UNSIGNED {

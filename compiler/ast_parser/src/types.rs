@@ -1,6 +1,6 @@
 //! Parsing for type related features
 
-use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::CompleteType};
+use ast::{types::CompleteType};
 use compiler_errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
