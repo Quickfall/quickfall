@@ -16,6 +16,7 @@ pub mod structs;
 pub mod literals;
 pub mod control;
 pub mod variables;
+pub mod types;
 
 pub fn parse_ast_ctx(tokens: &Vec<LexerToken>) -> CompilerResult<ParserCtx> {
 	let mut ind = 0;

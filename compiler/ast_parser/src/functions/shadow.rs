@@ -5,7 +5,7 @@ use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::WithHash;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::functions::arguments::parse_function_arguments;
+use crate::{functions::arguments::parse_function_arguments, types::parse_type};
 
 pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
@@ -24,7 +24,7 @@ pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 	let end;
 
 	if tokens[*ind].is_keyword() {
-		ret_type = Some(tokens[*ind].expects_keyword()?.1);
+		ret_type = Some(parse_type(tokens, ind)?);
 		*ind += 1;
 
 		end = tokens[*ind].get_end_pos().clone();
