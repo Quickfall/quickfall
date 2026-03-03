@@ -6,5 +6,5 @@ pub struct CompleteType {
 	pub types: Vec<u64>,
 
 	pub pointer: bool,
-	pub array: bool
+	pub array_sz: usize
 }
