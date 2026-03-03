@@ -5,6 +5,14 @@ use compiler_errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
 pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<CompleteType> {
+	let pointer;
+
+	if tokens[*ind].tok_type == LexerTokenType::Asterisk {
+		pointer = true;
+	} else {
+		pointer = false;
+	}
+
 	let base_type = tokens[*ind].expects_keyword()?;
 
 	let mut sizes: Vec<usize> = vec![];
@@ -35,5 +43,21 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<C
 		}
 	}
 
-	return Ok(CompleteType { base_type: base_type.1, sizes, types })
+	let array_sz: usize;
+
+	if tokens[*ind].tok_type == LexerTokenType::ArrayOpen {
+		*ind += 1;
+
+
+		array_sz = tokens[*ind].expects_int_lit()?.0 as usize;
+		*ind += 1;
+
+		tokens[*ind].expects(LexerTokenType::ArrayClose)?;
+
+		*ind += 1;
+	} else {
+		array_sz = 0;
+	}
+
+	return Ok(CompleteType { base_type: base_type.1, sizes, types, pointer, array_sz })
 }
