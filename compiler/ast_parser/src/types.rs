@@ -1,15 +1,8 @@
 //! Parsing for type related features
 
-use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
+use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::CompleteType};
 use compiler_errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
-
-/// A parsed complete type information
-pub struct CompleteType {
-	pub base_type: u64, 
-	pub sizes: Vec<usize>,
-	pub types: Vec<u64>
-}
 
 pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<CompleteType> {
 	let base_type = tokens[*ind].expects_keyword()?;

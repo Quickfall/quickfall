@@ -6,6 +6,8 @@ use compiler_utils::Position;
 use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
 use compiler_utils::hash::{TypeHash, WithHash};
 
+use crate::types::CompleteType;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
     pub name: WithHash<String>,
@@ -24,8 +26,6 @@ pub enum ASTTreeNodeKind {
     IntegerLit { val: i128, hash: u64 },
     StringLit(String),
 
-	ComplexType { t_hash: u64, size_definitions: Vec<usize>, extended_types: Vec<u64> },
-
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ComparingOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
 
@@ -34,9 +34,9 @@ pub enum ASTTreeNodeKind {
 	VariableReference(WithHash<String>),
 
 	StructLayoutDeclaration { name: WithHash<String>, layout: bool, members: Vec<Box<ASTTreeNode>> },
-	StructFieldMember { name: WithHash<String>, member_type: TypeHash },
+	StructFieldMember { name: WithHash<String>, member_type: CompleteType },
 
-    VarDeclaration { var_name: WithHash<String>, var_type: TypeHash, value: Option<Box<ASTTreeNode>> },
+    VarDeclaration { var_name: WithHash<String>, var_type: CompleteType, value: Option<Box<ASTTreeNode>> },
     VarValueChange { var: Box<ASTTreeNode>, value: Box<ASTTreeNode> },
 	VarIncrement { var: Box<ASTTreeNode>, increment_by: Option<Box<ASTTreeNode>> }, // Default is by 1
 
@@ -46,15 +46,15 @@ pub enum ASTTreeNodeKind {
 
 	ReturnStatement { val: Option<Box<ASTTreeNode>> },
 
-	StaticVariableDeclaration { name: WithHash<String>, var_type: TypeHash, val: Box<ASTTreeNode> },
+	StaticVariableDeclaration { name: WithHash<String>, var_type: CompleteType, val: Box<ASTTreeNode> },
 
 	WhileBlock { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 	ForBlock { initial_state: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 
     FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
-    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, return_type: Option<TypeHash> },
+    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, return_type: Option<CompleteType> },
 
-	ShadowFunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, return_type: Option<TypeHash> },
+	ShadowFunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, return_type: Option<CompleteType> },
 
 	StructLRVariable { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>,},
 	StructLRFunction { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>, }

@@ -5,7 +5,7 @@ use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::WithHash;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{functions::arguments::parse_function_arguments, parser::parse_ast_node_in_body, value::parse_ast_value};
+use crate::{functions::arguments::parse_function_arguments, parser::parse_ast_node_in_body, types::parse_type, value::parse_ast_value};
 
 pub mod shadow;
 pub mod arguments;
@@ -27,7 +27,7 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) ->
 	let mut ret_type = None;
 
 	if tokens[*ind].is_keyword() {
-		ret_type = Some(tokens[*ind].expects_keyword()?.1);
+		ret_type = Some(parse_type(tokens, ind)?);
 		*ind += 1;
 	}
 
