@@ -118,6 +118,7 @@ pub fn lexer_parse_file(file_path: &String) -> CompilerResult<Vec<LexerToken>> {
 			'&' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Ampersand)),
             '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketOpen)),
             '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketClose)),
+			'*' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Asterisk)),
 			_ => continue
         }
 

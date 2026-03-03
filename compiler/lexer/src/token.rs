@@ -43,6 +43,8 @@ pub enum LexerTokenType {
     EqualSign,
 	ExclamationMark,
 
+	Asterisk,
+
     Comma,
     Dot,
 	Ampersand,
