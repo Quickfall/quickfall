@@ -4,9 +4,15 @@ use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use compiler_errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<ASTTreeNode> {
+/// A parsed complete type information
+pub struct CompleteType {
+	pub base_type: u64, 
+	pub sizes: Vec<usize>,
+	pub types: Vec<u64>
+}
+
+pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<CompleteType> {
 	let base_type = tokens[*ind].expects_keyword()?;
-	let start = tokens[*ind].pos.clone();
 
 	let mut sizes: Vec<usize> = vec![];
 	let mut types: Vec<u64> = vec![];
@@ -36,7 +42,5 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<A
 		}
 	}
 
-	let end = tokens[*ind].get_end_pos();
-
-	return Ok(ASTTreeNode::new(ASTTreeNodeKind::ComplexType { t_hash: base_type.1, size_definitions: sizes, extended_types: types }, start, end))
+	return Ok(CompleteType { base_type: base_type.1, sizes, types })
 }
