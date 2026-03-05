@@ -1,9 +1,9 @@
 //! The nodes inside of the AstoIR HIR. 
 
-use astoir_typing::{complete::ComplexType, structs::StructTypeContainer};
+use astoir_typing::{complete::{ComplexType, ConcreteType}, hashes::{BOOLEAN_TYPE, STATIC_STR}, structs::StructTypeContainer};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
-use crate::structs::{StructLRUStep};
+use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::StructLRUStep};
 
 pub enum HIRNode {
 	VarDeclaration { variable: usize, var_type: ComplexType, default_val: Option<Box<HIRNode>> },
@@ -13,10 +13,10 @@ pub enum HIRNode {
 	
 	MathOperation { left:  Box<HIRNode>, right: Box<HIRNode>, operation: MathOperator, assignment: bool },
 
-	VariableReference { index: usize },
+	VariableReference { index: usize, is_static: bool },
 	FunctionReference { index: usize },
 
-	StructLRU { steps: Vec<StructLRUStep> },
+	StructLRU { steps: Vec<StructLRUStep>, last: ComplexType },
 
 	StructDeclaration { type_name: usize, container: StructTypeContainer, layout: bool },
 	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, ComplexType)>, return_type: Option<ComplexType>, body: Vec<Box<HIRNode>> },
@@ -38,4 +38,58 @@ pub enum HIRNode {
 
 	BooleanOperator { left: Box<HIRNode>, right: Box<HIRNode>, operator: ComparingOperator },
 	BooleanCondition { value: Box<HIRNode>, negation: bool }
+}
+
+impl HIRNode {
+	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<ComplexType> {
+		match self {
+			HIRNode::VariableReference { index, is_static } => {
+				if *is_static {
+					return Some(context.static_variables.vals[*index].clone());
+				}
+
+				return Some(curr_ctx.variables[*index].variable_type.clone());
+			},
+
+			HIRNode::IntegerLiteral { value: _, int_type } => {
+				let t = context.type_storage.types[*int_type].clone();
+
+				return Some(ComplexType::Concrete(ConcreteType { base: t, pointer: false, pointer_array: false, type_params: vec![], size_params: vec![] }))
+			},
+
+			HIRNode::StringLiteral { value } => {
+				let t = match context.type_storage.get_type(STATIC_STR) {
+					Ok(v) => v,
+					Err(_) => return None
+				};
+
+				return Some(ComplexType::Concrete(ConcreteType { base: t.1.clone(), pointer: false, pointer_array: false, type_params: vec![], size_params: vec![] }))
+			},
+
+			HIRNode::StructLRU { steps: _, last } => {
+				return Some(last.clone())
+			},
+
+			HIRNode::MathOperation { left, right, operation, assignment } => {
+				return left.get_node_type(context, curr_ctx)
+			},
+
+			HIRNode::BooleanOperator { .. } | HIRNode::BooleanCondition { .. } => {
+				let t = match context.type_storage.get_type(BOOLEAN_TYPE) {
+					Ok(v) => v,
+					Err(_) => return None
+				};
+
+				return Some(ComplexType::Concrete(ConcreteType { base: t.1.clone(), pointer: false, pointer_array: false, type_params: vec![], size_params: vec![] }))
+			},
+
+			HIRNode::FunctionCall { func_name, arguments: _ } => {
+				let f = context.functions.vals[*func_name].0.clone();
+
+				return f;
+			},
+
+			_ => return None
+		}
+	}
 }

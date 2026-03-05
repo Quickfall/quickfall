@@ -46,6 +46,8 @@ pub const UNSIGNED_FIXED_POINT_64: u64 = hash!("ux64");
 pub const UNSIGNED_FIXED_POINT_128: u64 = hash!("ux128");
 pub const UNSIGNED_FIXED_POINT_ANYSIZE: u64 = hash!("ux");
 
+pub const STATIC_STR: u64 = hash!("staticstr");
+
 pub const POINTER_TYPE: u64 = hash!("ptr");
 pub const BOOLEAN_TYPE: u64 = hash!("bool");
 

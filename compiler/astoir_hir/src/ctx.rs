@@ -138,6 +138,7 @@ pub struct HIRContext {
 	pub type_storage: TypeStorage
 }
 
+#[derive(PartialEq)]
 pub enum VariableKind {
 	STATIC,
 	LOCAL
