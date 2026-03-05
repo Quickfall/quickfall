@@ -3,7 +3,7 @@
 use std::{collections::HashMap};
 
 use astoir_typing::{complete::{ComplexType}, storage::TypeStorage};
-use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
+use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, CompilerResult, base::BaseError}};
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 
 /// The function HIR context. Contains a mapping from element name hash to element index and other variable information. 
@@ -138,6 +138,11 @@ pub struct HIRContext {
 	pub type_storage: TypeStorage
 }
 
+pub enum VariableKind {
+	STATIC,
+	LOCAL
+}
+
 impl HIRContext {
 	pub fn new() -> BaseResult<Self> {
 		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()? })
@@ -150,3 +155,21 @@ impl HIRContext {
 		}
 	}
 }
+
+pub fn get_variable(context: &HIRContext, curr_ctx: &HIRBranchedContext, hash: u64) -> BaseResult<(VariableKind, ComplexType, usize)> {
+	match curr_ctx.obtain(hash) {
+		Ok(v) => {
+			return Ok((VariableKind::LOCAL, curr_ctx.variables[v].variable_type.clone(), v))
+		},
+		
+		Err(_) => {}
+	}
+
+	match context.static_variables.get_index(hash) {
+		Some(v) => {
+			return Ok((VariableKind::STATIC, context.static_variables.vals[v].clone(), v))
+		},
+
+		None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+	};
+} 

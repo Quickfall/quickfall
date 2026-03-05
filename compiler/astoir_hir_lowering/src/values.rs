@@ -1,7 +1,9 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
-use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::HIRNode, structs::StructLRUStep};
+use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::HIRNode, structs::StructLRUStep};
 use astoir_typing::complete::ComplexType;
 use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos};
+
+use crate::var;
 
 pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, curr_steps: &mut Vec<StructLRUStep>, curr_type: &mut Option<ComplexType>) -> CompilerResult<bool> {
 	let struct_descriptor;
@@ -44,6 +46,47 @@ pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedCon
 
 			return Ok(true);
 		},
+
+		ASTTreeNodeKind::VariableReference(str) => {
+			let var_type;
+			let ind: usize;
+
+			if struct_descriptor.is_some() {
+				ind = match struct_descriptor.unwrap().get_field(str.hash) {
+					Ok(v) => v,
+					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))		
+				};
+
+				var_type = struct_descriptor.unwrap().fields.vals[ind].clone();
+			} else {
+				match get_variable(context, curr_ctx, str.hash) {
+					Ok(v) => {
+						var_type = v.1;
+						ind = v.2;
+					}
+					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
+				};
+			}
+
+			curr_steps.push(StructLRUStep::VariableStep { variable: ind });
+			*curr_type = Some(var_type);
+
+			return Ok(true)
+		},
+
+		ASTTreeNodeKind::StructLRFunction { l, r } => {
+			lower_ast_lru_base(context, curr_ctx, l, curr_steps, curr_type)?;
+			lower_ast_lru_base(context, curr_ctx, r, curr_steps, curr_type)?;
+
+			return Ok(true);
+		},
+
+		ASTTreeNodeKind::StructLRVariable { l, r } => {
+			lower_ast_lru_base(context, curr_ctx, l, curr_steps, curr_type)?;
+			lower_ast_lru_base(context, curr_ctx, r, curr_steps, curr_type)?;
+
+			return Ok(true);
+		}
 
 		_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 
