@@ -91,6 +91,19 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
 		},
 
+		LexerTokenType::EqualSign => {
+			*ind += 1;
+
+			let start = original.clone()?.start.clone();
+		
+			let right_val = parse_ast_value(tokens, ind)?;
+
+			let end = right_val.end.clone();
+
+			let kind = ASTTreeNodeKind::VarValueChange { var: original?, value: right_val };
+			return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
+		},
+
 		LexerTokenType::ComparingOperator(op) => {
 			let operator = op.clone();
 
