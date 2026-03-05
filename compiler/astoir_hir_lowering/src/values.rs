@@ -38,11 +38,24 @@ pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedCon
 				func_type = &context.functions.vals[ind];
 			}
 
-			// TODO: argument checking here when they get parsed
+			let mut hir_args = vec![];
+			let mut ind = 0;
+
+			for a in args {
+				let lowered = lower_ast_value(context, curr_ctx, a)?;
+
+				if !lowered.get_node_type(context, curr_ctx).unwrap().can_transmute_into(&func_type.1[ind]) {
+					return Err(CompilerError::from_ast(ErrorKind::Error, IR_FIND_ELEMENT!().to_string(), &node.start, &node.end))
+				}
+
+				hir_args.push(lowered);
+
+				ind += 1;
+			}
 
 			*curr_type = func_type.0.clone();
 			
-			curr_steps.push(StructLRUStep::FunctionCall { func: ind, args: vec![] });
+			curr_steps.push(StructLRUStep::FunctionCall { func: ind, args: hir_args });
 
 			return Ok(true);
 		},
@@ -102,7 +115,7 @@ pub fn lower_ast_lru(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: 
 	return Ok(Box::new(HIRNode::StructLRU { steps, last: curr_type.unwrap() }))
 }
 
-pub fn lower_ast_value(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_value(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	match node.kind {
 		ASTTreeNodeKind::StructLRFunction { .. } | ASTTreeNodeKind::StructLRVariable { .. } => {
 			return lower_ast_lru(context, curr_ctx, node);
