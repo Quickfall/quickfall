@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap};
 
-use astoir_typing::complete::CompleteType;
+use astoir_typing::{complete::{ComplexType}, storage::TypeStorage};
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 
@@ -57,7 +57,7 @@ impl HIRBranchedContext {
 	}
 
 	/// Introduces a new variable in the current branch era.
-	pub fn introduce_variable(&mut self, hash: u64, t: CompleteType) -> BaseResult<usize> {
+	pub fn introduce_variable(&mut self, hash: u64, t: ComplexType) -> BaseResult<usize> {
 		let identity = SelfHash { hash };
 
 		if self.hash_to_ind.contains_key(&identity) {
@@ -129,21 +129,24 @@ impl HIRBranchedContext {
 
 pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
-	pub variable_type: CompleteType
-}
-
-pub struct HIRContextFunction {
-	pub arguments: Vec<CompleteType>,
-	pub return_type: Option<CompleteType>
+	pub variable_type: ComplexType
 }
 
 pub struct HIRContext {
-	pub functions: IndexStorage<HIRContextFunction>, 
-	pub static_variables: IndexStorage<CompleteType>
+	pub functions: IndexStorage<(Option<ComplexType>, Vec<ComplexType>)>, 
+	pub static_variables: IndexStorage<ComplexType>,
+	pub type_storage: TypeStorage
 }
 
 impl HIRContext {
-	pub fn new() -> Self {
-		return HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new() }
+	pub fn new() -> BaseResult<Self> {
+		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()? })
+	}
+
+	pub fn translate_function(&self, func_hash: u64) -> BaseResult<usize> {
+		return match self.functions.get_index(func_hash) {
+			Some(v) => Ok(v),
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		}
 	}
 }

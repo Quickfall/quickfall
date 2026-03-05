@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+astoir_hir = { path = "../astoir_hir" }
+astoir_typing = { path = "../astoir_typing" }
+ast = { path = "../ast" }
+compiler_errors = { path = "../compiler_errors" }

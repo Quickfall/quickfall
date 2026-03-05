@@ -1,5 +1,9 @@
 //! Definitions for basic types in AstoIR. These are more types of types than concrete types
 
+use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+
+use crate::structs::StructTypeContainer;
+
 #[derive(Clone)]
 pub enum BaseType {
 	/// An integer type.
@@ -31,7 +35,7 @@ pub enum BaseType {
 
 	/// A structured type
 	/// 0: is the struct a layout
-	Struct(bool)
+	Struct(bool, StructTypeContainer)
 }
 
 impl BaseType {
@@ -45,6 +49,13 @@ impl BaseType {
 		}
 	}
 
+	pub fn get_struct_container(&self) -> BaseResult<&StructTypeContainer> {
+		return match self {
+			BaseType::Struct(_, e) => Ok(e),
+			_ => Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+		}
+	}
+
 	/// Get the size in bits
 	pub fn get_size(&self) -> usize {
 		return match self {
@@ -54,7 +65,15 @@ impl BaseType {
 			BaseType::FloatingNumberType(a, b, _) => (*a + b) as usize,
 			BaseType::NumericIntegerType(a, _) => *a as usize,
 			BaseType::Pointer => size_of::<usize>(),
-			BaseType::Struct(_) => 0
+			BaseType::Struct(_, k) => {
+				let mut sz = 0;
+
+				for t in &k.fields.vals {
+					sz += t.get_concrete().base.get_size(); // TODO: add support for type arg size changing
+				}
+
+				return sz;
+			}
 		}
 	}
 

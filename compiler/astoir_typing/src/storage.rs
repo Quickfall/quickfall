@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use compiler_errors::{IR_ALREADY_EXISTING_ELEM, errs::{BaseResult, base::BaseError}};
+use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, errs::{BaseResult, base::BaseError}};
 use compiler_utils::hash::SelfHash;
 
 use crate::{base::BaseType, hashes::{BOOLEAN_TYPE, INTERNAL_8, POINTER_TYPE, SIGNED_FIXED_POINT_8, SIGNED_FIXED_POINT_16, SIGNED_FIXED_POINT_32, SIGNED_FIXED_POINT_64, SIGNED_FIXED_POINT_128, SIGNED_FLOATING_POINT_8, SIGNED_FLOATING_POINT_16, SIGNED_FLOATING_POINT_32, SIGNED_FLOATING_POINT_64, SIGNED_FLOATING_POINT_128, SIGNED_INTEGER_8, SIGNED_INTEGER_16, SIGNED_INTEGER_32, SIGNED_INTEGER_64, SIGNED_INTEGER_128, UNSIGNED_FIXED_POINT_8, UNSIGNED_FIXED_POINT_16, UNSIGNED_FIXED_POINT_32, UNSIGNED_FIXED_POINT_64, UNSIGNED_FIXED_POINT_128, UNSIGNED_FLOATING_POINT_8, UNSIGNED_FLOATING_POINT_16, UNSIGNED_FLOATING_POINT_32, UNSIGNED_FLOATING_POINT_64, UNSIGNED_FLOATING_POINT_128, UNSIGNED_INTEGER_8, UNSIGNED_INTEGER_16, UNSIGNED_INTEGER_32, UNSIGNED_INTEGER_64, UNSIGNED_INTEGER_128}};
@@ -76,6 +76,19 @@ impl TypeStorage {
 		self.types.push(base);
 		
 		Ok(true)
+	}
+
+	pub fn get_type(&self, hash: u64) -> BaseResult<(usize, &BaseType)> {
+		let id = SelfHash { hash };
+
+		let ind = match self.hash_to_ind.get(&id) {
+			Some(v) => *v,
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		};
+
+		let val = &self.types[ind];
+
+		return Ok((ind, val));
 	}
 
 }

@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 
+#[derive(Clone)]
 pub struct IndexStorage<K> {
 	pub hash_to_ind: HashMap<u64, usize>, 
 	pub vals: Vec<K>
@@ -26,5 +27,7 @@ impl<K> IndexStorage<K> {
 	pub fn get_ind(&self, ind: usize) -> &K {
 		return &self.vals[ind];
 	}
+
+
 
 }

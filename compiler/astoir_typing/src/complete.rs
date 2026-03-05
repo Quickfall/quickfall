@@ -1,20 +1,23 @@
 use crate::base::BaseType;
 
+#[derive(Clone)]
 pub struct ConcreteType {
 	pub base: BaseType,
 	
 	pub pointer: bool,
 	pub pointer_array: bool,
 
-	pub type_params: Vec<usize>
+	pub type_params: Vec<usize>,
+	pub size_params: Vec<usize>
 }
 
-pub enum CompleteType {
-	Array(Box<CompleteType>),
+#[derive(Clone)]
+pub enum ComplexType {
+	Array(Box<ComplexType>),
 	Concrete(ConcreteType)
 }
 
-impl CompleteType {
+impl ComplexType {
 	pub fn is_array(&self) -> bool {
 		return match self {
 			Self::Array(_) => true,
@@ -31,7 +34,7 @@ impl CompleteType {
 
 	/// Can the given type be automatically casted (aka trasmuted) into the given type.
 	/// Transmutation is basically automatic casting 
-	pub fn can_transmute_into(&self, info: &CompleteType) -> bool {
+	pub fn can_transmute_into(&self, info: &ComplexType) -> bool {
 		return match self {
 			Self::Array(_) => false,
 			
@@ -43,7 +46,7 @@ impl CompleteType {
 		}
 	}
 
-	pub fn can_cast_into(&self, into: &CompleteType) -> bool {
+	pub fn can_cast_into(&self, into: &ComplexType) -> bool {
 		if self.can_transmute_into(into) {
 			return true;
 		}
