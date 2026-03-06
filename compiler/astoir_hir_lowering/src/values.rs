@@ -1,7 +1,7 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::HIRNode, structs::StructLRUStep};
 use astoir_typing::complete::ComplexType;
-use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, NO_PERMITTED_OUTSIDE_FUNC, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos};
+use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 
 use crate::{bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, literals::lower_ast_literal, math::lower_ast_math_operation, var::lower_ast_variable_reference};
 
@@ -44,7 +44,7 @@ pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedCon
 			for a in args {
 				let lowered = lower_ast_value(context, curr_ctx, a)?;
 
-				if !lowered.get_node_type(context, curr_ctx).unwrap().can_transmute_into(&func_type.1[ind]) {
+				if !lowered.get_node_type(context, curr_ctx).unwrap().can_transmute_into(&func_type.1[ind].1) {
 					return Err(CompilerError::from_ast(ErrorKind::Error, IR_FIND_ELEMENT!().to_string(), &node.start, &node.end))
 				}
 

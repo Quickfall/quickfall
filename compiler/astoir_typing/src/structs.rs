@@ -6,7 +6,7 @@ use crate::complete::ComplexType;
 #[derive(Clone)]
 pub struct StructTypeContainer {
 	pub fields: IndexStorage<ComplexType>,
-	pub functions: IndexStorage<(Option<ComplexType>, Vec<ComplexType>)>
+	pub functions: IndexStorage<(Option<ComplexType>, Vec<(u64, ComplexType)>)>
 }
 
 impl StructTypeContainer {
