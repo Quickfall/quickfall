@@ -38,11 +38,23 @@ pub fn lower_ast_body_node(context: &HIRContext, curr_ctx: &mut HIRBranchedConte
 	}
 }
 
-pub fn lower_ast_body(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, nodes: Vec<Box<ASTTreeNode>>) -> CompilerResult<Vec<Box<HIRNode>>> {
+pub fn lower_ast_body(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, nodes: Vec<Box<ASTTreeNode>>, introduce_era: bool) -> CompilerResult<Vec<Box<HIRNode>>> {
 	let mut hir_nodes = vec![];
+
+	let branch;
+
+	if introduce_era {
+		branch = curr_ctx.start_branch();
+	} else {
+		branch = 0;
+	}
 
 	for n in nodes {
 		hir_nodes.push(lower_ast_body_node(context, curr_ctx, n)?);
+	}
+
+	if introduce_era {
+		curr_ctx.end_branch(branch);
 	}
 
 	return Ok(hir_nodes);

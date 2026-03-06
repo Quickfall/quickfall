@@ -3,7 +3,7 @@
 use astoir_typing::{complete::{ComplexType, ConcreteType}, hashes::{BOOLEAN_TYPE, STATIC_STR}, structs::StructTypeContainer};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
-use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::StructLRUStep};
+use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
 
 pub enum HIRNode {
 	VarDeclaration { variable: usize, var_type: ComplexType, default_val: Option<Box<HIRNode>> },
@@ -27,9 +27,7 @@ pub enum HIRNode {
 	WhileBlock { condition: Box<HIRNode>, body: Vec<Box<HIRNode>> },
 	ForBlock { initial_state: Box<HIRNode>, condition: Box<HIRNode>, incrementation: Box<HIRNode>, body: Vec<Box<HIRNode>> },
 
-	IfStatement { condition: Box<HIRNode>, body: Vec<Box<HIRNode>>, branches: Vec<Box<HIRNode>>, depth: usize },
-	IfElseStatement { condition: Box<HIRNode>, body: Vec<Box<HIRNode>> },
-	ElseStatement { body: Vec<Box<HIRNode>> },
+	IfStatement { branches: Vec<HIRIfBranch> },
 
 	ReturnStatement { value: Option<Box<HIRNode>> },
 
@@ -57,7 +55,7 @@ impl HIRNode {
 				return Some(ComplexType::Concrete(ConcreteType { base: t, pointer: false, pointer_array: false, type_params: vec![], size_params: vec![] }))
 			},
 
-			HIRNode::StringLiteral { value } => {
+			HIRNode::StringLiteral { value: _ } => {
 				let t = match context.type_storage.get_type(STATIC_STR) {
 					Ok(v) => v,
 					Err(_) => return None
