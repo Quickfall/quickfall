@@ -63,7 +63,7 @@ impl TypeStorage {
 		return Ok(storage);
 	}
 
-	pub fn register_type(&mut self, hash: u64, base: BaseType) -> BaseResult<bool> {
+	pub fn register_type(&mut self, hash: u64, base: BaseType) -> BaseResult<usize> {
 		let id = SelfHash { hash };
 
 		if self.hash_to_ind.contains_key(&id) {
@@ -76,7 +76,7 @@ impl TypeStorage {
 		self.hash_to_ind.insert(id, type_ind);
 		self.types.push(base);
 		
-		Ok(true)
+		Ok(type_ind)
 	}
 
 	pub fn get_complex(&self, hash: u64) -> BaseResult<ComplexType> {
