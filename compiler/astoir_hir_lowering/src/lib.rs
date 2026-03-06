@@ -11,6 +11,7 @@ pub mod values;
 pub mod func;
 pub mod math;
 pub mod bools;
+pub mod control;
 
 pub fn lower_ast_body_node(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	match node.kind.clone() {
@@ -32,4 +33,14 @@ pub fn lower_ast_body_node(context: &HIRContext, curr_ctx: &mut HIRBranchedConte
 		
 		_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 	}
+}
+
+pub fn lower_ast_body(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, nodes: Vec<Box<ASTTreeNode>>) -> CompilerResult<Vec<Box<HIRNode>>> {
+	let mut hir_nodes = vec![];
+
+	for n in nodes {
+		hir_nodes.push(lower_ast_body_node(context, curr_ctx, n)?);
+	}
+
+	return Ok(hir_nodes);
 }

@@ -70,7 +70,7 @@ impl HIRNode {
 				return Some(last.clone())
 			},
 
-			HIRNode::MathOperation { left, right, operation, assignment } => {
+			HIRNode::MathOperation { left, right: _, operation: _, assignment: _ } => {
 				return left.get_node_type(context, curr_ctx)
 			},
 
