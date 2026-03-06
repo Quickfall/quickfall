@@ -7,3 +7,5 @@ edition = "2024"
 astoir = {path = "../astoir"}
 ast = {path = "../ast"}
 ast_parser = {path = "../ast_parser"}
+lexer = {path = "../lexer"}
+compiler_errors = {path = "../compiler_errors"}
