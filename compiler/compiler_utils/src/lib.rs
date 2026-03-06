@@ -3,6 +3,7 @@ use std::{fs, io::Error};
 
 pub mod utils;
 pub mod hash;
+pub mod logger;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Position {

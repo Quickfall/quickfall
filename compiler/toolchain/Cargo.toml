@@ -9,3 +9,4 @@ ast = {path = "../ast"}
 ast_parser = {path = "../ast_parser"}
 lexer = {path = "../lexer"}
 compiler_errors = {path = "../compiler_errors"}
+compiler_utils = {path = "../compiler_utils"}

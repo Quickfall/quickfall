@@ -1,6 +1,6 @@
-use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
+use ast::{ctx::ParserCtx, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::HIRNode};
-use compiler_errors::{IR_INVALID_NODE_TYPE, IR_TYPE_WRONG_KIND, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
+use compiler_errors::{IR_INVALID_NODE_TYPE, IR_TYPE_WRONG_KIND, errs::{BaseResult, CompilerResult, ErrorKind, normal::CompilerError}};
 
 use crate::{control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block}, func::{lower_ast_function_call, lower_ast_function_declaration}, math::lower_ast_math_operation, structs::lower_ast_struct_declaration, values::lower_ast_value, var::lower_ast_variable_declaration};
 
@@ -71,3 +71,18 @@ pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> C
 		_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))
 	}
 } 
+
+pub fn lower_ast(ctx: ParserCtx) -> CompilerResult<HIRContext> {
+	let mut hir_ctx = match HIRContext::new() {
+		Ok(v) => v,
+		Err(e) => return Err(CompilerError::from_base_posless(e))
+	};
+
+	for s in ctx.iter_order {
+		let k = ctx.map[&s].clone();
+
+		lower_ast_toplevel(&mut hir_ctx, k)?;
+	}
+
+	return Ok(hir_ctx);
+}
