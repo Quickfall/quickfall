@@ -13,11 +13,13 @@ impl<K> IndexStorage<K> {
 		return IndexStorage { hash_to_ind: HashMap::new(), vals: vec![] }
 	}
 
-	pub fn append(&mut self, hash: u64, v: K) {
+	pub fn append(&mut self, hash: u64, v: K) -> usize {
 		let ind = self.vals.len();
 
 		self.hash_to_ind.insert(hash, ind);
 		self.vals.push(v);
+
+		return ind;
 	}
 
 	pub fn get_index(&self, hash: u64) -> Option<usize> {

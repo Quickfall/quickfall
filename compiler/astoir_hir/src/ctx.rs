@@ -133,7 +133,7 @@ pub struct HIRBranchedVariable {
 }
 
 pub struct HIRContext {
-	pub functions: IndexStorage<(Option<ComplexType>, Vec<ComplexType>)>, 
+	pub functions: IndexStorage<(Option<ComplexType>, Vec<(u64, ComplexType)>)>, 
 	pub static_variables: IndexStorage<ComplexType>,
 	pub type_storage: TypeStorage
 }
