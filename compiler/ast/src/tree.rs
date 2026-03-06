@@ -11,11 +11,11 @@ use crate::types::CompleteType;
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
     pub name: WithHash<String>,
-    pub argument_type: TypeHash
+    pub argument_type: CompleteType
 }
 
 impl FunctionDeclarationArgument {
-    pub fn new(name: String, arg_type: TypeHash) -> Self {
+    pub fn new(name: String, arg_type: CompleteType) -> Self {
         FunctionDeclarationArgument { name: WithHash::new(name), argument_type: arg_type }
     }
 }
