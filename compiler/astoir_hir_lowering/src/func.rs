@@ -32,7 +32,7 @@ pub fn lower_ast_function_call(context: &HIRContext, curr_ctx: &HIRBranchedConte
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 }
 
-pub fn lower_ast_function_declaration(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, return_type } = node.kind {
 		let ret_type;
 
@@ -60,6 +60,8 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, curr_ctx: &mut H
 			arguments.push((arg.name.hash, t));
 		}
 
+		let mut curr_ctx = HIRBranchedContext::new();
+
 		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
 
 		let branch = curr_ctx.start_branch();
@@ -71,11 +73,11 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, curr_ctx: &mut H
 			}
 		}
 
-		let body = lower_ast_body(context, curr_ctx, body, false)?;
+		let body = lower_ast_body(context, &mut curr_ctx, body, false)?;
 
 		curr_ctx.end_branch(branch);
 
-		return Ok(Box::new(HIRNode::FunctionDeclaration { func_name: ind, arguments, return_type: ret_type, body }))
+		return Ok(Box::new(HIRNode::FunctionDeclaration { func_name: ind, arguments, return_type: ret_type, body, ctx: curr_ctx }))
 	}
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 }
