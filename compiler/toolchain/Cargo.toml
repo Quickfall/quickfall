@@ -1,0 +1,9 @@
+[package]
+name = "toolchain"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+astoir = {path = "../astoir"}
+ast = {path = "../ast"}
+ast_parser = {path = "../ast_parser"}

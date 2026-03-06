@@ -3,7 +3,7 @@
 use std::{collections::HashMap};
 
 use astoir_typing::{complete::{ComplexType}, storage::TypeStorage};
-use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, CompilerResult, base::BaseError}};
+use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 
 /// The function HIR context. Contains a mapping from element name hash to element index and other variable information. 
