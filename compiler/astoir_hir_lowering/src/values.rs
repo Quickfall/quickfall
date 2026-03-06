@@ -3,7 +3,7 @@ use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::HIR
 use astoir_typing::complete::ComplexType;
 use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, NO_PERMITTED_OUTSIDE_FUNC, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos};
 
-use crate::{literals::lower_ast_literal, var::lower_ast_variable_reference};
+use crate::{literals::lower_ast_literal, math::lower_ast_math_operation, var::lower_ast_variable_reference};
 
 pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, curr_steps: &mut Vec<StructLRUStep>, curr_type: &mut Option<ComplexType>) -> CompilerResult<bool> {
 	let struct_descriptor;
@@ -121,11 +121,8 @@ pub fn lower_ast_value(context: &HIRContext, curr_ctx: &HIRBranchedContext, node
 			return lower_ast_lru(context, curr_ctx, node);
 		},
 
-		ASTTreeNodeKind::MathResult { lval, rval, operator, assigns } => {
-			let hir_l = lower_ast_value(context, curr_ctx, lval)?;
-			let hir_r = lower_ast_value(context, curr_ctx, rval)?;
-
-			return Ok(Box::new(HIRNode::MathOperation { left: hir_l, right: hir_r, operation: operator, assignment: assigns }))
+		ASTTreeNodeKind::MathResult { .. } => {
+			return lower_ast_math_operation(context, curr_ctx, node, false)
 		},
 
 		ASTTreeNodeKind::OperatorBasedConditionMember { lval, rval, operator } => {

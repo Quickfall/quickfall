@@ -9,6 +9,7 @@ pub mod var;
 pub mod types;
 pub mod values;
 pub mod func;
+pub mod math;
 
 pub fn lower_ast_body_node(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	match node.kind {
