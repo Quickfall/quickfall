@@ -23,6 +23,12 @@ dependencies = [
 [[package]]
 name = "astoir"
 version = "0.1.0"
+dependencies = [
+ "ast",
+ "astoir_hir",
+ "astoir_hir_lowering",
+ "compiler_errors",
+]
 
 [[package]]
 name = "astoir_hir"
