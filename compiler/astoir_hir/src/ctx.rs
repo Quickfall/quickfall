@@ -141,7 +141,7 @@ pub struct HIRBranchedVariable {
 #[derive(Debug)]
 pub struct HIRContext {
 	pub functions: IndexStorage<HIRFunction>, 
-	pub function_declarations: Vec<Box<HIRNode>>,
+	pub function_declarations: Vec<Option<Box<HIRNode>>>,
 	pub static_variables: IndexStorage<ComplexType>,
 	pub type_storage: TypeStorage
 }

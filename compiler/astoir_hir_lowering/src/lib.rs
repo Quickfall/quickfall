@@ -68,7 +68,7 @@ pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> C
 		ASTTreeNodeKind::FunctionDeclaration { .. } => {
 			let func_decl = lower_ast_function_declaration(context, node)?;
 
-			context.function_declarations.push(func_decl);
+			context.function_declarations.push(Some(func_decl));
 
 			return Ok(true)
 		},
