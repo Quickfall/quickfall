@@ -34,3 +34,9 @@ pub fn dump_errors() {
 		}
 	})
 }
+
+pub fn has_errors() -> bool {
+	ERR_STORAGE.with_borrow(|f| {
+		!f.errs.is_empty()
+	})
+}
