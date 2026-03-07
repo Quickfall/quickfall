@@ -1,6 +1,6 @@
 use compiler_errors::errs::CompilerResult;
+use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
-use compiler_utils::hash::WithHash;
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 
@@ -30,5 +30,5 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 
 	*ind += 1;
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLayoutDeclaration { name: WithHash::new(type_name.0), layout, members }, start, end)));
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLayoutDeclaration { name: HashedString::new(type_name.0), layout, members }, start, end)));
 }

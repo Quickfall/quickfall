@@ -2,7 +2,7 @@
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use compiler_errors::errs::CompilerResult;
-use compiler_utils::hash::WithHash;
+use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{functions::arguments::parse_function_arguments, parser::parse_ast_node_in_body, types::parse_type, value::parse_ast_value};
@@ -37,13 +37,13 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) ->
 
 	let end = tokens[*ind - 1].get_end_pos();
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionDeclaration { func_name: WithHash::new(function_name.0), args, body, return_type: ret_type }, start, end)));
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionDeclaration { func_name: HashedString::new(function_name.0), args, body, return_type: ret_type }, start, end)));
 }
 
 pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
-	let func = WithHash::new(tokens[*ind].as_keyword().unwrap().0);
+	let func = HashedString::new(tokens[*ind].as_keyword().unwrap().0);
 
 	*ind += 1;
 

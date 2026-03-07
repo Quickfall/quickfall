@@ -130,6 +130,13 @@ macro_rules! IR_FIND_ELEMENT {
 }
 
 #[macro_export]
+macro_rules! IR_FUNCTION_INVALID_ARGUMENTS {
+	() => {
+		"Invalid argument provided! Cannot transmute {} into {}"
+	};
+}
+
+#[macro_export]
 macro_rules! IR_OUTSIDE_ERA_LOWER {
 	() => {
 		"Tried invoking element outside of it's definition era. Variable is introduced in era {}"

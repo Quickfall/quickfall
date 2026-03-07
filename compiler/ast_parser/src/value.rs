@@ -1,5 +1,4 @@
-use compiler_utils::hash::{WithHash};
-use compiler_utils::{Position};
+use compiler_utils::{Position, hash::HashedString};
 
 use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use compiler_errors::{PARSE_VALUE, UNEXPECTED_TOKEN, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
@@ -50,7 +49,7 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 			let start = original.as_ref().unwrap().start.clone();
 			let end = tokens[*ind].get_end_pos();
 
-			let r_member = Box::new(ASTTreeNode::new(ASTTreeNodeKind::VariableReference(WithHash::new(s.clone())), start.clone(), end));
+			let r_member = Box::new(ASTTreeNode::new(ASTTreeNodeKind::VariableReference(HashedString::new(s.clone())), start.clone(), end));
 
 			*ind += 1;
 
@@ -172,7 +171,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 				return parse_ast_value_post_l(tokens, ind, call, false);
 			}
 
-			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(WithHash::new(str.clone())), &tokens[*ind], &tokens[*ind]));
+			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(HashedString::new(str.clone())), &tokens[*ind], &tokens[*ind]));
 
 			*ind += 1;
 

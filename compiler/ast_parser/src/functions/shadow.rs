@@ -2,7 +2,7 @@
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use compiler_errors::errs::CompilerResult;
-use compiler_utils::hash::WithHash;
+use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{functions::arguments::parse_function_arguments, types::parse_type};
@@ -32,5 +32,5 @@ pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 		end = tokens[*ind - 1].get_end_pos().clone();
 	}
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ShadowFunctionDeclaration { func_name: WithHash::new(function_name.0), args, return_type: ret_type }, start, end)))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ShadowFunctionDeclaration { func_name: HashedString::new(function_name.0), args, return_type: ret_type }, start, end)))
 }

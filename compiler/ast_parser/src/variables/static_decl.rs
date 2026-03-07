@@ -1,6 +1,6 @@
 use compiler_errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
-use compiler_utils::hash::WithHash;
+use compiler_utils::hash::{HashedString};
 
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 
@@ -23,5 +23,5 @@ pub fn parse_static_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 	let val = parse_ast_value(tokens, ind)?;
 	let end = val.end.clone();
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StaticVariableDeclaration { name: WithHash::new(var_name.0), val, var_type }, start, end)))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StaticVariableDeclaration { name: HashedString::new(var_name.0), val, var_type }, start, end)))
 }

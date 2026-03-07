@@ -1,6 +1,6 @@
 use compiler_errors::errs::CompilerResult;
+use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken};
-use compiler_utils::hash::WithHash;
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 
@@ -19,5 +19,5 @@ pub fn parse_types_field_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> Co
 
 	*ind += 1;
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructFieldMember { name: WithHash::new(field_name.0), member_type }, start, end)))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructFieldMember { name: HashedString::new(field_name.0), member_type }, start, end)))
 }
