@@ -4,7 +4,7 @@
 
 use compiler_utils::Position;
 use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
-use compiler_utils::hash::{TypeHash, WithHash};
+use compiler_utils::hash::{WithHash};
 
 use crate::types::CompleteType;
 

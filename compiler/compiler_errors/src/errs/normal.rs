@@ -7,7 +7,7 @@ use compiler_utils::Position;
 use crate::{IO_ERROR_READ, errs::{ERR_STORAGE, ErrorKind, base::BaseError}, pos::BoundPosition};
 
 /// The normal type of error used by the Quickfall compiler. Can be cleanly formatted or passed to the language server.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct CompilerError {
 	pub kind: ErrorKind,
 	pub str: String,
@@ -15,17 +15,29 @@ pub struct CompilerError {
 	pub pos: Option<BoundPosition>
 }
 
+pub struct HeldError {
+	pub err: CompilerError,
+	pub btrace: Option<Backtrace>
+}
+
+impl HeldError {
+	pub fn from(err: CompilerError) -> Self {
+		#[cfg(debug_assertions)]
+		{
+			let trace = Backtrace::capture();
+			
+			return HeldError { err, btrace: Some(trace) }
+		}
+
+		return HeldError { err, btrace: None }
+	}
+}
+
 impl CompilerError {
 	pub fn from_base(base: BaseError, start: &Position, end: &Position) -> Self {
 		let err = CompilerError { kind: base.kind, str: base.str, pos: Some(BoundPosition { start: start.clone(), end: end.clone() }) };
 
-		#[cfg(debug_assertions)]
-		{
-			let trace = Backtrace::capture();
-			println!("Captured: {} -> {}", err, trace);
-		}
-
-		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
+		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(HeldError::from(err.clone())));
 
 		return err;
 	}
@@ -33,13 +45,7 @@ impl CompilerError {
 	pub fn new(kind: ErrorKind, str: String, pos: BoundPosition) -> Self {
 		let err = CompilerError { kind, str, pos: Some(pos)};
 
-		#[cfg(debug_assertions)]
-		{
-			let trace = Backtrace::capture();
-			println!("Captured: {} -> {}", err, trace);
-		}
-
-		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
+		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(HeldError::from(err.clone())));
 
 		return err;
 	}
@@ -51,13 +57,7 @@ impl CompilerError {
 	pub fn from_base_posless(base: BaseError) -> Self {
 		let err = CompilerError { kind: base.kind, str: base.str, pos: None };
 
-		#[cfg(debug_assertions)]
-		{
-			let trace = Backtrace::capture();
-			println!("Captured: {} -> {}", err, trace);
-		}
-
-		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
+		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(HeldError::from(err.clone())));
 	
 		return err;
 	}

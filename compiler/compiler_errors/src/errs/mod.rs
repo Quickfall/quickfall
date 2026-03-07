@@ -1,6 +1,6 @@
 use std::cell::{RefCell};
 
-use crate::errs::{base::BaseError, normal::CompilerError};
+use crate::errs::{base::BaseError, normal::{CompilerError, HeldError}};
 
 pub mod base;
 pub mod normal;
@@ -20,13 +20,17 @@ pub enum ErrorKind {
 }
 
 pub struct ErrorStorage {
-	pub errs: Vec<CompilerError>
+	pub errs: Vec<HeldError>
 }
 
 pub fn dump_errors() {
 	ERR_STORAGE.with_borrow(|f| {
-		for err in f.errs.clone() {
-			println!("{}", err);
+		for err in &f.errs {
+			println!("{}", err.err);
+
+			if err.btrace.is_some() {
+				println!("Captured in: \n{}", err.btrace.as_ref().unwrap());
+			}
 		}
 	})
 }
