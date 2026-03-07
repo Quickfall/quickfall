@@ -1,0 +1,5 @@
+shadowfunc printf(ptr p)
+
+func main() s32 {
+	printf("Haii")
+}
