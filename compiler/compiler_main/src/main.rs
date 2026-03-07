@@ -1,16 +1,20 @@
 use std::env;
 
+use crate::cmds::astoir::parse_astoir_command;
+
+pub mod cmds;
+
 fn main() {
 	let arguments: Vec<String> = env::args().collect();
 
-	if arguments.is_empty() {
+	if arguments.len() <= 1 {
 		println!("Usage: quickfall comp|astoir");
 		return;
 	}
 
-	match &arguments[0] as &str {
+	match &arguments[1] as &str {
 		"astoir" => {
-			handle
+			parse_astoir_command(arguments);
 		},
 
 		_ => {

@@ -132,6 +132,7 @@ pub struct HIRBranchedVariable {
 	pub variable_type: ComplexType
 }
 
+#[derive(Debug)]
 pub struct HIRContext {
 	pub functions: IndexStorage<(Option<ComplexType>, Vec<(u64, ComplexType)>)>, 
 	pub static_variables: IndexStorage<ComplexType>,

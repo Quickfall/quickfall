@@ -3,7 +3,7 @@ use compiler_utils::utils::indexed::IndexStorage;
 
 use crate::complete::ComplexType;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StructTypeContainer {
 	pub fields: IndexStorage<ComplexType>,
 	pub functions: IndexStorage<(Option<ComplexType>, Vec<(u64, ComplexType)>)>

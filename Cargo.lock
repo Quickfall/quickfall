@@ -78,6 +78,13 @@ dependencies = [
 [[package]]
 name = "compiler_main"
 version = "0.1.0"
+dependencies = [
+ "ast",
+ "ast_parser",
+ "astoir",
+ "compiler_errors",
+ "lexer",
+]
 
 [[package]]
 name = "compiler_utils"

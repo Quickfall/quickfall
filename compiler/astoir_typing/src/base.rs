@@ -4,7 +4,7 @@ use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}}
 
 use crate::structs::StructTypeContainer;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BaseType {
 	/// An integer type.
 	/// 0: the size in bits

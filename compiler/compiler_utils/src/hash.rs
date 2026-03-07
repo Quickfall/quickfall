@@ -2,7 +2,8 @@
 //! Hash related utilities
 //! 
 
-use std::{hash::{DefaultHasher, Hash, Hasher}};
+use core::slice;
+use std::{hash::{Hash}, mem};
 
 pub type TypeHash = u64;
 
@@ -12,12 +13,12 @@ pub type TypeHash = u64;
 /// This wrapper struct allows for every value change to recaculate the hash, making it safe to change.
 /// 
 #[derive(Debug, PartialEq, Clone)]
-pub struct WithHash<K: Hash> {
+pub struct WithHash<K> {
     pub val: K,
     pub hash: u64
 }
 
-impl <K: Hash> WithHash<K> {
+impl <K> WithHash<K> {
     ///
     /// Makes a new WithHash instance with the given value.
     /// 
@@ -26,7 +27,7 @@ impl <K: Hash> WithHash<K> {
     /// let hashed: WithHash<String> = WithHash::new("abcdef".to_string());
     /// ```
     pub fn new(val: K) -> Self {
-        let hash = utils_get_hash(&val);
+        let hash = fnv_1abyteshash(&val);
 
         WithHash { val, hash }
     }
@@ -40,8 +41,8 @@ impl <K: Hash> WithHash<K> {
     /// hashed.change("my other string".to_string()); // Hash gets recalculated
     /// ```
     pub fn change(&mut self, new: K) {
+		self.hash = fnv_1abyteshash(&new);
         self.val = new;
-        self.hash = utils_get_hash(&self.val);
     }
 
     /// 
@@ -54,7 +55,7 @@ impl <K: Hash> WithHash<K> {
     /// assert!(hashed.compare(myOtherEqualString));
     /// ```
     pub fn compare(&self, val: K) -> bool {
-        let hash = utils_get_hash(&val);
+        let hash = fnv_1abyteshash(&val);
 
         return self.hash == hash;
     }
@@ -76,16 +77,9 @@ impl <K: Hash> WithHash<K> {
         return self.hash == hash;
     }
 
-}
-
-#[inline(always)]
-fn utils_get_hash<K: Hash>(val: &K) -> TypeHash {
-    let mut hasher = DefaultHasher::new();
-    val.hash(&mut hasher);
-    hasher.finish()
 }   
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct SelfHash {
 	pub hash: u64
 }
@@ -94,6 +88,26 @@ impl Hash for SelfHash {
 	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
 		state.write_u64(self.hash);
 	}
+}
+
+fn as_bytes<K>(obj: &K) -> &[u8] {
+	unsafe {
+		slice::from_raw_parts((obj as *const K) as *const u8, mem::size_of::<K>())
+	}
+}
+
+pub fn fnv_1abyteshash<K>(to_hash: &K) -> u64 {
+	let mut hash: u64 = 14695981039346656037;
+	let bytes = as_bytes(to_hash);
+	let mut i = 0;
+
+	while i < bytes.len() {
+		hash ^= bytes[i] as u64;
+		hash = hash.wrapping_mul(1099511628211);
+		i += 1;
+	}
+
+	return hash;
 }
 
 pub const fn fnv_1ahash(to_hash: &str) -> u64 {
@@ -112,7 +126,15 @@ pub const fn fnv_1ahash(to_hash: &str) -> u64 {
 
 #[macro_export]
 macro_rules! hash {
-	($lit:literal) => {
-		compiler_utils::hash::fnv_1ahash($lit)
+	($expr:expr) => {
+		compiler_utils::hash::fnv_1ahash($expr)
 	};
 }
+
+#[macro_export]
+macro_rules! hash_k {
+	($expr:expr, $t:ty) => {
+		compiler_utils::hash::fnv_1abyteshash::<$t>($expr)
+	};
+}
+

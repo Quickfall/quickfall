@@ -1,7 +1,7 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::HIRNode, structs::StructLRUStep};
 use astoir_typing::complete::ComplexType;
-use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
+use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}, make_invalid_type_err};
 
 use crate::{bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, literals::lower_ast_literal, math::lower_ast_math_operation, var::lower_ast_variable_reference};
 
@@ -141,6 +141,6 @@ pub fn lower_ast_value(context: &HIRContext, curr_ctx: &HIRBranchedContext, node
 			return lower_ast_variable_reference(context, curr_ctx, node)
 		},
 
-		_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
+		_ => make_invalid_type_err!(node)
 	}
 }

@@ -1,4 +1,5 @@
 use core::fmt;
+use std::backtrace::Backtrace;
 
 use colored::Colorize;
 use compiler_utils::Position;
@@ -18,6 +19,12 @@ impl CompilerError {
 	pub fn from_base(base: BaseError, start: &Position, end: &Position) -> Self {
 		let err = CompilerError { kind: base.kind, str: base.str, pos: Some(BoundPosition { start: start.clone(), end: end.clone() }) };
 
+		#[cfg(debug_assertions)]
+		{
+			let trace = Backtrace::capture();
+			println!("Captured: {} -> {}", err, trace);
+		}
+
 		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
 
 		return err;
@@ -25,6 +32,12 @@ impl CompilerError {
 
 	pub fn new(kind: ErrorKind, str: String, pos: BoundPosition) -> Self {
 		let err = CompilerError { kind, str, pos: Some(pos)};
+
+		#[cfg(debug_assertions)]
+		{
+			let trace = Backtrace::capture();
+			println!("Captured: {} -> {}", err, trace);
+		}
 
 		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
 
@@ -37,6 +50,12 @@ impl CompilerError {
 
 	pub fn from_base_posless(base: BaseError) -> Self {
 		let err = CompilerError { kind: base.kind, str: base.str, pos: None };
+
+		#[cfg(debug_assertions)]
+		{
+			let trace = Backtrace::capture();
+			println!("Captured: {} -> {}", err, trace);
+		}
 
 		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
 	
@@ -51,6 +70,13 @@ impl CompilerError {
 		}
 	}
 
+}
+
+#[macro_export]
+macro_rules! make_invalid_type_err {
+	($node:expr) => {
+		return Err(CompilerError::from_ast(ErrorKind::Error, format!(compiler_errors::IR_INVALID_NODE_TYPE!(), $node.clone()), &$node.start, &$node.end))
+	};
 }
 
 impl fmt::Display for CompilerError {
@@ -70,7 +96,7 @@ impl fmt::Display for CompilerError {
 				Err(_) => IO_ERROR_READ!().to_string()
 			};
 
-			let before = &start_line[0..self.pos.as_ref().unwrap().start.col - 1];
+			let before = &start_line[0..self.pos.as_ref().unwrap().start.col];
 			let target = self.pos.as_ref().unwrap().get_bound().cyan().underline();
 			let after = &end_line[self.pos.as_ref().unwrap().end.col - 1..];
 

@@ -22,3 +22,11 @@ pub enum ErrorKind {
 pub struct ErrorStorage {
 	pub errs: Vec<CompilerError>
 }
+
+pub fn dump_errors() {
+	ERR_STORAGE.with_borrow(|f| {
+		for err in f.errs.clone() {
+			println!("{}", err);
+		}
+	})
+}

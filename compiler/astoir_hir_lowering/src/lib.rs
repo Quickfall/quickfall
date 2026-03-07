@@ -27,7 +27,7 @@ pub fn lower_ast_body_node(context: &mut HIRContext, curr_ctx: &mut HIRBranchedC
 			if val.is_none() {
 				v = None;
 			} else {
-				v = Some(lower_ast_value(context, curr_ctx, node)?)
+				v = Some(lower_ast_value(context, curr_ctx, val.unwrap())?)
 			}
 
 			return Ok(Box::new(HIRNode::ReturnStatement { value: v }))

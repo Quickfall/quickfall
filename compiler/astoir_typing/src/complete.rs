@@ -1,6 +1,6 @@
 use crate::base::BaseType;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ConcreteType {
 	pub base: BaseType,
 	
@@ -11,7 +11,7 @@ pub struct ConcreteType {
 	pub size_params: Vec<usize>
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ComplexType {
 	Array(Box<ComplexType>),
 	Concrete(ConcreteType)

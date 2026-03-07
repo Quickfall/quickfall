@@ -295,7 +295,7 @@ macro_rules! IR_VALUE_REF_TEMP_TYPE {
 #[macro_export]
 macro_rules! IR_INVALID_NODE_TYPE {
 	() => {
-		"Cannot use singular IR parse function on said AST node. Got a {}.\nPlease send a bug report at https://github.com/quickfall/quickfall"
+		"Cannot use singular IR parse function on said AST node. Got a {:#?}.\nPlease send a bug report at https://github.com/quickfall/quickfall"
 	};
 }
 
