@@ -1,6 +1,6 @@
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, VariableKind, get_variable}, nodes::HIRNode};
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
+use compiler_errors::{IR_INVALID_NODE_TYPE, IR_VALUE_TYPE_TRANSMUTE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 
 use crate::{types::lower_ast_type, values::lower_ast_value};
 
@@ -19,10 +19,18 @@ pub fn lower_ast_variable_declaration(context: &HIRContext, curr_ctx: &mut HIRBr
 		let default_val;
 
 		if value.is_some() {
-			default_val = Some(lower_ast_value(context, curr_ctx, value.unwrap())?);
+			let hir_val = lower_ast_value(context, curr_ctx, value.unwrap())?;
+			
+			if !hir_val.get_node_type(context, curr_ctx).unwrap().can_transmute_into(&lowered) {
+				return Err(CompilerError::from_ast(ErrorKind::Error, IR_VALUE_TYPE_TRANSMUTE!().to_string(), &node.start, &node.end))
+			}
+
+			default_val = Some(hir_val);
 		} else {
 			default_val = None;
 		}
+
+	
 
 		return Ok(Box::new(HIRNode::VarDeclaration { variable: name_ind, var_type: lowered, default_val}))
 	}

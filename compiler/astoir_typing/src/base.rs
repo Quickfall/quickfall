@@ -103,9 +103,10 @@ impl BaseType {
 				return false;
 			}
 
-			if self.get_size() > into.get_size() {
-				return false; 
-			}
+			// TODO: add safe risky transmutation
+			//if self.get_size() > into.get_size() {
+			//	return false; 
+			//}
 		}
 
 		return true;

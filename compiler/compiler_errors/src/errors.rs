@@ -215,6 +215,13 @@ macro_rules! IR_REQ_VARIABLE_ASSIGN {
 }
 
 #[macro_export]
+macro_rules! IR_VALUE_TYPE_TRANSMUTE {
+	() => {
+		"Cannot transmute this value to fit the expected type."
+	};
+}
+
+#[macro_export]
 macro_rules! IR_STATIC_VAR_WRONG_OP {
 	() => {
 		"Cannot obtain string reference if value is compile-time replacable.\nPlease send a bug report at https://github.com/quickfall/quickfall"
