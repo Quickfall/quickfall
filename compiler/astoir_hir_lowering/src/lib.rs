@@ -1,6 +1,6 @@
 use ast::{ctx::ParserCtx, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::HIRNode};
-use compiler_errors::{IR_INVALID_NODE_TYPE, IR_TYPE_WRONG_KIND, errs::{BaseResult, CompilerResult, ErrorKind, normal::CompilerError}};
+use compiler_errors::{IR_INVALID_NODE_TYPE, IR_TYPE_WRONG_KIND, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 
 use crate::{control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block}, func::{lower_ast_function_call, lower_ast_function_declaration}, math::lower_ast_math_operation, structs::lower_ast_struct_declaration, values::lower_ast_value, var::lower_ast_variable_declaration};
 
@@ -17,8 +17,8 @@ pub mod structs;
 pub fn lower_ast_body_node(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	match node.kind.clone() {
 		ASTTreeNodeKind::VarDeclaration { .. } => return lower_ast_variable_declaration(context, curr_ctx, node),
-		ASTTreeNodeKind::FunctionCall { .. } => return lower_ast_function_call(context, curr_ctx, node),
-		ASTTreeNodeKind::FunctionDeclaration { .. } => return lower_ast_function_declaration(context, node),
+		ASTTreeNodeKind::FunctionCall { .. } =>  return lower_ast_function_call(context, curr_ctx, node),
+
 		ASTTreeNodeKind::MathResult { .. } => return lower_ast_math_operation(context, curr_ctx, node, true),
 
 		ASTTreeNodeKind::ReturnStatement { val } => {
@@ -63,10 +63,20 @@ pub fn lower_ast_body(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContex
 	return Ok(hir_nodes);
 }
 
-pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<bool> {
 	match node.kind {
-		ASTTreeNodeKind::FunctionDeclaration { .. } => return lower_ast_function_declaration(context, node),
-		ASTTreeNodeKind::StructLayoutDeclaration { .. } => return lower_ast_struct_declaration(context, node),
+		ASTTreeNodeKind::FunctionDeclaration { .. } => {
+			let func_decl = lower_ast_function_declaration(context, node)?;
+
+			context.function_declarations.push(func_decl);
+
+			return Ok(true)
+		},
+		ASTTreeNodeKind::StructLayoutDeclaration { .. } => {
+			lower_ast_struct_declaration(context, node)?;
+
+			return Ok(true)
+		},
 
 		_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))
 	}

@@ -62,8 +62,6 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 
 		let mut curr_ctx = HIRBranchedContext::new();
 
-		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
-
 		let branch = curr_ctx.start_branch();
 
 		for arg in &arguments {
@@ -76,6 +74,8 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 		let body = lower_ast_body(context, &mut curr_ctx, body, false)?;
 
 		curr_ctx.end_branch(branch);
+
+		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
 
 		return Ok(Box::new(HIRNode::FunctionDeclaration { func_name: ind, arguments, return_type: ret_type, body, ctx: curr_ctx }))
 	}

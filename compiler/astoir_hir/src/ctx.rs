@@ -6,6 +6,10 @@ use astoir_typing::{complete::{ComplexType}, storage::TypeStorage};
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 
+use crate::nodes::HIRNode;
+
+pub type HIRFunction = (Option<ComplexType>, Vec<(u64, ComplexType)>);
+
 /// The function HIR context. Contains a mapping from element name hash to element index and other variable information. 
 /// Uses a branch based system to contain variables.
 /// 
@@ -23,6 +27,7 @@ use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 /// Every branch index stores an end branch index from when it ends (inside of `ending_eras`). This end branch index will be used to calculate when the era of a variable ends.
 /// 
 /// 
+#[derive(Debug)]
 pub struct HIRBranchedContext {
 	pub hash_to_ind: HashMap<SelfHash, usize>, // TODO: add a layer system to this so you are able to put multiple variables with the same name.
 	pub ending_eras: HashMap<usize, usize>,
@@ -127,6 +132,7 @@ impl HIRBranchedContext {
 
 }
 
+#[derive(Debug)]
 pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
 	pub variable_type: ComplexType
@@ -134,7 +140,8 @@ pub struct HIRBranchedVariable {
 
 #[derive(Debug)]
 pub struct HIRContext {
-	pub functions: IndexStorage<(Option<ComplexType>, Vec<(u64, ComplexType)>)>, 
+	pub functions: IndexStorage<HIRFunction>, 
+	pub function_declarations: Vec<Box<HIRNode>>,
 	pub static_variables: IndexStorage<ComplexType>,
 	pub type_storage: TypeStorage
 }
@@ -147,7 +154,7 @@ pub enum VariableKind {
 
 impl HIRContext {
 	pub fn new() -> BaseResult<Self> {
-		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()? })
+		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_declarations: vec![] })
 	}
 
 	pub fn translate_function(&self, func_hash: u64) -> BaseResult<usize> {
