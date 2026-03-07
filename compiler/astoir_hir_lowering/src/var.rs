@@ -31,7 +31,7 @@ pub fn lower_ast_variable_declaration(context: &HIRContext, curr_ctx: &mut HIRBr
 }
 
 pub fn lower_ast_variable_reference(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
-	if let ASTTreeNodeKind::VariableReference(str) = node.kind.clone() {
+	if let ASTTreeNodeKind::VariableReference(str) = node.kind.clone() {		
 		let var = match get_variable(context, curr_ctx, str.hash) {
 			Ok(v) => v,
 			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))

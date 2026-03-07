@@ -73,6 +73,7 @@ impl HIRBranchedContext {
 		self.variables.push(var);
 
 		let ind: usize = self.current_element_index;
+		self.current_element_index += 1;
 
 		self.hash_to_ind.insert(identity, ind);
 
@@ -170,12 +171,14 @@ impl HIRContext {
 }
 
 pub fn get_variable(context: &HIRContext, curr_ctx: &HIRBranchedContext, hash: u64) -> BaseResult<(VariableKind, ComplexType, usize)> {
-	match curr_ctx.obtain(hash) {
-		Ok(v) => {
-			return Ok((VariableKind::LOCAL, curr_ctx.variables[v].variable_type.clone(), v))
-		},
-		
-		Err(_) => {}
+	if curr_ctx.hash_to_ind.contains_key(&SelfHash { hash }) {
+		match curr_ctx.obtain(hash) {
+			Ok(v) => {
+				return Ok((VariableKind::LOCAL, curr_ctx.variables[v].variable_type.clone(), v))
+			},
+			
+			Err(e) => return Err(e)
+		}
 	}
 
 	match context.static_variables.get_index(hash) {

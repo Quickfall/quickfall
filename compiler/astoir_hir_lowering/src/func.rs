@@ -8,7 +8,7 @@ pub fn lower_ast_function_call(context: &HIRContext, curr_ctx: &HIRBranchedConte
 	if let ASTTreeNodeKind::FunctionCall { func, args } = node.kind.clone() {
 		let f_ind = match context.functions.get_index(func.hash) {
 			Some(v) => v,
-			None => return Err(CompilerError::from_ast(ErrorKind::Error, IR_FIND_ELEMENT!().to_string() + &format!(" Got {:#?} for hash {}", context.functions, func.hash), &node.start, &node.end))
+			None => return Err(CompilerError::from_ast(ErrorKind::Error, IR_FIND_ELEMENT!().to_string(), &node.start, &node.end))
 		};
 
 		let func = &context.functions.vals[f_ind];

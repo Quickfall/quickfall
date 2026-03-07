@@ -3,7 +3,7 @@
 use crate::errs::{ErrorKind, normal::CompilerError};
 
 /// Base errors are errors originating from the IR. They do not contain positions or other things
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BaseError {
 	pub kind: ErrorKind,
 	pub str: String,
