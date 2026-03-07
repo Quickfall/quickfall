@@ -101,6 +101,10 @@ impl HIRBranchedContext {
 	pub fn is_dropped_before(&self, ind: usize) -> bool {
 		let start_branch: usize = self.variables[ind].introduced_in_era;
 
+		if !self.ending_eras.contains_key(&start_branch) {
+			return false;
+		}
+
 		return self.ending_eras[&start_branch] < self.current_branch;
 	}
 
