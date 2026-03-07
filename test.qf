@@ -1,3 +1,0 @@
-func main() s32 {
-	ret 0_s32
-}
