@@ -90,6 +90,7 @@ impl BaseType {
 		return match self {
 			BaseType::FixedPointNumberType(_, _,_ ) => true,
 			BaseType::FloatingNumberType(_, _, _) => true,
+			BaseType::IncompleteFloatingType(_) => true,
 
 			_ => false
 		}
@@ -98,6 +99,7 @@ impl BaseType {
 	pub fn is_integer(&self) -> bool {
 		return match self {
 			BaseType::NumericIntegerType(_, _) => true,
+			BaseType::IncompleteNumericType(_) => true,
 
 			_ => false
 		}
