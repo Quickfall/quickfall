@@ -2,10 +2,10 @@ use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, VariableKind, get_variable}, nodes::HIRNode};
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 
-use crate::types::lower_ast_type;
+use crate::{types::lower_ast_type, values::lower_ast_value};
 
 pub fn lower_ast_variable_declaration(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
-	if let ASTTreeNodeKind::VarDeclaration { var_name, var_type, value } = node.kind.clone() {
+	if let ASTTreeNodeKind::VarDeclaration { var_name, var_type, value} = node.kind.clone() {
 		let lowered = match lower_ast_type(context, var_type) {
 			Ok(v) => v,
 			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
@@ -16,7 +16,15 @@ pub fn lower_ast_variable_declaration(context: &HIRContext, curr_ctx: &mut HIRBr
 			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 		};
 
-		return Ok(Box::new(HIRNode::VarDeclaration { variable: name_ind, var_type: lowered, default_val: None}))
+		let default_val;
+
+		if value.is_some() {
+			default_val = Some(lower_ast_value(context, curr_ctx, value.unwrap())?);
+		} else {
+			default_val = None;
+		}
+
+		return Ok(Box::new(HIRNode::VarDeclaration { variable: name_ind, var_type: lowered, default_val}))
 	}
 
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
