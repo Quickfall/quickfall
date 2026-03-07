@@ -13,8 +13,6 @@ pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 
 	let t = parse_type(tokens, ind)?;
 
-	*ind += 1;
-
 	let var_name = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;

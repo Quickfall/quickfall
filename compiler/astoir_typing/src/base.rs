@@ -1,6 +1,6 @@
 //! Definitions for basic types in AstoIR. These are more types of types than concrete types
 
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+use compiler_errors::{IR_INCOMPLETE_TYPE, IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 use crate::structs::StructTypeContainer;
 
@@ -37,7 +37,12 @@ pub enum BaseType {
 
 	/// A structured type
 	/// 0: is the struct a layout
-	Struct(bool, StructTypeContainer)
+	Struct(bool, StructTypeContainer),
+
+	IncompleteNumericType(bool),
+	IncompleteFloatingType(bool),
+	IncompleteFixedPointType(bool),
+	IncompleteArbitraryType
 }
 
 impl BaseType {
@@ -59,23 +64,25 @@ impl BaseType {
 	}
 
 	/// Get the size in bits
-	pub fn get_size(&self) -> usize {
+	pub fn get_size(&self) -> BaseResult<usize> {
 		return match self {
-			BaseType::Boolean => 1,
-			BaseType::ArbitraryType(n) => *n as usize,
-			BaseType::FixedPointNumberType(a, b, _) => (*a + b) as usize,
-			BaseType::FloatingNumberType(a, b, _) => (*a + b) as usize,
-			BaseType::NumericIntegerType(a, _) => *a as usize,
-			BaseType::Pointer | BaseType::StaticStr => size_of::<usize>(),
+			BaseType::Boolean => Ok(1),
+			BaseType::ArbitraryType(n) => Ok(*n as usize),
+			BaseType::FixedPointNumberType(a, b, _) => Ok((*a + b) as usize),
+			BaseType::FloatingNumberType(a, b, _) => Ok((*a + b) as usize),
+			BaseType::NumericIntegerType(a, _) => Ok(*a as usize),
+			BaseType::Pointer | BaseType::StaticStr => Ok(size_of::<usize>()),
 			BaseType::Struct(_, k) => {
 				let mut sz = 0;
 
 				for t in &k.fields.vals {
-					sz += t.get_concrete().base.get_size(); // TODO: add support for type arg size changing
+					sz += t.get_concrete().base.get_size()?; // TODO: add support for type arg size changing
 				}
 
-				return sz;
-			}
+				return Ok(sz);
+			},
+
+			_ => return Err(BaseError::err(IR_INCOMPLETE_TYPE!().to_string()))
 		}
 	}
 

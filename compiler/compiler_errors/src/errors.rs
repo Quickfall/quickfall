@@ -326,3 +326,10 @@ macro_rules! IR_EXPECTED_SIZE_SPECIFIED {
 		"Expected size specifiers on given type.";
 	};
 }
+
+#[macro_export]
+macro_rules! IR_INCOMPLETE_TYPE {
+	() => {
+		"Tried obtaining the size of an incomplete type\nPlease send a bug report at https://github.com/quickfall/quickfall"
+	};
+}
