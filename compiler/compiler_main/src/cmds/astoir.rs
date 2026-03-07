@@ -2,7 +2,7 @@ use std::fs;
 
 use ast_parser::parse_ast_ctx;
 use astoir::{IRLevel, run_astoir_hir};
-use compiler_errors::errs::{BaseResult, base::BaseError};
+use compiler_errors::errs::{BaseResult, base::BaseError, dump_errors};
 use lexer::lexer::lexer_parse_file;
 
 pub fn parse_astoir_command(arguments: Vec<String>) {
@@ -24,6 +24,8 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 			IRLevel::HIR => {
 				let ctx = run_astoir_hir(ast).unwrap();
 				let res_path = arguments[i].clone() + ".qfhir";
+
+				dump_errors();
 
 				fs::write(res_path, format!("{:#?}", ctx)).unwrap()
 			}

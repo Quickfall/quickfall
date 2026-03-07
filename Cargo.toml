@@ -1,2 +1,2 @@
 [workspace]
-members = ["compiler/ast", "compiler/ast_parser", "compiler/astoir", "compiler/astoir_hir", "compiler/astoir_hir_lowering", "compiler/astoir_typing", "compiler/compiler_errors", "compiler/compiler_main", "compiler/compiler_utils"]
+members = ["compiler/ast", "compiler/ast_parser", "compiler/astoir", "compiler/astoir_hir", "compiler/astoir_hir_lowering", "compiler/astoir_typing", "compiler/compiler_errors", "compiler/compiler_main", "compiler/compiler_utils", "testing"]
