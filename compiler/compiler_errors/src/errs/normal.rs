@@ -98,7 +98,7 @@ impl fmt::Display for CompilerError {
 
 			let before = &start_line[0..self.pos.as_ref().unwrap().start.col];
 			let target = self.pos.as_ref().unwrap().get_bound().cyan().underline();
-			let after = &end_line[self.pos.as_ref().unwrap().end.col - 1..];
+			let after = &end_line[self.pos.as_ref().unwrap().end.col..];
 
 			writeln!(f, "{}{}{}", before, target, after)?;
 		}
