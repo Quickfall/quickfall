@@ -1,5 +1,3 @@
-use compiler_errors::errs::BaseResult;
-
 use crate::{insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
 pub mod refer;

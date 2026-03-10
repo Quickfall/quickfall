@@ -16,20 +16,20 @@ pub enum MIRInstruction {
 	UpcastInteger { val: MIRIntValue, size: usize },  // make size bigger
 
 	DowncastFloat { val: MIRFloatValue, size: usize }, 
-	UpcastFloat { val: BaseMIRValue, size: usize }, 
+	UpcastFloat { val: MIRFloatValue, size: usize }, 
 
 	// Arithmetrics
-	IntegerAdd { left: MIRIntValue, right: MIRIntValue }, 
-	IntegerSub { left: MIRIntValue, right: MIRIntValue }, 
-	IntegerMul { left: MIRIntValue, right: MIRIntValue }, 
-	IntegerDiv { left: MIRIntValue, right: MIRIntValue },
-	IntegerMod { left: MIRIntValue, right: MIRIntValue }, 
+	IntegerAdd { signed: bool, left: MIRIntValue, right: MIRIntValue }, 
+	IntegerSub { signed: bool, left: MIRIntValue, right: MIRIntValue }, 
+	IntegerMul { signed: bool, left: MIRIntValue, right: MIRIntValue }, 
+	IntegerDiv { signed: bool, left: MIRIntValue, right: MIRIntValue },
+	IntegerMod { signed: bool, left: MIRIntValue, right: MIRIntValue }, 
 	IntegerNeg { val: MIRIntValue }, 
 	
-	FloatAdd { left: MIRFloatValue, right: MIRFloatValue }, 
-	FloatSub { left: MIRFloatValue, right: MIRFloatValue }, 
-	FloatMul { left: MIRFloatValue, right: MIRFloatValue }, 
-	FloatDiv { left: MIRFloatValue, right: MIRFloatValue },
+	FloatAdd { signed: bool, left: MIRFloatValue, right: MIRFloatValue }, 
+	FloatSub { signed: bool, left: MIRFloatValue, right: MIRFloatValue }, 
+	FloatMul { signed: bool, left: MIRFloatValue, right: MIRFloatValue }, 
+	FloatDiv { signed: bool, left: MIRFloatValue, right: MIRFloatValue },
 	FloatNeg { val: MIRFloatValue }, 
 
 	// Bitwise (int typed)
@@ -99,17 +99,17 @@ impl MIRInstruction {
 			Self::DowncastFloat { val: _, size } => return BaseValueType::FloatValue(*size),
 			Self::UpcastFloat { val: _, size } => return BaseValueType::IntValue(*size),
 
-			Self::IntegerAdd { left, right: _ } => return BaseValueType::IntValue(left.size), 
-			Self::IntegerSub { left, right: _ } => return BaseValueType::IntValue(left.size), 
-			Self::IntegerMul { left, right: _ } => return BaseValueType::IntValue(left.size), 
-			Self::IntegerDiv { left, right: _ } => return BaseValueType::IntValue(left.size), 
-			Self::IntegerMod { left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerAdd { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerSub { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerMul { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerDiv { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerMod { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
 			Self::IntegerNeg { val } => return BaseValueType::IntValue(val.size),
 
-			Self::FloatAdd { left, right: _ } => return BaseValueType::FloatValue(left.size),
-			Self::FloatSub { left, right: _ } => return BaseValueType::FloatValue(left.size),
-			Self::FloatMul { left, right: _ } => return BaseValueType::FloatValue(left.size),
-			Self::FloatDiv { left, right: _ } => return BaseValueType::FloatValue(left.size),
+			Self::FloatAdd { signed: _, left, right: _ } => return BaseValueType::FloatValue(left.size),
+			Self::FloatSub { signed: _, left, right: _ } => return BaseValueType::FloatValue(left.size),
+			Self::FloatMul { signed: _, left, right: _ } => return BaseValueType::FloatValue(left.size),
+			Self::FloatDiv { signed: _, left, right: _ } => return BaseValueType::FloatValue(left.size),
 			Self::FloatNeg { val } => return BaseValueType::FloatValue(val.size),
 
 			Self::BitwiseAnd { a, b: _ } => return BaseValueType::IntValue(a.size),
