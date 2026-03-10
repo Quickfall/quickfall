@@ -28,6 +28,31 @@ pub enum MIRInstruction {
 	FloatDiv { left: BaseHIRValue, right: BaseHIRValue },
 	FloatNeg { val: BaseHIRValue }, 
 
+	// Bitwise (int typed)
+	BitwiseAnd { a: BaseHIRValue, b: BaseHIRValue }, 
+	BitwiseOr { a: BaseHIRValue, b: BaseHIRValue }, 
+	BitwiseXor { a: BaseHIRValue, b: BaseHIRValue }, 
+	BitwiseNot { val: BaseHIRValue }, 
+	
+	ShiftLeft { a: BaseHIRValue, shift: BaseHIRValue }, 
+	ShiftRight { a: BaseHIRValue, shift: BaseHIRValue }, 
+
+	// Comparaison / Logical
+	CompEq { a: BaseHIRValue, b: BaseHIRValue }, 
+	CompNeg { a: BaseHIRValue, b: BaseHIRValue }, 
+	CompLt { a: BaseHIRValue, b: BaseHIRValue}, // <
+	CompLe { a: BaseHIRValue, b: BaseHIRValue}, // <=
+	CompGt { a: BaseHIRValue, b: BaseHIRValue }, // >
+	CompGe { a: BaseHIRValue, b: BaseHIRValue}, // >=
+
+	// Constants
+	IntegerSignedConstant { raw: usize, bitsize: usize },
+	IntegerUnsignedConstant { raw: usize, bitsize: usize }, 
+	FloatSignedConstant { raw: usize, bitsize: usize }, 
+	FloatUnsignedConstant { raw: usize, bitsize: usize }, 
+	FixedSignedConstant { raw: usize, bitsize: usize }, 
+	FixedUnsignedConstant { raw: usize, bitsize: usize }, 
+
 	// Control
 	Return { val: BaseHIRValue }, 
 	UnconditionalBranch { branch: BaseHIRValue }, // TODO: swap to branch
