@@ -41,8 +41,6 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<C
 		*ind += 1;
 	}
 
-	println!("End: {:#?}", tokens[*ind].tok_type);
-
 	if tokens[*ind].tok_type == LexerTokenType::AngelBracketOpen {
 		*ind += 1;
 
