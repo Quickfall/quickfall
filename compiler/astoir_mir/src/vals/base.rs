@@ -22,7 +22,7 @@ pub enum BaseValueType {
 impl BaseValueType {
 	pub fn as_struct(&self) -> BaseResult<StructTypeContainer> {
 		match self {
-			BaseValueType::StructTypeValue(e, i) => return Ok(e.clone()),
+			BaseValueType::StructTypeValue(e, _) => return Ok(e.clone()),
 			_ => return Err(BaseError::critical("Cannot use as_struct on a non struct type!".to_string()))
  		};
 	}

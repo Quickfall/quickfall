@@ -13,13 +13,13 @@ pub mod builder;
 
 pub fn lower_astoir_typing_type(concrete: ConcreteType) -> BaseResult<BaseValueType> {
 	match &concrete.base {
-		BaseType::NumericIntegerType(a, b) => return Ok(BaseValueType::IntValue(*a as usize)),
-		BaseType::FixedPointNumberType(a, b, c) => return Ok(BaseValueType::IntValue(*a as usize + *b as usize)),
-		BaseType::FloatingNumberType(a, b, c) => return Ok(BaseValueType::FloatValue(*a as usize + *b as usize)), // TODO: check for float compatibility
+		BaseType::NumericIntegerType(a, _) => return Ok(BaseValueType::IntValue(*a as usize)),
+		BaseType::FixedPointNumberType(a, b, _) => return Ok(BaseValueType::IntValue(*a as usize + *b as usize)),
+		BaseType::FloatingNumberType(a, b, _) => return Ok(BaseValueType::FloatValue(*a as usize + *b as usize)), // TODO: check for float compatibility
 		BaseType::Boolean => return Ok(BaseValueType::IntValue(1)),
 		BaseType::ArbitraryType(a) => return Ok(BaseValueType::IntValue(*a as usize)),
 		BaseType::Pointer => return Ok(BaseValueType::IntValue(concrete.base.get_size()?)),
-		BaseType::Struct(a, b) => return Ok(BaseValueType::StructTypeValue(b.clone())),
+		BaseType::Struct(_, b) => return Ok(BaseValueType::StructTypeValue(b.clone(), b.ind)),
 
 		_ => return Err(BaseError::err("Cannot lower astoir_typing type to MIR".to_string()))
 	}

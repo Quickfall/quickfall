@@ -20,7 +20,7 @@ fn lower_ast_struct_member(context: &mut HIRContext, node: Box<ASTTreeNode>, con
 
 pub fn lower_ast_struct_declaration(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::StructLayoutDeclaration { name, layout, members } = node.kind.clone() {
-		let mut container = StructTypeContainer::new();
+		let mut container = StructTypeContainer::new(context.type_storage.types.len());
 
 		for member in members {
 			lower_ast_struct_member(context, member, &mut container)?;

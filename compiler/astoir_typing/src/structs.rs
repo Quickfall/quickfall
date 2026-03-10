@@ -5,13 +5,14 @@ use crate::complete::ComplexType;
 
 #[derive(Clone, Debug)]
 pub struct StructTypeContainer {
+	pub ind: usize,
 	pub fields: IndexStorage<ComplexType>,
 	pub functions: IndexStorage<(Option<ComplexType>, Vec<(u64, ComplexType)>)>
 }
 
 impl StructTypeContainer {
-	pub fn new() -> Self {
-		return StructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new() }
+	pub fn new(ind: usize) -> Self {
+		return StructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new(), ind }
 	}
 
 	pub fn get_field(&self, hash: u64) -> BaseResult<usize> {
