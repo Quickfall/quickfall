@@ -333,3 +333,10 @@ macro_rules! IR_INCOMPLETE_TYPE {
 		"Tried obtaining the size of an incomplete type\nPlease send a bug report at https://github.com/quickfall/quickfall"
 	};
 }
+
+#[macro_export]
+macro_rules! IR_CASTING_ERROR {
+	() => {
+		"Cannot cast IR raw value to the given type\nPlease send a bug report at https://github.com/quickfall/quickfall"
+	};
+}

@@ -1,49 +1,49 @@
 //! The definitions for instructions within the MIR. 
 
-use crate::vals::base::BaseHIRValue;
+use crate::vals::base::BaseMIRValue;
 
 /// An instruction inside of the MIR.
 pub enum MIRInstruction {
 	StackAlloc { alloc_size: usize },
-	Load { value: BaseHIRValue }, // TODO: change this to pointer
-	Store { variable: BaseHIRValue, value: BaseHIRValue }, // TODO: change this to pointer
+	Load { value: BaseMIRValue }, // TODO: change this to pointer
+	Store { variable: BaseMIRValue, value: BaseMIRValue }, // TODO: change this to pointer
 
 	// Number casting
-	DowncastInteger { val: BaseHIRValue, size: usize }, // make size smaller
-	UpcastInteger { val: BaseHIRValue, size: usize },  // make size bigger
+	DowncastInteger { val: BaseMIRValue, size: usize }, // make size smaller
+	UpcastInteger { val: BaseMIRValue, size: usize },  // make size bigger
 
-	DowncastFloat { val: BaseHIRValue, size: usize }, 
-	UpcastFloat { val: BaseHIRValue, size: usize }, 
+	DowncastFloat { val: BaseMIRValue, size: usize }, 
+	UpcastFloat { val: BaseMIRValue, size: usize }, 
 
 	// Arithmetrics
-	IntegerAdd { left: BaseHIRValue, right: BaseHIRValue }, 
-	IntegerSub { left: BaseHIRValue, right: BaseHIRValue }, 
-	IntegerMul { left: BaseHIRValue, right: BaseHIRValue }, 
-	IntegerDiv { left: BaseHIRValue, right: BaseHIRValue },
-	IntegerNeg { val: BaseHIRValue }, 
+	IntegerAdd { left: BaseMIRValue, right: BaseMIRValue }, 
+	IntegerSub { left: BaseMIRValue, right: BaseMIRValue }, 
+	IntegerMul { left: BaseMIRValue, right: BaseMIRValue }, 
+	IntegerDiv { left: BaseMIRValue, right: BaseMIRValue },
+	IntegerNeg { val: BaseMIRValue }, 
 	
-	FloatAdd { left: BaseHIRValue, right: BaseHIRValue }, 
-	FloatSub { left: BaseHIRValue, right: BaseHIRValue }, 
-	FloatMul { left: BaseHIRValue, right: BaseHIRValue }, 
-	FloatDiv { left: BaseHIRValue, right: BaseHIRValue },
-	FloatNeg { val: BaseHIRValue }, 
+	FloatAdd { left: BaseMIRValue, right: BaseMIRValue }, 
+	FloatSub { left: BaseMIRValue, right: BaseMIRValue }, 
+	FloatMul { left: BaseMIRValue, right: BaseMIRValue }, 
+	FloatDiv { left: BaseMIRValue, right: BaseMIRValue },
+	FloatNeg { val: BaseMIRValue }, 
 
 	// Bitwise (int typed)
-	BitwiseAnd { a: BaseHIRValue, b: BaseHIRValue }, 
-	BitwiseOr { a: BaseHIRValue, b: BaseHIRValue }, 
-	BitwiseXor { a: BaseHIRValue, b: BaseHIRValue }, 
-	BitwiseNot { val: BaseHIRValue }, 
+	BitwiseAnd { a: BaseMIRValue, b: BaseMIRValue }, 
+	BitwiseOr { a: BaseMIRValue, b: BaseMIRValue }, 
+	BitwiseXor { a: BaseMIRValue, b: BaseMIRValue }, 
+	BitwiseNot { val: BaseMIRValue }, 
 	
-	ShiftLeft { a: BaseHIRValue, shift: BaseHIRValue }, 
-	ShiftRight { a: BaseHIRValue, shift: BaseHIRValue }, 
+	ShiftLeft { a: BaseMIRValue, shift: BaseMIRValue }, 
+	ShiftRight { a: BaseMIRValue, shift: BaseMIRValue }, 
 
 	// Comparaison / Logical
-	CompEq { a: BaseHIRValue, b: BaseHIRValue }, 
-	CompNeg { a: BaseHIRValue, b: BaseHIRValue }, 
-	CompLt { a: BaseHIRValue, b: BaseHIRValue}, // <
-	CompLe { a: BaseHIRValue, b: BaseHIRValue}, // <=
-	CompGt { a: BaseHIRValue, b: BaseHIRValue }, // >
-	CompGe { a: BaseHIRValue, b: BaseHIRValue}, // >=
+	CompEq { a: BaseMIRValue, b: BaseMIRValue }, 
+	CompNeg { a: BaseMIRValue, b: BaseMIRValue }, 
+	CompLt { a: BaseMIRValue, b: BaseMIRValue}, // <
+	CompLe { a: BaseMIRValue, b: BaseMIRValue}, // <=
+	CompGt { a: BaseMIRValue, b: BaseMIRValue }, // >
+	CompGe { a: BaseMIRValue, b: BaseMIRValue}, // >=
 
 	// Constants
 	IntegerSignedConstant { raw: usize, bitsize: usize },
@@ -54,21 +54,21 @@ pub enum MIRInstruction {
 	FixedUnsignedConstant { raw: usize, bitsize: usize }, 
 
 	// Control
-	Return { val: BaseHIRValue }, 
-	UnconditionalBranch { branch: BaseHIRValue }, // TODO: swap to branch
-	ConditionalBranch { cond: BaseHIRValue, if_branch: BaseHIRValue, else_branch: BaseHIRValue }, 
-	Phi { choices: Vec<(BaseHIRValue, BaseHIRValue)> },
-	Select { cond: BaseHIRValue, if_val: BaseHIRValue, else_val: BaseHIRValue },
+	Return { val: BaseMIRValue }, 
+	UnconditionalBranch { branch: BaseMIRValue }, // TODO: swap to branch
+	ConditionalBranch { cond: BaseMIRValue, if_branch: BaseMIRValue, else_branch: BaseMIRValue }, 
+	Phi { choices: Vec<(BaseMIRValue, BaseMIRValue)> },
+	Select { cond: BaseMIRValue, if_val: BaseMIRValue, else_val: BaseMIRValue },
 
-	Call { function: BaseHIRValue, arguments: Vec<BaseHIRValue> },
+	Call { function: BaseMIRValue, arguments: Vec<BaseMIRValue> },
 
 	// Pointer utils
 
-	FieldPointer { val: BaseHIRValue, field: usize },
-	IndexPointer { val: BaseHIRValue, index: usize }, 
-	PointerAdd { pointer: BaseHIRValue, right: BaseHIRValue }, 
-	PointerSub { pointer: BaseHIRValue, right: BaseHIRValue }, 
+	FieldPointer { val: BaseMIRValue, field: usize },
+	IndexPointer { val: BaseMIRValue, index: usize }, 
+	PointerAdd { pointer: BaseMIRValue, right: BaseMIRValue }, 
+	PointerSub { pointer: BaseMIRValue, right: BaseMIRValue }, 
 
 	/// Indicates to the IR processor that this given value's era is finished and thus we drop the value
-	MarkerEraDrop { value: BaseHIRValue },
+	MarkerEraDrop { value: BaseMIRValue },
 }
