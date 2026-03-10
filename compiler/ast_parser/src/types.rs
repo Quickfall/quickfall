@@ -27,6 +27,7 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<C
 	}
 
 	let base_type = tokens[*ind].expects_keyword()?;
+	*ind += 1;
 
 	let mut sizes: Vec<usize> = vec![];
 	let mut types: Vec<u64> = vec![];
@@ -36,6 +37,8 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<C
 
 		let size_def = tokens[*ind].expects_int_lit()?.0 as usize;
 		sizes.push(size_def);
+
+		*ind += 1;
 	}
 
 	if tokens[*ind].tok_type == LexerTokenType::AngelBracketOpen {
