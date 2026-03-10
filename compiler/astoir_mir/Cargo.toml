@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 compiler_errors = { path = "../compiler_errors" }
+astoir_typing = { path = "../astoir_typing" }

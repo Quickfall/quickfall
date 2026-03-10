@@ -2,7 +2,7 @@
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::{blocks::{MIRBlock, hints::MIRValueHint}, insts::MIRInstruction, vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
+use crate::{blocks::{MIRBlock, hints::MIRValueHint}, insts::MIRInstruction, lower_astoir_typing_type, vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
 pub fn build_stack_alloc(block: &mut MIRBlock, size: usize, t: BaseValueType) -> BaseResult<MIRPointerValue> {
 	let res = block.append(MIRInstruction::StackAlloc { alloc_size: size, t: t.clone() }).get()?;
@@ -19,7 +19,14 @@ pub fn build_load(block: &mut MIRBlock, ptr: MIRPointerValue) -> BaseResult<Base
 }
 
 pub fn build_store(block: &mut MIRBlock, ptr: MIRPointerValue, val: BaseMIRValue) -> BaseResult<bool> {
-	// TODO: add block enforcing
+	let base: BaseMIRValue = ptr.clone().into();
+
+	let hint = block.hints.get_hint(base.get_instruction())?.as_pointer()?;
+
+	if !hint.eq(&val.vtype) {
+		return Err(BaseError::err("Cannot put this value onto this pointer as it is not the same type!".to_string()))
+	}
+
 	block.append(MIRInstruction::Store { variable: ptr, value: val });
 
 	return Ok(true) 
@@ -278,10 +285,16 @@ pub fn build_return(block: &mut MIRBlock, val: BaseMIRValue) -> BaseResult<bool>
 	Ok(true)
 }
 
-pub fn build_field_pointer(block: &mut MIRBlock, val: MIRPointerValue, field: usize) -> BaseResult<bool> {
-	block.append(MIRInstruction::FieldPointer { val, field });
+pub fn build_field_pointer(block: &mut MIRBlock, ptr: MIRPointerValue, field: usize) -> BaseResult<MIRPointerValue> {
+	let val = block.append(MIRInstruction::FieldPointer { val: ptr.clone(), field }).get()?;
+	let base: &BaseMIRValue = &ptr.into();
 
-	Ok(true)
+	let ptr_t = block.hints.get_hint(base.get_instruction())?.as_pointer()?.as_struct()?;
+	let field_type = lower_astoir_typing_type(ptr_t.fields.vals[field].get_concrete().clone())?;
+
+	block.hints.append_hint(val.get_instruction(), MIRValueHint::Pointer(field_type));
+
+	return val.as_ptr();
 }
 
 pub fn build_index_pointer(block: &mut MIRBlock, val: MIRPointerValue, index: usize) -> BaseResult<bool> {

@@ -1,4 +1,5 @@
-use compiler_errors::errs::BaseResult;
+use astoir_typing::structs::StructTypeContainer;
+use compiler_errors::errs::{BaseResult, base::BaseError};
 
 use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
 
@@ -14,7 +15,35 @@ pub enum BaseValueType {
 	IntValue(usize),
 	FloatValue(usize),
 	PointerValue, // variables
-	AnyValue
+	AnyValue,
+	StructTypeValue(StructTypeContainer, usize)
+}
+
+impl BaseValueType {
+	pub fn as_struct(&self) -> BaseResult<StructTypeContainer> {
+		match self {
+			BaseValueType::StructTypeValue(e, i) => return Ok(e.clone()),
+			_ => return Err(BaseError::critical("Cannot use as_struct on a non struct type!".to_string()))
+ 		};
+	}
+
+	pub fn eq(&self, b: &BaseValueType) -> bool {
+		match (self, b) {
+			(BaseValueType::IntValue(a), BaseValueType::IntValue(b)) => {
+				return a == b;
+			},
+
+			(BaseValueType::FloatValue(a), BaseValueType::FloatValue(b)) => {
+				return a == b;
+			},
+
+			(BaseValueType::StructTypeValue(_, a), BaseValueType::StructTypeValue(_, b)) => {
+				return a == b;
+			},
+
+			_ => return true
+		}
+	}
 }
 
 impl BaseMIRValue {
@@ -38,5 +67,5 @@ impl BaseMIRValue {
 	pub fn get_instruction(&self) -> usize {
 		return self.val_index;
 	}
-	
+
 }
