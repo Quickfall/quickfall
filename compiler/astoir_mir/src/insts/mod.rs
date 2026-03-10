@@ -1,6 +1,6 @@
 //! The definitions for instructions within the MIR. 
 
-use crate::vals::base::BaseMIRValue;
+use crate::vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue};
 
 /// An instruction inside of the MIR.
 pub enum MIRInstruction {
@@ -9,33 +9,33 @@ pub enum MIRInstruction {
 	Store { variable: BaseMIRValue, value: BaseMIRValue }, // TODO: change this to pointer
 
 	// Number casting
-	DowncastInteger { val: BaseMIRValue, size: usize }, // make size smaller
-	UpcastInteger { val: BaseMIRValue, size: usize },  // make size bigger
+	DowncastInteger { val: MIRIntValue, size: usize }, // make size smaller
+	UpcastInteger { val: MIRIntValue, size: usize },  // make size bigger
 
-	DowncastFloat { val: BaseMIRValue, size: usize }, 
+	DowncastFloat { val: MIRFloatValue, size: usize }, 
 	UpcastFloat { val: BaseMIRValue, size: usize }, 
 
 	// Arithmetrics
-	IntegerAdd { left: BaseMIRValue, right: BaseMIRValue }, 
-	IntegerSub { left: BaseMIRValue, right: BaseMIRValue }, 
-	IntegerMul { left: BaseMIRValue, right: BaseMIRValue }, 
-	IntegerDiv { left: BaseMIRValue, right: BaseMIRValue },
-	IntegerNeg { val: BaseMIRValue }, 
+	IntegerAdd { left: MIRIntValue, right: MIRIntValue }, 
+	IntegerSub { left: MIRIntValue, right: MIRIntValue }, 
+	IntegerMul { left: MIRIntValue, right: MIRIntValue }, 
+	IntegerDiv { left: MIRIntValue, right: MIRIntValue },
+	IntegerNeg { val: MIRIntValue }, 
 	
-	FloatAdd { left: BaseMIRValue, right: BaseMIRValue }, 
-	FloatSub { left: BaseMIRValue, right: BaseMIRValue }, 
-	FloatMul { left: BaseMIRValue, right: BaseMIRValue }, 
-	FloatDiv { left: BaseMIRValue, right: BaseMIRValue },
-	FloatNeg { val: BaseMIRValue }, 
+	FloatAdd { left: MIRFloatValue, right: MIRFloatValue }, 
+	FloatSub { left: MIRFloatValue, right: MIRFloatValue }, 
+	FloatMul { left: MIRFloatValue, right: MIRFloatValue }, 
+	FloatDiv { left: MIRFloatValue, right: MIRFloatValue },
+	FloatNeg { val: MIRFloatValue }, 
 
 	// Bitwise (int typed)
-	BitwiseAnd { a: BaseMIRValue, b: BaseMIRValue }, 
-	BitwiseOr { a: BaseMIRValue, b: BaseMIRValue }, 
-	BitwiseXor { a: BaseMIRValue, b: BaseMIRValue }, 
-	BitwiseNot { val: BaseMIRValue }, 
+	BitwiseAnd { a: MIRIntValue, b: MIRIntValue }, 
+	BitwiseOr { a: MIRIntValue, b: MIRIntValue }, 
+	BitwiseXor { a: MIRIntValue, b: MIRIntValue }, 
+	BitwiseNot { val: MIRIntValue }, 
 	
-	ShiftLeft { a: BaseMIRValue, shift: BaseMIRValue }, 
-	ShiftRight { a: BaseMIRValue, shift: BaseMIRValue }, 
+	ShiftLeft { a: MIRIntValue, shift: MIRIntValue }, 
+	ShiftRight { a: MIRIntValue, shift: MIRIntValue }, 
 
 	// Comparaison / Logical
 	CompEq { a: BaseMIRValue, b: BaseMIRValue }, 
@@ -56,7 +56,7 @@ pub enum MIRInstruction {
 	// Control
 	Return { val: BaseMIRValue }, 
 	UnconditionalBranch { branch: BaseMIRValue }, // TODO: swap to branch
-	ConditionalBranch { cond: BaseMIRValue, if_branch: BaseMIRValue, else_branch: BaseMIRValue }, 
+	ConditionalBranch { cond: MIRIntValue, if_branch: BaseMIRValue, else_branch: BaseMIRValue }, 
 	Phi { choices: Vec<(BaseMIRValue, BaseMIRValue)> },
 	Select { cond: BaseMIRValue, if_val: BaseMIRValue, else_val: BaseMIRValue },
 

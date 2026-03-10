@@ -3,3 +3,4 @@
 
 pub mod insts;
 pub mod vals;
+pub mod blocks;
