@@ -105,6 +105,17 @@ impl BaseType {
 		}
 	}
 
+	pub fn is_incomplete(&self) -> bool {
+		return match self {
+			BaseType::IncompleteArbitraryType => true,
+			BaseType::IncompleteNumericType(_) => true,
+			BaseType::IncompleteFloatingType(_) => true,
+			BaseType::IncompleteFixedPointType(_) => true,
+
+			_ => false
+		}
+	}
+
 	pub fn can_transmute_into(&self, into: &BaseType) -> bool {
 		if self.is_number() {
 			if self.is_floating() != into.is_floating() && !into.is_floating() {
