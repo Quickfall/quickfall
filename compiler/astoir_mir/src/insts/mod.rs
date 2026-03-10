@@ -1,12 +1,16 @@
 //! The definitions for instructions within the MIR. 
 
-use crate::vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue};
+use core::alloc;
+
+use crate::vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
+
+pub mod val;
 
 /// An instruction inside of the MIR.
 pub enum MIRInstruction {
-	StackAlloc { alloc_size: usize },
-	Load { value: BaseMIRValue }, // TODO: change this to pointer
-	Store { variable: BaseMIRValue, value: BaseMIRValue }, // TODO: change this to pointer
+	StackAlloc { alloc_size: usize, t: BaseValueType },
+	Load { value: MIRPointerValue }, // TODO: change this to pointer
+	Store { variable: MIRPointerValue, value: BaseMIRValue }, // TODO: change this to pointer
 
 	// Number casting
 	DowncastInteger { val: MIRIntValue, size: usize }, // make size smaller
@@ -20,6 +24,7 @@ pub enum MIRInstruction {
 	IntegerSub { left: MIRIntValue, right: MIRIntValue }, 
 	IntegerMul { left: MIRIntValue, right: MIRIntValue }, 
 	IntegerDiv { left: MIRIntValue, right: MIRIntValue },
+	IntegerMod { left: MIRIntValue, right: MIRIntValue }, 
 	IntegerNeg { val: MIRIntValue }, 
 	
 	FloatAdd { left: MIRFloatValue, right: MIRFloatValue }, 
@@ -38,12 +43,12 @@ pub enum MIRInstruction {
 	ShiftRight { a: MIRIntValue, shift: MIRIntValue }, 
 
 	// Comparaison / Logical
-	CompEq { a: BaseMIRValue, b: BaseMIRValue }, 
-	CompNeg { a: BaseMIRValue, b: BaseMIRValue }, 
-	CompLt { a: BaseMIRValue, b: BaseMIRValue}, // <
-	CompLe { a: BaseMIRValue, b: BaseMIRValue}, // <=
-	CompGt { a: BaseMIRValue, b: BaseMIRValue }, // >
-	CompGe { a: BaseMIRValue, b: BaseMIRValue}, // >=
+	CompEq { a: MIRIntValue, b: MIRIntValue }, 
+	CompNeg { a: MIRIntValue, b: MIRIntValue }, 
+	CompLt { a: MIRIntValue, b: MIRIntValue}, // <
+	CompLe { a: MIRIntValue, b: MIRIntValue}, // <=
+	CompGt { a: MIRIntValue, b: MIRIntValue }, // >
+	CompGe { a: MIRIntValue, b: MIRIntValue}, // >=
 
 	// Constants
 	IntegerSignedConstant { raw: usize, bitsize: usize },
@@ -64,11 +69,88 @@ pub enum MIRInstruction {
 
 	// Pointer utils
 
-	FieldPointer { val: BaseMIRValue, field: usize },
-	IndexPointer { val: BaseMIRValue, index: usize }, 
-	PointerAdd { pointer: BaseMIRValue, right: BaseMIRValue }, 
-	PointerSub { pointer: BaseMIRValue, right: BaseMIRValue }, 
+	FieldPointer { val: MIRPointerValue, field: usize },
+	IndexPointer { val: MIRPointerValue, index: usize }, 
+	PointerAdd { pointer: MIRPointerValue, right: MIRIntValue }, 
+	PointerSub { pointer: MIRPointerValue, right: MIRIntValue }, 
 
 	/// Indicates to the IR processor that this given value's era is finished and thus we drop the value
 	MarkerEraDrop { value: BaseMIRValue },
+}
+
+impl MIRInstruction {
+	pub fn has_return(&self) -> bool {
+		match self {
+			Self::MarkerEraDrop { .. } | Self::UnconditionalBranch { .. } | Self::ConditionalBranch { .. } | Self::Return { .. } => {
+				return false;
+			},
+
+			_ => true
+		}
+	}
+
+	pub fn get_return_type(&self) -> BaseValueType {
+		match self {
+			Self::StackAlloc { .. } => return BaseValueType::PointerValue,
+			Self::Load { value } => return value.t.clone(),
+
+			Self::DowncastInteger { val: _, size } => return BaseValueType::IntValue(*size),
+			Self::UpcastInteger { val: _, size } => return BaseValueType::IntValue(*size),
+
+			Self::DowncastFloat { val: _, size } => return BaseValueType::FloatValue(*size),
+			Self::UpcastFloat { val: _, size } => return BaseValueType::IntValue(*size),
+
+			Self::IntegerAdd { left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerSub { left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerMul { left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerDiv { left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerMod { left, right: _ } => return BaseValueType::IntValue(left.size), 
+			Self::IntegerNeg { val } => return BaseValueType::IntValue(val.size),
+
+			Self::FloatAdd { left, right: _ } => return BaseValueType::FloatValue(left.size),
+			Self::FloatSub { left, right: _ } => return BaseValueType::FloatValue(left.size),
+			Self::FloatMul { left, right: _ } => return BaseValueType::FloatValue(left.size),
+			Self::FloatDiv { left, right: _ } => return BaseValueType::FloatValue(left.size),
+			Self::FloatNeg { val } => return BaseValueType::FloatValue(val.size),
+
+			Self::BitwiseAnd { a, b: _ } => return BaseValueType::IntValue(a.size),
+			Self::BitwiseOr { a, b: _ } => return BaseValueType::IntValue(a.size),
+			Self::BitwiseXor { a, b: _ } => return BaseValueType::IntValue(a.size),
+			Self::BitwiseNot { val } => return BaseValueType::IntValue(val.size),
+
+			Self::ShiftLeft { a, shift: _ } => return BaseValueType::IntValue(a.size),
+			Self::ShiftRight { a, shift: _ } => return BaseValueType::IntValue(a.size),
+
+			Self::CompEq { .. } => return BaseValueType::IntValue(1),
+			Self::CompNeg { .. } => return BaseValueType::IntValue(1),
+			Self::CompLt { .. } => return BaseValueType::IntValue(1),
+			Self::CompLe { .. } => return BaseValueType::IntValue(1),
+			Self::CompGt { .. } => return BaseValueType::IntValue(1),
+			Self::CompGe { .. } => return BaseValueType::IntValue(1),
+
+			Self::IntegerSignedConstant { raw: _, bitsize } => return BaseValueType::IntValue(*bitsize),
+			Self::IntegerUnsignedConstant { raw: _, bitsize } => return BaseValueType::IntValue(*bitsize),
+			Self::FloatUnsignedConstant { raw: _, bitsize } => return BaseValueType::FloatValue(*bitsize),
+			Self::FloatSignedConstant { raw: _, bitsize } => return BaseValueType::FloatValue(*bitsize),
+			Self::FixedSignedConstant { raw: _, bitsize } => return BaseValueType::IntValue(*bitsize),
+			Self::FixedUnsignedConstant { raw: _, bitsize } => return BaseValueType::IntValue(*bitsize),
+ 
+			Self::Phi { choices } => {
+				return choices[0].1.vtype.clone();
+			},
+
+			Self::Select { cond: _, if_val, else_val: _ } => return if_val.vtype.clone(),
+
+			Self::Call { .. } => return BaseValueType::FunctionReturnValue,
+			
+			Self::FieldPointer { .. } => return BaseValueType::PointerValue,
+			Self::IndexPointer { .. } => return BaseValueType::PointerValue,
+
+			Self::PointerAdd { .. } => return BaseValueType::PointerValue,
+			Self::PointerSub { .. } => return BaseValueType::PointerValue, 
+
+			_ => panic!("Tried using get_return_type on non returning type!")
+		}
+	}
+
 }

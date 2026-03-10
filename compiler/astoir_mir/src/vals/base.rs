@@ -1,6 +1,6 @@
 use compiler_errors::errs::BaseResult;
 
-use crate::vals::{float::MIRFloatValue, int::MIRIntValue};
+use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
 
 /// Represents a basic value in the MIR.
 #[derive(Clone)]
@@ -13,8 +13,8 @@ pub struct BaseMIRValue {
 pub enum BaseValueType {
 	IntValue(usize),
 	FloatValue(usize),
-	FixedValue(usize), // fixed point
-	PointerValue { size: usize, t: Box<BaseValueType> }, // variables
+	PointerValue, // variables
+	FunctionReturnValue
 }
 
 impl BaseMIRValue {
@@ -29,6 +29,10 @@ impl BaseMIRValue {
 
 	pub fn as_float(&self) -> BaseResult<MIRFloatValue> {
 		return Ok(MIRFloatValue::new(self.clone())?)
+	}
+
+	pub fn as_ptr(&self) -> BaseResult<MIRPointerValue> {
+		return Ok(MIRPointerValue::new(self.clone())?)
 	}
  
 }
