@@ -1,6 +1,6 @@
 use compiler_errors::errs::BaseResult;
 
-use crate::vals::int::MIRIntValue;
+use crate::vals::{float::MIRFloatValue, int::MIRIntValue};
 
 /// Represents a basic value in the MIR.
 #[derive(Clone)]
@@ -25,6 +25,10 @@ impl BaseMIRValue {
 
 	pub fn as_int(&self) -> BaseResult<MIRIntValue> {
 		return Ok(MIRIntValue::new(self.clone())?);
+	}
+
+	pub fn as_float(&self) -> BaseResult<MIRFloatValue> {
+		return Ok(MIRFloatValue::new(self.clone())?)
 	}
  
 }
