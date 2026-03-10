@@ -1,6 +1,7 @@
 use crate::{insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
 pub mod refer;
+pub mod hints;
 
 /// Represents a function block or a branch.
 pub struct MIRBlock {
