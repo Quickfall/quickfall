@@ -11,11 +11,14 @@ pub struct MIRBlock {
 
 impl MIRBlock {
 	pub fn append(&mut self, instruction: MIRInstruction) -> InstructionValue {
-		self.instructions.push(instruction);
+		self.instructions.push(instruction.clone());
+
+		let ind = self.instructions.len() - 1;
 
 		if instruction.has_return() {
-			return InstructionValue { val: Some(BaseMIRValue::) }
+			return InstructionValue::new(Some(BaseMIRValue::new(ind, instruction.get_return_type())));
 		}
 
+		return InstructionValue::new(None);
 	}
 }

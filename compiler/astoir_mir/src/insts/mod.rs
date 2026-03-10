@@ -1,12 +1,11 @@
 //! The definitions for instructions within the MIR. 
 
-use core::alloc;
-
 use crate::vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
 
 pub mod val;
 
 /// An instruction inside of the MIR.
+#[derive(Clone)]
 pub enum MIRInstruction {
 	StackAlloc { alloc_size: usize, t: BaseValueType },
 	Load { value: MIRPointerValue }, // TODO: change this to pointer
@@ -92,7 +91,7 @@ impl MIRInstruction {
 	pub fn get_return_type(&self) -> BaseValueType {
 		match self {
 			Self::StackAlloc { .. } => return BaseValueType::PointerValue,
-			Self::Load { value } => return value.t.clone(),
+			Self::Load { .. } => return BaseValueType::AnyValue,
 
 			Self::DowncastInteger { val: _, size } => return BaseValueType::IntValue(*size),
 			Self::UpcastInteger { val: _, size } => return BaseValueType::IntValue(*size),
@@ -141,7 +140,7 @@ impl MIRInstruction {
 
 			Self::Select { cond: _, if_val, else_val: _ } => return if_val.vtype.clone(),
 
-			Self::Call { .. } => return BaseValueType::FunctionReturnValue,
+			Self::Call { .. } => return BaseValueType::AnyValue,
 			
 			Self::FieldPointer { .. } => return BaseValueType::PointerValue,
 			Self::IndexPointer { .. } => return BaseValueType::PointerValue,

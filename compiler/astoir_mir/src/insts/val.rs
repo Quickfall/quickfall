@@ -7,6 +7,10 @@ pub struct InstructionValue {
 }
 
 impl InstructionValue {
+	pub fn new(val: Option<BaseMIRValue>) -> Self {
+		return InstructionValue { val }
+	}
+	
 	pub fn get(self) -> BaseResult<BaseMIRValue> {
 		match self.val {
 			Some(v) => return Ok(v),

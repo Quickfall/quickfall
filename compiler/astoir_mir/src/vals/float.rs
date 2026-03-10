@@ -2,6 +2,7 @@ use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
 
 use crate::vals::base::{BaseMIRValue, BaseValueType};
 
+#[derive(Clone)]
 pub struct MIRFloatValue {
 	base: BaseMIRValue,
 	pub size: usize

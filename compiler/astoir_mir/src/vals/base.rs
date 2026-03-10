@@ -14,7 +14,7 @@ pub enum BaseValueType {
 	IntValue(usize),
 	FloatValue(usize),
 	PointerValue, // variables
-	FunctionReturnValue
+	AnyValue
 }
 
 impl BaseMIRValue {
