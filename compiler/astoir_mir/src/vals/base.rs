@@ -34,4 +34,9 @@ impl BaseMIRValue {
 	pub fn as_ptr(&self) -> BaseResult<MIRPointerValue> {
 		return Ok(MIRPointerValue::new(self.clone())?)
 	}
+
+	pub fn get_instruction(&self) -> usize {
+		return self.val_index;
+	}
+	
 }

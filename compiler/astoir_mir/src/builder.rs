@@ -2,10 +2,12 @@
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::{blocks::MIRBlock, insts::MIRInstruction, vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
+use crate::{blocks::{MIRBlock, hints::MIRValueHint}, insts::MIRInstruction, vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
 pub fn build_stack_alloc(block: &mut MIRBlock, size: usize, t: BaseValueType) -> BaseResult<MIRPointerValue> {
-	let res = block.append(MIRInstruction::StackAlloc { alloc_size: size, t }).get()?;
+	let res = block.append(MIRInstruction::StackAlloc { alloc_size: size, t: t.clone() }).get()?;
+
+	block.hints.append_hint(res.get_instruction(), MIRValueHint::Pointer(t));
 
 	return res.as_ptr()
 }
