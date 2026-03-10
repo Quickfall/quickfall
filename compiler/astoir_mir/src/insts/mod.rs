@@ -20,11 +20,13 @@ pub enum MIRInstruction {
 	IntegerSub { left: BaseHIRValue, right: BaseHIRValue }, 
 	IntegerMul { left: BaseHIRValue, right: BaseHIRValue }, 
 	IntegerDiv { left: BaseHIRValue, right: BaseHIRValue },
+	IntegerNeg { val: BaseHIRValue }, 
 	
 	FloatAdd { left: BaseHIRValue, right: BaseHIRValue }, 
 	FloatSub { left: BaseHIRValue, right: BaseHIRValue }, 
 	FloatMul { left: BaseHIRValue, right: BaseHIRValue }, 
 	FloatDiv { left: BaseHIRValue, right: BaseHIRValue },
+	FloatNeg { val: BaseHIRValue }, 
 
 	// Control
 	Return { val: BaseHIRValue }, 
@@ -34,6 +36,13 @@ pub enum MIRInstruction {
 	Select { cond: BaseHIRValue, if_val: BaseHIRValue, else_val: BaseHIRValue },
 
 	Call { function: BaseHIRValue, arguments: Vec<BaseHIRValue> },
+
+	// Pointer utils
+
+	FieldPointer { val: BaseHIRValue, field: usize },
+	IndexPointer { val: BaseHIRValue, index: usize }, 
+	PointerAdd { pointer: BaseHIRValue, right: BaseHIRValue }, 
+	PointerSub { pointer: BaseHIRValue, right: BaseHIRValue }, 
 
 	/// Indicates to the IR processor that this given value's era is finished and thus we drop the value
 	MarkerEraDrop { value: BaseHIRValue },
