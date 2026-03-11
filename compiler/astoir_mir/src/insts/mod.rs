@@ -56,6 +56,7 @@ pub enum MIRInstruction {
 	FloatUnsignedConstant { raw: f64, bitsize: usize }, 
 	FixedSignedConstant { raw: f64, bitsize: usize }, 
 	FixedUnsignedConstant { raw: f64, bitsize: usize }, 
+	StaticStringConstant { raw: String },
 
 	// Control
 	Return { val: BaseMIRValue }, 
