@@ -60,6 +60,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "astoir_mir_lowering"
+version = "0.1.0"
+dependencies = [
+ "astoir_hir",
+ "astoir_mir",
+ "compiler_errors",
+]
+
+[[package]]
 name = "astoir_typing"
 version = "0.1.0"
 dependencies = [
