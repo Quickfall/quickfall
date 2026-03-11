@@ -66,6 +66,7 @@ dependencies = [
  "astoir_hir",
  "astoir_mir",
  "compiler_errors",
+ "lexer",
 ]
 
 [[package]]
