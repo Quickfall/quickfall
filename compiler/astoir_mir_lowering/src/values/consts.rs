@@ -5,7 +5,7 @@ use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}}
 pub fn lower_hir_literal(block: &mut MIRBlock, ctx: &HIRContext, node: Box<HIRNode>) -> BaseResult<BaseMIRValue> {
 	match *node {
 		HIRNode::IntegerLiteral { value, int_type } => {
-			let t = ctx.type_storage.types[int_type];
+			let t = &ctx.type_storage.types[int_type];
 			
 			if t.is_signed() {
 				let val = build_signed_int_const(block, value, t.get_size()?)?;
