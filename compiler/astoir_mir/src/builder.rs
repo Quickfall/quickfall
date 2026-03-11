@@ -2,7 +2,7 @@
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::{blocks::{MIRBlock, hints::MIRValueHint}, insts::MIRInstruction, lower_astoir_typing_type, vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
+use crate::{blocks::{MIRBlock, hints::MIRValueHint, refer::MIRBlockReference}, funcs::MIRFunction, insts::MIRInstruction, lower_astoir_typing_type, vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
 pub fn build_stack_alloc(block: &mut MIRBlock, size: usize, t: BaseValueType) -> BaseResult<MIRPointerValue> {
 	let res = block.append(MIRInstruction::StackAlloc { alloc_size: size, t: t.clone() }).get()?;
@@ -283,6 +283,56 @@ pub fn build_return(block: &mut MIRBlock, val: BaseMIRValue) -> BaseResult<bool>
 	block.append(MIRInstruction::Return { val });
 
 	Ok(true)
+}
+
+pub fn build_unconditional_branch(block: &mut MIRBlock, func: &MIRFunction, branch: MIRBlockReference) -> BaseResult<bool> {
+	if branch >= func.blocks.len() {	
+		return Err(BaseError::err("Provided invalid block reference! to build_unconditional_branch".to_string()))
+	}
+
+	block.append(MIRInstruction::UnconditionalBranch { branch });
+	Ok(true)
+}
+
+pub fn build_conditional_branch(block: &mut MIRBlock, func: &MIRFunction, condition: MIRIntValue, if_branch: MIRBlockReference, else_branch: MIRBlockReference) -> BaseResult<bool> {
+	if condition.size != 1 {
+		return Err(BaseError::err("Provided cond to build_conditional_branch is not a boolean".to_string()));
+	}
+
+	if if_branch >= func.blocks.len() || else_branch >= func.blocks.len() {
+		return Err(BaseError::err("Provided invalid block reference! to build_conditional_branch".to_string()))
+	}
+
+	block.append(MIRInstruction::ConditionalBranch { cond: condition, if_branch, else_branch });
+	Ok(true)
+}
+
+pub fn build_phi(block: &mut MIRBlock, func: &MIRFunction, choices: Vec<(MIRBlockReference, BaseMIRValue)>) -> BaseResult<BaseMIRValue> {
+	let t = &choices[0].1.vtype;
+
+	for choice in &choices {
+		if choice.0 >= func.blocks.len() {
+			return Err(BaseError::err("Provided invalid block reference to build_phi!".to_string()))
+		}
+
+		if !choice.1.vtype.eq(t) {
+			return Err(BaseError::err("Provided value to phi was not of the same type".to_string()));
+		}
+ 	}
+
+	return block.append(MIRInstruction::Phi { choices }).get()
+}
+
+pub fn build_select(block: &mut MIRBlock, condition: MIRIntValue, if_val: BaseMIRValue, else_val: BaseMIRValue) -> BaseResult<BaseMIRValue> {
+	if condition.size != 1 {
+		return Err(BaseError::err("Provided cond to build_select is not a boolean".to_string()));
+	}
+
+	if !if_val.vtype.eq(&else_val.vtype) {
+		return Err(BaseError::err("Both values do not have the same type in build_select!".to_string()))
+	}
+
+	return block.append(MIRInstruction::Select { cond: condition, if_val, else_val }).get()
 }
 
 pub fn build_field_pointer(block: &mut MIRBlock, ptr: MIRPointerValue, field: usize) -> BaseResult<MIRPointerValue> {
