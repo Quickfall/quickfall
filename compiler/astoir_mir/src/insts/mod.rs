@@ -8,8 +8,8 @@ pub mod val;
 #[derive(Clone)]
 pub enum MIRInstruction {
 	StackAlloc { alloc_size: usize, t: BaseValueType },
-	Load { value: MIRPointerValue }, // TODO: change this to pointer
-	Store { variable: MIRPointerValue, value: BaseMIRValue }, // TODO: change this to pointer
+	Load { value: MIRPointerValue },
+	Store { variable: MIRPointerValue, value: BaseMIRValue }, 
 
 	// Number casting
 	DowncastInteger { val: MIRIntValue, size: usize }, // make size smaller
