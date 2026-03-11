@@ -52,3 +52,21 @@ pub fn lower_hir_variable_reference_value(block: &mut MIRBlock, node: Box<HIRNod
 	
 	return Ok(val);
 }
+
+pub fn lower_hir_variable_assignment(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &HIRContext) -> BaseResult<bool> {
+	if let HIRNode::VarAssigment { variable, val } = *node {
+		let val = lower_hir_value(block, val, ctx)?;
+
+		if block.ctx.pointer_vals.len() >= variable {
+			return Err(BaseError::err("Tried getting an invalid pointer in lower_hir_variable_reference".to_string()))
+		}
+
+		let ptr = block.ctx.pointer_vals[variable].clone();
+
+		build_store(block, ptr, val)?;
+		return Ok(true);
+	}
+
+	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+
+}
