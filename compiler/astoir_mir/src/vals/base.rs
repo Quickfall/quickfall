@@ -41,7 +41,10 @@ impl BaseValueType {
 				return a == b;
 			},
 
-			_ => return true
+			(BaseValueType::PointerValue, BaseValueType::PointerValue) => true,
+			(BaseValueType::AnyValue, BaseValueType::AnyValue) => true,
+
+			_ => return false
 		}
 	}
 }
