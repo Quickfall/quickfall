@@ -10,6 +10,10 @@ pub struct MIRBlock {
 }
 
 impl MIRBlock {
+	pub fn new() -> Self {
+		MIRBlock { instructions: vec![], hints: HintStorage::new() }
+	}
+
 	pub fn append(&mut self, instruction: MIRInstruction) -> InstructionValue {
 		self.instructions.push(instruction.clone());
 
