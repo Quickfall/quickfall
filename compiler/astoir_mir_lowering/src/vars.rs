@@ -1,7 +1,7 @@
 //! Variable related lowering
 
 use astoir_hir::nodes::HIRNode;
-use astoir_mir::{blocks::MIRBlock, builder::{build_stack_alloc, build_store}, lower_astoir_typing_type, vals::ptr::MIRPointerValue};
+use astoir_mir::{blocks::MIRBlock, builder::{build_load, build_stack_alloc, build_store}, lower_astoir_typing_type, vals::{base::BaseMIRValue, ptr::MIRPointerValue}};
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>) -> BaseResult<MIRPointerValue> {
@@ -39,4 +39,14 @@ pub fn lower_hir_variable_reference(block: &mut MIRBlock, node: Box<HIRNode>) ->
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+}
+
+
+/// Lowers the HIR variable reference as if to obtain it's value. Requires a load
+pub fn lower_hir_variable_reference_value(block: &mut MIRBlock, node: Box<HIRNode>) -> BaseResult<BaseMIRValue> {
+	let ptr = lower_hir_variable_reference(block, node)?;
+
+	let val = build_load(block, ptr)?;
+	
+	return Ok(val);
 }
