@@ -59,9 +59,9 @@ pub enum MIRInstruction {
 
 	// Control
 	Return { val: BaseMIRValue }, 
-	UnconditionalBranch { branch: MIRBlockReference }, // TODO: swap to branch
-	ConditionalBranch { cond: MIRIntValue, if_branch: BaseMIRValue, else_branch: BaseMIRValue }, 
-	Phi { choices: Vec<(BaseMIRValue, BaseMIRValue)> },
+	UnconditionalBranch { branch: MIRBlockReference },
+	ConditionalBranch { cond: MIRIntValue, if_branch: MIRBlockReference, else_branch: MIRBlockReference }, 
+	Phi { choices: Vec<(MIRBlockReference, BaseMIRValue)> },
 	Select { cond: BaseMIRValue, if_val: BaseMIRValue, else_val: BaseMIRValue },
 
 	Call { function: BaseMIRValue, arguments: Vec<BaseMIRValue> },
