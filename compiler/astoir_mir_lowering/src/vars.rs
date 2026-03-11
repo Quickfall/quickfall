@@ -28,3 +28,15 @@ pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>) 
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
 }
+
+pub fn lower_hir_variable_reference(block: &mut MIRBlock, node: Box<HIRNode>) -> BaseResult<MIRPointerValue> {
+	if let HIRNode::VariableReference { index, is_static } = *node { // TODO: add support for static variables
+		if block.ctx.pointer_vals.len() >= index {
+			return Err(BaseError::err("Tried getting an invalid pointer in lower_hir_variable_reference".to_string()))
+		}
+
+		return Ok(block.ctx.pointer_vals[index].clone())
+	}
+
+	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+}
