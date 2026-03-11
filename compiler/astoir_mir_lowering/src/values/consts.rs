@@ -1,5 +1,5 @@
 use astoir_hir::{ctx::HIRContext, nodes::HIRNode};
-use astoir_mir::{blocks::MIRBlock, builder::{build_signed_int_const, build_unsigned_int_const}, vals::base::BaseMIRValue};
+use astoir_mir::{blocks::MIRBlock, builder::{build_signed_int_const, build_static_string_const, build_unsigned_int_const}, vals::base::BaseMIRValue};
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 pub fn lower_hir_literal(block: &mut MIRBlock, ctx: &HIRContext, node: Box<HIRNode>) -> BaseResult<BaseMIRValue> {
@@ -14,6 +14,12 @@ pub fn lower_hir_literal(block: &mut MIRBlock, ctx: &HIRContext, node: Box<HIRNo
 			}
 
 			let val = build_unsigned_int_const(block, value as u128, t.get_size()?)?;
+
+			return Ok(val.into());
+		},
+
+		HIRNode::StringLiteral { value } => {
+			let val = build_static_string_const(block, value)?;
 
 			return Ok(val.into());
 		},
