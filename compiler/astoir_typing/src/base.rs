@@ -116,6 +116,19 @@ impl BaseType {
 		}
 	}
 
+	pub fn is_signed(&self) -> bool {
+		return match self {
+			BaseType::NumericIntegerType(_, signed) => *signed,
+			BaseType::FloatingNumberType(_, _, signed) => *signed,
+			BaseType::FixedPointNumberType(_, _, signed) => *signed,
+			BaseType::IncompleteNumericType(signed) => *signed,
+			BaseType::IncompleteFloatingType(signed) => *signed,
+			BaseType::IncompleteFixedPointType(signed) => *signed,
+
+			_ => false
+  		}
+	}
+
 	pub fn can_transmute_into(&self, into: &BaseType) -> bool {
 		if self.is_number() {
 			if self.is_floating() != into.is_floating() && !into.is_floating() {
