@@ -1,6 +1,6 @@
 //! The definitions for instructions within the MIR. 
 
-use crate::vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
+use crate::{blocks::{MIRBlock, refer::MIRBlockReference}, vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
 pub mod val;
 
@@ -59,7 +59,7 @@ pub enum MIRInstruction {
 
 	// Control
 	Return { val: BaseMIRValue }, 
-	UnconditionalBranch { branch: BaseMIRValue }, // TODO: swap to branch
+	UnconditionalBranch { branch: MIRBlockReference }, // TODO: swap to branch
 	ConditionalBranch { cond: MIRIntValue, if_branch: BaseMIRValue, else_branch: BaseMIRValue }, 
 	Phi { choices: Vec<(BaseMIRValue, BaseMIRValue)> },
 	Select { cond: BaseMIRValue, if_val: BaseMIRValue, else_val: BaseMIRValue },

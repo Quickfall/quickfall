@@ -27,7 +27,7 @@ impl MIRFunction {
 
 		self.blocks.push(MIRBlock::new());
 
-		return Ok(MIRBlockReference::new(ind, self));
+		return Ok(ind);
 	}
 
 	pub fn append_block(&mut self) -> BaseResult<MIRBlockReference> {
@@ -39,7 +39,7 @@ impl MIRFunction {
 
 		self.blocks.push(MIRBlock::new());
 
-		return Ok(MIRBlockReference::new(ind, self))
+		return Ok(ind)
 	}
 
 }
