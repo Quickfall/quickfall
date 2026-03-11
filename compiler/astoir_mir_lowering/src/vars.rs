@@ -1,10 +1,12 @@
 //! Variable related lowering
 
-use astoir_hir::nodes::HIRNode;
+use astoir_hir::{ctx::HIRContext, nodes::HIRNode};
 use astoir_mir::{blocks::MIRBlock, builder::{build_load, build_stack_alloc, build_store}, lower_astoir_typing_type, vals::{base::BaseMIRValue, ptr::MIRPointerValue}};
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
-pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>) -> BaseResult<MIRPointerValue> {
+use crate::values::lower_hir_value;
+
+pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &HIRContext) -> BaseResult<MIRPointerValue> {
 	if let HIRNode::VarDeclaration { variable, var_type, default_val } = *node {
 		let lowered = lower_astoir_typing_type(var_type.get_concrete().clone())?;
 		let size = var_type.get_concrete().base.get_size()?; // TODO: normalize MIR's typing system to strictly use astoir_typing to avoid lowering issues
@@ -17,11 +19,11 @@ pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>) 
 		
 		block.ctx.pointer_vals[variable] = ptr.clone();
 
-		// TODO: parse values
+		if default_val.is_some() {
+			let val = lower_hir_value(block, default_val.unwrap(), ctx)?;
 
-		//if default_val.is_some() {
-		//	build_store(block, ptr.clone(), val)
-		//}
+			build_store(block, ptr.clone(), val)?;
+		}
 
 		return Ok(ptr)
 	}
@@ -30,7 +32,7 @@ pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>) 
 }
 
 pub fn lower_hir_variable_reference(block: &mut MIRBlock, node: Box<HIRNode>) -> BaseResult<MIRPointerValue> {
-	if let HIRNode::VariableReference { index, is_static } = *node { // TODO: add support for static variables
+	if let HIRNode::VariableReference { index, is_static: _ } = *node { // TODO: add support for static variables
 		if block.ctx.pointer_vals.len() >= index {
 			return Err(BaseError::err("Tried getting an invalid pointer in lower_hir_variable_reference".to_string()))
 		}
