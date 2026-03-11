@@ -394,3 +394,9 @@ pub fn build_unsigned_fixed_const(block: &mut MIRBlock, raw: f64, bitsize: usize
 
 	return res.as_int();
 }
+
+pub fn build_static_string_const(block: &mut MIRBlock, raw: String) -> BaseResult<MIRPointerValue> {
+	let res = block.append(MIRInstruction::StaticStringConstant { raw }).get()?;
+
+	return res.as_ptr();
+}
