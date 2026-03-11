@@ -50,12 +50,12 @@ pub enum MIRInstruction {
 	CompGe { a: MIRIntValue, b: MIRIntValue}, // >=
 
 	// Constants
-	IntegerSignedConstant { raw: usize, bitsize: usize },
-	IntegerUnsignedConstant { raw: usize, bitsize: usize }, 
-	FloatSignedConstant { raw: usize, bitsize: usize }, 
-	FloatUnsignedConstant { raw: usize, bitsize: usize }, 
-	FixedSignedConstant { raw: usize, bitsize: usize }, 
-	FixedUnsignedConstant { raw: usize, bitsize: usize }, 
+	IntegerSignedConstant { raw: i128, bitsize: usize },
+	IntegerUnsignedConstant { raw: u128, bitsize: usize }, 
+	FloatSignedConstant { raw: f64, bitsize: usize }, 
+	FloatUnsignedConstant { raw: f64, bitsize: usize }, 
+	FixedSignedConstant { raw: f64, bitsize: usize }, 
+	FixedUnsignedConstant { raw: f64, bitsize: usize }, 
 
 	// Control
 	Return { val: BaseMIRValue }, 

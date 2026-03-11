@@ -358,3 +358,39 @@ pub fn build_marker_era_drop(block: &mut MIRBlock, val: BaseMIRValue) -> BaseRes
 
 	Ok(true)
 }
+
+pub fn build_signed_int_const(block: &mut MIRBlock, raw: i128, bitsize: usize) -> BaseResult<MIRIntValue> {
+	let res = block.append(MIRInstruction::IntegerSignedConstant { raw, bitsize }).get()?;
+
+	return res.as_int();
+}
+
+pub fn build_unsigned_int_const(block: &mut MIRBlock, raw: u128, bitsize: usize) -> BaseResult<MIRIntValue> {
+	let res = block.append(MIRInstruction::IntegerUnsignedConstant { raw, bitsize }).get()?;
+
+	return res.as_int();
+}
+
+pub fn build_signed_float_const(block: &mut MIRBlock, raw: f64, bitsize: usize) -> BaseResult<MIRFloatValue> {
+	let res = block.append(MIRInstruction::FloatSignedConstant { raw, bitsize }).get()?;
+
+	return res.as_float();
+}
+
+pub fn build_unsigned_float_const(block: &mut MIRBlock, raw: f64, bitsize: usize) -> BaseResult<MIRFloatValue> {
+	let res = block.append(MIRInstruction::FloatUnsignedConstant { raw, bitsize }).get()?;
+
+	return res.as_float();
+}
+
+pub fn build_signed_fixed_const(block: &mut MIRBlock, raw: f64, bitsize: usize) -> BaseResult<MIRIntValue> {
+	let res = block.append(MIRInstruction::FixedSignedConstant { raw, bitsize }).get()?;
+
+	return res.as_int();
+}
+
+pub fn build_unsigned_fixed_const(block: &mut MIRBlock, raw: f64, bitsize: usize) -> BaseResult<MIRIntValue> {
+	let res = block.append(MIRInstruction::FixedUnsignedConstant { raw, bitsize }).get()?;
+
+	return res.as_int();
+}
