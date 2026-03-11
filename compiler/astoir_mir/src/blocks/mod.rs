@@ -1,4 +1,4 @@
-use crate::{blocks::hints::HintStorage, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
+use crate::{blocks::hints::HintStorage, ctx::MIRBlockContext, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
 pub mod refer;
 pub mod hints;
@@ -6,12 +6,13 @@ pub mod hints;
 /// Represents a function block or a branch.
 pub struct MIRBlock {
 	instructions: Vec<MIRInstruction>,
-	pub hints: HintStorage
+	pub hints: HintStorage,
+	pub ctx: MIRBlockContext
 }
 
 impl MIRBlock {
 	pub fn new() -> Self {
-		MIRBlock { instructions: vec![], hints: HintStorage::new() }
+		MIRBlock { instructions: vec![], hints: HintStorage::new(), ctx: MIRBlockContext::new() }
 	}
 
 	pub fn append(&mut self, instruction: MIRInstruction) -> InstructionValue {

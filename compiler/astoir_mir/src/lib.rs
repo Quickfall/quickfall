@@ -11,6 +11,7 @@ pub mod vals;
 pub mod blocks;
 pub mod builder;
 pub mod funcs;
+pub mod ctx;
 
 pub fn lower_astoir_typing_type(concrete: ConcreteType) -> BaseResult<BaseValueType> {
 	match &concrete.base {
