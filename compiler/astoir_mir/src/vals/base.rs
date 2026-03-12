@@ -11,6 +11,7 @@ pub struct BaseMIRValue {
 }
 
 #[derive(Clone)]
+#[deprecated(note = "Will be replaced by astoir_typing types")]
 pub enum BaseValueType {
 	IntValue(usize),
 	FloatValue(usize),
