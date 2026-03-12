@@ -1,6 +1,7 @@
+use astoir_typing::base::BaseType;
 use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
 
-use crate::vals::base::{BaseMIRValue, BaseValueType};
+use crate::vals::base::{BaseMIRValue};
 
 #[derive(Clone)]
 pub struct MIRPointerValue {
@@ -9,7 +10,7 @@ pub struct MIRPointerValue {
 
 impl MIRPointerValue {
 	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if let BaseValueType::PointerValue = &base.vtype {
+		if let BaseType::Pointer = &base.vtype.base {
 			return Ok(MIRPointerValue { base: base.clone() })
 		}
 

@@ -1,4 +1,4 @@
-use astoir_typing::structs::StructTypeContainer;
+use astoir_typing::{compacted::CompactedType, structs::StructTypeContainer};
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
 use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
@@ -7,7 +7,7 @@ use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
 #[derive(Clone)]
 pub struct BaseMIRValue {
 	val_index: usize,
-	pub vtype: BaseValueType
+	pub vtype: CompactedType
 }
 
 #[derive(Clone)]
@@ -52,7 +52,7 @@ impl BaseValueType {
 
 impl BaseMIRValue {
 	#[deprecated(note = "This is meant for internal purposes, always use builders to safely create this!")]
-	pub fn new(val_index: usize, vtype: BaseValueType) -> Self {
+	pub fn new(val_index: usize, vtype: CompactedType) -> Self {
 		return BaseMIRValue { val_index, vtype }
 	}
 

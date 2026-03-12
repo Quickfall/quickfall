@@ -1,6 +1,6 @@
 use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
 
-use crate::vals::base::{BaseMIRValue, BaseValueType};
+use crate::vals::base::{BaseMIRValue};
 
 #[derive(Clone)]
 pub struct MIRIntValue {
@@ -10,8 +10,8 @@ pub struct MIRIntValue {
 
 impl MIRIntValue {
 	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if let BaseValueType::IntValue(e) = &base.vtype {
-			return Ok(MIRIntValue { base: base.clone(), size: *e })
+		if base.vtype.base.is_integer() {
+			return Ok(MIRIntValue { base: base.clone(), size: base.vtype.base.get_size()? })
 		}
 
 		return Err(BaseError::critical(IR_CASTING_ERROR!().to_string()))
