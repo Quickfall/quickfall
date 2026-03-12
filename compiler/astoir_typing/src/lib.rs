@@ -5,3 +5,4 @@ pub mod complete;
 pub mod storage;
 pub mod hashes;
 pub mod structs;
+pub mod compacted;
