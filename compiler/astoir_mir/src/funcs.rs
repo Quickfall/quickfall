@@ -1,7 +1,8 @@
+use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_utils::hash::HashedString;
 
-use crate::{blocks::{MIRBlock, refer::MIRBlockReference}, vals::base::BaseValueType};
+use crate::{blocks::{MIRBlock, refer::MIRBlockReference}};
 
 /// Represents a function in the MIR. Owns one or more blocks
 pub struct MIRFunction {
@@ -9,12 +10,12 @@ pub struct MIRFunction {
 	pub blocks: Vec<MIRBlock>,
 	pub name: HashedString,
 
-	pub arguments: Vec<BaseValueType>,
-	pub return_type: Option<BaseValueType>
+	pub arguments: Vec<CompactedType>,
+	pub return_type: Option<CompactedType>
 }
 
 impl MIRFunction {
-	pub fn new(name: String, arguments: Vec<BaseValueType>, return_type: Option<BaseValueType>) -> Self {
+	pub fn new(name: String, arguments: Vec<CompactedType>, return_type: Option<CompactedType>) -> Self {
 		return MIRFunction { blocks: vec![], name: HashedString::new(name), arguments, return_type }
 	}
 

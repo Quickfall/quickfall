@@ -1,13 +1,15 @@
 //! The definitions for instructions within the MIR. 
 
-use crate::{blocks::{refer::MIRBlockReference}, vals::{base::{BaseMIRValue, BaseValueType}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
+use astoir_typing::{base::BaseType, compacted::CompactedType};
+
+use crate::{blocks::{refer::MIRBlockReference}, vals::{base::{BaseMIRValue}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
 pub mod val;
 
 /// An instruction inside of the MIR.
 #[derive(Clone)]
 pub enum MIRInstruction {
-	StackAlloc { alloc_size: usize, t: BaseValueType },
+	StackAlloc { alloc_size: usize, t: CompactedType },
 	Load { value: MIRPointerValue },
 	Store { variable: MIRPointerValue, value: BaseMIRValue }, 
 
@@ -15,8 +17,8 @@ pub enum MIRInstruction {
 	DowncastInteger { val: MIRIntValue, size: usize }, // make size smaller
 	UpcastInteger { val: MIRIntValue, size: usize },  // make size bigger
 
-	DowncastFloat { val: MIRFloatValue, size: usize }, 
-	UpcastFloat { val: MIRFloatValue, size: usize }, 
+	DowncastFloat { val: MIRFloatValue, exponent: usize, fraction: usize }, 
+	UpcastFloat { val: MIRFloatValue, exponent: usize, fraction: usize }, 
 
 	// Arithmetrics
 	IntegerAdd { signed: bool, left: MIRIntValue, right: MIRIntValue }, 
@@ -89,29 +91,29 @@ impl MIRInstruction {
 		}
 	}
 
-	pub fn get_return_type(&self) -> BaseValueType {
+	pub fn get_return_type(&self) -> CompactedType {
 		match self {
-			Self::StackAlloc { .. } => return BaseValueType::PointerValue,
-			Self::Load { .. } => return BaseValueType::AnyValue,
+			Self::StackAlloc { .. } => return CompactedType::from(BaseType::Pointer),
+			Self::Load { .. } => return CompactedType::from(BaseType::AnyType),
 
-			Self::DowncastInteger { val: _, size } => return BaseValueType::IntValue(*size),
-			Self::UpcastInteger { val: _, size } => return BaseValueType::IntValue(*size),
+			Self::DowncastInteger { val, size } => return CompactedType::from(BaseType::NumericIntegerType(*size as u64, val.signed)),
+			Self::UpcastInteger { val, size } => return CompactedType::from(BaseType::NumericIntegerType(*size as u64, val.signed)),
 
-			Self::DowncastFloat { val: _, size } => return BaseValueType::FloatValue(*size),
-			Self::UpcastFloat { val: _, size } => return BaseValueType::IntValue(*size),
+			Self::DowncastFloat { val, exponent, fraction } => return CompactedType::from(BaseType::FloatingNumberType(*exponent as u64, *fraction as u64, val.signed)),
+			Self::UpcastFloat { val, exponent, fraction } => return CompactedType::from(BaseType::FloatingNumberType(*exponent as u64, *fraction as u64, val.signed)),
 
-			Self::IntegerAdd { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
-			Self::IntegerSub { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
-			Self::IntegerMul { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
-			Self::IntegerDiv { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
-			Self::IntegerMod { signed: _, left, right: _ } => return BaseValueType::IntValue(left.size), 
-			Self::IntegerNeg { val } => return BaseValueType::IntValue(val.size),
+			Self::IntegerAdd { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
+			Self::IntegerSub { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
+			Self::IntegerMul { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
+			Self::IntegerDiv { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
+			Self::IntegerMod { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
+			Self::IntegerNeg { val } => return CompactedType::from(BaseType::NumericIntegerType(val.size as u64, true)),
 
-			Self::FloatAdd { signed: _, left, right: _ } => return BaseValueType::FloatValue(left.size),
-			Self::FloatSub { signed: _, left, right: _ } => return BaseValueType::FloatValue(left.size),
-			Self::FloatMul { signed: _, left, right: _ } => return BaseValueType::FloatValue(left.size),
-			Self::FloatDiv { signed: _, left, right: _ } => return BaseValueType::FloatValue(left.size),
-			Self::FloatNeg { val } => return BaseValueType::FloatValue(val.size),
+			Self::FloatAdd { signed, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
+			Self::FloatSub { signed, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
+			Self::FloatMul { signed, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
+			Self::FloatDiv { signed, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
+			Self::FloatNeg { val } => return CompactedType::from(BaseType::FloatingNumberType(val.exponent as u64, val.fraction as u64, true)),
 
 			Self::BitwiseAnd { a, b: _ } => return BaseValueType::IntValue(a.size),
 			Self::BitwiseOr { a, b: _ } => return BaseValueType::IntValue(a.size),

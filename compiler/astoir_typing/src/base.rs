@@ -33,6 +33,9 @@ pub enum BaseType {
 	/// A pointer address type
 	Pointer,
 
+	/// Only use in internals
+	AnyType,
+
 	StaticStr,
 
 	/// A structured type
@@ -83,6 +86,14 @@ impl BaseType {
 			},
 
 			_ => return Err(BaseError::err(IR_INCOMPLETE_TYPE!().to_string()))
+		}
+	}
+
+	pub fn get_floating_size(&self) -> BaseResult<(usize, usize)> {
+		return match self {
+			BaseType::FloatingNumberType(a, b, _) => Ok((*a as usize, *b as usize)),
+
+			_ => Err(BaseError::err("Invalid get_floating_size!".to_string()))
 		}
 	}
 

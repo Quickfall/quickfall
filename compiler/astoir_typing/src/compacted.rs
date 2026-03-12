@@ -18,3 +18,9 @@ impl From<ComplexType> for CompactedType {
 		return CompactedType { base: concrete.base.clone(), array, pointer: concrete.pointer, pointer_array: concrete.pointer_array }
 	}
 }
+
+impl From<BaseType> for CompactedType {
+	fn from(value: BaseType) -> Self {
+		return CompactedType { base: value, array: false, pointer: false, pointer_array: false }
+	}
+}
