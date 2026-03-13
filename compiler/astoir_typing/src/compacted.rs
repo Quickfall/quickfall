@@ -10,6 +10,16 @@ pub struct CompactedType {
 	pub pointer_array: bool
 }
 
+impl CompactedType {
+	pub fn eq(&self, other: &CompactedType) -> bool {
+		return self.base.is_equal(&other.base) && self.array == other.array && self.pointer == other.pointer && self.pointer_array == other.pointer_array;
+	}
+
+	pub fn can_transmute(&self, other: &CompactedType) -> bool {
+		return self.base.can_transmute_into(&other.base) && self.array == other.array && self.pointer == other.pointer && self.pointer_array == other.pointer_array;
+	}
+}
+
 impl From<ComplexType> for CompactedType {
 	fn from(value: ComplexType) -> Self {
 		let array = value.is_array();
