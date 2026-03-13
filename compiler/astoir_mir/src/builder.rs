@@ -24,7 +24,7 @@ pub fn build_store(block: &mut MIRBlock, ptr: MIRPointerValue, val: BaseMIRValue
 
 	let hint = block.hints.get_hint(base.get_instruction())?.as_pointer()?;
 
-	if !hint(&val.vtype) {
+	if !hint.base.is_equal(&val.vtype.base) {
 		return Err(BaseError::err("Cannot put this value onto this pointer as it is not the same type!".to_string()))
 	}
 
@@ -53,22 +53,22 @@ pub fn build_upcast_int(block: &mut MIRBlock, val: MIRIntValue, size: usize) -> 
 	return res.as_int();
 }
 
-pub fn build_downcast_float(block: &mut MIRBlock, val: MIRFloatValue, size: usize) -> BaseResult<MIRFloatValue> {
-	if val.size <= size {
+pub fn build_downcast_float(block: &mut MIRBlock, val: MIRFloatValue, exponent: usize, fraction: usize) -> BaseResult<MIRFloatValue> {
+	if val.exponent + val.fraction <= exponent + fraction {
 		return Err(BaseError::critical("Tried using downfloatcast on a smaller sized int!".to_string()));
 	}
 
-	let res = block.append(MIRInstruction::DowncastFloat { val, size }).get()?;
+	let res = block.append(MIRInstruction::DowncastFloat { val, exponent, fraction }).get()?;
 
 	return res.as_float();
 }
 
-pub fn build_upcast_float(block: &mut MIRBlock, val: MIRFloatValue, size: usize) -> BaseResult<MIRFloatValue> {
-	if val.size >= size {
+pub fn build_upcast_float(block: &mut MIRBlock, val: MIRFloatValue, exponent: usize, fraction: usize) -> BaseResult<MIRFloatValue> {
+	if val.exponent + val.fraction >= exponent + fraction {
 		return Err(BaseError::critical("Tried using upfloatcast on a higher sized int!".to_string()));
 	}
 
-	let res = block.append(MIRInstruction::UpcastFloat { val, size }).get()?;
+	let res = block.append(MIRInstruction::UpcastFloat { val, exponent, fraction }).get()?;
 
 	return res.as_float();
 }
@@ -120,7 +120,7 @@ pub fn build_int_neg(block: &mut MIRBlock, val: MIRIntValue) -> BaseResult<MIRIn
 }
 
 pub fn build_float_add(block: &mut MIRBlock, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> BaseResult<MIRFloatValue> {
-	if left.size != right.size {
+	if left.exponent != right.exponent || left.fraction != right.fraction {
 		return Err(BaseError::critical("Tried using fadd on different sized integers".to_string()));
 	}
 
@@ -130,7 +130,7 @@ pub fn build_float_add(block: &mut MIRBlock, left: MIRFloatValue, right: MIRFloa
 }
 
 pub fn build_float_sub(block: &mut MIRBlock, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> BaseResult<MIRFloatValue> {
-	if left.size != right.size {
+	if left.exponent != right.exponent || left.fraction != right.fraction {
 		return Err(BaseError::critical("Tried using fsub on different sized integers".to_string()));
 	}
 
@@ -141,7 +141,7 @@ pub fn build_float_sub(block: &mut MIRBlock, left: MIRFloatValue, right: MIRFloa
 
 
 pub fn build_float_mul(block: &mut MIRBlock, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> BaseResult<MIRFloatValue> {
-	if left.size != right.size {
+	if left.exponent != right.exponent || left.fraction != right.fraction {
 		return Err(BaseError::critical("Tried using fmul on different sized integers".to_string()));
 	}
 
@@ -152,7 +152,7 @@ pub fn build_float_mul(block: &mut MIRBlock, left: MIRFloatValue, right: MIRFloa
 
 
 pub fn build_float_div(block: &mut MIRBlock, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> BaseResult<MIRFloatValue> {
-	if left.size != right.size {
+	if left.exponent != right.exponent || left.fraction != right.fraction {
 		return Err(BaseError::critical("Tried using fdiv on different sized integers".to_string()));
 	}
 
@@ -316,7 +316,7 @@ pub fn build_phi(block: &mut MIRBlock, func: &MIRFunction, choices: Vec<(MIRBloc
 			return Err(BaseError::err("Provided invalid block reference to build_phi!".to_string()))
 		}
 
-		if !choice.1.vtype.eq(t) {
+		if !choice.1.vtype.base.is_equal(&t.base) {
 			return Err(BaseError::err("Provided value to phi was not of the same type".to_string()));
 		}
  	}
@@ -329,7 +329,7 @@ pub fn build_select(block: &mut MIRBlock, condition: MIRIntValue, if_val: BaseMI
 		return Err(BaseError::err("Provided cond to build_select is not a boolean".to_string()));
 	}
 
-	if !if_val.vtype.eq(&else_val.vtype) {
+	if !if_val.vtype.base.is_equal(&else_val.vtype.base) {
 		return Err(BaseError::err("Both values do not have the same type in build_select!".to_string()))
 	}
 
@@ -340,10 +340,12 @@ pub fn build_field_pointer(block: &mut MIRBlock, ptr: MIRPointerValue, field: us
 	let val = block.append(MIRInstruction::FieldPointer { val: ptr.clone(), field }).get()?;
 	let base: &BaseMIRValue = &ptr.into();
 
-	let ptr_t = block.hints.get_hint(base.get_instruction())?.as_pointer()?.as_struct()?;
-	let field_type = lower_astoir_typing_type(ptr_t.fields.vals[field].get_concrete().clone())?;
+	let pointer_hint = block.hints.get_hint(base.get_instruction())?.as_pointer()?;
+	let ptr_t = pointer_hint.base.get_struct_container()?;
 
-	block.hints.append_hint(val.get_instruction(), MIRValueHint::Pointer(field_type));
+	let t = CompactedType::from(ptr_t.fields.vals[field].clone());
+
+	block.hints.append_hint(val.get_instruction(), MIRValueHint::Pointer(t));
 
 	return val.as_ptr();
 }
@@ -372,26 +374,26 @@ pub fn build_unsigned_int_const(block: &mut MIRBlock, raw: u128, bitsize: usize)
 	return res.as_int();
 }
 
-pub fn build_signed_float_const(block: &mut MIRBlock, raw: f64, bitsize: usize) -> BaseResult<MIRFloatValue> {
-	let res = block.append(MIRInstruction::FloatSignedConstant { raw, bitsize }).get()?;
+pub fn build_signed_float_const(block: &mut MIRBlock, raw: f64, exponent: usize, fraction: usize) -> BaseResult<MIRFloatValue> {
+	let res = block.append(MIRInstruction::FloatSignedConstant { raw, exponent, fraction }).get()?;
 
 	return res.as_float();
 }
 
-pub fn build_unsigned_float_const(block: &mut MIRBlock, raw: f64, bitsize: usize) -> BaseResult<MIRFloatValue> {
-	let res = block.append(MIRInstruction::FloatUnsignedConstant { raw, bitsize }).get()?;
+pub fn build_unsigned_float_const(block: &mut MIRBlock, raw: f64, exponent: usize, fraction: usize) -> BaseResult<MIRFloatValue> {
+	let res = block.append(MIRInstruction::FloatUnsignedConstant { raw, exponent, fraction }).get()?;
 
 	return res.as_float();
 }
 
-pub fn build_signed_fixed_const(block: &mut MIRBlock, raw: f64, bitsize: usize) -> BaseResult<MIRIntValue> {
-	let res = block.append(MIRInstruction::FixedSignedConstant { raw, bitsize }).get()?;
+pub fn build_signed_fixed_const(block: &mut MIRBlock, raw: f64, number: usize, fraction: usize) -> BaseResult<MIRIntValue> {
+	let res = block.append(MIRInstruction::FixedSignedConstant { raw, number, fraction }).get()?;
 
 	return res.as_int();
 }
 
-pub fn build_unsigned_fixed_const(block: &mut MIRBlock, raw: f64, bitsize: usize) -> BaseResult<MIRIntValue> {
-	let res = block.append(MIRInstruction::FixedUnsignedConstant { raw, bitsize }).get()?;
+pub fn build_unsigned_fixed_const(block: &mut MIRBlock, raw: f64, number: usize, fraction: usize) -> BaseResult<MIRIntValue> {
+	let res = block.append(MIRInstruction::FixedUnsignedConstant { raw, number, fraction }).get()?;
 
 	return res.as_int();
 }
