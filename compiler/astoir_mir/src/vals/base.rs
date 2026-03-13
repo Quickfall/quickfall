@@ -1,5 +1,5 @@
-use astoir_typing::{compacted::CompactedType, structs::StructTypeContainer};
-use compiler_errors::errs::{BaseResult, base::BaseError};
+use astoir_typing::{compacted::CompactedType};
+use compiler_errors::errs::{BaseResult};
 
 use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
 
@@ -8,46 +8,6 @@ use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
 pub struct BaseMIRValue {
 	val_index: usize,
 	pub vtype: CompactedType
-}
-
-#[derive(Clone)]
-#[deprecated(note = "Will be replaced by astoir_typing types")]
-pub enum BaseValueType {
-	IntValue(usize),
-	FloatValue(usize),
-	PointerValue, // variables
-	AnyValue,
-	StructTypeValue(StructTypeContainer, usize)
-}
-
-impl BaseValueType {
-	pub fn as_struct(&self) -> BaseResult<StructTypeContainer> {
-		match self {
-			BaseValueType::StructTypeValue(e, _) => return Ok(e.clone()),
-			_ => return Err(BaseError::critical("Cannot use as_struct on a non struct type!".to_string()))
- 		};
-	}
-
-	pub fn eq(&self, b: &BaseValueType) -> bool {
-		match (self, b) {
-			(BaseValueType::IntValue(a), BaseValueType::IntValue(b)) => {
-				return a == b;
-			},
-
-			(BaseValueType::FloatValue(a), BaseValueType::FloatValue(b)) => {
-				return a == b;
-			},
-
-			(BaseValueType::StructTypeValue(_, a), BaseValueType::StructTypeValue(_, b)) => {
-				return a == b;
-			},
-
-			(BaseValueType::PointerValue, BaseValueType::PointerValue) => true,
-			(BaseValueType::AnyValue, BaseValueType::AnyValue) => true,
-
-			_ => return false
-		}
-	}
 }
 
 impl BaseMIRValue {

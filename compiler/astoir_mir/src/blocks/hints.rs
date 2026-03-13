@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::vals::{base::{BaseValueType}, consts::MIRConstantValue};
+use crate::vals::{consts::MIRConstantValue};
 
 
 /// A hint on a given value, contains constants or pointer types for example
