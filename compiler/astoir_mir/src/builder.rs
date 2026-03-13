@@ -1,7 +1,7 @@
 //! Utility functions to build instructions and more
 
 use astoir_typing::compacted::CompactedType;
-use compiler_errors::errs::{BaseResult, base::BaseError};
+use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, errs::{BaseResult, base::BaseError}};
 
 use crate::{blocks::{MIRBlock, hints::MIRValueHint, refer::MIRBlockReference}, funcs::MIRFunction, insts::MIRInstruction, vals::{base::{BaseMIRValue}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
@@ -402,4 +402,16 @@ pub fn build_static_string_const(block: &mut MIRBlock, raw: String) -> BaseResul
 	let res = block.append(MIRInstruction::StaticStringConstant { raw }).get()?;
 
 	return res.as_ptr();
+}
+
+pub fn build_call(block: &mut MIRBlock, func: &MIRFunction, ind: usize, args: Vec<BaseMIRValue>) -> BaseResult<BaseMIRValue> {
+	for(arg, t) in args.iter().zip(func.arguments.iter()) {
+		if !arg.vtype.eq(t) {
+			return Err(BaseError::err(IR_FUNCTION_INVALID_ARGUMENTS!().to_string()));
+		}
+	}
+
+	let res = block.append(MIRInstruction::Call { function: ind, arguments: args }).get()?;
+
+	return Ok(res);
 }
