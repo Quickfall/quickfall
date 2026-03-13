@@ -28,6 +28,8 @@ pub fn lower_hir_math_operation(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &
 			BaseType::NumericIntegerType(_, _) => lower_hir_math_operation_int(block, left_val, right_val, operation, ctx)?,
 			BaseType::FloatingNumberType(_, _, _) => lower_hir_math_operation_float(block, left_val, right_val, operation, ctx)?,
 
+			// TODO: see if fixed point are needed or do they automatically fallback to int
+
 			_ => return Err(BaseError::err("Cannot use lower_hir_math_operation on this given value kind!".to_string()))
 		};
 

@@ -2,7 +2,7 @@ use astoir_hir::{ctx::HIRContext, nodes::HIRNode};
 use astoir_mir::{blocks::MIRBlock, vals::base::BaseMIRValue};
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
-use crate::{values::{booleans::{lower_hir_boolean_operator, lowering_hir_boolean_condition}, consts::lower_hir_literal}, vars::lower_hir_variable_reference_value};
+use crate::{math::lower_hir_math_operation, values::{booleans::{lower_hir_boolean_operator, lowering_hir_boolean_condition}, consts::lower_hir_literal}, vars::lower_hir_variable_reference_value};
 
 pub mod consts;
 pub mod booleans;
@@ -13,6 +13,7 @@ pub fn lower_hir_value(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &HIRContex
 		HIRNode::VariableReference { .. } => return lower_hir_variable_reference_value(block, node),
 		HIRNode::BooleanCondition { .. } => return Ok(lowering_hir_boolean_condition(block, node, ctx)?.into()),
 		HIRNode::BooleanOperator { .. } => return Ok(lower_hir_boolean_operator(block, node, ctx)?.into()),
+		HIRNode::MathOperation { .. } => return Ok(lower_hir_math_operation(block, node, ctx)?),
 
 		_ => return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
 	}
