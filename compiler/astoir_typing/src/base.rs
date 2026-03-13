@@ -33,9 +33,6 @@ pub enum BaseType {
 	/// A pointer address type
 	Pointer,
 
-	/// Only use in internals
-	AnyType,
-
 	StaticStr,
 
 	/// A structured type
@@ -162,7 +159,6 @@ impl BaseType {
 
 	pub fn is_equal(&self, t: &BaseType) -> bool {
 		return match (self, t) {
-			(BaseType::AnyType, BaseType::AnyType) => true,
 			(BaseType::NumericIntegerType(size, signed), BaseType::NumericIntegerType(a, b)) => *size == *a && *signed == *b,
 			(BaseType::FloatingNumberType(exponent, fraction, signed), BaseType::FloatingNumberType(a, b, c)) => *exponent == *a && *fraction == *b && *signed == *c,
 			(BaseType::FixedPointNumberType(number, fraction, signed), BaseType::FixedPointNumberType(a, b, c)) => *number == *a && *fraction == *b && *signed == *c,

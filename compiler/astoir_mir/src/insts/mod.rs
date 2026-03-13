@@ -3,7 +3,7 @@
 use astoir_typing::{base::BaseType, compacted::CompactedType};
 use compiler_utils::utils::num;
 
-use crate::{blocks::{refer::MIRBlockReference}, vals::{base::{BaseMIRValue}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
+use crate::{blocks::refer::MIRBlockReference, ctx::MIRContext, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
 pub mod val;
 
@@ -68,7 +68,7 @@ pub enum MIRInstruction {
 	Phi { choices: Vec<(MIRBlockReference, BaseMIRValue)> },
 	Select { cond: MIRIntValue, if_val: BaseMIRValue, else_val: BaseMIRValue },
 
-	Call { function: BaseMIRValue, arguments: Vec<BaseMIRValue> },
+	Call { function: usize, arguments: Vec<BaseMIRValue> },
 
 	// Pointer utils
 
@@ -82,17 +82,23 @@ pub enum MIRInstruction {
 }
 
 impl MIRInstruction {
-	pub fn has_return(&self) -> bool {
+	pub fn has_return(&self, ctx: &MIRContext) -> bool {
 		match self {
 			Self::MarkerEraDrop { .. } | Self::UnconditionalBranch { .. } | Self::ConditionalBranch { .. } | Self::Return { .. } => {
 				return false;
 			},
 
+			Self::Call { function, arguments: _ } => {
+				let func = &ctx.functions[*function];
+
+				return func.return_type.is_some();
+			}
+
 			_ => true
 		}
 	}
 
-	pub fn get_return_type(&self) -> CompactedType {
+	pub fn get_return_type(&self, ctx: &MIRContext) -> CompactedType {
 		match self {
 			Self::StackAlloc { .. } => return CompactedType::from(BaseType::Pointer),
 			Self::Load { .. } => return CompactedType::from(BaseType::AnyType),
@@ -144,7 +150,11 @@ impl MIRInstruction {
 
 			Self::Select { cond: _, if_val, else_val: _ } => return if_val.vtype.clone(),
 
-			Self::Call { .. } => return CompactedType::from(BaseType::AnyType),
+			Self::Call { function, arguments: _ } => {
+				let func = &ctx.functions[*function];
+
+				return func.return_type.clone().unwrap();
+			}
 			
 			Self::FieldPointer { .. } => return CompactedType::from(BaseType::Pointer),
 			Self::IndexPointer { .. } => return CompactedType::from(BaseType::Pointer),
