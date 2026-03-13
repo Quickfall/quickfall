@@ -10,13 +10,16 @@ pub struct MIRFunction {
 	pub blocks: Vec<MIRBlock>,
 	pub name: HashedString,
 
+	/// This will prevent the function from being usable by normal function calls if true
+	pub is_from_struct: bool, 
+
 	pub arguments: Vec<CompactedType>,
 	pub return_type: Option<CompactedType>
 }
 
 impl MIRFunction {
-	pub fn new(name: String, arguments: Vec<CompactedType>, return_type: Option<CompactedType>) -> Self {
-		return MIRFunction { blocks: vec![], name: HashedString::new(name), arguments, return_type }
+	pub fn new(name: String, arguments: Vec<CompactedType>, return_type: Option<CompactedType>, is_from_struct: bool) -> Self {
+		return MIRFunction { blocks: vec![], name: HashedString::new(name), arguments, return_type, is_from_struct }
 	}
 
 	pub fn append_entry_block(&mut self) -> BaseResult<MIRBlockReference> {
