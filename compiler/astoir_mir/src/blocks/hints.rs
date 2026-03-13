@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
 use crate::vals::{base::{BaseValueType}, consts::MIRConstantValue};
@@ -9,8 +10,8 @@ use crate::vals::{base::{BaseValueType}, consts::MIRConstantValue};
 #[derive(Clone)]
 pub enum MIRValueHint {
 	Constant(MIRConstantValue),
-	Pointer(BaseValueType),
-	Value(BaseValueType)
+	Pointer(CompactedType),
+	Value(CompactedType)
 }
 
 impl MIRValueHint {
@@ -29,21 +30,21 @@ impl MIRValueHint {
 		}
 	}
 
-	pub fn as_pointer(&self) -> BaseResult<BaseValueType> {
+	pub fn as_pointer(&self) -> BaseResult<CompactedType> {
 		match self {
 			MIRValueHint::Pointer(e) => Ok(e.clone()),
 			_ => Err(BaseError::critical("Cannot use as_pointer on a non pointer!".to_string()))
 		}
 	}
 
-	pub fn as_value(&self) -> BaseResult<BaseValueType> {
+	pub fn as_value(&self) -> BaseResult<CompactedType> {
 		match self {
 			MIRValueHint::Value(e) => Ok(e.clone()),
 			_ => Err(BaseError::critical("Cannot use as_value on a non value!".to_string()))
 		}
 	}
 
-	pub fn from_ptr(val: BaseValueType) -> Self {
+	pub fn from_ptr(val: CompactedType) -> Self {
 		return MIRValueHint::Pointer(val)
 	}
 
@@ -55,7 +56,7 @@ impl Into<MIRValueHint> for MIRConstantValue {
 	}
 }
 
-impl Into<MIRValueHint> for BaseValueType {
+impl Into<MIRValueHint> for CompactedType {
 	fn into(self) -> MIRValueHint {
 		return MIRValueHint::Value(self)
 	}

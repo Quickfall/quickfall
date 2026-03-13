@@ -160,4 +160,20 @@ impl BaseType {
 		return false;
 	}
 
+	pub fn is_equal(&self, t: &BaseType) -> bool {
+		return match (self, t) {
+			(BaseType::AnyType, BaseType::AnyType) => true,
+			(BaseType::NumericIntegerType(size, signed), BaseType::NumericIntegerType(a, b)) => *size == *a && *signed == *b,
+			(BaseType::FloatingNumberType(exponent, fraction, signed), BaseType::FloatingNumberType(a, b, c)) => *exponent == *a && *fraction == *b && *signed == *c,
+			(BaseType::FixedPointNumberType(number, fraction, signed), BaseType::FixedPointNumberType(a, b, c)) => *number == *a && *fraction == *b && *signed == *c,
+			(BaseType::Boolean, BaseType::Boolean) => true,
+			(BaseType::ArbitraryType(size), BaseType::ArbitraryType(a)) => *size == *a,
+			(BaseType::Pointer, BaseType::Pointer) => true,
+			(BaseType::StaticStr, BaseType::StaticStr) => true,
+			(BaseType::Struct(layout, container), BaseType::Struct(a, b)) => *layout == *a && container.ind == b.ind,
+			
+			_ => false
+		}
+	}
+
 }

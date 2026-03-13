@@ -24,7 +24,7 @@ pub fn build_store(block: &mut MIRBlock, ptr: MIRPointerValue, val: BaseMIRValue
 
 	let hint = block.hints.get_hint(base.get_instruction())?.as_pointer()?;
 
-	if !hint.eq(&val.vtype) {
+	if !hint(&val.vtype) {
 		return Err(BaseError::err("Cannot put this value onto this pointer as it is not the same type!".to_string()))
 	}
 

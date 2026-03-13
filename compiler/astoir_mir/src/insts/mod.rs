@@ -1,6 +1,7 @@
 //! The definitions for instructions within the MIR. 
 
 use astoir_typing::{base::BaseType, compacted::CompactedType};
+use compiler_utils::utils::num;
 
 use crate::{blocks::{refer::MIRBlockReference}, vals::{base::{BaseMIRValue}, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
@@ -54,10 +55,10 @@ pub enum MIRInstruction {
 	// Constants
 	IntegerSignedConstant { raw: i128, bitsize: usize },
 	IntegerUnsignedConstant { raw: u128, bitsize: usize }, 
-	FloatSignedConstant { raw: f64, bitsize: usize }, 
-	FloatUnsignedConstant { raw: f64, bitsize: usize }, 
-	FixedSignedConstant { raw: f64, bitsize: usize }, 
-	FixedUnsignedConstant { raw: f64, bitsize: usize }, 
+	FloatSignedConstant { raw: f64, exponent: usize, fraction: usize }, 
+	FloatUnsignedConstant { raw: f64, exponent: usize, fraction: usize }, 
+	FixedSignedConstant { raw: f64, number: usize, fraction: usize }, 
+	FixedUnsignedConstant { raw: f64, number: usize, fraction: usize }, 
 	StaticStringConstant { raw: String },
 
 	// Control
@@ -115,27 +116,27 @@ impl MIRInstruction {
 			Self::FloatDiv { signed, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
 			Self::FloatNeg { val } => return CompactedType::from(BaseType::FloatingNumberType(val.exponent as u64, val.fraction as u64, true)),
 
-			Self::BitwiseAnd { a, b: _ } => return BaseValueType::IntValue(a.size),
-			Self::BitwiseOr { a, b: _ } => return BaseValueType::IntValue(a.size),
-			Self::BitwiseXor { a, b: _ } => return BaseValueType::IntValue(a.size),
-			Self::BitwiseNot { val } => return BaseValueType::IntValue(val.size),
+			Self::BitwiseAnd { a, b: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
+			Self::BitwiseOr { a, b: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
+			Self::BitwiseXor { a, b: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
+			Self::BitwiseNot { val } => return CompactedType::from(BaseType::NumericIntegerType(val.size as u64, val.signed)),
 
-			Self::ShiftLeft { a, shift: _ } => return BaseValueType::IntValue(a.size),
-			Self::ShiftRight { a, shift: _ } => return BaseValueType::IntValue(a.size),
+			Self::ShiftLeft { a, shift: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
+			Self::ShiftRight { a, shift: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
 
-			Self::CompEq { .. } => return BaseValueType::IntValue(1),
-			Self::CompNeg { .. } => return BaseValueType::IntValue(1),
-			Self::CompLt { .. } => return BaseValueType::IntValue(1),
-			Self::CompLe { .. } => return BaseValueType::IntValue(1),
-			Self::CompGt { .. } => return BaseValueType::IntValue(1),
-			Self::CompGe { .. } => return BaseValueType::IntValue(1),
+			Self::CompEq { .. } => return CompactedType::from(BaseType::Boolean),
+			Self::CompNeg { .. } => return CompactedType::from(BaseType::Boolean),
+			Self::CompLt { .. } => return CompactedType::from(BaseType::Boolean),
+			Self::CompLe { .. } => return CompactedType::from(BaseType::Boolean),
+			Self::CompGt { .. } => return CompactedType::from(BaseType::Boolean),
+			Self::CompGe { .. } => return CompactedType::from(BaseType::Boolean),
 
-			Self::IntegerSignedConstant { raw: _, bitsize } => return BaseValueType::IntValue(*bitsize),
-			Self::IntegerUnsignedConstant { raw: _, bitsize } => return BaseValueType::IntValue(*bitsize),
-			Self::FloatUnsignedConstant { raw: _, bitsize } => return BaseValueType::FloatValue(*bitsize),
-			Self::FloatSignedConstant { raw: _, bitsize } => return BaseValueType::FloatValue(*bitsize),
-			Self::FixedSignedConstant { raw: _, bitsize } => return BaseValueType::IntValue(*bitsize),
-			Self::FixedUnsignedConstant { raw: _, bitsize } => return BaseValueType::IntValue(*bitsize),
+			Self::IntegerSignedConstant { raw: _, bitsize } => return CompactedType::from(BaseType::NumericIntegerType(*bitsize as u64, true)),
+			Self::IntegerUnsignedConstant { raw: _, bitsize } => return CompactedType::from(BaseType::NumericIntegerType(*bitsize as u64, true)),
+			Self::FloatUnsignedConstant { raw: _, exponent, fraction } => return CompactedType::from(BaseType::FloatingNumberType(*exponent as u64, *fraction as u64, false)),
+			Self::FloatSignedConstant { raw: _, exponent, fraction } => return CompactedType::from(BaseType::FloatingNumberType(*exponent as u64, *fraction as u64, true)),
+			Self::FixedSignedConstant { raw: _, number, fraction } => return CompactedType::from(BaseType::NumericIntegerType(*number as u64 + *fraction as u64, true)),
+			Self::FixedUnsignedConstant { raw: _, number, fraction } => return CompactedType::from(BaseType::NumericIntegerType(*number as u64 + *fraction as u64, false)),
  
 			Self::Phi { choices } => {
 				return choices[0].1.vtype.clone();
@@ -143,13 +144,13 @@ impl MIRInstruction {
 
 			Self::Select { cond: _, if_val, else_val: _ } => return if_val.vtype.clone(),
 
-			Self::Call { .. } => return BaseValueType::AnyValue,
+			Self::Call { .. } => return CompactedType::from(BaseType::AnyType),
 			
-			Self::FieldPointer { .. } => return BaseValueType::PointerValue,
-			Self::IndexPointer { .. } => return BaseValueType::PointerValue,
+			Self::FieldPointer { .. } => return CompactedType::from(BaseType::Pointer),
+			Self::IndexPointer { .. } => return CompactedType::from(BaseType::Pointer),
 
-			Self::PointerAdd { .. } => return BaseValueType::PointerValue,
-			Self::PointerSub { .. } => return BaseValueType::PointerValue, 
+			Self::PointerAdd { .. } => return CompactedType::from(BaseType::Pointer),
+			Self::PointerSub { .. } => return CompactedType::from(BaseType::Pointer), 
 
 			_ => panic!("Tried using get_return_type on non returning type!")
 		}
