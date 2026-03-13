@@ -1,5 +1,5 @@
 use astoir_hir::{ctx::HIRContext, nodes::HIRNode};
-use astoir_mir::{blocks::MIRBlock, builder::{build_int_add, build_int_div, build_int_mul, build_int_sub, build_store}, vals::base::{BaseMIRValue, BaseValueType}};
+use astoir_mir::{blocks::MIRBlock, builder::{build_float_add, build_int_add, build_int_div, build_int_mul, build_int_sub, build_store}, vals::base::BaseMIRValue};
 use astoir_typing::base::BaseType;
 use compiler_errors::{IR_INVALID_NODE_TYPE, IR_REQ_VARIABLE_ASSIGN, errs::{BaseResult, base::BaseError}};
 use lexer::toks::math::MathOperator;
@@ -42,11 +42,13 @@ pub fn lower_hir_math_operation_int(block: &mut MIRBlock, left: BaseMIRValue, ri
 	let left = left.as_int()?;
 	let right = right.as_int()?;
 
+	let signed = left.signed;
+
 	let res = match operator {
-		MathOperator::ADD => build_int_add(block, left, right, false)?,
-		MathOperator::SUBSTRACT => build_int_sub(block, left, right, false)?,
-		MathOperator::MULTIPLY => build_int_mul(block, left, right, false)?,
-		MathOperator::DIVIDE => build_int_div(block, left, right, false)?
+		MathOperator::ADD => build_int_add(block, left, right, signed)?,
+		MathOperator::SUBSTRACT => build_int_sub(block, left, right, signed)?,
+		MathOperator::MULTIPLY => build_int_mul(block, left, right, signed)?,
+		MathOperator::DIVIDE => build_int_div(block, left, right, signed)?
 	};
 
 	return Ok(res.into());
