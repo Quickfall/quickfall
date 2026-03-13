@@ -1,21 +1,38 @@
 use astoir_hir::{ctx::HIRContext, nodes::HIRNode};
-use astoir_mir::{blocks::MIRBlock, builder::{build_int_add, build_int_div, build_int_mul, build_int_sub}, vals::base::{BaseMIRValue, BaseValueType}};
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+use astoir_mir::{blocks::MIRBlock, builder::{build_int_add, build_int_div, build_int_mul, build_int_sub, build_store}, vals::base::{BaseMIRValue, BaseValueType}};
+use astoir_typing::base::BaseType;
+use compiler_errors::{IR_INVALID_NODE_TYPE, IR_REQ_VARIABLE_ASSIGN, errs::{BaseResult, base::BaseError}};
 use lexer::toks::math::MathOperator;
 
-use crate::values::lower_hir_value;
+use crate::{values::lower_hir_value, vars::lower_hir_variable_reference};
  
 pub fn lower_hir_math_operation(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &HIRContext) -> BaseResult<BaseMIRValue> {
 	if let HIRNode::MathOperation { left, right, operation, assignment } = *node {
-		let left = lower_hir_value(block, left, ctx)?;
-		let right = lower_hir_value(block, right, ctx)?;
+		if assignment && !left.is_variable_reference() {
+			return Err(BaseError::err(IR_REQ_VARIABLE_ASSIGN!().to_string()))
+		}			
 
-		match left.vtype {
-			BaseValueType::IntValue(_) => return lower_hir_math_operation_int(block, left, right, operation, ctx),
+		let ptr;
 
-			_ => {}
+		if assignment {
+			ptr = Some(lower_hir_variable_reference(block, &left)?);
+		} else {
+			ptr = None
 		}
 
+		let left_val = lower_hir_value(block, left, ctx)?;
+		let right_val = lower_hir_value(block, right, ctx)?;
+				
+
+		let val = match left_val.vtype.base {
+			BaseType::NumericIntegerType(_, _) => lower_hir_math_operation_int(block, left_val, right_val, operation, ctx)?,
+
+			_ => return Err(BaseError::err("Cannot use lower_hir_math_operation on this given value kind!".to_string()))
+		};
+
+		if assignment {
+			build_store(block, ptr.unwrap(), val)?;
+		}
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))

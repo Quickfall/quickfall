@@ -65,6 +65,7 @@ version = "0.1.0"
 dependencies = [
  "astoir_hir",
  "astoir_mir",
+ "astoir_typing",
  "compiler_errors",
  "lexer",
 ]

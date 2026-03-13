@@ -40,6 +40,14 @@ pub enum HIRNode {
 }
 
 impl HIRNode {
+	pub fn is_variable_reference(&self) -> bool {
+		if let HIRNode::VariableReference { .. } = self {
+			return true;
+		}
+
+		return false;
+	}
+	
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<ComplexType> {
 		match self {
 			HIRNode::VariableReference { index, is_static } => {
