@@ -20,6 +20,8 @@ pub enum LexerTokenType {
 	Layout,
 	Lay,
 
+	This,
+
 	Static,
 
 	/// 0: the operator

@@ -1,12 +1,12 @@
 //! The context definitions for the AstoIR HIR layer.
 
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, hash::Hash};
 
 use astoir_typing::{complete::{ComplexType}, storage::TypeStorage};
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 
-use crate::nodes::HIRNode;
+use crate::{nodes::HIRNode, structs::HIRStructContainer};
 
 pub type HIRFunction = (Option<ComplexType>, Vec<(u64, ComplexType)>);
 
@@ -181,6 +181,7 @@ pub struct HIRContext {
 	pub functions: IndexStorage<HIRFunction>, 
 	pub function_declarations: Vec<Option<Box<HIRNode>>>,
 	pub static_variables: IndexStorage<ComplexType>,
+	pub struct_func_impls: HashMap<usize, HIRStructContainer>,
 	pub type_storage: TypeStorage
 }
 
@@ -192,7 +193,7 @@ pub enum VariableKind {
 
 impl HIRContext {
 	pub fn new() -> BaseResult<Self> {
-		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_declarations: vec![] })
+		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_declarations: vec![], struct_func_impls: HashMap::new() })
 	}
 
 	pub fn translate_function(&self, func_hash: u64) -> BaseResult<usize> {

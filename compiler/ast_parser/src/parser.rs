@@ -15,7 +15,7 @@ use crate::{control::{for_loop::parse_for_loop, if_else::parse_if_statement, whi
 pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Function => {
-			return parse_function_declaraction(tokens, ind);
+			return parse_function_declaraction(tokens, ind, None);
 		},
 
 		LexerTokenType::ShadowFunction => {
