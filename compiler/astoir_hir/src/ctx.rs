@@ -1,6 +1,6 @@
 //! The context definitions for the AstoIR HIR layer.
 
-use std::{collections::HashMap};
+use std::collections::{HashMap, HashSet};
 
 use astoir_typing::{complete::{ComplexType}, storage::TypeStorage};
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
@@ -62,14 +62,14 @@ impl HIRBranchedContext {
 	}
 
 	/// Introduces a new variable in the current branch era.
-	pub fn introduce_variable(&mut self, hash: u64, t: ComplexType) -> BaseResult<usize> {
+	pub fn introduce_variable(&mut self, hash: u64, t: ComplexType, has_default: bool) -> BaseResult<usize> {
 		let identity = SelfHash { hash };
 
 		if self.hash_to_ind.contains_key(&identity) {
 			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
-		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t };
+		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new() };
 		self.variables.push(var);
 
 		let ind: usize = self.current_element_index;
@@ -80,6 +80,18 @@ impl HIRBranchedContext {
 		return Ok(ind);
 	}
 
+	pub fn introduce_variable_assign(&mut self, ind: usize) -> bool {
+		let var = &mut self.variables[ind];
+
+		if var.has_default {
+			return true;
+		}
+
+		var.introduced_values.insert(self.current_branch);
+
+		return true;
+	}
+
 	/// Determines if the element with the given index is still alive in the current branch.
 	pub fn is_alive(&self, ind: usize) -> bool {
 		let start_branch = self.variables[ind].introduced_in_era;
@@ -88,15 +100,17 @@ impl HIRBranchedContext {
 			return false;
 		}
 
-		if !self.ending_eras.contains_key(&start_branch) {
+		return self.is_era_alive(start_branch);
+	}
+
+	pub fn is_era_alive(&self, era: usize) -> bool {
+		if !self.ending_eras.contains_key(&era) {
 			// If the era hasn't ended yet, (the ending era isn't added for branch start_branch)
 			// this means that the variable is still alive and we are still inside of the branch start_branch
 			return true;
 		}
 
-		let end = self.ending_eras[&start_branch];
-
-		return end <= self.current_branch;
+		return false;
 	}
 
 	pub fn is_dropped_before(&self, ind: usize) -> bool {
@@ -108,6 +122,22 @@ impl HIRBranchedContext {
 
 		return self.ending_eras[&start_branch] < self.current_branch;
 	}
+
+	pub fn has_variable_value(&self, ind: usize) -> bool {
+		let var = &self.variables[ind];
+
+		if var.has_default {
+			return true;
+		}
+
+		for era in var.introduced_values.iter() {
+			if self.is_era_alive(*era) {
+				return true;
+			}
+		}
+
+		return false;
+ 	}
 
 	pub fn get_ending_era(&self, ind: usize) -> usize {
 		return self.ending_eras[&self.variables[ind].introduced_in_era];
@@ -140,7 +170,10 @@ impl HIRBranchedContext {
 #[derive(Debug)]
 pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
-	pub variable_type: ComplexType
+	pub variable_type: ComplexType,
+	
+	pub has_default: bool,
+	pub introduced_values: HashSet<usize> // TODO: try to potentially reduce this
 }
 
 #[derive(Debug)]

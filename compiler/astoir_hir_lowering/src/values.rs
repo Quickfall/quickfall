@@ -138,7 +138,7 @@ pub fn lower_ast_value(context: &HIRContext, curr_ctx: &HIRBranchedContext, node
 		},
 
 		ASTTreeNodeKind::VariableReference(_) => {
-			return lower_ast_variable_reference(context, curr_ctx, node)
+			return lower_ast_variable_reference(context, curr_ctx, node, true)
 		},
 
 		_ => make_invalid_type_err!(node)

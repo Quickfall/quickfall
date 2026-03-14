@@ -25,6 +25,7 @@ pub struct ErrorStorage {
 
 pub fn dump_errors() {
 	ERR_STORAGE.with_borrow(|f| {
+
 		for err in &f.errs {
 			println!("{}", err.err);
 

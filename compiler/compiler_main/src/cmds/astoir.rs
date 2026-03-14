@@ -18,16 +18,18 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 
 	for i in 3..arguments.len() {
 		let lexer = lexer_parse_file(&arguments[i]).unwrap();
-		let ast = parse_ast_ctx(&lexer).unwrap();
+		let ast = parse_ast_ctx(&lexer);
+
+		dump_errors();
 
 		match level {
 			IRLevel::HIR => {
-				let ctx = run_astoir_hir(ast).unwrap();
+				let ctx = run_astoir_hir(ast.unwrap());
 				let res_path = arguments[i].clone() + ".qfhir";
 
 				dump_errors();
 
-				fs::write(res_path, format!("{:#?}", ctx)).unwrap()
+				fs::write(res_path, format!("{:#?}", ctx.unwrap())).unwrap()
 			}
 		}
 	}

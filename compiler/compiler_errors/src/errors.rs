@@ -215,6 +215,13 @@ macro_rules! IR_REQ_VARIABLE_ASSIGN {
 }
 
 #[macro_export]
+macro_rules! VARIABLE_REQ_VALUE {
+	() => {
+		"The variable doesn't have any value here! Every variable must have a value at every point where it is used."
+	};
+}
+
+#[macro_export]
 macro_rules! IR_VALUE_TYPE_TRANSMUTE {
 	() => {
 		"Cannot transmute this value to fit the expected type."
