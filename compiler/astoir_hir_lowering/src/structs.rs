@@ -13,6 +13,7 @@ fn lower_ast_struct_member(context: &mut HIRContext, node: Box<ASTTreeNode>, con
 		};
 
 		container.fields.append(name.hash, t);
+		return Ok(true);
 	}
 
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))
@@ -23,6 +24,8 @@ fn lower_ast_struct_function_decl(context: &mut HIRContext, node: Box<ASTTreeNod
 		let mut arguments = vec![];
 
 		for arg in args {
+			println!("{:#?}", arg);
+			
 			let lowered = match lower_ast_type(context, arg.argument_type) {
 				Ok(v) => v,
 				Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
@@ -61,28 +64,31 @@ pub fn lower_ast_struct_declaration(context: &mut HIRContext, node: Box<ASTTreeN
 
 		let mut func_impls = vec![];
 
-		for member in members {
-			match &member.kind {
-				&ASTTreeNodeKind::StructFieldMember { .. } => lower_ast_struct_member(context, node.clone(), &mut container)?,
-				&ASTTreeNodeKind::FunctionDeclaration { .. } => {
-					let body = lower_ast_struct_function_decl(context, node.clone(), &mut container)?;
-
-					func_impls.push(body);
-					true
-				},
-
-				_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))
-			};
-
-			lower_ast_struct_member(context, member, &mut container)?;
-		}
-
 		let base = BaseType::Struct(layout, container.clone());
 
 		let ind = match context.type_storage.register_type(name.hash, base) {
 			Ok(v) => v,
 			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 		};
+
+		for member in members {
+			match &member.kind {
+				&ASTTreeNodeKind::StructFieldMember { .. } => {
+					lower_ast_struct_member(context, member, &mut container)?;
+				
+					context.type_storage.types[ind] = BaseType::Struct(layout, container.clone());
+				},
+				&ASTTreeNodeKind::FunctionDeclaration { .. } => {
+					let body = lower_ast_struct_function_decl(context, member, &mut container)?;
+
+					context.type_storage.types[ind] = BaseType::Struct(layout, container.clone());
+
+					func_impls.push(body);
+				},
+
+				_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))
+			};
+		}
 
 		context.struct_func_impls.insert(ind, HIRStructContainer { function_impls: func_impls });
 

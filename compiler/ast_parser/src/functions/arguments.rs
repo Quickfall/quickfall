@@ -13,7 +13,7 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struc
 	let mut depends_on_this: bool = false;
 	let mut args: Vec<FunctionDeclarationArgument> = Vec::new();
 	
-	while *ind < tokens.len() && tokens[*ind].is_keyword() {
+	while *ind < tokens.len() && (tokens[*ind].is_keyword() || tokens[*ind].tok_type == LexerTokenType::This) {
 		
 		if tokens[*ind].tok_type == LexerTokenType::This {
 			if struct_type.is_none() {
