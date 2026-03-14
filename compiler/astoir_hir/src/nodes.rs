@@ -21,7 +21,7 @@ pub enum HIRNode {
 	StructLRU { steps: Vec<StructLRUStep>, last: ComplexType },
 
 	StructDeclaration { type_name: usize, container: StructTypeContainer, layout: bool },
-	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, ComplexType)>, return_type: Option<ComplexType>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext },
+	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, ComplexType)>, return_type: Option<ComplexType>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
 	ShadowFunctionDeclaration { func_name: usize, arguments: Vec<(u64, ComplexType)>, return_type: Option<ComplexType> },
 
 	FunctionCall { func_name: usize, arguments: Vec<Box<HIRNode>> },
