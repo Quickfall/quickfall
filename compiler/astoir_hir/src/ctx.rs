@@ -110,9 +110,7 @@ impl HIRBranchedContext {
 			return true;
 		}
 
-		let end = self.ending_eras[&era];
-
-		return end <= self.current_branch;
+		return false;
 	}
 
 	pub fn is_dropped_before(&self, ind: usize) -> bool {
