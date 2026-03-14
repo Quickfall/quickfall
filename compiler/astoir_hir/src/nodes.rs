@@ -1,6 +1,7 @@
 //! The nodes inside of the AstoIR HIR. 
 
 use astoir_typing::{complete::{ComplexType, ConcreteType}, hashes::{BOOLEAN_TYPE, STATIC_STR}, structs::StructTypeContainer};
+use compiler_errors::errs::{BaseResult, base::BaseError};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
@@ -46,6 +47,14 @@ impl HIRNode {
 		}
 
 		return false;
+	}
+
+	pub fn as_variable_reference(&self) -> BaseResult<(usize, bool)> {
+		if let HIRNode::VariableReference { index, is_static } = self {
+			return Ok((*index, *is_static))
+		}
+
+		return Err(BaseError::err("Tried using as_variable_reference on a non var ref".to_string()))
 	}
 	
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<ComplexType> {
