@@ -53,7 +53,7 @@ pub enum ASTTreeNodeKind {
 	ForBlock { initial_state: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 
     FunctionCall { func: HashedString, args: Vec<Box<ASTTreeNode>>  },
-    FunctionDeclaration { func_name: HashedString, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, return_type: Option<CompleteType> },
+    FunctionDeclaration { func_name: HashedString, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, return_type: Option<CompleteType>, requires_this: bool },
 
 	ShadowFunctionDeclaration { func_name: HashedString, args: Vec<FunctionDeclarationArgument>, return_type: Option<CompleteType> },
 
@@ -76,7 +76,7 @@ impl ASTTreeNodeKind {
 
 	pub fn get_tree_name(&self) -> Option<HashedString> {
 		match self {
-			ASTTreeNodeKind::FunctionDeclaration { func_name, args: _, body: _, return_type: _ } => {
+			ASTTreeNodeKind::FunctionDeclaration { func_name, args: _, body: _, return_type: _ , requires_this: _} => {
 				return Some(HashedString::new(func_name.val.to_string()));
 			},
 

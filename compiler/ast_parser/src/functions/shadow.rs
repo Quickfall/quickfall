@@ -32,5 +32,5 @@ pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 		end = tokens[*ind - 1].get_end_pos().clone();
 	}
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ShadowFunctionDeclaration { func_name: HashedString::new(function_name.0), args, return_type: ret_type }, start, end)))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ShadowFunctionDeclaration { func_name: HashedString::new(function_name.0), args: args.0, return_type: ret_type }, start, end)))
 }

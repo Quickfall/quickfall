@@ -37,7 +37,7 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, st
 
 	let end = tokens[*ind - 1].get_end_pos();
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionDeclaration { func_name: HashedString::new(function_name.0), args, body, return_type: ret_type }, start, end)));
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionDeclaration { func_name: HashedString::new(function_name.0), args: args.0, body, return_type: ret_type, requires_this: args.1 }, start, end)));
 }
 
 pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
