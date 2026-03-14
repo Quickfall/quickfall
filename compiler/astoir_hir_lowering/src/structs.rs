@@ -24,8 +24,6 @@ fn lower_ast_struct_function_decl(context: &mut HIRContext, node: Box<ASTTreeNod
 		let mut arguments = vec![];
 
 		for arg in args {
-			println!("{:#?}", arg);
-			
 			let lowered = match lower_ast_type(context, arg.argument_type) {
 				Ok(v) => v,
 				Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))

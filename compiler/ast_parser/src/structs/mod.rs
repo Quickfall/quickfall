@@ -25,13 +25,9 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 	let temp_type = CompleteType { base_type: type_name.1, sizes: vec![], types: vec![], pointer: false, pointer_array: false, array_sz: 0 };
 
 	while tokens[*ind].tok_type != LexerTokenType::BracketClose {
-		println!("tok {:#?}", tokens[*ind].tok_type);
-
 		if tokens[*ind].tok_type == LexerTokenType::Function {
-			println!("Taken");
 			members.push(parse_function_declaraction(tokens, ind, Some(temp_type.clone()))?);
 		} else {
-			println!("Untaken");
 			members.push(parse_types_field_member(tokens, ind)?);
 		}
 	}

@@ -4,14 +4,7 @@ use astoir_typing::{base::BaseType, complete::{ComplexType, ConcreteType}};
 use compiler_errors::{IR_EXPECTED_SIZE_SPECIFIED, errs::{BaseResult, base::BaseError}};
 
 pub fn lower_ast_type(context: &HIRContext, t: CompleteType) -> BaseResult<ComplexType> {
-	for key in context.type_storage.hash_to_ind.keys() {
-		println!("- {}", key.hash);
-	}
-
-	println!("Seeking {}", t.base_type);
-
 	let hir_type = context.type_storage.get_type(t.base_type)?;
-
 	let mut type_params = vec![];
 	
 	for type_param in t.types {
