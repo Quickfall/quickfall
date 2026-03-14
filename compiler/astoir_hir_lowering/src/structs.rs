@@ -3,7 +3,7 @@ use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::HIRNode, structs:
 use astoir_typing::{base::BaseType, structs::StructTypeContainer};
 use compiler_errors::{IR_TYPE_WRONG_KIND, errs::{CompilerResult, ErrorKind, base::BaseError, normal::CompilerError}};
 
-use crate::{func, lower_ast_body, types::lower_ast_type};
+use crate::{lower_ast_body, types::lower_ast_type};
 
 fn lower_ast_struct_member(context: &mut HIRContext, node: Box<ASTTreeNode>, container: &mut StructTypeContainer) -> CompilerResult<bool> {
 	if let ASTTreeNodeKind::StructFieldMember { name, member_type } = node.kind.clone() {

@@ -6,13 +6,17 @@ pub mod hints;
 /// Represents a function block or a branch.
 pub struct MIRBlock {
 	instructions: Vec<MIRInstruction>,
+
+	/// Hints for the index of the SSA value for the given variable. Will be the pointer value if the variable is not SSA.
+	pub variable_hints: Vec<usize>, 
+
 	pub hints: HintStorage,
 	pub ctx: MIRBlockContext
 }
 
 impl MIRBlock {
 	pub fn new() -> Self {
-		MIRBlock { instructions: vec![], hints: HintStorage::new(), ctx: MIRBlockContext::new() }
+		MIRBlock { instructions: vec![], variable_hints: vec![], hints: HintStorage::new(), ctx: MIRBlockContext::new() }
 	}
 
 	pub fn append(&mut self, ctx: &MIRContext, instruction: MIRInstruction) -> InstructionValue {
