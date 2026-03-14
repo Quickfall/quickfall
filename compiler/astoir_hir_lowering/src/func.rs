@@ -65,7 +65,7 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 		let branch = curr_ctx.start_branch();
 
 		for arg in &arguments {
-			match curr_ctx.introduce_variable(arg.0, arg.1.clone()) {
+			match curr_ctx.introduce_variable(arg.0, arg.1.clone(), true) {
 				Ok(_) => {},
 				Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 			}

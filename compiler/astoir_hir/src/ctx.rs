@@ -1,6 +1,6 @@
 //! The context definitions for the AstoIR HIR layer.
 
-use std::{collections::HashMap};
+use std::collections::{HashMap, HashSet};
 
 use astoir_typing::{complete::{ComplexType}, storage::TypeStorage};
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
@@ -62,14 +62,14 @@ impl HIRBranchedContext {
 	}
 
 	/// Introduces a new variable in the current branch era.
-	pub fn introduce_variable(&mut self, hash: u64, t: ComplexType) -> BaseResult<usize> {
+	pub fn introduce_variable(&mut self, hash: u64, t: ComplexType, has_default: bool) -> BaseResult<usize> {
 		let identity = SelfHash { hash };
 
 		if self.hash_to_ind.contains_key(&identity) {
 			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
-		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t };
+		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new() };
 		self.variables.push(var);
 
 		let ind: usize = self.current_element_index;
@@ -140,7 +140,10 @@ impl HIRBranchedContext {
 #[derive(Debug)]
 pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
-	pub variable_type: ComplexType
+	pub variable_type: ComplexType,
+	
+	pub has_default: bool,
+	pub introduced_values: HashSet<usize> // TODO: try to potentially reduce this
 }
 
 #[derive(Debug)]

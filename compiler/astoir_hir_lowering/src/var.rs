@@ -11,7 +11,7 @@ pub fn lower_ast_variable_declaration(context: &HIRContext, curr_ctx: &mut HIRBr
 			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 		};
 
-		let name_ind = match curr_ctx.introduce_variable(var_name.hash, lowered.clone()) {
+		let name_ind = match curr_ctx.introduce_variable(var_name.hash, lowered.clone(), value.is_some()) {
 			Ok(v) => v,
 			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 		};
