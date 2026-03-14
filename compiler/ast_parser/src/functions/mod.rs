@@ -1,6 +1,6 @@
 //! Parser module for functions
 
-use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
+use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::CompleteType};
 use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
@@ -11,7 +11,7 @@ pub mod shadow;
 pub mod arguments;
 pub mod returns;
 
-pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<CompleteType>) -> CompilerResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;
@@ -20,7 +20,7 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize) ->
 	*ind += 1;
 	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
-	let args = parse_function_arguments(tokens, ind)?;
+	let args = parse_function_arguments(tokens, ind, struct_type)?;
 
 	*ind += 1;
 

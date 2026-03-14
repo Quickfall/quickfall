@@ -16,7 +16,7 @@ pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 	*ind += 1;
 	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
-	let args = parse_function_arguments(tokens, ind)?;
+	let args = parse_function_arguments(tokens, ind, None)?;
 
 	*ind += 1;
 
