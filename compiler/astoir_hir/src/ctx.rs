@@ -80,6 +80,18 @@ impl HIRBranchedContext {
 		return Ok(ind);
 	}
 
+	pub fn introduce_variable_assign(&mut self, ind: usize) -> bool {
+		let var = &mut self.variables[ind];
+
+		if var.has_default {
+			return true;
+		}
+
+		var.introduced_values.insert(self.current_branch);
+
+		return true;
+	}
+
 	/// Determines if the element with the given index is still alive in the current branch.
 	pub fn is_alive(&self, ind: usize) -> bool {
 		let start_branch = self.variables[ind].introduced_in_era;
@@ -88,13 +100,17 @@ impl HIRBranchedContext {
 			return false;
 		}
 
-		if !self.ending_eras.contains_key(&start_branch) {
+		return self.is_era_alive(start_branch);
+	}
+
+	pub fn is_era_alive(&self, era: usize) -> bool {
+		if !self.ending_eras.contains_key(&era) {
 			// If the era hasn't ended yet, (the ending era isn't added for branch start_branch)
 			// this means that the variable is still alive and we are still inside of the branch start_branch
 			return true;
 		}
 
-		let end = self.ending_eras[&start_branch];
+		let end = self.ending_eras[&era];
 
 		return end <= self.current_branch;
 	}
@@ -108,6 +124,22 @@ impl HIRBranchedContext {
 
 		return self.ending_eras[&start_branch] < self.current_branch;
 	}
+
+	pub fn has_variable_value(&self, ind: usize) -> bool {
+		let var = &self.variables[ind];
+
+		if var.has_default {
+			return true;
+		}
+
+		for era in var.introduced_values.iter() {
+			if self.is_era_alive(*era) {
+				return true;
+			}
+		}
+
+		return false;
+ 	}
 
 	pub fn get_ending_era(&self, ind: usize) -> usize {
 		return self.ending_eras[&self.variables[ind].introduced_in_era];
