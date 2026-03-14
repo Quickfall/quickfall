@@ -3,7 +3,7 @@
 use astoir_typing::{base::BaseType, compacted::CompactedType};
 use compiler_utils::utils::num;
 
-use crate::{blocks::refer::MIRBlockReference, ctx::MIRContext, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
+use crate::{blocks::{MIRBlock, refer::MIRBlockReference}, ctx::MIRContext, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
 pub mod val;
 
@@ -98,10 +98,16 @@ impl MIRInstruction {
 		}
 	}
 
-	pub fn get_return_type(&self, ctx: &MIRContext) -> CompactedType {
+	pub fn get_return_type(&self, ctx: &MIRContext, block: &MIRBlock) -> CompactedType {
 		match self {
 			Self::StackAlloc { .. } => return CompactedType::from(BaseType::Pointer),
-			Self::Load { .. } => return CompactedType::from(BaseType::AnyType),
+			Self::Load { value} => {
+				let base: BaseMIRValue = value.clone().into();
+
+				let hint = block.hints.get_hint(base.get_instruction()).unwrap();
+
+				return hint.as_pointer().unwrap();
+			},
 
 			Self::DowncastInteger { val, size } => return CompactedType::from(BaseType::NumericIntegerType(*size as u64, val.signed)),
 			Self::UpcastInteger { val, size } => return CompactedType::from(BaseType::NumericIntegerType(*size as u64, val.signed)),
