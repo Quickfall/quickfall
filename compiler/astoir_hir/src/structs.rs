@@ -14,3 +14,9 @@ pub enum HIRIfBranch {
 	ElseIfBranch { cond: Box<HIRNode>, body: Vec<Box<HIRNode>> },
 	ElseBranch { body: Vec<Box<HIRNode>> }
 }
+
+#[derive(Debug)]
+pub struct HIRStructContainer {
+	pub function_impls: Vec<Box<HIRNode>>
+}
+
