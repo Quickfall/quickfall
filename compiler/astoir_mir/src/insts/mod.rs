@@ -1,7 +1,6 @@
 //! The definitions for instructions within the MIR. 
 
 use astoir_typing::{base::BaseType, compacted::CompactedType};
-use compiler_utils::utils::num;
 
 use crate::{blocks::{MIRBlock, refer::MIRBlockReference}, ctx::MIRContext, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
@@ -122,10 +121,10 @@ impl MIRInstruction {
 			Self::IntegerMod { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
 			Self::IntegerNeg { val } => return CompactedType::from(BaseType::NumericIntegerType(val.size as u64, true)),
 
-			Self::FloatAdd { signed, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
-			Self::FloatSub { signed, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
-			Self::FloatMul { signed, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
-			Self::FloatDiv { signed, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
+			Self::FloatAdd { signed: _, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
+			Self::FloatSub { signed: _, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
+			Self::FloatMul { signed: _, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
+			Self::FloatDiv { signed: _, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
 			Self::FloatNeg { val } => return CompactedType::from(BaseType::FloatingNumberType(val.exponent as u64, val.fraction as u64, true)),
 
 			Self::BitwiseAnd { a, b: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),

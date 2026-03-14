@@ -1,4 +1,4 @@
-use crate::{blocks::hints::HintStorage, ctx::MIRBlockContext, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
+use crate::{blocks::hints::HintStorage, ctx::{MIRBlockContext, MIRContext}, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
 pub mod refer;
 pub mod hints;
@@ -15,13 +15,13 @@ impl MIRBlock {
 		MIRBlock { instructions: vec![], hints: HintStorage::new(), ctx: MIRBlockContext::new() }
 	}
 
-	pub fn append(&mut self, instruction: MIRInstruction) -> InstructionValue {
+	pub fn append(&mut self, ctx: &MIRContext, instruction: MIRInstruction) -> InstructionValue {
 		self.instructions.push(instruction.clone());
 
 		let ind = self.instructions.len() - 1;
 
-		if instruction.has_return() {
-			return InstructionValue::new(Some(BaseMIRValue::new(ind, instruction.get_return_type())));
+		if instruction.has_return(ctx) {
+			return InstructionValue::new(Some(BaseMIRValue::new(ind, instruction.get_return_type(ctx, self))));
 		}
 
 		return InstructionValue::new(None);

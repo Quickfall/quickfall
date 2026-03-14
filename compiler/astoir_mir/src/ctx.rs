@@ -2,7 +2,7 @@ use crate::{funcs::MIRFunction, vals::ptr::MIRPointerValue};
 
 
 pub struct MIRContext {
-	pub functions: Vec<MIRFunction>
+	pub functions: Vec<MIRFunction>,
 }
 
 impl MIRContext {
