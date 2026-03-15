@@ -10,11 +10,13 @@ pub struct CompactedType {
 	pub pointer_array: bool
 }
 
-impl CompactedType {
-	pub fn eq(&self, other: &CompactedType) -> bool {
+impl PartialEq for CompactedType {
+	fn eq(&self, other: &Self) -> bool {
 		return self.base.is_equal(&other.base) && self.array == other.array && self.pointer == other.pointer && self.pointer_array == other.pointer_array;
 	}
+}
 
+impl CompactedType {
 	pub fn can_transmute(&self, other: &CompactedType) -> bool {
 		return self.base.can_transmute_into(&other.base) && self.array == other.array && self.pointer == other.pointer && self.pointer_array == other.pointer_array;
 	}
