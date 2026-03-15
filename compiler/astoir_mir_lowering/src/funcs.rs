@@ -4,18 +4,16 @@ use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, IR_INVALID_NODE_TYPE, errs:
 
 use crate::{MIRLoweringContext, values::lower_hir_value};
 
-pub fn lower_hir_function_call(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_function_call(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	if let HIRNode::FunctionCall { func_name, arguments } = *node {
 		let mut args = vec![];
 
-		let func = &ctx.mir_ctx.functions[func_name];
-
 		let mut i = 0;
 		for arg in arguments {
-			let t = &func.arguments[i];
+			let t = &ctx.mir_ctx.functions[func_name].arguments[i].clone();
 			let mir_val = lower_hir_value(block, arg, ctx)?;
 
-			if !mir_val.vtype.can_transmute(&t) {
+			if !mir_val.vtype.can_transmute(t) {
 				return Err(BaseError::err(IR_FUNCTION_INVALID_ARGUMENTS!().to_string()))
 			}
 
@@ -24,7 +22,7 @@ pub fn lower_hir_function_call(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &M
 			i += 1;
 		}
 
-		return build_call(&ctx.mir_ctx, block, func, func_name, args);
+		return build_call(&mut ctx.mir_ctx, block, func_name, func_name, args);
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))

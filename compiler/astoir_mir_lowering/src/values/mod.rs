@@ -7,7 +7,7 @@ use crate::{MIRLoweringContext, math::lower_hir_math_operation, values::{boolean
 pub mod consts;
 pub mod booleans;
 
-pub fn lower_hir_value(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_value(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	match *node {
 		HIRNode::IntegerLiteral { .. } | HIRNode::StringLiteral { .. } => return lower_hir_literal(block, node, ctx),
 		HIRNode::VariableReference { .. } => return lower_hir_variable_reference_value(block, node, ctx),

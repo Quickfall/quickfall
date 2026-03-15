@@ -7,6 +7,7 @@ pub mod int;
 pub mod float;
 pub mod ptr;
 pub mod consts;
+pub mod refer;
 
 pub enum MIRAnyValue {
 	Int(MIRIntValue), 

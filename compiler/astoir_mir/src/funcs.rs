@@ -2,12 +2,12 @@ use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_utils::hash::HashedString;
 
-use crate::{blocks::{MIRBlock, refer::MIRBlockReference}};
+use crate::{blocks::{refer::{MIRBlockReference}}, ctx::MIRContext};
 
 /// Represents a function in the MIR. Owns one or more blocks
 pub struct MIRFunction {
 	/// The block storage. index 0 is entry block
-	pub blocks: Vec<MIRBlock>,
+	pub blocks: Vec<MIRBlockReference>,
 	pub name: HashedString,
 
 	/// This will prevent the function from being usable by normal function calls if true
@@ -22,28 +22,28 @@ impl MIRFunction {
 		return MIRFunction { blocks: vec![], name: HashedString::new(name), arguments, return_type, is_from_struct }
 	}
 
-	pub fn append_entry_block(&mut self) -> BaseResult<MIRBlockReference> {
+	pub fn append_entry_block(&mut self, ctx: &mut MIRContext) -> BaseResult<MIRBlockReference> {
 		if !self.blocks.is_empty() {
 			return Err(BaseError::err("Tried using append_entry_block on non-empty function blocks!".to_string()))
 		}
 
-		let ind = self.blocks.len();
+		let reference = ctx.create_block();
 
-		self.blocks.push(MIRBlock::new());
+		self.blocks.push(reference);
 
-		return Ok(ind);
+		return Ok(reference);
 	}
 
-	pub fn append_block(&mut self) -> BaseResult<MIRBlockReference> {
+	pub fn append_block(&mut self, ctx: &mut MIRContext) -> BaseResult<MIRBlockReference> {
 		if self.blocks.is_empty() {
 			return Err(BaseError::err("Tried using append_block on empty function blocks!".to_string()))
 		}
 
-		let ind = self.blocks.len();
+		let reference = ctx.create_block();
 
-		self.blocks.push(MIRBlock::new());
+		self.blocks.push(reference);
 
-		return Ok(ind)
+		return Ok(reference)
 	}
 
 }

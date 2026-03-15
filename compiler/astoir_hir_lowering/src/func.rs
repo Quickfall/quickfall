@@ -77,6 +77,12 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 
 		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
 
+		for var in 0..curr_ctx.variables.len() {
+			if curr_ctx.is_eligible_for_ssa(var) {
+				println!("* Function variable {} is eligible for SSA treatment!", var);
+			}
+		}
+
 		return Ok(Box::new(HIRNode::FunctionDeclaration { func_name: ind, arguments, return_type: ret_type, body, ctx: curr_ctx, requires_this }))
 	}
 

@@ -69,7 +69,7 @@ impl HIRBranchedContext {
 			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
-		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new() };
+		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false };
 		self.variables.push(var);
 
 		let ind: usize = self.current_element_index;
@@ -165,6 +165,12 @@ impl HIRBranchedContext {
 		}
 	}
 
+	pub fn is_eligible_for_ssa(&self, ind: usize) -> bool {
+		let var = &self.variables[ind];
+
+		return !var.requires_address;
+	}
+	
 }
 
 #[derive(Debug)]
@@ -172,6 +178,8 @@ pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
 	pub variable_type: ComplexType,
 	
+	pub requires_address: bool,
+
 	pub has_default: bool,
 	pub introduced_values: HashSet<usize> // TODO: try to potentially reduce this
 }

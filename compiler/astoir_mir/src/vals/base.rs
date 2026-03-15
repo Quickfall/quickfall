@@ -28,8 +28,13 @@ impl BaseMIRValue {
 		return Ok(MIRPointerValue::new(self.clone())?)
 	}
 
-	pub fn get_instruction(&self) -> usize {
+	pub fn get_ssa_index(&self) -> usize {
 		return self.val_index;
 	}
+}
 
+impl PartialEq for BaseMIRValue {
+	fn eq(&self, other: &Self) -> bool {
+		return self.val_index == other.val_index && self.vtype == other.vtype;
+	}
 }
