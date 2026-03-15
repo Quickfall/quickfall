@@ -1,7 +1,7 @@
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::vals::{consts::MIRConstantValue};
+use crate::{blocks::MIRBlockVariableSSAHint, vals::{base::BaseMIRValue, consts::MIRConstantValue}};
 
 
 /// A hint on a given value, contains constants or pointer types for example
@@ -61,7 +61,7 @@ impl Into<MIRValueHint> for CompactedType {
 }
 
 pub struct HintStorage {
-	pub vec: Vec<MIRValueHint>
+	pub vec: Vec<MIRValueHint>,
 }
 
 impl HintStorage {

@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 
-use crate::{blocks::hints::MIRValueHint, ctx::{MIRBlockContext, MIRContext}, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
+use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
 pub mod refer;
 pub mod hints;
 
 /// The type of variable inside of a MIR block.
+#[derive(Clone)]
 pub enum MIRBlockVariableType {
 	/// SSAs, allow for direct register usage.
 	/// Requires:
@@ -17,6 +18,7 @@ pub enum MIRBlockVariableType {
 	Pointer
 }
 
+#[derive(Clone)]
 pub struct MIRBlockVariableSSAHint {
 	pub kind: MIRBlockVariableType,
 	pub hint: Option<BaseMIRValue>
@@ -26,15 +28,28 @@ pub struct MIRBlockVariableSSAHint {
 pub struct MIRBlock {
 	instructions: Vec<MIRInstruction>,
 
-	/// Hints for the index of the SSA value for the given variable. Will be the pointer value if the variable is not SSA.
-	pub variables: HashMap<usize, MIRBlockVariableSSAHint>,
+	/// The block references that will merge into this one
+	pub merge_blocks: Vec<MIRBlockReference>,
 
-	pub ctx: MIRBlockContext
+	/// Hints for the index of the SSA value for the given variable. Will be the pointer value if the variable is not SSA.
+	pub variables: HashMap<usize, MIRBlockVariableSSAHint>
 }
 
 impl MIRBlock {
 	pub fn new() -> Self {
-		MIRBlock { instructions: vec![], variables: HashMap::new(), ctx: MIRBlockContext::new() }
+		MIRBlock { instructions: vec![], variables: HashMap::new(), merge_blocks: vec![] }
+	}
+
+	pub fn new_merge(base: &mut MIRBlock, ctx: &mut MIRContext) -> MIRBlockReference {
+		let ind = ctx.create_block();
+
+		let block = &mut ctx.blocks[ind];
+
+		for (ind, hint) in base.variables.iter() {
+			block.variables.insert(*ind, hint.clone());
+		}
+
+		return ind;
 	}
 
 	pub fn append(&mut self, ctx: &mut MIRContext, instruction: MIRInstruction) -> InstructionValue {
