@@ -1,8 +1,8 @@
-use std::{collections::HashMap, f32::consts::E};
+use std::{collections::HashMap};
 
-use compiler_errors::errs::BaseResult;
+use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, builder::build_phi, ctx::MIRContext, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
+use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, builder::build_phi, ctx::MIRContext, insts::{MIRInstruction, val::InstructionValue}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
 
 pub mod refer;
 pub mod hints;
@@ -59,6 +59,21 @@ impl MIRBlock {
 		}
 
 		return ind;
+	}
+
+	pub fn get_variable_ref(&self, var_ind: usize) -> BaseResult<MIRVariableReference> {
+		let var = &self.variables[&var_ind];
+
+		if var.kind == MIRBlockVariableType::SSA {
+			return Ok(MIRVariableReference::from(var_ind));
+		}
+
+		let unpacked = match &var.hint {
+			Some(v) => v.clone(),
+			None => return Err(BaseError::err("Missing BaseMIRValue in pointer hint".to_string()))
+		};
+
+		return Ok(MIRVariableReference::from(unpacked.as_ptr()?));
 	}
 
 	pub fn append(&mut self, ctx: &mut MIRContext, instruction: MIRInstruction) -> InstructionValue {
