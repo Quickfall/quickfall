@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{blocks::hints::HintStorage, ctx::{MIRBlockContext, MIRContext}, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
 pub mod refer;
@@ -15,13 +17,17 @@ pub enum MIRBlockVariableType {
 	Pointer
 }
 
+pub struct MIRBlockVariableSSAHint {
+	pub kind: MIRBlockVariableType,
+	pub hint: Option<BaseMIRValue>
+}
+
 /// Represents a function block or a branch.
 pub struct MIRBlock {
 	instructions: Vec<MIRInstruction>,
 
 	/// Hints for the index of the SSA value for the given variable. Will be the pointer value if the variable is not SSA.
-	pub variable_hints: Vec<Option<BaseMIRValue>>, 
-	pub variable_kinds: Vec<MIRBlockVariableType>,
+	pub variables: HashMap<usize, MIRBlockVariableSSAHint>,
 
 	pub hints: HintStorage,
 	pub ctx: MIRBlockContext
@@ -29,7 +35,7 @@ pub struct MIRBlock {
 
 impl MIRBlock {
 	pub fn new() -> Self {
-		MIRBlock { instructions: vec![], variable_hints: vec![], variable_kinds: vec![], hints: HintStorage::new(), ctx: MIRBlockContext::new() }
+		MIRBlock { instructions: vec![], variables: HashMap::new(), hints: HintStorage::new(), ctx: MIRBlockContext::new() }
 	}
 
 	pub fn append(&mut self, ctx: &MIRContext, instruction: MIRInstruction) -> InstructionValue {

@@ -1,7 +1,7 @@
 //! Variable related lowering
 
 use astoir_hir::{ctx::HIRBranchedContext, nodes::HIRNode};
-use astoir_mir::{blocks::{MIRBlock, MIRBlockVariableType}, builder::{build_load, build_stack_alloc, build_store}, vals::{base::BaseMIRValue, ptr::MIRPointerValue}};
+use astoir_mir::{blocks::{MIRBlock, MIRBlockVariableSSAHint, MIRBlockVariableType}, builder::{build_load, build_stack_alloc, build_store}, vals::{base::BaseMIRValue, ptr::MIRPointerValue}};
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
@@ -12,14 +12,12 @@ pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>, 
 		let lowered = CompactedType::from(var_type);
 
 		if branched.is_eligible_for_ssa(variable) {
-			block.variable_kinds.push(MIRBlockVariableType::SSA);
-			
 			if default_val.is_some() {
 				let val = lower_hir_value(block, default_val.unwrap(), ctx)?;
 
-				block.variable_hints.push(Some(val));
+				block.variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: Some(val) });
 			} else {
-				block.variable_hints.push(None);
+				block.variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: None });
 			}
 
 			return Ok(true);
