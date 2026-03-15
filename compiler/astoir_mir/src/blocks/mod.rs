@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, f32::consts::E};
 
 use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
@@ -6,7 +6,7 @@ pub mod refer;
 pub mod hints;
 
 /// The type of variable inside of a MIR block.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum MIRBlockVariableType {
 	/// SSAs, allow for direct register usage.
 	/// Requires:
@@ -24,6 +24,12 @@ pub struct MIRBlockVariableSSAHint {
 	pub hint: Option<BaseMIRValue>
 }
 
+impl PartialEq for MIRBlockVariableSSAHint {
+	fn eq(&self, other: &Self) -> bool {
+		return self.kind == other.kind && self.hint == other.hint;
+	}
+}
+
 /// Represents a function block or a branch.
 pub struct MIRBlock {
 	instructions: Vec<MIRInstruction>,
@@ -32,6 +38,7 @@ pub struct MIRBlock {
 	pub merge_blocks: Vec<MIRBlockReference>,
 
 	/// Hints for the index of the SSA value for the given variable. Will be the pointer value if the variable is not SSA.
+	/// The indexes used are the variable indexes and not the SSA indexes.
 	pub variables: HashMap<usize, MIRBlockVariableSSAHint>
 }
 
@@ -72,4 +79,28 @@ impl MIRBlock {
 
 		return InstructionValue::new(None);
 	}
+
+	/// Resolves changes in SSA handled variables from the different merge blocks.
+	/// 
+	/// # Behavior
+	/// First checks inside of every merge blocks for changes of SSA values for variables in the hinting table.
+	/// Then uses a `phi` instruction to obtain the SSA values in this block. Also automatically updates the variable hints inside of this block.
+	///
+	pub fn resolve_ssa_changes(&mut self, ctx: &MIRContext) {
+		for (ind, hint) in self.variables.iter() {
+			let mut choices: Vec<(MIRBlockReference, BaseMIRValue)> = vec![];
+
+			for block_ref in &self.merge_blocks {
+				let block = &ctx.blocks[*block_ref];
+				let block_hint = &block.variables[ind];
+
+				if hint != block_hint && block_hint.hint.is_some() {
+					choices.push((*block_ref, block_hint.hint.clone().unwrap()));
+				}
+			}
+
+			let hind = 
+		}
+	} 
+
 }

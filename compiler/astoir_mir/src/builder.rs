@@ -312,22 +312,6 @@ pub fn build_conditional_branch(ctx: &mut MIRContext, block: &mut MIRBlock, func
 	Ok(true)
 }
 
-pub fn build_phi(ctx: &mut MIRContext, block: &mut MIRBlock, func: &MIRFunction, choices: Vec<(MIRBlockReference, BaseMIRValue)>) -> BaseResult<BaseMIRValue> {
-	let t = &choices[0].1.vtype;
-
-	for choice in &choices {
-		if choice.0 >= func.blocks.len() {
-			return Err(BaseError::err("Provided invalid block reference to build_phi!".to_string()))
-		}
-
-		if !choice.1.vtype.base.is_equal(&t.base) {
-			return Err(BaseError::err("Provided value to phi was not of the same type".to_string()));
-		}
- 	}
-
-	return block.append(ctx, MIRInstruction::Phi { choices }).get()
-}
-
 pub fn build_select(ctx: &mut MIRContext, block: &mut MIRBlock, condition: MIRIntValue, if_val: BaseMIRValue, else_val: BaseMIRValue) -> BaseResult<BaseMIRValue> {
 	if condition.size != 1 {
 		return Err(BaseError::err("Provided cond to build_select is not a boolean".to_string()));
@@ -422,6 +406,20 @@ pub fn build_call(ctx: &mut MIRContext, block: &mut MIRBlock, func: usize, ind: 
 	}
 
 	let res = block.append(ctx, MIRInstruction::Call { function: ind, arguments: args }).get()?;
+
+	return Ok(res);
+}
+
+pub fn build_phi(ctx: &mut MIRContext, block: &mut MIRBlock, choices: Vec<(MIRBlockReference, BaseMIRValue)>) -> BaseResult<BaseMIRValue> {
+	let t = &choices[0].1.vtype;
+
+	for choice in &choices {
+		if &choice.1.vtype != t {
+			return Err(BaseError::err("phi node must have same type values".to_string()));
+		}
+	}
+
+	let res = block.append(ctx, MIRInstruction::Phi { choices }).get()?;
 
 	return Ok(res);
 }
