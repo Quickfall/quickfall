@@ -1,15 +1,29 @@
 //! Variable related lowering
 
-use astoir_hir::{nodes::HIRNode};
-use astoir_mir::{blocks::MIRBlock, builder::{build_load, build_stack_alloc, build_store}, vals::{base::BaseMIRValue, ptr::MIRPointerValue}};
+use astoir_hir::{ctx::HIRBranchedContext, nodes::HIRNode};
+use astoir_mir::{blocks::{MIRBlock, MIRBlockVariableType}, builder::{build_load, build_stack_alloc, build_store}, vals::{base::BaseMIRValue, ptr::MIRPointerValue}};
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 use crate::{MIRLoweringContext, values::lower_hir_value};
 
-pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &MIRLoweringContext) -> BaseResult<MIRPointerValue> {
+pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &MIRLoweringContext, branched: &HIRBranchedContext) -> BaseResult<bool> {
 	if let HIRNode::VarDeclaration { variable, var_type, default_val } = *node {
 		let lowered = CompactedType::from(var_type);
+
+		if branched.is_eligible_for_ssa(variable) {
+			block.variable_kinds.push(MIRBlockVariableType::SSA);
+			
+			if default_val.is_some() {
+				let val = lower_hir_value(block, default_val.unwrap(), ctx)?;
+
+				block.variable_hints.push(Some(val));
+			} else {
+				block.variable_hints.push(None);
+			}
+
+			return Ok(true);
+		}
 
 		let ptr = build_stack_alloc(&ctx.mir_ctx, block, lowered.base.get_size()?, lowered)?;
 		
@@ -25,7 +39,7 @@ pub fn lower_hir_variable_declaration(block: &mut MIRBlock, node: Box<HIRNode>, 
 			build_store(&ctx.mir_ctx, block, ptr.clone(), val)?;
 		}
 
-		return Ok(ptr)
+		return Ok(true)
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))

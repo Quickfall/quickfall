@@ -20,7 +20,7 @@ pub struct MIRBlock {
 	instructions: Vec<MIRInstruction>,
 
 	/// Hints for the index of the SSA value for the given variable. Will be the pointer value if the variable is not SSA.
-	pub variable_hints: Vec<usize>, 
+	pub variable_hints: Vec<Option<BaseMIRValue>>, 
 	pub variable_kinds: Vec<MIRBlockVariableType>,
 
 	pub hints: HintStorage,
