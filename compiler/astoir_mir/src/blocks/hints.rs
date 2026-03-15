@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 

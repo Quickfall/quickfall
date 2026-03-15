@@ -2,7 +2,7 @@
 
 use astoir_typing::{base::BaseType, compacted::CompactedType};
 
-use crate::{blocks::{MIRBlock, refer::MIRBlockReference}, ctx::MIRContext, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
+use crate::{blocks::{refer::MIRBlockReference}, ctx::MIRContext, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
 pub mod val;
 
@@ -107,7 +107,7 @@ impl MIRInstruction {
 		}
 	}
 
-	pub fn get_return_type(&self, ctx: &MIRContext, block: &MIRBlock) -> CompactedType {
+	pub fn get_return_type(&self, ctx: &MIRContext) -> CompactedType {
 		match self {
 			Self::StackAlloc { .. } => return CompactedType::from(BaseType::Pointer),
 			Self::Load { value} => {

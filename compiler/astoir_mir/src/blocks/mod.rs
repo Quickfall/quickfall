@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{blocks::hints::{HintStorage, MIRValueHint}, ctx::{MIRBlockContext, MIRContext}, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
+use crate::{blocks::hints::MIRValueHint, ctx::{MIRBlockContext, MIRContext}, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
 pub mod refer;
 pub mod hints;
@@ -29,21 +29,19 @@ pub struct MIRBlock {
 	/// Hints for the index of the SSA value for the given variable. Will be the pointer value if the variable is not SSA.
 	pub variables: HashMap<usize, MIRBlockVariableSSAHint>,
 
-	#[deprecated(note = "Replaced by MIRContext::ssa_hints")]
-	pub hints: HintStorage,
 	pub ctx: MIRBlockContext
 }
 
 impl MIRBlock {
 	pub fn new() -> Self {
-		MIRBlock { instructions: vec![], variables: HashMap::new(), hints: HintStorage::new(), ctx: MIRBlockContext::new() }
+		MIRBlock { instructions: vec![], variables: HashMap::new(), ctx: MIRBlockContext::new() }
 	}
 
 	pub fn append(&mut self, ctx: &mut MIRContext, instruction: MIRInstruction) -> InstructionValue {
 		self.instructions.push(instruction.clone());
 
 		if instruction.has_return(ctx) {
-			let ret = instruction.get_return_type(ctx, self);
+			let ret = instruction.get_return_type(ctx);
 
 			// Hacky way of skipping hinting
 			if !instruction.should_hint() {
