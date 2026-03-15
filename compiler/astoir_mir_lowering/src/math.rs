@@ -36,11 +36,7 @@ pub fn lower_hir_math_operation(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &
 		if assignment {
 			let v = ptr.unwrap();
 
-			if v.vtype.base.is_equal(&BaseType::Pointer) {
-				build_store(ctx, block, ptr, val)
-			}
-
-			build_store(&mut ctx.mir_ctx, block, ptr.unwrap(), val)?;
+			v.write(block, &mut ctx.mir_ctx, val)?;
 		}
 	}
 
