@@ -28,7 +28,7 @@ impl BaseMIRValue {
 		return Ok(MIRPointerValue::new(self.clone())?)
 	}
 
-	pub fn get_instruction(&self) -> usize {
+	pub fn get_ssa_index(&self) -> usize {
 		return self.val_index;
 	}
 

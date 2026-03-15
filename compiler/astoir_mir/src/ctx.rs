@@ -1,13 +1,14 @@
-use crate::{funcs::MIRFunction, vals::ptr::MIRPointerValue};
+use crate::{blocks::hints::HintStorage, funcs::MIRFunction, vals::ptr::MIRPointerValue};
 
 
 pub struct MIRContext {
 	pub functions: Vec<MIRFunction>,
+	pub ssa_hints: HintStorage,
 }
 
 impl MIRContext {
 	pub fn new() -> Self {
-		MIRContext { functions: vec![] }
+		MIRContext { functions: vec![], ssa_hints: HintStorage::new() }
 	}
 }
 

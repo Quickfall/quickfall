@@ -6,7 +6,7 @@ use lexer::toks::math::MathOperator;
 
 use crate::{MIRLoweringContext, values::lower_hir_value, vars::lower_hir_variable_reference};
  
-pub fn lower_hir_math_operation(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_math_operation(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	if let HIRNode::MathOperation { left, right, operation, assignment } = *node {
 		if assignment && !left.is_variable_reference() {
 			return Err(BaseError::err(IR_REQ_VARIABLE_ASSIGN!().to_string()))
@@ -34,40 +34,40 @@ pub fn lower_hir_math_operation(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &
 		};
 
 		if assignment {
-			build_store(&ctx.mir_ctx, block, ptr.unwrap(), val)?;
+			build_store(&mut ctx.mir_ctx, block, ptr.unwrap(), val)?;
 		}
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
 }
 
-pub fn lower_hir_math_operation_int(block: &mut MIRBlock, left: BaseMIRValue, right: BaseMIRValue, operator: MathOperator, ctx: &MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_math_operation_int(block: &mut MIRBlock, left: BaseMIRValue, right: BaseMIRValue, operator: MathOperator, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	let left = left.as_int()?;
 	let right = right.as_int()?;
 
 	let signed = left.signed;
 
 	let res = match operator {
-		MathOperator::ADD => build_int_add(&ctx.mir_ctx, block, left, right, signed)?,
-		MathOperator::SUBSTRACT => build_int_sub(&ctx.mir_ctx, block, left, right, signed)?,
-		MathOperator::MULTIPLY => build_int_mul(&ctx.mir_ctx, block, left, right, signed)?,
-		MathOperator::DIVIDE => build_int_div(&ctx.mir_ctx, block, left, right, signed)?
+		MathOperator::ADD => build_int_add(&mut ctx.mir_ctx, block, left, right, signed)?,
+		MathOperator::SUBSTRACT => build_int_sub(&mut ctx.mir_ctx, block, left, right, signed)?,
+		MathOperator::MULTIPLY => build_int_mul(&mut ctx.mir_ctx, block, left, right, signed)?,
+		MathOperator::DIVIDE => build_int_div(&mut ctx.mir_ctx, block, left, right, signed)?
 	};
 
 	return Ok(res.into());
 }
 
-pub fn lower_hir_math_operation_float(block: &mut MIRBlock, left: BaseMIRValue, right: BaseMIRValue, operator: MathOperator, ctx: &MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_math_operation_float(block: &mut MIRBlock, left: BaseMIRValue, right: BaseMIRValue, operator: MathOperator, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	let left = left.as_float()?;
 	let right = right.as_float()?;
 
 	let signed = left.signed;
 
 	let res = match operator {
-		MathOperator::ADD => build_float_add(&ctx.mir_ctx, block, left, right, signed)?,
-		MathOperator::SUBSTRACT => build_float_sub(&ctx.mir_ctx, block, left, right, signed)?,
-		MathOperator::MULTIPLY => build_float_mul(&ctx.mir_ctx, block, left, right, signed)?,
-		MathOperator::DIVIDE => build_float_div(&ctx.mir_ctx, block, left, right, signed)?
+		MathOperator::ADD => build_float_add(&mut ctx.mir_ctx, block, left, right, signed)?,
+		MathOperator::SUBSTRACT => build_float_sub(&mut ctx.mir_ctx, block, left, right, signed)?,
+		MathOperator::MULTIPLY => build_float_mul(&mut ctx.mir_ctx, block, left, right, signed)?,
+		MathOperator::DIVIDE => build_float_div(&mut ctx.mir_ctx, block, left, right, signed)?
 	};
 
 	return Ok(res.into());

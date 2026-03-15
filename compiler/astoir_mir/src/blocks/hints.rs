@@ -63,30 +63,35 @@ impl Into<MIRValueHint> for CompactedType {
 }
 
 pub struct HintStorage {
-	map: HashMap<usize, usize>,
 	pub vec: Vec<MIRValueHint>
 }
 
 impl HintStorage {
 	pub fn new() -> Self {
-		HintStorage { map: HashMap::new(), vec: vec![] }
+		HintStorage { vec: vec![] }
 	}
 
-	pub fn append_hint(&mut self, inst_index: usize, hint: MIRValueHint) -> usize {
+
+	/// Introduces a new SSA value hint. Returns the hint index. 
+	/// # Usage
+	/// Every single SSA value should have a hint on what it is. Furthermore, this hint index will be used to identify the different SSA values instead of raw instruction indexes.
+	/// 
+	/// # Globality
+	/// Using hint indexes to represent different SSA values allows us to guarantee that SSA values will work on inner blocks.
+	pub fn append_hint(&mut self, hint: MIRValueHint) -> usize {
 		let ind = self.vec.len();
 
-		self.map.insert(inst_index, ind);
 		self.vec.push(hint);
 
 		return ind;
 	}
 
-	pub fn get_hint(&self, inst_index: usize) -> BaseResult<MIRValueHint> {
-		if !self.map.contains_key(&inst_index) {
-			return Err(BaseError::err("Cannot find hint!".to_string()));
+	/// Gets the hint based on the hint index.
+	pub fn get_hint(&self, hint_ind: usize) -> BaseResult<MIRValueHint> {
+		if self.vec.len() <= hint_ind {
+			return Err(BaseError::err("Invalid hint".to_string()))
 		}
 
-		return Ok(self.vec[self.map[&inst_index]].clone());
+		return Ok(self.vec[hint_ind].clone())
 	}
-
 }

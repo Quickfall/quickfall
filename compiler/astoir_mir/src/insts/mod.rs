@@ -97,13 +97,23 @@ impl MIRInstruction {
 		}
 	}
 
+	pub fn should_hint(&self) -> bool {
+		return match self {
+			Self::StackAlloc { .. } => false,
+			Self::FieldPointer { .. } => false,
+			Self::IndexPointer { .. } => false,
+
+			_ => true
+		}
+	}
+
 	pub fn get_return_type(&self, ctx: &MIRContext, block: &MIRBlock) -> CompactedType {
 		match self {
 			Self::StackAlloc { .. } => return CompactedType::from(BaseType::Pointer),
 			Self::Load { value} => {
 				let base: BaseMIRValue = value.clone().into();
 
-				let hint = block.hints.get_hint(base.get_instruction()).unwrap();
+				let hint = ctx.ssa_hints.get_hint(base.get_ssa_index()).unwrap();
 
 				return hint.as_pointer().unwrap();
 			},
