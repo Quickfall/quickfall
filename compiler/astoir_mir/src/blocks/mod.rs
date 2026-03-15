@@ -1,6 +1,8 @@
 use std::{collections::HashMap, f32::consts::E};
 
-use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
+use compiler_errors::errs::BaseResult;
+
+use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, builder::build_phi, ctx::MIRContext, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
 pub mod refer;
 pub mod hints;
@@ -86,7 +88,9 @@ impl MIRBlock {
 	/// First checks inside of every merge blocks for changes of SSA values for variables in the hinting table.
 	/// Then uses a `phi` instruction to obtain the SSA values in this block. Also automatically updates the variable hints inside of this block.
 	///
-	pub fn resolve_ssa_changes(&mut self, ctx: &MIRContext) {
+	pub fn resolve_ssa_changes(&mut self, ctx: &mut MIRContext) -> BaseResult<bool> {
+		let mut vals = vec![];
+
 		for (ind, hint) in self.variables.iter() {
 			let mut choices: Vec<(MIRBlockReference, BaseMIRValue)> = vec![];
 
@@ -99,8 +103,19 @@ impl MIRBlock {
 				}
 			}
 
-			let hind = 
+			vals.push((*ind, choices));
 		}
+
+		for val in vals {
+			let res = build_phi(ctx, self, val.1)?;
+
+			let mut hint = self.variables[&val.0].clone();
+			hint.hint = Some(res);
+
+			self.variables.insert(val.0, hint);
+		}
+
+		return Ok(true);
 	} 
 
 }
