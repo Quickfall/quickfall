@@ -6,6 +6,7 @@ pub mod values;
 pub mod math;
 pub mod funcs;
 pub mod body;
+pub mod control;
 
 pub struct MIRLoweringContext {
 	pub hir_ctx: HIRContext,
