@@ -3,7 +3,7 @@
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, errs::{BaseResult, base::BaseError}};
 
-use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, funcs::MIRFunction, insts::MIRInstruction, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
+use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
 pub fn build_stack_alloc(ctx: &mut MIRContext, size: usize, t: CompactedType) -> BaseResult<MIRPointerValue> {
 	let res = ctx.append_inst(MIRInstruction::StackAlloc { alloc_size: size, t: t.clone() }).get()?;
@@ -290,22 +290,14 @@ pub fn build_return(ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool>
 	Ok(true)
 }
 
-pub fn build_unconditional_branch(ctx: &mut MIRContext, func: &MIRFunction, branch: MIRBlockReference) -> BaseResult<bool> {
-	if branch >= func.blocks.len() {	
-		return Err(BaseError::err("Provided invalid block reference! to build_unconditional_branch".to_string()))
-	}
-
+pub fn build_unconditional_branch(ctx: &mut MIRContext, branch: MIRBlockReference) -> BaseResult<bool> {
 	ctx.append_inst(MIRInstruction::UnconditionalBranch { branch });
 	Ok(true)
 }
 
-pub fn build_conditional_branch(ctx: &mut MIRContext, func: &MIRFunction, condition: MIRIntValue, if_branch: MIRBlockReference, else_branch: MIRBlockReference) -> BaseResult<bool> {
+pub fn build_conditional_branch(ctx: &mut MIRContext, condition: MIRIntValue, if_branch: MIRBlockReference, else_branch: MIRBlockReference) -> BaseResult<bool> {
 	if condition.size != 1 {
 		return Err(BaseError::err("Provided cond to build_conditional_branch is not a boolean".to_string()));
-	}
-
-	if if_branch >= func.blocks.len() || else_branch >= func.blocks.len() {
-		return Err(BaseError::err("Provided invalid block reference! to build_conditional_branch".to_string()))
 	}
 
 	ctx.append_inst(MIRInstruction::ConditionalBranch { cond: condition, if_branch, else_branch });

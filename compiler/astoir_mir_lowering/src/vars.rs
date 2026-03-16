@@ -1,37 +1,32 @@
 //! Variable related lowering
 
-use astoir_hir::{ctx::HIRBranchedContext, nodes::HIRNode};
-use astoir_mir::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference}, builder::{build_stack_alloc, build_store}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
-use astoir_typing::compacted::CompactedType;
+use astoir_hir::{nodes::HIRNode};
+use astoir_mir::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 use crate::{MIRLoweringContext, values::lower_hir_value};
 
-pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext, branched: &HIRBranchedContext) -> BaseResult<bool> {
-	if let HIRNode::VarDeclaration { variable, var_type, default_val } = *node {
-		let lowered = CompactedType::from(var_type);
-
-		if branched.is_eligible_for_ssa(variable) {
-			if default_val.is_some() {
-				let val = lower_hir_value(block_id, default_val.unwrap(), ctx)?;
-
-				ctx.mir_ctx.blocks[block_id].variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: Some(val) });
-			} else {
-				ctx.mir_ctx.blocks[block_id].variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: None });
-			}
-
-			return Ok(true);
-		}
-
-		let ptr = build_stack_alloc(&mut ctx.mir_ctx, lowered.base.get_size()?, lowered)?;
-		
-		ctx.mir_ctx.blocks[block_id].variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::Pointer, hint: Some(ptr.clone().into()) });
+pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
+	if let HIRNode::VarDeclaration { variable, var_type: _, default_val } = *node {
+		//let lowered = CompactedType::from(var_type);
 
 		if default_val.is_some() {
 			let val = lower_hir_value(block_id, default_val.unwrap(), ctx)?;
 
-			build_store(&mut ctx.mir_ctx, ptr.clone(), val)?;
+			ctx.mir_ctx.blocks[block_id].variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: Some(val) });
+		} else {
+			ctx.mir_ctx.blocks[block_id].variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: None });
 		}
+
+		//let ptr = build_stack_alloc(&mut ctx.mir_ctx, lowered.base.get_size()?, lowered)?;
+		
+		//ctx.mir_ctx.blocks[block_id].variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::Pointer, hint: Some(ptr.clone().into()) });
+
+		//if default_val.is_some() {
+		//	let val = lower_hir_value(block_id, default_val.unwrap(), ctx)?;
+		//
+		//	build_store(&mut ctx.mir_ctx, ptr.clone(), val)?;
+		//}
 
 		return Ok(true)
 	}

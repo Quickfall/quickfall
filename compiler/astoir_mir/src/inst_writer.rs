@@ -1,6 +1,6 @@
 //! A way to avoid Rust borrowing errors by delegating the Instruction appending logic directly to the MIRContext instead of the builder functions
 
-use crate::{blocks::refer::MIRBlockReference, ctx::MIRContext, insts::MIRInstruction};
+use crate::{blocks::refer::MIRBlockReference};
 
 pub enum BlockPosition {
 	START,
