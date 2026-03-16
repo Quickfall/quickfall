@@ -1,10 +1,10 @@
 use astoir_hir::{nodes::HIRNode};
-use astoir_mir::{blocks::MIRBlock, builder::build_call, vals::base::BaseMIRValue};
+use astoir_mir::{blocks::{refer::MIRBlockReference}, builder::build_call, vals::base::BaseMIRValue};
 use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 use crate::{MIRLoweringContext, values::lower_hir_value};
 
-pub fn lower_hir_function_call(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_function_call(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	if let HIRNode::FunctionCall { func_name, arguments } = *node {
 		let mut args = vec![];
 
@@ -22,7 +22,7 @@ pub fn lower_hir_function_call(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &m
 			i += 1;
 		}
 
-		return build_call(&mut ctx.mir_ctx, block, func_name, func_name, args);
+		return build_call(&mut ctx.mir_ctx, func_name, func_name, args);
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))

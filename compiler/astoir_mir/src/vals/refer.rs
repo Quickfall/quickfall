@@ -1,6 +1,6 @@
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::{blocks::MIRBlock, builder::{build_load, build_store}, ctx::MIRContext, insts::val, vals::{base::BaseMIRValue, ptr::MIRPointerValue}};
+use crate::{blocks::{refer::MIRBlockReference}, builder::{build_load, build_store}, ctx::MIRContext, vals::{base::BaseMIRValue, ptr::MIRPointerValue}};
 
 /// Represents a reference to a variable. This is not a reference to individual SSA values.
 /// 
@@ -21,33 +21,35 @@ pub enum MIRVariableReference {
 }
 
 impl MIRVariableReference {
-	pub fn read(&self, block: &mut MIRBlock, ctx: &mut MIRContext) -> BaseResult<BaseMIRValue> {
+	pub fn read(&self, block: MIRBlockReference, ctx: &mut MIRContext) -> BaseResult<BaseMIRValue> {
 		if self.is_pointer_ref() {
 			let ptr_ref = self.as_pointer_ref()?;
 
-			let res = build_load(ctx, block, ptr_ref)?;
+			let res = build_load(ctx, ptr_ref)?;
 
 			return Ok(res);
 		}
 
 		let ind = self.as_ssa_ref()?;
 
-		return match &block.variables[&ind].hint {
+		return match &ctx.blocks[block].variables[&ind].hint {
 			Some(v) => Ok(v.clone()),
 			None => Err(BaseError::err("Cannot unpack SSA reference for variable in MIRVariableReference::read".to_string()))
 		}
 	}
 
-	pub fn write(&self, block: &mut MIRBlock, ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool> {
+	pub fn write(&self, block: MIRBlockReference, ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool> {
 		if self.is_pointer_ref() {
 			let ptr_ref = self.as_pointer_ref()?;
 
-			build_store(ctx, block, ptr_ref, val)?;
+			build_store(ctx, ptr_ref, val)?;
 
 			return Ok(true);
 		}
 
 		let ind = self.as_ssa_ref()?;
+
+		let block = &mut ctx.blocks[block];
 
 		if block.variables[&ind].hint.is_some() && block.variables[&ind].hint.clone().unwrap().vtype != val.vtype {
 			return Err(BaseError::err("Cannot write on this variable reference since the two types differ!".to_string()));

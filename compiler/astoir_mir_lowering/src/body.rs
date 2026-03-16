@@ -1,10 +1,10 @@
 use astoir_hir::nodes::HIRNode;
-use astoir_mir::blocks::MIRBlock;
+use astoir_mir::blocks::{refer::MIRBlockReference};
 use compiler_errors::{IR_INVALID_NODE_TYPE, MATH_OP_NO_ASSIGN, errs::{BaseResult, base::BaseError}};
 
 use crate::{MIRLoweringContext, math::lower_hir_math_operation, vars::lower_hir_variable_assignment};
 
-pub fn lower_hir_body_member(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
+pub fn lower_hir_body_member(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
 	return match *node {
 		HIRNode::VarAssigment { .. } => lower_hir_variable_assignment(block, node, ctx),
 		HIRNode::MathOperation { left: _, right: _, operation: _, assignment } => {
@@ -21,7 +21,7 @@ pub fn lower_hir_body_member(block: &mut MIRBlock, node: Box<HIRNode>, ctx: &mut
 	}
 }
 
-pub fn lower_hir_body(block: &mut MIRBlock, nodes: Vec<Box<HIRNode>>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
+pub fn lower_hir_body(block: MIRBlockReference, nodes: Vec<Box<HIRNode>>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
 	for node in nodes {
 		lower_hir_body_member(block, node, ctx)?;
 	}

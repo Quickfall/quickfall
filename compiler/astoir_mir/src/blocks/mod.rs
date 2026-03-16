@@ -2,7 +2,7 @@ use std::{collections::HashMap};
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, builder::build_phi, ctx::MIRContext, insts::{MIRInstruction, val::InstructionValue}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
+use crate::{blocks::{refer::MIRBlockReference}, builder::build_phi, ctx::MIRContext, insts::{MIRInstruction}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
 
 pub mod refer;
 pub mod hints;
@@ -39,23 +39,31 @@ pub struct MIRBlock {
 	/// The block references that will merge into this one
 	pub merge_blocks: Vec<MIRBlockReference>,
 
+	pub self_ref: MIRBlockReference,
+
 	/// Hints for the index of the SSA value for the given variable. Will be the pointer value if the variable is not SSA.
 	/// The indexes used are the variable indexes and not the SSA indexes.
 	pub variables: HashMap<usize, MIRBlockVariableSSAHint>
 }
 
 impl MIRBlock {
-	pub fn new() -> Self {
-		MIRBlock { instructions: vec![], variables: HashMap::new(), merge_blocks: vec![] }
+	pub fn new(self_ref: MIRBlockReference) -> Self {
+		MIRBlock { instructions: vec![], variables: HashMap::new(), merge_blocks: vec![], self_ref }
 	}
 
-	pub fn new_merge(base: &mut MIRBlock, ctx: &mut MIRContext) -> MIRBlockReference {
+	pub fn new_merge(base: MIRBlockReference, ctx: &mut MIRContext, append_to_merge_blocks: bool) -> MIRBlockReference {
 		let ind = ctx.create_block();
+
+		let variables = ctx.blocks[base].variables.clone();
 
 		let block = &mut ctx.blocks[ind];
 
-		for (ind, hint) in base.variables.iter() {
-			block.variables.insert(*ind, hint.clone());
+		for (ind, hint) in variables {
+			block.variables.insert(ind, hint);
+		}
+
+		if append_to_merge_blocks {
+			ctx.blocks[base].merge_blocks.push(ind)
 		}
 
 		return ind;
@@ -76,25 +84,16 @@ impl MIRBlock {
 		return Ok(MIRVariableReference::from(unpacked.as_ptr()?));
 	}
 
-	pub fn append(&mut self, ctx: &mut MIRContext, instruction: MIRInstruction) -> InstructionValue {
+	pub fn append(&mut self, instruction: MIRInstruction) {
 		self.instructions.push(instruction.clone());
+	}
 
-		if instruction.has_return(ctx) {
-			let ret = instruction.get_return_type(ctx);
-
-			// Hacky way of skipping hinting
-			if !instruction.should_hint() {
-				let hint_ind = ctx.ssa_hints.vec.len();
-
-				return InstructionValue::new(Some(BaseMIRValue::new(hint_ind, ret)))
-			}
-
-			let hint_ind = ctx.ssa_hints.append_hint(MIRValueHint::Value(ret.clone()));
-
-			return InstructionValue::new(Some(BaseMIRValue::new(hint_ind, ret)));
+	pub fn append_start(&mut self, instruction: MIRInstruction) {
+		if self.instructions.is_empty() {
+			self.instructions.push(instruction.clone());
+		} else {
+			self.instructions.insert(0, instruction.clone());
 		}
-
-		return InstructionValue::new(None);
 	}
 
 	/// Resolves changes in SSA handled variables from the different merge blocks.
@@ -121,8 +120,10 @@ impl MIRBlock {
 			vals.push((*ind, choices));
 		}
 
+		ctx.writer.move_end(self.self_ref);
+		
 		for val in vals {
-			let res = build_phi(ctx, self, val.1)?;
+			let res = build_phi(ctx, val.1)?;
 
 			let mut hint = self.variables[&val.0].clone();
 			hint.hint = Some(res);
@@ -132,5 +133,9 @@ impl MIRBlock {
 
 		return Ok(true);
 	} 
+
+	pub fn is_empty(&self) -> bool {
+		return self.instructions.is_empty();
+	}
 
 }
