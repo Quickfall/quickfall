@@ -109,6 +109,13 @@ macro_rules! IR_EXPECTED_TYPE {
 }
 
 #[macro_export]
+macro_rules! IR_TRANSMUTATION {
+	() => {
+		"Type transmutation failed here. This type cannot be inherently casted into the required one"
+	};
+}
+
+#[macro_export]
 macro_rules! IR_OBTAIN_COND {
 	() => {
 		"Cannot use this value as a condition boolean."

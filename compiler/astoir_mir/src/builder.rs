@@ -388,7 +388,7 @@ pub fn build_static_string_const(ctx: &mut MIRContext, raw: String) -> BaseResul
 	return res.as_ptr();
 }
 
-pub fn build_call(ctx: &mut MIRContext, func: usize, ind: usize, args: Vec<BaseMIRValue>) -> BaseResult<BaseMIRValue> {
+pub fn build_call(ctx: &mut MIRContext, func: usize, ind: usize, args: Vec<BaseMIRValue>) -> BaseResult<Option<BaseMIRValue>> {
 	let func = &ctx.functions[func];
 
 	for(arg, t) in args.iter().zip(func.arguments.iter()) {
@@ -397,7 +397,7 @@ pub fn build_call(ctx: &mut MIRContext, func: usize, ind: usize, args: Vec<BaseM
 		}
 	}
 
-	let res = ctx.append_inst(MIRInstruction::Call { function: ind, arguments: args }).get()?;
+	let res = ctx.append_inst(MIRInstruction::Call { function: ind, arguments: args }).val;
 
 	return Ok(res);
 }

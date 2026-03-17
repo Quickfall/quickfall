@@ -1,14 +1,14 @@
 //! Declarations for type transmutation in Quickfall.
 
 use astoir_typing::base::BaseType;
-use compiler_errors::errs::{BaseResult, base::BaseError};
+use compiler_errors::{IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
 
 use crate::{builder::{build_downcast_int, build_upcast_int}, ctx::MIRContext, vals::base::BaseMIRValue};
 
 /// Performs transmutation on the given value to try to get the targeted type.
 pub fn transmute_value(val: BaseMIRValue, target: BaseType, ctx: &mut MIRContext) -> BaseResult<BaseMIRValue> {
 	if val.vtype.base.is_integer() != target.is_integer() || val.vtype.base.is_floating() != target.is_floating() || val.vtype.base.is_signed() != target.is_signed() {
-		return Err(BaseError::err("Cannot transmute value!".to_string()));
+		return Err(BaseError::err(IR_TRANSMUTATION!().to_string()));
 	}
 
 	if target.is_integer() {
@@ -39,5 +39,5 @@ pub fn transmute_value(val: BaseMIRValue, target: BaseType, ctx: &mut MIRContext
 		return Ok(val);
 	}
 
-	return Err(BaseError::err("Cannot transmute value!".to_string()));
+	return Err(BaseError::err(IR_TRANSMUTATION!().to_string()));
 }

@@ -3,7 +3,7 @@
 use std::f32::consts::E;
 
 use astoir_hir::{nodes::HIRNode};
-use astoir_mir::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
+use astoir_mir::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference}, transmutation::transmute_value, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
@@ -63,7 +63,7 @@ pub fn lower_hir_variable_reference_value(block: MIRBlockReference, node: Box<HI
 			return Err(BaseError::err("Cannot transmute to given type!".to_string()));
 		}
 
-		
+		return Ok(transmute_value(read, expected.base, &mut ctx.mir_ctx)?);		
 	}
 
 	return Ok(ptr.read(block, &mut ctx.mir_ctx)?);
