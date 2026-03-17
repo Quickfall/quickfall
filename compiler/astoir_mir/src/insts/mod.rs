@@ -162,7 +162,8 @@ impl MIRInstruction {
 			Self::FloatSignedConstant { raw: _, exponent, fraction } => return CompactedType::from(BaseType::FloatingNumberType(*exponent as u64, *fraction as u64, true)),
 			Self::FixedSignedConstant { raw: _, number, fraction } => return CompactedType::from(BaseType::NumericIntegerType(*number as u64 + *fraction as u64, true)),
 			Self::FixedUnsignedConstant { raw: _, number, fraction } => return CompactedType::from(BaseType::NumericIntegerType(*number as u64 + *fraction as u64, false)),
- 
+			Self::StaticStringConstant { raw: _ } => return CompactedType::from(BaseType::Pointer),
+
 			Self::Phi { choices } => {
 				return choices[0].1.vtype.clone();
 			},

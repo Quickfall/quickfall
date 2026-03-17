@@ -21,7 +21,9 @@ pub fn lower_hir_function_decl(node: Box<HIRNode>, cctx: &mut MIRLoweringContext
 			ret_type = None
 		}
 
-		let mut func = MIRFunction::new(format!("func_{}", func_name), args, ret_type, requires_this);
+		let name = cctx.hir_ctx.functions.vals[func_name].2.clone();
+
+		let mut func = MIRFunction::new(name, args, ret_type, requires_this, &cctx.mir_ctx);
 		let block = func.append_entry_block(&mut cctx.mir_ctx)?;
 
 		cctx.mir_ctx.writer.move_end(block);
@@ -47,6 +49,8 @@ pub fn lower_hir_shadow_decl(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -
 	if let HIRNode::ShadowFunctionDeclaration { func_name, arguments, return_type } = *node {
 		let mut args = vec![];
 
+		let name = ctx.hir_ctx.functions.vals[func_name].2.clone();
+
 		for argument in arguments {
 			args.push(CompactedType::from(argument.1));
 		}
@@ -59,7 +63,7 @@ pub fn lower_hir_shadow_decl(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -
 			ret_type = None
 		}
 
-		let func = MIRFunction::new(format!("func_{}", func_name), args, ret_type, false);
+		let func = MIRFunction::new(name, args, ret_type, false, &ctx.mir_ctx);
 
 		ctx.mir_ctx.append_function(func);
 		return Ok(true);

@@ -1,13 +1,11 @@
-use std::mem::transmute;
-
-use astoir_mir::{blocks::MIRBlockHeldInstruction, builder::build_int_add, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::{self, MIRFloatValue}, int::MIRIntValue, ptr::MIRPointerValue}};
+use astoir_mir::{blocks::MIRBlockHeldInstruction, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::{self, MIRFloatValue}, int::MIRIntValue, ptr::MIRPointerValue}};
 use astoir_typing::base::BaseType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use inkwell::{IntPredicate, module::Linkage, types::StringRadix, values::{BasicValue, BasicValueEnum, FloatValue, IntValue}};
 
 use crate::{ctx::LLVMBridgeContext, llvm_to_base, llvm_to_base_returnless, utils::LLVMBasicValue};
 
-pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, bridge: &mut LLVMBridgeContext, mir: &MIRContext) -> BaseResult<Option<LLVMBasicValue>> {
+pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize, bridge: &mut LLVMBridgeContext, mir: &MIRContext) -> BaseResult<Option<LLVMBasicValue>> {
 
 	let res: Option<BasicValueEnum<'static>> = match MIRInstruction::from(instruction.clone().into()) {
 		MIRInstruction::StackAlloc { alloc_size: _, t } => {
@@ -428,6 +426,12 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, bridge: &mu
 			let res = llvm_to_base!(bridge.builder.build_call(func, &args, ""));
 
 			res.try_as_basic_value().basic()
+		},
+
+		MIRInstruction::FuncArgumentGrab { ind, argtype: _ } => {
+			let func = bridge.functions[func].clone().inner;
+
+			func.get_nth_param(ind as u32)
 		}
 
 		_ => return Ok(None)

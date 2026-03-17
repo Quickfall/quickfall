@@ -8,16 +8,16 @@ pub fn bridge_llvm_blocks(mir: &MIRContext, bridge: &mut LLVMBridgeContext) -> B
 		for merge in &block.merge_blocks {
 			let b = &mir.blocks[*merge];
 
-			bridge_llvm_block(mir, b, bridge)?;
+			bridge_llvm_block(mir, mir.block_to_func[&block.self_ref], b, bridge)?;
 		}
 
-		bridge_llvm_block(mir, block, bridge)?;
+		bridge_llvm_block(mir, mir.block_to_func[&block.self_ref], block, bridge)?;
 	}
 
 	return Ok(());
 }
 
-pub fn bridge_llvm_block(mir: &MIRContext, block: &MIRBlock, bridge: &mut LLVMBridgeContext) -> BaseResult<()> {
+pub fn bridge_llvm_block(mir: &MIRContext, func: usize, block: &MIRBlock, bridge: &mut LLVMBridgeContext) -> BaseResult<()> {
 	if bridge.completed_blocks.contains(&block.self_ref) {
 		return Ok(())
 	}
@@ -27,7 +27,7 @@ pub fn bridge_llvm_block(mir: &MIRContext, block: &MIRBlock, bridge: &mut LLVMBr
 	for inst in block.instructions.clone() {
 		println!("res: {}", inst);
 
-		let res = bridge_llvm_instruction(inst.clone(), bridge, mir)?;
+		let res = bridge_llvm_instruction(inst.clone(), func, bridge, mir)?;
 
 		if res.is_some() {
 			bridge.values.insert(inst.as_valuedindex()?, res.unwrap());

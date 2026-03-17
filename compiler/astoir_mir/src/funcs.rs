@@ -22,8 +22,8 @@ pub struct MIRFunction {
 }
 
 impl MIRFunction {
-	pub fn new(name: String, arguments: Vec<CompactedType>, return_type: Option<CompactedType>, is_from_struct: bool) -> Self {
-		return MIRFunction { blocks: vec![], name: HashedString::new(name), arguments, return_type, is_from_struct, id: 0 }
+	pub fn new(name: String, arguments: Vec<CompactedType>, return_type: Option<CompactedType>, is_from_struct: bool, ctx: &MIRContext) -> Self {
+		return MIRFunction { blocks: vec![], name: HashedString::new(name), arguments, return_type, is_from_struct, id: ctx.functions.len()}
 	}
 
 	pub fn append_entry_block(&mut self, ctx: &mut MIRContext) -> BaseResult<MIRBlockReference> {

@@ -43,7 +43,10 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struc
 			break;
 		}
 
+		println!("{:#?}", tokens[*ind]);
+
 		tokens[*ind].expects(LexerTokenType::Comma)?;
+		*ind += 1;
 
 	}
 

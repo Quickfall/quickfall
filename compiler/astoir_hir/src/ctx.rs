@@ -8,7 +8,7 @@ use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 
 use crate::{nodes::HIRNode, structs::HIRStructContainer};
 
-pub type HIRFunction = (Option<ComplexType>, Vec<(u64, ComplexType)>);
+pub type HIRFunction = (Option<ComplexType>, Vec<(u64, ComplexType)>, String);
 
 /// The function HIR context. Contains a mapping from element name hash to element index and other variable information. 
 /// Uses a branch based system to contain variables.

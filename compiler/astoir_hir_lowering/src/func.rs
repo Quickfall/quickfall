@@ -71,7 +71,7 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 			}
 		}
 
-		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
+		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone(), func_name.val.clone()));
 
 
 		let body = lower_ast_body(context, &mut curr_ctx, body, false)?;
@@ -118,7 +118,7 @@ pub fn lower_ast_shadow_function_declaration(context: &mut HIRContext, node: Box
 			arguments.push((arg.name.hash, t));
 		}
 
-		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
+		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone(), func_name.val.clone()));
 
 		return Ok(Box::new(HIRNode::ShadowFunctionDeclaration { func_name: ind, arguments, return_type: ret_type }))
 	}

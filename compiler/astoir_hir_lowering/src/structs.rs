@@ -1,7 +1,7 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::HIRNode, structs::HIRStructContainer};
 use astoir_typing::{base::BaseType, structs::StructTypeContainer};
-use compiler_errors::{IR_TYPE_WRONG_KIND, errs::{CompilerResult, ErrorKind, base::BaseError, normal::CompilerError}};
+use compiler_errors::{IR_TYPE_WRONG_KIND, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 
 use crate::{lower_ast_body, types::lower_ast_type};
 
@@ -48,7 +48,7 @@ fn lower_ast_struct_function_decl(context: &mut HIRContext, node: Box<ASTTreeNod
 		let mut curr_ctx = HIRBranchedContext::new();
 		let body = lower_ast_body(context, &mut curr_ctx, body, true)?;
 
-		let ind = container.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
+		let ind = container.functions.append(func_name.hash, (ret_type.clone(), arguments.clone(), func_name.val.clone()));
 
 		return Ok(Box::new(HIRNode::FunctionDeclaration { func_name: ind, arguments, return_type: ret_type, body, ctx: curr_ctx, requires_this }))		
 	}

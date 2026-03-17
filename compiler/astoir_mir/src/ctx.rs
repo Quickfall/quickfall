@@ -50,9 +50,6 @@ impl MIRContext {
 
 	pub fn append_function(&mut self, func: MIRFunction) -> usize {
 		let ind = self.functions.len();
-		let mut func = func;
-
-		func.id = ind;
 
 		self.functions.push(func);
 

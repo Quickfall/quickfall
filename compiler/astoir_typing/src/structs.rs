@@ -9,7 +9,7 @@ use crate::complete::ComplexType;
 pub struct StructTypeContainer {
 	pub ind: usize,
 	pub fields: IndexStorage<ComplexType>,
-	pub functions: IndexStorage<(Option<ComplexType>, Vec<(u64, ComplexType)>)>
+	pub functions: IndexStorage<(Option<ComplexType>, Vec<(u64, ComplexType)>, String)>
 }
 
 impl StructTypeContainer {

@@ -1,8 +1,8 @@
-use std::{collections::HashMap, mem::transmute, rc::Rc};
+use std::{collections::HashMap, mem::transmute, ops::Add, rc::Rc};
 
 use astoir_typing::base::BaseType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
-use inkwell::{context::Context, types::BasicTypeEnum};
+use inkwell::{AddressSpace, context::Context, types::BasicTypeEnum};
 
 use crate::{utils::LLVMTypeEnum};
 
@@ -59,7 +59,11 @@ impl LLVMTypeStorage {
 				self.ctxref.struct_type(&fields, !*layout).into()
 			},
 
-			_ => return Err(BaseError::err("Cannot convert to LLVM type".to_string()))
+			BaseType::Pointer => {
+				self.ctxref.ptr_type(AddressSpace::from(0u16)).into()
+			},
+
+			_ => return Err(BaseError::err(format!("Cannot convert to LLVM type {:#?}", base.clone()).to_string()))
 		};
 
 		let l = LLVMTypeEnum::new(unsafe { transmute::<BasicTypeEnum, BasicTypeEnum<'static>>(conv) });

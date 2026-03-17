@@ -398,7 +398,7 @@ pub fn build_call(ctx: &mut MIRContext, func: usize, ind: usize, args: Vec<BaseM
 	let func = &ctx.functions[func];
 
 	for(arg, t) in args.iter().zip(func.arguments.iter()) {
-		if !arg.vtype.eq(t) {
+		if !arg.vtype.base.can_transmute_into(&t.base) {
 			return Err(BaseError::err(IR_FUNCTION_INVALID_ARGUMENTS!().to_string()));
 		}
 	}
