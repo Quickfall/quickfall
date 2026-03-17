@@ -66,7 +66,7 @@ pub fn lower_hir_function_call(block: MIRBlockReference, node: Box<HIRNode>, ctx
 		let mut i = 0;
 		for arg in arguments {
 			let t = &ctx.mir_ctx.functions[func_name].arguments[i].clone();
-			let mir_val = lower_hir_value(block, arg, ctx)?;
+			let mir_val = lower_hir_value(block, arg, ctx, None)?;
 
 			if !mir_val.vtype.can_transmute(t) {
 				return Err(BaseError::err(IR_FUNCTION_INVALID_ARGUMENTS!().to_string()))

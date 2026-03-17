@@ -63,6 +63,17 @@ impl MIRVariableReference {
 		return Ok(true);
 	} 
 
+	pub fn get_hint(&self) -> usize {
+		return match self {
+			Self::PointerReference(e) => {
+				let clone: BaseMIRValue = e.clone().into();
+
+				return clone.get_ssa_index();
+			},
+			Self::SSAReference(e) => *e
+		}
+	}
+
 	pub fn is_pointer_ref(&self) -> bool {
 		return match self {
 			Self::PointerReference(_) => true,
