@@ -1,7 +1,7 @@
 use astoir_hir::{nodes::HIRNode};
-use astoir_mir::{blocks::refer::MIRBlockReference, builder::build_call, funcs::MIRFunction, vals::base::BaseMIRValue};
+use astoir_mir::{blocks::refer::MIRBlockReference, builder::build_call, funcs::MIRFunction, transmutation::transmute_value, vals::base::BaseMIRValue};
 use astoir_typing::compacted::CompactedType;
-use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, IR_INVALID_NODE_TYPE, IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
 
 use crate::{MIRLoweringContext, body::lower_hir_body, values::lower_hir_value};
 
@@ -22,7 +22,9 @@ pub fn lower_hir_function_decl(node: Box<HIRNode>, cctx: &mut MIRLoweringContext
 		}
 
 		let mut func = MIRFunction::new(format!("func_{}", func_name), args, ret_type, requires_this);
-		let block =func.append_entry_block(&mut cctx.mir_ctx)?;
+		let block = func.append_entry_block(&mut cctx.mir_ctx)?;
+
+		cctx.mir_ctx.writer.move_end(block);
 
 		lower_hir_body(block, body, cctx)?;
 
@@ -59,7 +61,7 @@ pub fn lower_hir_shadow_decl(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
 }
 
-pub fn lower_hir_function_call(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_function_call(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext, expected: Option<CompactedType>) -> BaseResult<Option<BaseMIRValue>> {
 	if let HIRNode::FunctionCall { func_name, arguments } = *node {
 		let mut args = vec![];
 
@@ -77,7 +79,23 @@ pub fn lower_hir_function_call(block: MIRBlockReference, node: Box<HIRNode>, ctx
 			i += 1;
 		}
 
-		return build_call(&mut ctx.mir_ctx, func_name, func_name, args);
+		let res = build_call(&mut ctx.mir_ctx, func_name, func_name, args)?;
+
+		if res.is_some() {
+			let res = res.unwrap();
+
+			if expected.is_some() {
+				let expected = expected.unwrap();
+
+				if !res.vtype.can_transmute(&expected) {
+					return Err(BaseError::err(IR_TRANSMUTATION!().to_string()))
+				}
+
+				return Ok(Some(transmute_value(res, expected.base, &mut ctx.mir_ctx)?));
+			}
+		}
+
+		return Ok(None);
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))

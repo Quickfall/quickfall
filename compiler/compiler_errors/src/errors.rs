@@ -109,6 +109,13 @@ macro_rules! IR_EXPECTED_TYPE {
 }
 
 #[macro_export]
+macro_rules! IR_TRANSMUTATION {
+	() => {
+		"Type transmutation failed here. This type cannot be inherently casted into the required one"
+	};
+}
+
+#[macro_export]
 macro_rules! IR_OBTAIN_COND {
 	() => {
 		"Cannot use this value as a condition boolean."
@@ -218,6 +225,13 @@ macro_rules! IR_REQ_VARIABLE_ASSIGN {
 macro_rules! VARIABLE_REQ_VALUE {
 	() => {
 		"The variable doesn't have any value here! Every variable must have a value at every point where it is used."
+	};
+}
+
+#[macro_export]
+macro_rules! EXPECTED_VAL_FUNC {
+	() => {
+		"Function call is used as a value here! The function must return a value."
 	};
 }
 

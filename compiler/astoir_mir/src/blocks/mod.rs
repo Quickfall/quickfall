@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Display};
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::{blocks::{refer::MIRBlockReference}, builder::build_phi, ctx::MIRContext, insts::{MIRInstruction}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
+use crate::{blocks::refer::MIRBlockReference, builder::build_phi, ctx::MIRContext, inst_writer::BlockPosition, insts::MIRInstruction, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
 
 pub mod refer;
 pub mod hints;
@@ -32,9 +32,15 @@ impl PartialEq for MIRBlockVariableSSAHint {
 	}
 }
 
+#[derive(Clone)]
+pub enum MIRBlockHeldInstruction {
+	Valueless(MIRInstruction),
+	Valued(MIRInstruction, usize)
+}
+
 /// Represents a function block or a branch.
 pub struct MIRBlock {
-	instructions: Vec<MIRInstruction>,
+	instructions: Vec<MIRBlockHeldInstruction>,
 
 	/// The block references that will merge into this one
 	pub merge_blocks: Vec<MIRBlockReference>,
@@ -84,15 +90,19 @@ impl MIRBlock {
 		return Ok(MIRVariableReference::from(unpacked.as_ptr()?));
 	}
 
-	pub fn append(&mut self, instruction: MIRInstruction) {
-		self.instructions.push(instruction.clone());
-	}
+	pub fn append(&mut self, instruction: MIRBlockHeldInstruction, pos: &BlockPosition) {
+		match pos {
+			BlockPosition::END => {
+				self.instructions.push(instruction.clone());
+			},
 
-	pub fn append_start(&mut self, instruction: MIRInstruction) {
-		if self.instructions.is_empty() {
-			self.instructions.push(instruction.clone());
-		} else {
-			self.instructions.insert(0, instruction.clone());
+			BlockPosition::START => {
+				if self.instructions.is_empty() {
+					self.instructions.push(instruction.clone());
+				} else {
+					self.instructions.insert(0, instruction.clone());
+				}
+			}
 		}
 	}
 
@@ -156,5 +166,14 @@ impl Display for MIRBlock {
 		}
 
 		Ok(())
+	}
+}
+
+impl Display for MIRBlockHeldInstruction {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Self::Valued(a, b) => write!(f, "#{} = {}", *b, a),
+			Self::Valueless(a) => write!(f, "{}", a)
+		}
 	}
 }

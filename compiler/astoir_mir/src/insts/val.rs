@@ -3,7 +3,7 @@ use compiler_errors::errs::{BaseResult, base::BaseError};
 use crate::vals::base::BaseMIRValue;
 
 pub struct InstructionValue {
-	val: Option<BaseMIRValue>	
+	pub val: Option<BaseMIRValue>	
 }
 
 impl InstructionValue {

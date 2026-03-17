@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use compiler_errors::errs::BaseResult;
 
-use crate::{blocks::{MIRBlock, hints::{HintStorage, MIRValueHint}, refer::MIRBlockReference}, builder::build_phi, funcs::MIRFunction, inst_writer::{BlockPosition, InstructionWriterPosition}, insts::{MIRInstruction, val::InstructionValue}, vals::{base::BaseMIRValue}};
+use crate::{blocks::{MIRBlock, MIRBlockHeldInstruction, hints::{HintStorage, MIRValueHint}, refer::MIRBlockReference}, builder::build_phi, funcs::MIRFunction, inst_writer::{BlockPosition, InstructionWriterPosition}, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
 
 pub struct MIRContext {
@@ -15,7 +15,7 @@ pub struct MIRContext {
 
 impl MIRContext {
 	pub fn new() -> Self {
-		MIRContext { functions: vec![], ssa_hints: HintStorage::new(), blocks: vec![], writer: InstructionWriterPosition { curr_block: 0, curr_inst: BlockPosition::START } }
+		MIRContext { functions: vec![], ssa_hints: HintStorage::new(), blocks: vec![], writer: InstructionWriterPosition { curr_block: 0, curr_inst: BlockPosition::END } }
 	}
 
 	pub fn create_block(&mut self) -> MIRBlockReference {
@@ -35,24 +35,25 @@ impl MIRContext {
 	}
 
 	pub fn append_inst(&mut self, inst: MIRInstruction) -> InstructionValue {
-		match self.writer.curr_inst {
-			BlockPosition::START => self.blocks[self.writer.curr_block].append_start(inst.clone()),
-			BlockPosition::END => self.blocks[self.writer.curr_block].append(inst.clone())
-		};
-
 		if inst.has_return(self) {
 			let ret = inst.get_return_type(self);
 
 			if !inst.should_hint() {
 				let hint_ind = self.ssa_hints.vec.len();
 
+				self.blocks[self.writer.curr_block].append(MIRBlockHeldInstruction::Valued(inst.clone(), hint_ind), &self.writer.curr_inst);
+
 				return InstructionValue::new(Some(BaseMIRValue::new(hint_ind, ret)))
 			}
 
 			let hint_ind = self.ssa_hints.append_hint(MIRValueHint::Value(ret.clone()));
 
+			self.blocks[self.writer.curr_block].append(MIRBlockHeldInstruction::Valued(inst.clone(), hint_ind), &self.writer.curr_inst);
+
 			return InstructionValue::new(Some(BaseMIRValue::new(hint_ind, ret)));
 		}
+
+		self.blocks[self.writer.curr_block].append(MIRBlockHeldInstruction::Valueless(inst.clone()), &self.writer.curr_inst);
 
 		return InstructionValue::new(None);
 	}

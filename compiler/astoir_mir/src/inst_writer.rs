@@ -2,6 +2,7 @@
 
 use crate::{blocks::refer::MIRBlockReference};
 
+#[derive(Clone)]
 pub enum BlockPosition {
 	START,
 	END

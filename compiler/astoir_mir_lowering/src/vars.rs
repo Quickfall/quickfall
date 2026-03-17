@@ -1,7 +1,9 @@
 //! Variable related lowering
 
+use std::f32::consts::E;
+
 use astoir_hir::{nodes::HIRNode};
-use astoir_mir::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
+use astoir_mir::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference}, transmutation::transmute_value, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
@@ -49,9 +51,21 @@ pub fn lower_hir_variable_reference(block: MIRBlockReference, node: &Box<HIRNode
 
 
 /// Lowers the HIR variable reference as if to obtain it's value. Requires a load
-pub fn lower_hir_variable_reference_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_variable_reference_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext, expected: Option<CompactedType>) -> BaseResult<BaseMIRValue> {
 	let ptr = lower_hir_variable_reference(block, &node, ctx)?;
 	
+	let read = ptr.read(block, &mut ctx.mir_ctx)?;
+
+	if expected.is_some() {
+		let expected = expected.unwrap();
+
+		if !read.vtype.can_transmute(&expected) {
+			return Err(BaseError::err("Cannot transmute to given type!".to_string()));
+		}
+
+		return Ok(transmute_value(read, expected.base, &mut ctx.mir_ctx)?);		
+	}
+
 	return Ok(ptr.read(block, &mut ctx.mir_ctx)?);
 }
 
