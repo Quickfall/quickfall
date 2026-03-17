@@ -37,7 +37,7 @@ impl MIRFunction {
 		
 		let mut ind = 0;
 		for arg in &self.arguments {
-			block.variables.insert(ind, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: Some(BaseMIRValue::new(ind, arg)) });
+			block.variables.insert(ind, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: Some(BaseMIRValue::new(ind, arg.clone())) });
 
 			ind += 1;
 		}
