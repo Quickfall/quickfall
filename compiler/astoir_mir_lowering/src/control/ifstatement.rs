@@ -51,7 +51,7 @@ pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 				HIRIfBranch::IfBranch { cond, body } => {
 					ctx.mir_ctx.writer.move_end(block);
 
-					let val = lower_hir_value(block, cond, ctx)?.as_int()?;
+					let val = lower_hir_value(block, cond, ctx, None)?.as_int()?;
 
 					build_conditional_branch(&mut ctx.mir_ctx, val, branch_blocks[branch_ind], branch_blocks[branch_ind + 1])?;
 					
@@ -67,7 +67,7 @@ pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 				HIRIfBranch::ElseIfBranch { cond, body } => {
 					ctx.mir_ctx.writer.move_end(branch_blocks[branch_ind]);
 
-					let val = lower_hir_value(branch_blocks[branch_ind], cond, ctx)?.as_int()?;
+					let val = lower_hir_value(branch_blocks[branch_ind], cond, ctx, None)?.as_int()?;
 
 					build_conditional_branch(&mut ctx.mir_ctx, val, branch_blocks[branch_ind + 1], branch_blocks[branch_ind + 2])?;
 				

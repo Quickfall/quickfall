@@ -28,6 +28,14 @@ impl MIRValueHint {
 		}
 	}
 
+	pub fn get_type(&self) -> BaseResult<CompactedType> {
+		match self {
+			MIRValueHint::Pointer(e) => Ok(e.clone()),
+			MIRValueHint::Value(e) => Ok(e.clone()),
+			_ => Err(BaseError::critical("Cannot use get_type on an non typed hint".to_string()))
+		}
+	}
+
 	pub fn as_pointer(&self) -> BaseResult<CompactedType> {
 		match self {
 			MIRValueHint::Pointer(e) => Ok(e.clone()),

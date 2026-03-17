@@ -20,8 +20,8 @@ pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ct
 			ptr = None
 		}
 
-		let left_val = lower_hir_value(block, left, ctx)?;
-		let right_val = lower_hir_value(block, right, ctx)?;
+		let left_val = lower_hir_value(block, left, ctx, None)?;
+		let right_val = lower_hir_value(block, right, ctx, None)?;
 				
 
 		let val = match left_val.vtype.base {
