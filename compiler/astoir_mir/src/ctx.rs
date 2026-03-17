@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use compiler_errors::errs::BaseResult;
 
 use crate::{blocks::{MIRBlock, hints::{HintStorage, MIRValueHint}, refer::MIRBlockReference}, builder::build_phi, funcs::MIRFunction, inst_writer::{BlockPosition, InstructionWriterPosition}, insts::{MIRInstruction, val::InstructionValue}, vals::{base::BaseMIRValue}};
@@ -90,4 +92,18 @@ impl MIRContext {
 		return Ok(true);
 	}
 
+}
+
+impl Display for MIRContext {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		for func in &self.functions {
+			writeln!(f, "{}", func)?;
+		}
+
+		for block in &self.blocks {
+			writeln!(f, "{}", block)?;
+		}
+ 
+		Ok(())
+	}
 }

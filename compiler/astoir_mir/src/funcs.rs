@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_utils::hash::HashedString;
@@ -45,5 +47,16 @@ impl MIRFunction {
 
 		return Ok(reference)
 	}
+}
 
+impl Display for MIRFunction {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		writeln!(f, ".func_{}_struct{}", self.name.val, self.is_from_struct)?;
+
+		for block in &self.blocks {
+			writeln!(f, "- block_{}", block)?;
+		}
+
+		Ok(())
+	}
 }
