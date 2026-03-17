@@ -18,7 +18,7 @@ impl HashedString {
 	}
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, Clone, PartialEq, Debug)]
 pub struct SelfHash {
 	pub hash: u64
 }

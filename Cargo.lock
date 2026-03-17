@@ -27,6 +27,8 @@ dependencies = [
  "ast",
  "astoir_hir",
  "astoir_hir_lowering",
+ "astoir_mir",
+ "astoir_mir_lowering",
  "compiler_errors",
 ]
 
@@ -48,6 +50,26 @@ dependencies = [
  "astoir_hir",
  "astoir_typing",
  "compiler_errors",
+]
+
+[[package]]
+name = "astoir_mir"
+version = "0.1.0"
+dependencies = [
+ "astoir_typing",
+ "compiler_errors",
+ "compiler_utils",
+]
+
+[[package]]
+name = "astoir_mir_lowering"
+version = "0.1.0"
+dependencies = [
+ "astoir_hir",
+ "astoir_mir",
+ "astoir_typing",
+ "compiler_errors",
+ "lexer",
 ]
 
 [[package]]

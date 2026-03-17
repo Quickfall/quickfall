@@ -1,12 +1,12 @@
 //! The context definitions for the AstoIR HIR layer.
 
-use std::{collections::HashMap};
+use std::{collections::{HashMap, HashSet}, hash::Hash};
 
 use astoir_typing::{complete::{ComplexType}, storage::TypeStorage};
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 
-use crate::nodes::HIRNode;
+use crate::{nodes::HIRNode, structs::HIRStructContainer};
 
 pub type HIRFunction = (Option<ComplexType>, Vec<(u64, ComplexType)>);
 
@@ -27,7 +27,7 @@ pub type HIRFunction = (Option<ComplexType>, Vec<(u64, ComplexType)>);
 /// Every branch index stores an end branch index from when it ends (inside of `ending_eras`). This end branch index will be used to calculate when the era of a variable ends.
 /// 
 /// 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HIRBranchedContext {
 	pub hash_to_ind: HashMap<SelfHash, usize>, // TODO: add a layer system to this so you are able to put multiple variables with the same name.
 	pub ending_eras: HashMap<usize, usize>,
@@ -62,14 +62,14 @@ impl HIRBranchedContext {
 	}
 
 	/// Introduces a new variable in the current branch era.
-	pub fn introduce_variable(&mut self, hash: u64, t: ComplexType) -> BaseResult<usize> {
+	pub fn introduce_variable(&mut self, hash: u64, t: ComplexType, has_default: bool) -> BaseResult<usize> {
 		let identity = SelfHash { hash };
 
 		if self.hash_to_ind.contains_key(&identity) {
 			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
-		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t };
+		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false };
 		self.variables.push(var);
 
 		let ind: usize = self.current_element_index;
@@ -80,6 +80,18 @@ impl HIRBranchedContext {
 		return Ok(ind);
 	}
 
+	pub fn introduce_variable_assign(&mut self, ind: usize) -> bool {
+		let var = &mut self.variables[ind];
+
+		if var.has_default {
+			return true;
+		}
+
+		var.introduced_values.insert(self.current_branch);
+
+		return true;
+	}
+
 	/// Determines if the element with the given index is still alive in the current branch.
 	pub fn is_alive(&self, ind: usize) -> bool {
 		let start_branch = self.variables[ind].introduced_in_era;
@@ -88,15 +100,17 @@ impl HIRBranchedContext {
 			return false;
 		}
 
-		if !self.ending_eras.contains_key(&start_branch) {
+		return self.is_era_alive(start_branch);
+	}
+
+	pub fn is_era_alive(&self, era: usize) -> bool {
+		if !self.ending_eras.contains_key(&era) {
 			// If the era hasn't ended yet, (the ending era isn't added for branch start_branch)
 			// this means that the variable is still alive and we are still inside of the branch start_branch
 			return true;
 		}
 
-		let end = self.ending_eras[&start_branch];
-
-		return end <= self.current_branch;
+		return false;
 	}
 
 	pub fn is_dropped_before(&self, ind: usize) -> bool {
@@ -108,6 +122,22 @@ impl HIRBranchedContext {
 
 		return self.ending_eras[&start_branch] < self.current_branch;
 	}
+
+	pub fn has_variable_value(&self, ind: usize) -> bool {
+		let var = &self.variables[ind];
+
+		if var.has_default {
+			return true;
+		}
+
+		for era in var.introduced_values.iter() {
+			if self.is_era_alive(*era) {
+				return true;
+			}
+		}
+
+		return false;
+ 	}
 
 	pub fn get_ending_era(&self, ind: usize) -> usize {
 		return self.ending_eras[&self.variables[ind].introduced_in_era];
@@ -135,12 +165,23 @@ impl HIRBranchedContext {
 		}
 	}
 
+	pub fn is_eligible_for_ssa(&self, ind: usize) -> bool {
+		let var = &self.variables[ind];
+
+		return !var.requires_address;
+	}
+	
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
-	pub variable_type: ComplexType
+	pub variable_type: ComplexType,
+	
+	pub requires_address: bool,
+
+	pub has_default: bool,
+	pub introduced_values: HashSet<usize> // TODO: try to potentially reduce this
 }
 
 #[derive(Debug)]
@@ -148,6 +189,7 @@ pub struct HIRContext {
 	pub functions: IndexStorage<HIRFunction>, 
 	pub function_declarations: Vec<Option<Box<HIRNode>>>,
 	pub static_variables: IndexStorage<ComplexType>,
+	pub struct_func_impls: HashMap<usize, HIRStructContainer>,
 	pub type_storage: TypeStorage
 }
 
@@ -159,7 +201,7 @@ pub enum VariableKind {
 
 impl HIRContext {
 	pub fn new() -> BaseResult<Self> {
-		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_declarations: vec![] })
+		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_declarations: vec![], struct_func_impls: HashMap::new() })
 	}
 
 	pub fn translate_function(&self, func_hash: u64) -> BaseResult<usize> {

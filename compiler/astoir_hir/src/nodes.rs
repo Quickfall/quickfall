@@ -1,11 +1,12 @@
 //! The nodes inside of the AstoIR HIR. 
 
 use astoir_typing::{complete::{ComplexType, ConcreteType}, hashes::{BOOLEAN_TYPE, STATIC_STR}, structs::StructTypeContainer};
+use compiler_errors::errs::{BaseResult, base::BaseError};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum HIRNode {
 	VarDeclaration { variable: usize, var_type: ComplexType, default_val: Option<Box<HIRNode>> },
 	StaticVariableDeclaration { variable: usize, var_type: ComplexType, default_val: Option<Box<HIRNode>> },
@@ -20,7 +21,7 @@ pub enum HIRNode {
 	StructLRU { steps: Vec<StructLRUStep>, last: ComplexType },
 
 	StructDeclaration { type_name: usize, container: StructTypeContainer, layout: bool },
-	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, ComplexType)>, return_type: Option<ComplexType>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext },
+	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, ComplexType)>, return_type: Option<ComplexType>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
 	ShadowFunctionDeclaration { func_name: usize, arguments: Vec<(u64, ComplexType)>, return_type: Option<ComplexType> },
 
 	FunctionCall { func_name: usize, arguments: Vec<Box<HIRNode>> },
@@ -40,6 +41,22 @@ pub enum HIRNode {
 }
 
 impl HIRNode {
+	pub fn is_variable_reference(&self) -> bool {
+		if let HIRNode::VariableReference { .. } = self {
+			return true;
+		}
+
+		return false;
+	}
+
+	pub fn as_variable_reference(&self) -> BaseResult<(usize, bool)> {
+		if let HIRNode::VariableReference { index, is_static } = self {
+			return Ok((*index, *is_static))
+		}
+
+		return Err(BaseError::err("Tried using as_variable_reference on a non var ref".to_string()))
+	}
+	
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<ComplexType> {
 		match self {
 			HIRNode::VariableReference { index, is_static } => {

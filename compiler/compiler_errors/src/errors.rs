@@ -215,6 +215,13 @@ macro_rules! IR_REQ_VARIABLE_ASSIGN {
 }
 
 #[macro_export]
+macro_rules! VARIABLE_REQ_VALUE {
+	() => {
+		"The variable doesn't have any value here! Every variable must have a value at every point where it is used."
+	};
+}
+
+#[macro_export]
 macro_rules! IR_VALUE_TYPE_TRANSMUTE {
 	() => {
 		"Cannot transmute this value to fit the expected type."
@@ -331,5 +338,12 @@ macro_rules! IR_EXPECTED_SIZE_SPECIFIED {
 macro_rules! IR_INCOMPLETE_TYPE {
 	() => {
 		"Tried obtaining the size of an incomplete type\nPlease send a bug report at https://github.com/quickfall/quickfall"
+	};
+}
+
+#[macro_export]
+macro_rules! IR_CASTING_ERROR {
+	() => {
+		"Cannot cast IR raw value to the given type\nPlease send a bug report at https://github.com/quickfall/quickfall"
 	};
 }

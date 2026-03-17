@@ -86,6 +86,14 @@ impl BaseType {
 		}
 	}
 
+	pub fn get_floating_size(&self) -> BaseResult<(usize, usize)> {
+		return match self {
+			BaseType::FloatingNumberType(a, b, _) => Ok((*a as usize, *b as usize)),
+
+			_ => Err(BaseError::err("Invalid get_floating_size!".to_string()))
+		}
+	}
+
 	pub fn is_floating(&self) -> bool {
 		return match self {
 			BaseType::FixedPointNumberType(_, _,_ ) => true,
@@ -105,6 +113,13 @@ impl BaseType {
 		}
 	}
 
+	pub fn is_bool(&self) -> bool {
+		return match self {
+			BaseType::Boolean => true,
+			_ => false
+		}
+	}
+
 	pub fn is_incomplete(&self) -> bool {
 		return match self {
 			BaseType::IncompleteArbitraryType => true,
@@ -114,6 +129,19 @@ impl BaseType {
 
 			_ => false
 		}
+	}
+
+	pub fn is_signed(&self) -> bool {
+		return match self {
+			BaseType::NumericIntegerType(_, signed) => *signed,
+			BaseType::FloatingNumberType(_, _, signed) => *signed,
+			BaseType::FixedPointNumberType(_, _, signed) => *signed,
+			BaseType::IncompleteNumericType(signed) => *signed,
+			BaseType::IncompleteFloatingType(signed) => *signed,
+			BaseType::IncompleteFixedPointType(signed) => *signed,
+
+			_ => false
+  		}
 	}
 
 	pub fn can_transmute_into(&self, into: &BaseType) -> bool {
@@ -134,6 +162,21 @@ impl BaseType {
 
 	pub fn can_cast_into(&self, _info: &BaseType) -> bool {
 		return false;
+	}
+
+	pub fn is_equal(&self, t: &BaseType) -> bool {
+		return match (self, t) {
+			(BaseType::NumericIntegerType(size, signed), BaseType::NumericIntegerType(a, b)) => *size == *a && *signed == *b,
+			(BaseType::FloatingNumberType(exponent, fraction, signed), BaseType::FloatingNumberType(a, b, c)) => *exponent == *a && *fraction == *b && *signed == *c,
+			(BaseType::FixedPointNumberType(number, fraction, signed), BaseType::FixedPointNumberType(a, b, c)) => *number == *a && *fraction == *b && *signed == *c,
+			(BaseType::Boolean, BaseType::Boolean) => true,
+			(BaseType::ArbitraryType(size), BaseType::ArbitraryType(a)) => *size == *a,
+			(BaseType::Pointer, BaseType::Pointer) => true,
+			(BaseType::StaticStr, BaseType::StaticStr) => true,
+			(BaseType::Struct(layout, container), BaseType::Struct(a, b)) => *layout == *a && container.ind == b.ind,
+			
+			_ => false
+		}
 	}
 
 }

@@ -16,7 +16,7 @@ pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 	*ind += 1;
 	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
-	let args = parse_function_arguments(tokens, ind)?;
+	let args = parse_function_arguments(tokens, ind, None)?;
 
 	*ind += 1;
 
@@ -32,5 +32,5 @@ pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 		end = tokens[*ind - 1].get_end_pos().clone();
 	}
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ShadowFunctionDeclaration { func_name: HashedString::new(function_name.0), args, return_type: ret_type }, start, end)))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ShadowFunctionDeclaration { func_name: HashedString::new(function_name.0), args: args.0, return_type: ret_type }, start, end)))
 }

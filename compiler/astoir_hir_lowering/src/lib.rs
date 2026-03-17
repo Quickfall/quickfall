@@ -2,7 +2,7 @@ use ast::{ctx::ParserCtx, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::HIRNode};
 use compiler_errors::{IR_INVALID_NODE_TYPE, IR_TYPE_WRONG_KIND, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 
-use crate::{control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block}, func::{lower_ast_function_call, lower_ast_function_declaration, lower_ast_shadow_function_declaration}, math::lower_ast_math_operation, structs::lower_ast_struct_declaration, values::lower_ast_value, var::lower_ast_variable_declaration};
+use crate::{control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block}, func::{lower_ast_function_call, lower_ast_function_declaration, lower_ast_shadow_function_declaration}, math::lower_ast_math_operation, structs::lower_ast_struct_declaration, values::lower_ast_value, var::{lower_ast_variable_assign, lower_ast_variable_declaration}};
 
 pub mod literals;
 pub mod var;
@@ -18,6 +18,7 @@ pub fn lower_ast_body_node(context: &mut HIRContext, curr_ctx: &mut HIRBranchedC
 	match node.kind.clone() {
 		ASTTreeNodeKind::VarDeclaration { .. } => return lower_ast_variable_declaration(context, curr_ctx, node),
 		ASTTreeNodeKind::FunctionCall { .. } =>  return lower_ast_function_call(context, curr_ctx, node),
+		ASTTreeNodeKind::VarValueChange { .. } => return lower_ast_variable_assign(context, curr_ctx, node),
 
 		ASTTreeNodeKind::MathResult { .. } => return lower_ast_math_operation(context, curr_ctx, node, true),
 
@@ -74,9 +75,9 @@ pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> C
 		},
 
 		ASTTreeNodeKind::ShadowFunctionDeclaration { .. } => {
-			lower_ast_shadow_function_declaration(context, node)?;
+			let func_decl = lower_ast_shadow_function_declaration(context, node)?;
 			
-			context.function_declarations.push(None);
+			context.function_declarations.push(Some(func_decl));
 			
 			return Ok(true);
 		},

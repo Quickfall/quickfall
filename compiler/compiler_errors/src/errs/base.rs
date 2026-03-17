@@ -1,6 +1,6 @@
 //! Base-error related declarations
 
-use crate::errs::{ErrorKind, normal::CompilerError};
+use crate::errs::{ErrorKind, IS_MIR_STAGE, normal::CompilerError};
 
 /// Base errors are errors originating from the IR. They do not contain positions or other things
 #[derive(Clone, Debug)]
@@ -10,19 +10,27 @@ pub struct BaseError {
 }
 
 impl BaseError {
+	pub fn new(kind: ErrorKind, str: String) -> Self {
+		let base = BaseError { kind, str };
+
+		IS_MIR_STAGE.with(|e| {
+			if *e.borrow() {
+				CompilerError::from_base_posless(base.clone());
+			}
+		});
+
+		return base;
+	}
+
 	pub fn err(str: String) -> Self {
-		return BaseError { kind: ErrorKind::Error, str }
+		return BaseError::new(ErrorKind::Error, str);
 	}
 
 	pub fn warn(str: String) -> Self {
-		return BaseError { kind: ErrorKind::Warn, str }
+		return BaseError::new(ErrorKind::Warn, str);
 	}
 
 	pub fn critical(str: String) -> Self {
-		let e =  BaseError { kind: ErrorKind::Critical, str };
-
-		CompilerError::from_base_posless(e.clone());
-
-		return e;
+		return BaseError::new(ErrorKind::Critical, str);
 	}
 }

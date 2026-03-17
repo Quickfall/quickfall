@@ -33,7 +33,7 @@ pub fn lower_ast_function_call(context: &HIRContext, curr_ctx: &HIRBranchedConte
 }
 
 pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
-	if let ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, return_type } = node.kind {
+	if let ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, return_type, requires_this } = node.kind {
 		let ret_type;
 
 		if return_type.is_some() {
@@ -65,7 +65,7 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 		let branch = curr_ctx.start_branch();
 
 		for arg in &arguments {
-			match curr_ctx.introduce_variable(arg.0, arg.1.clone()) {
+			match curr_ctx.introduce_variable(arg.0, arg.1.clone(), true) {
 				Ok(_) => {},
 				Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 			}
@@ -77,7 +77,13 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 
 		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
 
-		return Ok(Box::new(HIRNode::FunctionDeclaration { func_name: ind, arguments, return_type: ret_type, body, ctx: curr_ctx }))
+		for var in 0..curr_ctx.variables.len() {
+			if curr_ctx.is_eligible_for_ssa(var) {
+				println!("* Function variable {} is eligible for SSA treatment!", var);
+			}
+		}
+
+		return Ok(Box::new(HIRNode::FunctionDeclaration { func_name: ind, arguments, return_type: ret_type, body, ctx: curr_ctx, requires_this }))
 	}
 
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))

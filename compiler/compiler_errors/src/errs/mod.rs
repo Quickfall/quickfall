@@ -10,6 +10,7 @@ pub type CompilerResult<K> = Result<K, CompilerError>;
 
 thread_local! {
 	static ERR_STORAGE: RefCell<ErrorStorage> = RefCell::new(ErrorStorage { errs: Vec::new() });
+	pub static IS_MIR_STAGE: RefCell<bool> = RefCell::new(false);
 }
 
 #[derive(Clone, Debug)]
@@ -25,6 +26,7 @@ pub struct ErrorStorage {
 
 pub fn dump_errors() {
 	ERR_STORAGE.with_borrow(|f| {
+
 		for err in &f.errs {
 			println!("{}", err.err);
 

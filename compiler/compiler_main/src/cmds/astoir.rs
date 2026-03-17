@@ -1,7 +1,7 @@
 use std::fs;
 
 use ast_parser::parse_ast_ctx;
-use astoir::{IRLevel, run_astoir_hir};
+use astoir::{IRLevel, run_astoir_hir, run_astoir_mir};
 use compiler_errors::errs::{BaseResult, base::BaseError, dump_errors};
 use lexer::lexer::lexer_parse_file;
 
@@ -18,16 +18,27 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 
 	for i in 3..arguments.len() {
 		let lexer = lexer_parse_file(&arguments[i]).unwrap();
-		let ast = parse_ast_ctx(&lexer).unwrap();
+		let ast = parse_ast_ctx(&lexer);
+
+		dump_errors();
 
 		match level {
 			IRLevel::HIR => {
-				let ctx = run_astoir_hir(ast).unwrap();
+				let ctx = run_astoir_hir(ast.unwrap());
 				let res_path = arguments[i].clone() + ".qfhir";
 
 				dump_errors();
 
-				fs::write(res_path, format!("{:#?}", ctx)).unwrap()
+				fs::write(res_path, format!("{:#?}", ctx.unwrap())).unwrap()
+			},
+
+			IRLevel::MIR => {
+				let ctx = run_astoir_mir(ast.unwrap());
+				let res_path = arguments[i].clone() + ".qfmir";
+
+				dump_errors();
+
+				fs::write(res_path, format!("{}", ctx.unwrap())).unwrap()
 			}
 		}
 	}
@@ -37,6 +48,7 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 fn parse_astoir_level(str: &String) -> BaseResult<IRLevel> {
 	match str as &str {
 		"hir" | "HIR" | "h" | "H" => return Ok(IRLevel::HIR),
+		"mir" | "MIR" | "m" | "M" => return Ok(IRLevel::MIR),
 
 		_ => return Err(BaseError::critical("Cannot parse AstoIR level".to_string()))
 	};
