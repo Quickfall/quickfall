@@ -1,7 +1,7 @@
 use std::fs;
 
 use ast_parser::parse_ast_ctx;
-use astoir::{IRLevel, run_astoir_hir};
+use astoir::{IRLevel, run_astoir_hir, run_astoir_mir};
 use compiler_errors::errs::{BaseResult, base::BaseError, dump_errors};
 use lexer::lexer::lexer_parse_file;
 
@@ -33,7 +33,12 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 			},
 
 			IRLevel::MIR => {
-				
+				let ctx = run_astoir_mir(ast.unwrap());
+				let res_path = arguments[i].clone() + ".qfmir";
+
+				dump_errors();
+
+				fs::write(res_path, format!("{}", ctx.unwrap())).unwrap()
 			}
 		}
 	}
