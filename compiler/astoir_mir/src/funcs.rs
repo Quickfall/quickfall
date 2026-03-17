@@ -33,7 +33,7 @@ impl MIRFunction {
 
 		let reference = ctx.create_block_handled(self.id);
 
-		let block = &ctx.blocks[reference];
+		let block = &mut ctx.blocks[reference];
 		
 		let mut ind = 0;
 		for arg in &self.arguments {

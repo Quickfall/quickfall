@@ -388,6 +388,12 @@ pub fn build_static_string_const(ctx: &mut MIRContext, raw: String) -> BaseResul
 	return res.as_ptr();
 }
 
+pub fn build_argument_grab(ctx: &mut MIRContext, index: usize, t: CompactedType) -> BaseResult<BaseMIRValue> {
+	let res = ctx.append_inst(MIRInstruction::FuncArgumentGrab { ind: index, argtype: t }).get()?;
+
+	return Ok(res);
+}
+
 pub fn build_call(ctx: &mut MIRContext, func: usize, ind: usize, args: Vec<BaseMIRValue>) -> BaseResult<Option<BaseMIRValue>> {
 	let func = &ctx.functions[func];
 

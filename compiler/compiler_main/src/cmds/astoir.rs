@@ -39,13 +39,15 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 
 				dump_errors();
 
-				let bridge = bridge_llvm(&ctx.unwrap());
+				//let bridge = bridge_llvm(&ctx.unwrap());
 
 				dump_errors();
 
-				let ctx = bridge.unwrap();
+				fs::write(res_path, format!("{}", ctx.unwrap()));
 
-				ctx.module.print_to_file(res_path).unwrap();
+				//let ctx = bridge.unwrap();
+
+				//ctx.module.print_to_file(res_path).unwrap();
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 use astoir_hir::{nodes::HIRNode};
-use astoir_mir::{blocks::refer::MIRBlockReference, builder::build_call, funcs::MIRFunction, transmutation::transmute_value, vals::base::BaseMIRValue};
+use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_argument_grab, build_call}, funcs::MIRFunction, transmutation::transmute_value, vals::base::BaseMIRValue};
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, IR_INVALID_NODE_TYPE, IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
 
@@ -24,9 +24,15 @@ pub fn lower_hir_function_decl(node: Box<HIRNode>, cctx: &mut MIRLoweringContext
 		let mut func = MIRFunction::new(format!("func_{}", func_name), args, ret_type, requires_this);
 		let block = func.append_entry_block(&mut cctx.mir_ctx)?;
 
-		cctx.mir_ctx.append_function(func);
-
 		cctx.mir_ctx.writer.move_end(block);
+
+		let mut ind = 0;
+		for arg in &func.arguments {
+			build_argument_grab(&mut cctx.mir_ctx, ind, arg.clone())?;
+			ind += 1;
+		}
+
+		cctx.mir_ctx.append_function(func);
 
 		lower_hir_body(block, body, cctx)?;
 
@@ -94,6 +100,8 @@ pub fn lower_hir_function_call(block: MIRBlockReference, node: Box<HIRNode>, ctx
 
 				return Ok(Some(transmute_value(res, expected.base, &mut ctx.mir_ctx)?));
 			}
+
+			return Ok(Some(res));
 		}
 
 		return Ok(None);

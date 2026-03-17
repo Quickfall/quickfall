@@ -1,8 +1,8 @@
 use astoir_hir::nodes::HIRNode;
-use astoir_mir::blocks::{refer::MIRBlockReference};
+use astoir_mir::{blocks::refer::MIRBlockReference, insts::MIRInstruction};
 use compiler_errors::{IR_INVALID_NODE_TYPE, MATH_OP_NO_ASSIGN, errs::{BaseResult, base::BaseError}};
 
-use crate::{MIRLoweringContext, control::{forloop::lower_hir_for_loop, ifstatement::lower_hir_if_statement}, funcs::lower_hir_function_call, math::lower_hir_math_operation, vars::{lower_hir_variable_assignment, lower_hir_variable_declaration}};
+use crate::{MIRLoweringContext, control::{forloop::lower_hir_for_loop, ifstatement::lower_hir_if_statement}, funcs::lower_hir_function_call, math::lower_hir_math_operation, values::lower_hir_value, vars::{lower_hir_variable_assignment, lower_hir_variable_declaration}};
 
 pub fn lower_hir_body_member(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
 	return match *node {
@@ -25,6 +25,19 @@ pub fn lower_hir_body_member(block: MIRBlockReference, node: Box<HIRNode>, ctx: 
 
 			return Ok(true)
 		},
+
+		HIRNode::ReturnStatement { value } => {
+			if value.is_some() {
+				let val = lower_hir_value(block, value.unwrap(), ctx, None)?;
+
+				ctx.mir_ctx.append_inst(MIRInstruction::Return { val: Some(val) });
+				return Ok(true);
+			}
+
+			ctx.mir_ctx.append_inst(MIRInstruction::Return { val: None });
+
+			return Ok(true);
+		}
 
 		_ => return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
 	}

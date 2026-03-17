@@ -78,6 +78,8 @@ pub enum MIRInstruction {
 	PointerAdd { pointer: MIRPointerValue, right: MIRIntValue }, 
 	PointerSub { pointer: MIRPointerValue, right: MIRIntValue }, 
 
+	FuncArgumentGrab { ind: usize, argtype: CompactedType },
+
 	/// Indicates to the IR processor that this given value's era is finished and thus we drop the value
 	MarkerEraDrop { value: BaseMIRValue },
 }
@@ -179,6 +181,8 @@ impl MIRInstruction {
 			Self::PointerAdd { .. } => return CompactedType::from(BaseType::Pointer),
 			Self::PointerSub { .. } => return CompactedType::from(BaseType::Pointer), 
 
+			Self::FuncArgumentGrab { ind: _, argtype } => argtype.clone(),
+
 			_ => panic!("Tried using get_return_type on non returning type!")
 		}
 	}
@@ -273,6 +277,8 @@ impl Display for MIRInstruction {
 
 			Self::PointerAdd { pointer, right } => writeln!(f, "ptradd {} {}", pointer, right)?,
 			Self::PointerSub { pointer, right } => writeln!(f, "ptrsub {} {}", pointer, right)?,
+
+			Self::FuncArgumentGrab { ind, argtype: _ } => writeln!(f, "funcarg {}", ind)?,
 
 			Self::MarkerEraDrop { value } => writeln!(f, ".marker_era_drop {}", value)?
 		}
