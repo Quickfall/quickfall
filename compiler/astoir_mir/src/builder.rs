@@ -334,7 +334,7 @@ pub fn build_field_pointer(ctx: &mut MIRContext, ptr: MIRPointerValue, field: us
 	return val.as_ptr();
 }
 
-pub fn build_index_pointer(ctx: &mut MIRContext, val: MIRPointerValue, index: usize) -> BaseResult<bool> {
+pub fn build_index_pointer(ctx: &mut MIRContext, val: MIRPointerValue, index: MIRIntValue) -> BaseResult<bool> {
 	ctx.append_inst(MIRInstruction::IndexPointer { val, index });
 
 	Ok(true)

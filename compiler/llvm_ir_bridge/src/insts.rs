@@ -383,9 +383,9 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, bridge: &mu
 			let ptr_val = bridge.values[&val.get_ssa_index()].inner;
 
 			let index: BaseMIRValue = MIRIntValue::into(index);
-			let index = bridge.values[&index].inner;
+			let index = bridge.values[&index.get_ssa_index()].inner;
 
-			let res = llvm_to_base!(unsafe { bridge.builder.build_in_bounds_gep(struct_type, ptr, &[index_type.const_int(0, false), index.into_int_value()], name) });
+			let res = llvm_to_base!(unsafe { bridge.builder.build_in_bounds_gep(struct_type, ptr_val.into_pointer_value(), &[index_type.const_int(0, false), index.into_int_value()], "") });
 
 			Some(res.into())
 		},
@@ -398,7 +398,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, bridge: &mu
 			let pointer = bridge.values[&pointer.get_ssa_index()].inner;
 			let right = bridge.values[&right.get_ssa_index()].inner;
 
-			let res = llvm_to_base!(unsafe { bridge.builder.build_in_bounds_gep(t, pointer.into_pointer_value(), &[index.into_int_value()], name) });
+			let res = llvm_to_base!(unsafe { bridge.builder.build_in_bounds_gep(t, pointer.into_pointer_value(), &[right.into_int_value()], "") });
 
 			Some(res.into())
 		},
@@ -411,7 +411,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, bridge: &mu
 			let pointer = bridge.values[&pointer.get_ssa_index()].inner;
 			let right = bridge.values[&right.get_ssa_index()].inner;
 
-			let res = llvm_to_base!(unsafe { bridge.builder.build_in_bounds_gep(t, pointer.into_pointer_value(), &[index.into_int_value()], name) });
+			let res = llvm_to_base!(unsafe { bridge.builder.build_in_bounds_gep(t, pointer.into_pointer_value(), &[right.into_int_value()], "") });
 
 			Some(res.into())
 		},
@@ -419,7 +419,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, bridge: &mu
 		MIRInstruction::Call { function, arguments } => {
 			let func = bridge.functions[function].clone().inner;
 
-			let args = vec![];
+			let mut args = vec![];
 
 			for arg in arguments {
 				args.push(bridge.values[&arg.get_ssa_index()].inner.into());
