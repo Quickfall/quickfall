@@ -36,8 +36,10 @@ pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ct
 		if assignment {
 			let v = ptr.unwrap();
 
-			v.write(block, &mut ctx.mir_ctx, val)?;
+			v.write(block, &mut ctx.mir_ctx, val.clone())?;
 		}
+
+		return Ok(val)
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
