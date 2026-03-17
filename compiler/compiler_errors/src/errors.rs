@@ -229,6 +229,13 @@ macro_rules! VARIABLE_REQ_VALUE {
 }
 
 #[macro_export]
+macro_rules! EXPECTED_VAL_FUNC {
+	() => {
+		"Function call is used as a value here! The function must return a value."
+	};
+}
+
+#[macro_export]
 macro_rules! IR_VALUE_TYPE_TRANSMUTE {
 	() => {
 		"Cannot transmute this value to fit the expected type."
