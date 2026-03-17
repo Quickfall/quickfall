@@ -34,6 +34,9 @@ pub fn lower_hir_for_loop(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mu
 		let cond_val = lower_hir_value(block, condition, ctx)?;
 
 		build_conditional_branch(&mut ctx.mir_ctx, cond_val.as_int()?, body_ref, exit_ref)?;
+
+		ctx.mir_ctx.writer.move_end(exit_ref);
+
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
