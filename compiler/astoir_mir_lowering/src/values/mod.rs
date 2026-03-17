@@ -14,7 +14,7 @@ pub fn lower_hir_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut M
 		HIRNode::VariableReference { .. } => return lower_hir_variable_reference_value(block, node, ctx),
 		HIRNode::BooleanCondition { .. } => return Ok(lowering_hir_boolean_condition(block, node, ctx)?.into()),
 		HIRNode::BooleanOperator { .. } => return Ok(lower_hir_boolean_operator(block, node, ctx)?.into()),
-		HIRNode::MathOperation { .. } => return Ok(lower_hir_math_operation(block, node, ctx)?),
+		HIRNode::MathOperation { .. } => return Ok(lower_hir_math_operation(block, node, ctx, expected)?),
 
 		_ => return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
 	}
