@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::{collections::HashMap, fmt::Display};
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
@@ -137,5 +137,23 @@ impl MIRBlock {
 	pub fn is_empty(&self) -> bool {
 		return self.instructions.is_empty();
 	}
+}
 
+impl Display for MIRBlock {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		writeln!(f, "%block_{}", self.self_ref)?;
+		writeln!(f, "merge_blocks")?;
+
+		for block in &self.merge_blocks {
+			writeln!(f, "- {}", block)?;
+		}
+
+		writeln!(f, "")?;
+
+		for inst in &self.instructions {
+			write!(f, "	{}", inst)?;
+		}
+
+		Ok(())
+	}
 }
