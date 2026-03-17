@@ -113,6 +113,13 @@ impl BaseType {
 		}
 	}
 
+	pub fn is_bool(&self) -> bool {
+		return match self {
+			BaseType::Boolean => true,
+			_ => false
+		}
+	}
+
 	pub fn is_incomplete(&self) -> bool {
 		return match self {
 			BaseType::IncompleteArbitraryType => true,

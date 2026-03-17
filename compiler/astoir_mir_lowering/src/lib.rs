@@ -1,6 +1,6 @@
 use astoir_hir::{ctx::HIRContext, nodes::HIRNode};
 use astoir_mir::ctx::MIRContext;
-use compiler_errors::{AST_INVALID_TREE, errs::{BaseResult, base::BaseError}};
+use compiler_errors::{AST_INVALID_TREE, errs::{BaseResult, IS_MIR_STAGE, base::BaseError}};
 
 use crate::funcs::{lower_hir_function_decl, lower_hir_shadow_decl};
 
@@ -31,6 +31,8 @@ pub fn lower_hir_top_level(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> 
 }
 
 pub fn lower_hir(ctx: HIRContext) -> BaseResult<MIRContext> {
+	IS_MIR_STAGE.with_borrow_mut(|e| *e = true);
+	 
 	let mut lowering_ctx = MIRLoweringContext { hir_ctx: ctx, mir_ctx: MIRContext::new() };
 
 	let declarations = lowering_ctx.hir_ctx.function_declarations.clone();

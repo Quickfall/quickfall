@@ -2,7 +2,7 @@
 
 use crate::{base::BaseType, complete::ComplexType};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CompactedType {
 	pub base: BaseType,
 	pub array: bool,

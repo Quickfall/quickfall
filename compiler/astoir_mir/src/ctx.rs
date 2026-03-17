@@ -81,12 +81,15 @@ impl MIRContext {
 		self.writer.move_end(block);
 		
 		for val in vals {
-			let res = build_phi(self, val.1)?;
+			// Only update using PHI if needed and value is merged
+			if !val.1.is_empty() {
+				let res = build_phi(self, val.1)?;
 
-			let mut hint = self.blocks[block].variables[&val.0].clone();
-			hint.hint = Some(res);
-
-			self.blocks[block].variables.insert(val.0, hint);
+				let mut hint = self.blocks[block].variables[&val.0].clone();
+				hint.hint = Some(res);
+	
+				self.blocks[block].variables.insert(val.0, hint);
+			}
 		}
 
 		return Ok(true);

@@ -10,6 +10,7 @@ pub type CompilerResult<K> = Result<K, CompilerError>;
 
 thread_local! {
 	static ERR_STORAGE: RefCell<ErrorStorage> = RefCell::new(ErrorStorage { errs: Vec::new() });
+	pub static IS_MIR_STAGE: RefCell<bool> = RefCell::new(false);
 }
 
 #[derive(Clone, Debug)]

@@ -6,7 +6,7 @@ use compiler_errors::errs::{BaseResult};
 use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
 
 /// Represents a basic value in the MIR.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BaseMIRValue {
 	val_index: usize,
 	pub vtype: CompactedType

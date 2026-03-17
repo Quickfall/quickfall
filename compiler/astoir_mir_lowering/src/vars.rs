@@ -57,6 +57,7 @@ pub fn lower_hir_variable_assignment(block: MIRBlockReference, node: Box<HIRNode
 		let variable_ref = ctx.mir_ctx.blocks[block].get_variable_ref(variable)?;
  
 		variable_ref.write(block, &mut ctx.mir_ctx, val)?;
+		return Ok(true);
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))

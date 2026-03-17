@@ -13,7 +13,7 @@ pub struct MIRIntValue {
 
 impl MIRIntValue {
 	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if base.vtype.base.is_integer() {
+		if base.vtype.base.is_integer() | base.vtype.base.is_bool() {
 			return Ok(MIRIntValue { base: base.clone(), size: base.vtype.base.get_size()?, signed: base.vtype.base.is_signed() })
 		}
 
