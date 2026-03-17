@@ -4,7 +4,7 @@ use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_utils::hash::HashedString;
 
-use crate::{blocks::refer::{self, MIRBlockReference}, ctx::MIRContext};
+use crate::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::{self, MIRBlockReference}}, ctx::MIRContext, vals::base::BaseMIRValue};
 
 /// Represents a function in the MIR. Owns one or more blocks
 pub struct MIRFunction {
@@ -32,6 +32,15 @@ impl MIRFunction {
 		}
 
 		let reference = ctx.create_block_handled(self.id);
+
+		let block = &ctx.blocks[reference];
+		
+		let mut ind = 0;
+		for arg in &self.arguments {
+			block.variables.insert(ind, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: Some(BaseMIRValue::new(ind, arg)) });
+
+			ind += 1;
+		}
 
 		self.blocks.push(reference);
 

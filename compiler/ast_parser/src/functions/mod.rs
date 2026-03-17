@@ -22,13 +22,15 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, st
 
 	let args = parse_function_arguments(tokens, ind, struct_type)?;
 
+	println!("{:#?}", tokens[*ind].tok_type);
+
 	*ind += 1;
 
 	let mut ret_type = None;
 
 	if tokens[*ind].is_keyword() {
 		ret_type = Some(parse_type(tokens, ind)?);
-		*ind += 1;
+		//*ind += 1;
 	}
 
 	tokens[*ind].expects(LexerTokenType::BracketOpen)?;

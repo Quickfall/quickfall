@@ -3,7 +3,7 @@ use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::HIR
 use astoir_typing::complete::ComplexType;
 use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}, make_invalid_type_err};
 
-use crate::{bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, literals::lower_ast_literal, math::lower_ast_math_operation, var::lower_ast_variable_reference};
+use crate::{bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, func::lower_ast_function_call, literals::lower_ast_literal, math::lower_ast_math_operation, var::lower_ast_variable_reference};
 
 pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, curr_steps: &mut Vec<StructLRUStep>, curr_type: &mut Option<ComplexType>) -> CompilerResult<bool> {
 	let struct_descriptor;
@@ -136,6 +136,10 @@ pub fn lower_ast_value(context: &HIRContext, curr_ctx: &HIRBranchedContext, node
 		ASTTreeNodeKind::IntegerLit { .. } | ASTTreeNodeKind::StringLit(_) => {
 			return lower_ast_literal(context, node);
 		},
+
+		ASTTreeNodeKind::FunctionCall { .. } => {
+			return lower_ast_function_call(context, curr_ctx, node);
+		}
 
 		ASTTreeNodeKind::VariableReference(_) => {
 			return lower_ast_variable_reference(context, curr_ctx, node, true)

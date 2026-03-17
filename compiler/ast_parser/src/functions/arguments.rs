@@ -32,7 +32,6 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struc
 		} else {
 			let var_type = parse_type(tokens, ind)?;
 
-			*ind += 1;
 			let var_name = tokens[*ind].expects_keyword()?;
 	
 			args.push(FunctionDeclarationArgument::new(var_name.0, var_type));
@@ -46,7 +45,6 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struc
 
 		tokens[*ind].expects(LexerTokenType::Comma)?;
 
-		*ind += 1;
 	}
 
 	tokens[*ind].expects(LexerTokenType::ParenClose)?;

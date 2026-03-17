@@ -71,11 +71,12 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 			}
 		}
 
+		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
+
+
 		let body = lower_ast_body(context, &mut curr_ctx, body, false)?;
 
 		curr_ctx.end_branch(branch);
-
-		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone()));
 
 		for var in 0..curr_ctx.variables.len() {
 			if curr_ctx.is_eligible_for_ssa(var) {
