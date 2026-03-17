@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use compiler_errors::errs::BaseResult;
 
@@ -8,6 +8,9 @@ use crate::{blocks::{MIRBlock, MIRBlockHeldInstruction, hints::{HintStorage, MIR
 pub struct MIRContext {
 	pub functions: Vec<MIRFunction>,
 	pub blocks: Vec<MIRBlock>,
+
+	pub block_to_func: HashMap<usize, usize>,
+
 	pub writer: InstructionWriterPosition,
 
 	pub ssa_hints: HintStorage,
@@ -15,19 +18,41 @@ pub struct MIRContext {
 
 impl MIRContext {
 	pub fn new() -> Self {
-		MIRContext { functions: vec![], ssa_hints: HintStorage::new(), blocks: vec![], writer: InstructionWriterPosition { curr_block: 0, curr_inst: BlockPosition::END } }
+		MIRContext { functions: vec![], ssa_hints: HintStorage::new(), blocks: vec![], writer: InstructionWriterPosition { curr_block: 0, curr_inst: BlockPosition::END }, block_to_func: HashMap::new() }
 	}
 
-	pub fn create_block(&mut self) -> MIRBlockReference {
+	pub fn create_block(&mut self, func: usize) -> MIRBlockReference {
 		let ind = self.blocks.len();
 
 		self.blocks.push(MIRBlock::new(ind));
 
+		self.functions[func].blocks.push(ind);
+
+		self.block_to_func.insert(ind, func);
+
 		return ind;
+	}
+
+	pub fn create_block_handled(&mut self, func: usize) -> MIRBlockReference {
+		let ind = self.blocks.len();
+
+		self.blocks.push(MIRBlock::new(ind));
+
+		self.block_to_func.insert(ind, func);
+
+		return ind;
+	}
+
+
+	pub fn get_func_from_block(&self, block: MIRBlockReference) -> usize {
+		return self.block_to_func[&block];
 	}
 
 	pub fn append_function(&mut self, func: MIRFunction) -> usize {
 		let ind = self.functions.len();
+		let mut func = func;
+
+		func.id = ind;
 
 		self.functions.push(func);
 

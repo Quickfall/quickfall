@@ -58,7 +58,7 @@ impl MIRBlock {
 	}
 
 	pub fn new_merge(base: MIRBlockReference, ctx: &mut MIRContext, append_to_merge_blocks: bool) -> MIRBlockReference {
-		let ind = ctx.create_block();
+		let ind = ctx.create_block(ctx.get_func_from_block(base));
 
 		let variables = ctx.blocks[base].variables.clone();
 
