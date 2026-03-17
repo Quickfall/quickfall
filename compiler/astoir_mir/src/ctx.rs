@@ -24,6 +24,14 @@ impl MIRContext {
 		return ind;
 	}
 
+	pub fn append_function(&mut self, func: MIRFunction) -> usize {
+		let ind = self.functions.len();
+
+		self.functions.push(func);
+
+		return ind;
+	}
+
 	pub fn append_inst(&mut self, inst: MIRInstruction) -> InstructionValue {
 		match self.writer.curr_inst {
 			BlockPosition::START => self.blocks[self.writer.curr_block].append_start(inst.clone()),
