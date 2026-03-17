@@ -22,7 +22,9 @@ pub fn lower_hir_function_decl(node: Box<HIRNode>, cctx: &mut MIRLoweringContext
 		}
 
 		let mut func = MIRFunction::new(format!("func_{}", func_name), args, ret_type, requires_this);
-		let block =func.append_entry_block(&mut cctx.mir_ctx)?;
+		let block = func.append_entry_block(&mut cctx.mir_ctx)?;
+
+		cctx.mir_ctx.writer.move_end(block);
 
 		lower_hir_body(block, body, cctx)?;
 

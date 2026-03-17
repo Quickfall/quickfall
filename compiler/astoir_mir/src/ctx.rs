@@ -15,7 +15,7 @@ pub struct MIRContext {
 
 impl MIRContext {
 	pub fn new() -> Self {
-		MIRContext { functions: vec![], ssa_hints: HintStorage::new(), blocks: vec![], writer: InstructionWriterPosition { curr_block: 0, curr_inst: BlockPosition::START } }
+		MIRContext { functions: vec![], ssa_hints: HintStorage::new(), blocks: vec![], writer: InstructionWriterPosition { curr_block: 0, curr_inst: BlockPosition::END } }
 	}
 
 	pub fn create_block(&mut self) -> MIRBlockReference {
