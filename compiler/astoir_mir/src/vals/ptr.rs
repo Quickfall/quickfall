@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use astoir_typing::base::BaseType;
 use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
 
@@ -21,5 +23,13 @@ impl MIRPointerValue {
 impl Into<BaseMIRValue> for MIRPointerValue {
 	fn into(self) -> BaseMIRValue {
 		return self.base;
+	}
+}
+
+impl Display for MIRPointerValue {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "#{}", self.base.get_ssa_index())?;
+
+		Ok(())
 	}
 }

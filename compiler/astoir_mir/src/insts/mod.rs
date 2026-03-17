@@ -1,5 +1,7 @@
 //! The definitions for instructions within the MIR. 
 
+use std::fmt::Display;
+
 use astoir_typing::{base::BaseType, compacted::CompactedType};
 
 use crate::{blocks::{refer::MIRBlockReference}, ctx::MIRContext, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
@@ -180,5 +182,95 @@ impl MIRInstruction {
 			_ => panic!("Tried using get_return_type on non returning type!")
 		}
 	}
+}
 
+impl Display for MIRInstruction {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Self::StackAlloc { alloc_size, t } => writeln!(f, "stkalloc {}", *alloc_size)?,
+			Self::Load { value } => writeln!(f, "load {}", value)?,
+			Self::Store { variable, value } => writeln!(f, "store d{} s{}", variable, value)?,
+			
+			Self::DowncastInteger { val, size } => writeln!(f, "dintcast {} {}", val, size)?,
+			Self::DowncastFloat { val, exponent, fraction } => writeln!(f, "dfcast {} {} {}", val, exponent, fraction)?,
+			Self::UpcastInteger { val, size } => writeln!(f, "uintcast {} {}", val, size)?,
+			Self::UpcastFloat { val, exponent, fraction } => writeln!(f, "ufcast {} {} {}", val, exponent, fraction)?,
+
+			Self::IntegerAdd { signed, left, right } => writeln!(f, "iadd s{} {} {}", signed, left, right)?,
+			Self::IntegerSub { signed, left, right } => writeln!(f, "isub s{} {} {}", signed, left, right)?,
+			Self::IntegerMul { signed, left, right } => writeln!(f, "imul s{} {} {}", signed, left, right)?,
+			Self::IntegerDiv { signed, left, right } => writeln!(f, "idiv s{} {} {}", signed, left, right)?,
+			Self::IntegerMod { signed, left, right } => writeln!(f, "imod s{} {} {}", signed, left, right)?,
+			Self::IntegerNeg { val } => writeln!(f, "ineg {}", val)?,
+
+			Self::FloatAdd { signed, left, right } => writeln!(f, "fadd s{} {} {}", signed, left, right)?,
+			Self::FloatSub { signed, left, right } => writeln!(f, "fsub s{} {} {}", signed, left, right)?,
+			Self::FloatMul { signed, left, right } => writeln!(f, "fmul s{} {} {}", signed, left, right)?,
+			Self::FloatDiv { signed, left, right } => writeln!(f, "fdiv s{} {} {}", signed, left, right)?,
+			Self::FloatNeg { val } => writeln!(f, "fneg {}", val)?,
+
+			Self::BitwiseAnd { a, b } => writeln!(f, "and {} {}", a, b)?,
+			Self::BitwiseOr { a, b } => writeln!(f, "or {} {}", a, b)?,
+			Self::BitwiseXor { a, b } => writeln!(f, "xor {} {}", a, b)?,
+			Self::BitwiseNot { val } => writeln!(f, "not {}", val)?,
+
+			Self::ShiftLeft { a, shift } => writeln!(f, "shiftl {} {}", a, shift)?,
+			Self::ShiftRight { a, shift } => writeln!(f, "shiftr {} {}", a, shift)?,
+
+			Self::CompEq { a, b } => writeln!(f, "eq {} {}", a, b)?,
+			Self::CompNeg { a, b } => writeln!(f, "ne {} {}", a, b)?,
+			Self::CompLt { a, b } => writeln!(f, "lt {} {}", a, b)?,
+			Self::CompLe { a, b } => writeln!(f, "le {} {}", a, b)?,
+			Self::CompGt { a, b } => writeln!(f, "gt {} {}", a, b)?,
+			Self::CompGe { a, b } => writeln!(f, "ge {} {}", a, b)?,
+
+			Self::IntegerSignedConstant { raw, bitsize } => writeln!(f, "constints {} {}", raw, bitsize)?,
+			Self::IntegerUnsignedConstant { raw, bitsize } => writeln!(f, "constintu {} {}", raw, bitsize)?,
+
+			Self::FloatSignedConstant { raw, exponent, fraction } => writeln!(f, "constfs {} {} {}", raw, exponent, fraction)?,
+			Self::FloatUnsignedConstant { raw, exponent, fraction } => writeln!(f, "constfu {} {} {}", raw, exponent, fraction)?,
+
+			Self::FixedSignedConstant { raw, number, fraction } => writeln!(f, "constffs {} {} {}", raw, number, fraction)?,
+			Self::FixedUnsignedConstant { raw, number, fraction } => writeln!(f, "constffu {} {} {}", raw, number, fraction)?,
+
+			Self::StaticStringConstant { raw } => writeln!(f, "conststr {}", raw)?,
+
+			Self::Return { val } => writeln!(f, "ret {}", val)?,
+			
+			Self::UnconditionalBranch { branch } => writeln!(f, "ucondbr {}", branch)?,
+			Self::ConditionalBranch { cond, if_branch, else_branch } => writeln!(f, "condbr {} {} {}", cond, if_branch, else_branch)?,
+
+			Self::Phi { choices } => {
+				write!(f, "phi")?;
+
+				for choice in choices {
+					write!(f, " [b{}, {}]", choice.0, choice.1)?;
+				}
+
+				write!(f, "\n")?;
+			},
+
+			Self::Select { cond, if_val, else_val } => writeln!(f, "select {} {} {}", cond, if_val, else_val)?,
+
+			Self::Call { function, arguments } => {
+				write!(f, "call {}", function)?;
+
+				for arg in arguments {
+					write!(f, " {}", arg)?;
+				}
+
+				write!(f, "\n")?;
+			},
+
+			Self::FieldPointer { val, field } => writeln!(f, "fieldptr {} {}", val, field)?,
+			Self::IndexPointer { val, index } => writeln!(f, "indptr {} {}", val, index)?,
+
+			Self::PointerAdd { pointer, right } => writeln!(f, "ptradd {} {}", pointer, right)?,
+			Self::PointerSub { pointer, right } => writeln!(f, "ptrsub {} {}", pointer, right)?,
+
+			Self::MarkerEraDrop { value } => writeln!(f, ".marker_era_drop {}", value)?
+		}
+
+		Ok(())
+	}
 }

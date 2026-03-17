@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use astoir_typing::{compacted::CompactedType};
 use compiler_errors::errs::{BaseResult};
 
@@ -36,5 +38,13 @@ impl BaseMIRValue {
 impl PartialEq for BaseMIRValue {
 	fn eq(&self, other: &Self) -> bool {
 		return self.val_index == other.val_index && self.vtype == other.vtype;
+	}
+}
+
+impl Display for BaseMIRValue {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "#{}", self.val_index)?;
+
+		Ok(())
 	}
 }
