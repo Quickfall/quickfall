@@ -1,5 +1,4 @@
-use compiler_utils::hash::{WithHash};
-use compiler_utils::{Position, hash};
+use compiler_utils::{Position, hash::HashedString};
 
 use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use compiler_errors::{PARSE_VALUE, UNEXPECTED_TOKEN, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
@@ -50,7 +49,7 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 			let start = original.as_ref().unwrap().start.clone();
 			let end = tokens[*ind].get_end_pos();
 
-			let r_member = Box::new(ASTTreeNode::new(ASTTreeNodeKind::VariableReference(WithHash::new(s.clone())), start.clone(), end));
+			let r_member = Box::new(ASTTreeNode::new(ASTTreeNodeKind::VariableReference(HashedString::new(s.clone())), start.clone(), end));
 
 			*ind += 1;
 
@@ -89,6 +88,19 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
 
 			return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
+		},
+
+		LexerTokenType::EqualSign => {
+			*ind += 1;
+
+			let start = original.clone()?.start.clone();
+		
+			let right_val = parse_ast_value(tokens, ind)?;
+
+			let end = right_val.end.clone();
+
+			let kind = ASTTreeNodeKind::VarValueChange { var: original?, value: right_val };
+			return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
 		},
 
 		LexerTokenType::ComparingOperator(op) => {
@@ -159,7 +171,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 				return parse_ast_value_post_l(tokens, ind, call, false);
 			}
 
-			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(hash!(str.clone())), &tokens[*ind], &tokens[*ind]));
+			let n = Ok(make_node!(ASTTreeNodeKind::VariableReference(HashedString::new(str.clone())), &tokens[*ind], &tokens[*ind]));
 
 			*ind += 1;
 

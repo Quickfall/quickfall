@@ -17,3 +17,11 @@ pub fn can_num_fit_inbits_signed(bits: usize, num: i128) -> bool {
 pub fn can_num_fit_inbits_unsigned(bits: usize, num: i128) -> bool {
 	return num >= 0 && num <= get_unsigned_highbound(bits);
 }
+
+pub fn can_fit_in_integer(num: i128, bits: usize, signed: bool) -> bool {
+	if signed {
+		return can_num_fit_inbits_signed(bits, num);
+	} 
+
+	return can_num_fit_inbits_unsigned(bits, num);
+}

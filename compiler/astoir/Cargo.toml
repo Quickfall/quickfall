@@ -1,0 +1,12 @@
+[package]
+name = "astoir"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+astoir_hir = {path = "../astoir_hir"}
+astoir_mir = {path = "../astoir_mir"}
+ast = { path = "../ast" }
+compiler_errors = { path = "../compiler_errors" }
+astoir_hir_lowering = { path = "../astoir_hir_lowering" }
+astoir_mir_lowering = { path = "../astoir_mir_lowering" }

@@ -2,28 +2,29 @@
 //! Module containing the core lexer algorithm
 //! 
 
-use std::{fs, hash::{DefaultHasher, Hash, Hasher}};
+use std::fs;
 
-use compiler_utils::Position;
+use compiler_utils::{Position, hash};
 use compiler_errors::{IO_ERROR_READ, PARSE_INT, PARSE_OPERATOR, pos::BoundPosition };
 use compiler_errors::{errs::{CompilerResult, ErrorKind, base::BaseError, normal::CompilerError}};
 
 use crate::{token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
 
-const SHADOWFUNC_KEYWORD_HASH: u64 = 8856473617513302734;
-const FUNC_KEYWORD_HASH: u64 = 17439195341824537259;
-const RET_KEYWORD_HASH: u64 = 9222097151127739705;
-const VAR_KEYWORD_HASH: u64 = 10000921911505692860;
-const STRUCT_KEYWORD_HASH: u64 = 9993791738993869954;
-const LAYOUT_KEYWORD_HASH: u64 = 3186948275885044588;
-const LAY_KEYWORD_HASH: u64 = 5285095872557529407;
-const FALSE_KEYWORD_HASH: u64 = 8985926696363166359;
-const TRUE_KEYWORD_HASH: u64 = 2326242343701258586;
-const IF_KEYWORD_HASH: u64 = 14565880314940941169;
-const ELSE_KEYWORD_HASH: u64 = 15870633062462684568;
-const WHILE_KEYWORD_HASH: u64 = 10666076348663826897;
-const FOR_KEYWORD_HASH: u64 = 8246706989536534387;
-const STATIC_KEYWORD_HASH: u64 = 15057913784433987235;
+const SHADOWFUNC_KEYWORD_HASH: u64 = hash!("shadowfunc");
+const FUNC_KEYWORD_HASH: u64 = hash!("func");
+const RET_KEYWORD_HASH: u64 = hash!("ret");
+const VAR_KEYWORD_HASH: u64 = hash!("var");
+const STRUCT_KEYWORD_HASH: u64 = hash!("struct");
+const LAYOUT_KEYWORD_HASH: u64 = hash!("layout");
+const LAY_KEYWORD_HASH: u64 = hash!("lay");
+const FALSE_KEYWORD_HASH: u64 = hash!("false");
+const TRUE_KEYWORD_HASH: u64 = hash!("true");
+const IF_KEYWORD_HASH: u64 = hash!("if");
+const ELSE_KEYWORD_HASH: u64 = hash!("else");
+const WHILE_KEYWORD_HASH: u64 = hash!("while");
+const FOR_KEYWORD_HASH: u64 = hash!("for");
+const STATIC_KEYWORD_HASH: u64 = hash!("static");
+const THIS_KEYWORD_HASH: u64 = hash!("this");
 
 /// Parses a file into a set of lexer tokens.
 /// 
@@ -118,6 +119,7 @@ pub fn lexer_parse_file(file_path: &String) -> CompilerResult<Vec<LexerToken>> {
 			'&' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Ampersand)),
             '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketOpen)),
             '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketClose)),
+			'*' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Asterisk)),
 			_ => continue
         }
 
@@ -229,7 +231,7 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Com
 
     *ind = end;
 
-	let mut hash = 7572830400006405400; // s64
+	let mut hash = hash!("s64"); // s64
 
 	let endpos = start_pos.increment_by(end - start);
 
@@ -280,12 +282,9 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
         end = start + i + c.len_utf8();
     }
 
-    let mut hasher: DefaultHasher = DefaultHasher::new();
-
     let slice = &str[start..end];
-    slice.hash(&mut hasher);
-
-    let hash: u64 = hasher.finish();
+    
+	let hash = hash!(slice);
 
     *ind = end;
 
@@ -304,6 +303,7 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 		WHILE_KEYWORD_HASH => LexerTokenType::While,
 		FOR_KEYWORD_HASH => LexerTokenType::For,
 		STATIC_KEYWORD_HASH => LexerTokenType::Static,
+		THIS_KEYWORD_HASH => LexerTokenType::This,
         _ => LexerTokenType::KEYWORD(slice.to_string(), hash)
     };
 

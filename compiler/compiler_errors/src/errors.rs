@@ -109,6 +109,13 @@ macro_rules! IR_EXPECTED_TYPE {
 }
 
 #[macro_export]
+macro_rules! IR_TRANSMUTATION {
+	() => {
+		"Type transmutation failed here. This type cannot be inherently casted into the required one"
+	};
+}
+
+#[macro_export]
 macro_rules! IR_OBTAIN_COND {
 	() => {
 		"Cannot use this value as a condition boolean."
@@ -123,18 +130,33 @@ macro_rules! IR_ALREADY_EXISTING_ELEM {
 }
 
 #[macro_export]
-macro_rules! IR_FIND_FUNCTION {
+macro_rules! IR_FIND_ELEMENT {
 	() => {
-		"Cannot find function in the current context."
+		"Cannot find element in the current context."
 	};
 }
 
 #[macro_export]
-macro_rules! IR_FIND_VARIABLE {
+macro_rules! IR_FUNCTION_INVALID_ARGUMENTS {
 	() => {
-		"Cannot find variable in the current context."
+		"Invalid argument provided! Cannot transmute {} into {}"
 	};
 }
+
+#[macro_export]
+macro_rules! IR_OUTSIDE_ERA_LOWER {
+	() => {
+		"Tried invoking element outside of it's definition era. Variable is introduced in era {}"
+	};
+}
+
+#[macro_export]
+macro_rules! IR_OUTSIDE_ERA_HIGHER {
+	() => {
+		"Tried invoking element outside of it's definition era. Variable is dropped in era {}"
+	};
+}
+
 
 #[macro_export]
 macro_rules! IR_TYPE_UNSIGNED {
@@ -196,6 +218,27 @@ macro_rules! IR_FIND_TYPE {
 macro_rules! IR_REQ_VARIABLE_ASSIGN {
 	() => {
 		"A variable is required here to use assigments"
+	};
+}
+
+#[macro_export]
+macro_rules! VARIABLE_REQ_VALUE {
+	() => {
+		"The variable doesn't have any value here! Every variable must have a value at every point where it is used."
+	};
+}
+
+#[macro_export]
+macro_rules! EXPECTED_VAL_FUNC {
+	() => {
+		"Function call is used as a value here! The function must return a value."
+	};
+}
+
+#[macro_export]
+macro_rules! IR_VALUE_TYPE_TRANSMUTE {
+	() => {
+		"Cannot transmute this value to fit the expected type."
 	};
 }
 
@@ -287,7 +330,7 @@ macro_rules! IR_VALUE_REF_TEMP_TYPE {
 #[macro_export]
 macro_rules! IR_INVALID_NODE_TYPE {
 	() => {
-		"Cannot use singular IR parse function on said AST node. Got a {}.\nPlease send a bug report at https://github.com/quickfall/quickfall"
+		"Cannot use singular IR parse function on said AST node. Got a {:#?}.\nPlease send a bug report at https://github.com/quickfall/quickfall"
 	};
 }
 
@@ -295,5 +338,26 @@ macro_rules! IR_INVALID_NODE_TYPE {
 macro_rules! INKWELL_TYPE_GATHER {
 	() => {
 		"Cannot use {} on the given IR type.\nPlease send a bug report at https://github.com/quickfall/quickfall"
+	};
+}
+
+#[macro_export]
+macro_rules! IR_EXPECTED_SIZE_SPECIFIED {
+	() => {
+		"Expected size specifiers on given type.";
+	};
+}
+
+#[macro_export]
+macro_rules! IR_INCOMPLETE_TYPE {
+	() => {
+		"Tried obtaining the size of an incomplete type\nPlease send a bug report at https://github.com/quickfall/quickfall"
+	};
+}
+
+#[macro_export]
+macro_rules! IR_CASTING_ERROR {
+	() => {
+		"Cannot cast IR raw value to the given type\nPlease send a bug report at https://github.com/quickfall/quickfall"
 	};
 }

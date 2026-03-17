@@ -20,6 +20,8 @@ pub enum LexerTokenType {
 	Layout,
 	Lay,
 
+	This,
+
 	Static,
 
 	/// 0: the operator
@@ -42,6 +44,8 @@ pub enum LexerTokenType {
 
     EqualSign,
 	ExclamationMark,
+
+	Asterisk,
 
     Comma,
     Dot,

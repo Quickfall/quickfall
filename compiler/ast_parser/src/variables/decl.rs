@@ -1,19 +1,17 @@
 use compiler_errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
-use compiler_utils::hash::WithHash;
+use compiler_utils::hash::{HashedString};
 
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 
-use crate::value::parse_ast_value;
+use crate::{types::parse_type, value::parse_ast_value};
 
 pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
 	let start= tokens[*ind].pos.clone();
 
 	*ind += 1;
 
-	let type_name = tokens[*ind].expects_keyword()?;
-
-	*ind += 1;
+	let t = parse_type(tokens, ind)?;
 
 	let var_name = tokens[*ind].expects_keyword()?;
 
@@ -31,5 +29,5 @@ pub fn parse_variable_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 		end = tokens[*ind - 1].get_end_pos().clone();
 	}
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::VarDeclaration { var_name: WithHash::new(var_name.0), var_type: type_name.1, value: val }, start, end)));
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::VarDeclaration { var_name: HashedString::new(var_name.0), var_type: t, value: val }, start, end)));
 }

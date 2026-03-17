@@ -1,0 +1,50 @@
+use std::fmt::Display;
+
+use astoir_typing::{compacted::CompactedType};
+use compiler_errors::errs::{BaseResult};
+
+use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
+
+/// Represents a basic value in the MIR.
+#[derive(Clone, Debug)]
+pub struct BaseMIRValue {
+	val_index: usize,
+	pub vtype: CompactedType
+}
+
+impl BaseMIRValue {
+	#[deprecated(note = "This is meant for internal purposes, always use builders to safely create this!")]
+	pub fn new(val_index: usize, vtype: CompactedType) -> Self {
+		return BaseMIRValue { val_index, vtype }
+	}
+
+	pub fn as_int(&self) -> BaseResult<MIRIntValue> {
+		return Ok(MIRIntValue::new(self.clone())?);
+	}
+
+	pub fn as_float(&self) -> BaseResult<MIRFloatValue> {
+		return Ok(MIRFloatValue::new(self.clone())?)
+	}
+
+	pub fn as_ptr(&self) -> BaseResult<MIRPointerValue> {
+		return Ok(MIRPointerValue::new(self.clone())?)
+	}
+
+	pub fn get_ssa_index(&self) -> usize {
+		return self.val_index;
+	}
+}
+
+impl PartialEq for BaseMIRValue {
+	fn eq(&self, other: &Self) -> bool {
+		return self.val_index == other.val_index && self.vtype == other.vtype;
+	}
+}
+
+impl Display for BaseMIRValue {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "#{}", self.val_index)?;
+
+		Ok(())
+	}
+}

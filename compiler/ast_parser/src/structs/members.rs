@@ -1,15 +1,15 @@
 use compiler_errors::errs::CompilerResult;
+use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken};
-use compiler_utils::hash::WithHash;
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
+
+use crate::types::parse_type;
 
 /// Parses a struct/layout member (field)
 pub fn parse_types_field_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
-	let type_name = tokens[*ind].expects_keyword()?;
-
-	*ind += 1;
+	let member_type = parse_type(tokens, ind)?;
 
 	let field_name = tokens[*ind].expects_keyword()?;
 
@@ -17,5 +17,5 @@ pub fn parse_types_field_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> Co
 
 	*ind += 1;
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructFieldMember { name: WithHash::new(field_name.0), member_type: type_name.1 }, start, end)))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructFieldMember { name: HashedString::new(field_name.0), member_type }, start, end)))
 }

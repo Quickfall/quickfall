@@ -1,4 +1,5 @@
 use core::fmt;
+use std::backtrace::Backtrace;
 
 use colored::Colorize;
 use compiler_utils::Position;
@@ -6,7 +7,7 @@ use compiler_utils::Position;
 use crate::{IO_ERROR_READ, errs::{ERR_STORAGE, ErrorKind, base::BaseError}, pos::BoundPosition};
 
 /// The normal type of error used by the Quickfall compiler. Can be cleanly formatted or passed to the language server.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct CompilerError {
 	pub kind: ErrorKind,
 	pub str: String,
@@ -14,11 +15,29 @@ pub struct CompilerError {
 	pub pos: Option<BoundPosition>
 }
 
+pub struct HeldError {
+	pub err: CompilerError,
+	pub btrace: Option<Backtrace>
+}
+
+impl HeldError {
+	pub fn from(err: CompilerError) -> Self {
+		#[cfg(debug_assertions)]
+		{
+			let trace = Backtrace::capture();
+			
+			return HeldError { err, btrace: Some(trace) }
+		}
+
+		return HeldError { err, btrace: None }
+	}
+}
+
 impl CompilerError {
 	pub fn from_base(base: BaseError, start: &Position, end: &Position) -> Self {
 		let err = CompilerError { kind: base.kind, str: base.str, pos: Some(BoundPosition { start: start.clone(), end: end.clone() }) };
 
-		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
+		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(HeldError::from(err.clone())));
 
 		return err;
 	}
@@ -26,7 +45,7 @@ impl CompilerError {
 	pub fn new(kind: ErrorKind, str: String, pos: BoundPosition) -> Self {
 		let err = CompilerError { kind, str, pos: Some(pos)};
 
-		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
+		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(HeldError::from(err.clone())));
 
 		return err;
 	}
@@ -38,7 +57,7 @@ impl CompilerError {
 	pub fn from_base_posless(base: BaseError) -> Self {
 		let err = CompilerError { kind: base.kind, str: base.str, pos: None };
 
-		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(err.clone()));
+		ERR_STORAGE.with_borrow_mut(|s| s.errs.push(HeldError::from(err.clone())));
 	
 		return err;
 	}
@@ -51,6 +70,13 @@ impl CompilerError {
 		}
 	}
 
+}
+
+#[macro_export]
+macro_rules! make_invalid_type_err {
+	($node:expr) => {
+		return Err(CompilerError::from_ast(ErrorKind::Error, format!(compiler_errors::IR_INVALID_NODE_TYPE!(), $node.clone()), &$node.start, &$node.end))
+	};
 }
 
 impl fmt::Display for CompilerError {
@@ -70,9 +96,10 @@ impl fmt::Display for CompilerError {
 				Err(_) => IO_ERROR_READ!().to_string()
 			};
 
-			let before = &start_line[0..self.pos.as_ref().unwrap().start.col - 1];
+			let before = &start_line[0..self.pos.as_ref().unwrap().start.col];
 			let target = self.pos.as_ref().unwrap().get_bound().cyan().underline();
-			let after = &end_line[self.pos.as_ref().unwrap().end.col - 1..];
+
+			let after = &end_line[self.pos.as_ref().unwrap().end.col.min(end_line.len() - 1)..];
 
 			writeln!(f, "{}{}{}", before, target, after)?;
 		}

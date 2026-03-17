@@ -1,34 +1,56 @@
 //! Module for parsing arguments
 
-use ast::tree::FunctionDeclarationArgument;
-use compiler_errors::errs::CompilerResult;
+use ast::{tree::FunctionDeclarationArgument, types::CompleteType};
+use compiler_errors::errs::{CompilerResult, ErrorKind, normal::CompilerError};
+use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
 
-pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Vec<FunctionDeclarationArgument>> {
+use crate::types::parse_type;
+
+pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<CompleteType>) -> CompilerResult<(Vec<FunctionDeclarationArgument>, bool)> {
 	*ind += 1;
 
+	let mut depends_on_this: bool = false;
 	let mut args: Vec<FunctionDeclarationArgument> = Vec::new();
 	
-	while *ind < tokens.len() && tokens[*ind].is_keyword() {
-		let var_type = tokens[*ind].expects_keyword()?;
+	while *ind < tokens.len() && (tokens[*ind].is_keyword() || tokens[*ind].tok_type == LexerTokenType::This) {
+		
+		if tokens[*ind].tok_type == LexerTokenType::This {
+			if struct_type.is_none() {
+				return Err(CompilerError::from_ast(ErrorKind::Error, "This requires to be within a struct!".to_string(), &tokens[*ind].pos, &tokens[*ind].get_end_pos()))
+			}
 
-		*ind += 1;
-		let var_name = tokens[*ind].expects_keyword()?;
+			if !args.is_empty() {
+				return Err(CompilerError::from_ast(ErrorKind::Error, "this must be the first parameter of the function.".to_string(), &tokens[*ind].pos, &tokens[*ind].get_end_pos()))
+			}
 
-		args.push(FunctionDeclarationArgument::new(var_name.0, var_type.1));
+			depends_on_this = true;
 
-		*ind += 1;
+			*ind += 1;
+
+			args.push(FunctionDeclarationArgument { name: HashedString::new("this".to_string()), argument_type: struct_type.clone().unwrap() })
+		} else {
+			let var_type = parse_type(tokens, ind)?;
+
+			let var_name = tokens[*ind].expects_keyword()?;
+	
+			args.push(FunctionDeclarationArgument::new(var_name.0, var_type));
+	
+			*ind += 1;
+		}
 
 		if tokens[*ind].tok_type == LexerTokenType::ParenClose {
 			break;
 		}
 
-		tokens[*ind].expects(LexerTokenType::Comma)?;
+		println!("{:#?}", tokens[*ind]);
 
+		tokens[*ind].expects(LexerTokenType::Comma)?;
 		*ind += 1;
+
 	}
 
 	tokens[*ind].expects(LexerTokenType::ParenClose)?;
 
-	Ok(args)
+	Ok((args, depends_on_this))
 }

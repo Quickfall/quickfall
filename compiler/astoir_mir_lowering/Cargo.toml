@@ -1,0 +1,11 @@
+[package]
+name = "astoir_mir_lowering"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+astoir_mir = {path = "../astoir_mir"}
+astoir_hir = {path = "../astoir_hir"}
+compiler_errors = {path = "../compiler_errors"}
+lexer = {path = "../lexer"}
+astoir_typing = { path = "../astoir_typing"}

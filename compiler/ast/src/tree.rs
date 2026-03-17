@@ -2,19 +2,20 @@
 //! AST tree related definitions.
 //! 
 
-use compiler_utils::Position;
+use compiler_utils::{Position, hash::HashedString};
 use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
-use compiler_utils::hash::{TypeHash, WithHash};
+
+use crate::types::CompleteType;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
-    pub name: WithHash<String>,
-    pub argument_type: TypeHash
+    pub name: HashedString,
+    pub argument_type: CompleteType
 }
 
 impl FunctionDeclarationArgument {
-    pub fn new(name: String, arg_type: TypeHash) -> Self {
-        FunctionDeclarationArgument { name: WithHash::new(name), argument_type: arg_type }
+    pub fn new(name: String, arg_type: CompleteType) -> Self {
+        FunctionDeclarationArgument { name: HashedString::new(name), argument_type: arg_type }
     }
 }
 
@@ -24,17 +25,19 @@ pub enum ASTTreeNodeKind {
     IntegerLit { val: i128, hash: u64 },
     StringLit(String),
 
+	ThisStructParam,
+
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ComparingOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
 
 	MathResult { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: MathOperator, assigns: bool },
 
-	VariableReference(WithHash<String>),
+	VariableReference(HashedString),
 
-	StructLayoutDeclaration { name: WithHash<String>, layout: bool, members: Vec<Box<ASTTreeNode>> },
-	StructFieldMember { name: WithHash<String>, member_type: TypeHash },
+	StructLayoutDeclaration { name: HashedString, layout: bool, members: Vec<Box<ASTTreeNode>> },
+	StructFieldMember { name: HashedString, member_type: CompleteType },
 
-    VarDeclaration { var_name: WithHash<String>, var_type: TypeHash, value: Option<Box<ASTTreeNode>> },
+    VarDeclaration { var_name: HashedString, var_type: CompleteType, value: Option<Box<ASTTreeNode>> },
     VarValueChange { var: Box<ASTTreeNode>, value: Box<ASTTreeNode> },
 	VarIncrement { var: Box<ASTTreeNode>, increment_by: Option<Box<ASTTreeNode>> }, // Default is by 1
 
@@ -44,15 +47,15 @@ pub enum ASTTreeNodeKind {
 
 	ReturnStatement { val: Option<Box<ASTTreeNode>> },
 
-	StaticVariableDeclaration { name: WithHash<String>, var_type: TypeHash, val: Box<ASTTreeNode> },
+	StaticVariableDeclaration { name: HashedString, var_type: CompleteType, val: Box<ASTTreeNode> },
 
 	WhileBlock { cond: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 	ForBlock { initial_state: Box<ASTTreeNode>, cond: Box<ASTTreeNode>, increment: Box<ASTTreeNode>, body: Vec<Box<ASTTreeNode>> },
 
-    FunctionCall { func: WithHash<String>, args: Vec<Box<ASTTreeNode>>  },
-    FunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, return_type: Option<TypeHash> },
+    FunctionCall { func: HashedString, args: Vec<Box<ASTTreeNode>>  },
+    FunctionDeclaration { func_name: HashedString, args: Vec<FunctionDeclarationArgument>, body: Vec<Box<ASTTreeNode>>, return_type: Option<CompleteType>, requires_this: bool },
 
-	ShadowFunctionDeclaration { func_name: WithHash<String>, args: Vec<FunctionDeclarationArgument>, return_type: Option<TypeHash> },
+	ShadowFunctionDeclaration { func_name: HashedString, args: Vec<FunctionDeclarationArgument>, return_type: Option<CompleteType> },
 
 	StructLRVariable { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>,},
 	StructLRFunction { l: Box<ASTTreeNode>, r: Box<ASTTreeNode>, }
@@ -71,26 +74,26 @@ impl ASTTreeNodeKind {
 		return matches!(self, ASTTreeNodeKind::FunctionDeclaration { .. } | ASTTreeNodeKind::StaticVariableDeclaration { .. } | ASTTreeNodeKind::ShadowFunctionDeclaration { .. }| ASTTreeNodeKind::StructLayoutDeclaration { .. })
 	}
 
-	pub fn get_tree_name(&self) -> Option<WithHash<String>> {
+	pub fn get_tree_name(&self) -> Option<HashedString> {
 		match self {
-			ASTTreeNodeKind::FunctionDeclaration { func_name, args: _, body: _, return_type: _ } => {
-				return Some(WithHash::new(func_name.val.to_string()));
+			ASTTreeNodeKind::FunctionDeclaration { func_name, args: _, body: _, return_type: _ , requires_this: _} => {
+				return Some(HashedString::new(func_name.val.to_string()));
 			},
 
 			ASTTreeNodeKind::ShadowFunctionDeclaration { func_name, args: _, return_type: _ } => {
-				return Some(WithHash::new(func_name.val.to_string()))
+				return Some(HashedString::new(func_name.val.to_string()))
 			}
 
 			ASTTreeNodeKind::StaticVariableDeclaration { name, var_type: _, val: _ } => {
-				return Some(WithHash::new(name.val.clone()));
+				return Some(HashedString::new(name.val.clone()));
 			},
 
 			ASTTreeNodeKind::StructLayoutDeclaration { name, layout: _, members: _ } => {
-				return Some(WithHash::new(name.val.to_string()));
+				return Some(HashedString::new(name.val.to_string()));
 			},
 
 			ASTTreeNodeKind::VarDeclaration { var_name, var_type: _, value: _ } => {
-				return Some(WithHash::new(var_name.val.to_string()));
+				return Some(HashedString::new(var_name.val.to_string()));
 			},
 
 			_ => return None
