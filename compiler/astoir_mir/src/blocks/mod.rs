@@ -142,13 +142,14 @@ impl MIRBlock {
 impl Display for MIRBlock {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		writeln!(f, "%block_{}", self.self_ref)?;
-		writeln!(f, "merge_blocks")?;
 
-		for block in &self.merge_blocks {
-			writeln!(f, "- {}", block)?;
+		if !self.merge_blocks.is_empty() {
+			writeln!(f, "merge_blocks")?;
+
+			for block in &self.merge_blocks {
+				writeln!(f, "- {}", block)?;
+			}
 		}
-
-		writeln!(f, "")?;
 
 		for inst in &self.instructions {
 			write!(f, "	{}", inst)?;

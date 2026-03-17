@@ -9,6 +9,8 @@ pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 		let merge_ref = MIRBlock::new_merge(block, &mut ctx.mir_ctx, false);
 		let mut branch_blocks = vec![];
 
+		ctx.mir_ctx.blocks[merge_ref].merge_blocks.push(block);
+
 		for branch in &branches {
 			match branch {
 				&HIRIfBranch::IfBranch { .. } => {

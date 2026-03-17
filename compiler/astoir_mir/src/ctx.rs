@@ -65,17 +65,24 @@ impl MIRContext {
 
 		for (ind, hint) in b.variables.iter() {
 			let mut choices: Vec<(MIRBlockReference, BaseMIRValue)> = vec![];
+			let mut capture_initial_phi_val = false;
 
 			for block_ref in &b.merge_blocks {
 				let block = &self.blocks[*block_ref];
 				let block_hint = &block.variables[ind];
 
-				if hint != block_hint && block_hint.hint.is_some() {
+				if hint == block_hint && !capture_initial_phi_val {
+					choices.push((*block_ref, block_hint.hint.clone().unwrap()));
+					capture_initial_phi_val = true;
+				} else if hint != block_hint && block_hint.hint.is_some() {
 					choices.push((*block_ref, block_hint.hint.clone().unwrap()));
 				}
 			}
 
-			vals.push((*ind, choices));
+			// Phi here only matters when there are 2+ choices. Else it's just the default
+			if choices.len() >= 2 {
+				vals.push((*ind, choices));
+			}
 		}
 
 		self.writer.move_end(block);
