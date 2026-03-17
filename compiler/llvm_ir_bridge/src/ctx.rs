@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::{mem::transmute, rc::Rc};
 
 use inkwell::module::Module;
@@ -10,6 +10,7 @@ use crate::{types::LLVMTypeStorage, utils::{LLVMBasicValue, LLVMBlock, LLVMFunct
 pub struct LLVMBridgeContext {
 	pub blocks: HashMap<usize, LLVMBlock>,
 	pub values: HashMap<usize, LLVMBasicValue>,
+	pub completed_blocks: HashSet<usize>,
 	pub functions: Vec<LLVMFunction>,
 
 	pub types: LLVMTypeStorage,
@@ -27,6 +28,7 @@ impl LLVMBridgeContext {
 	pub fn new(ctx: Rc<Context>) -> Self {
 		LLVMBridgeContext {
 			blocks: HashMap::new(),
+			completed_blocks: HashSet::new(),
 			types: LLVMTypeStorage::new(&ctx),
 			functions: vec![],
 			void_type: unsafe { transmute::<VoidType, VoidType<'static>>(ctx.void_type())},
