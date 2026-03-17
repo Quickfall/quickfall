@@ -4,6 +4,7 @@ use ast_parser::parse_ast_ctx;
 use astoir::{IRLevel, run_astoir_hir, run_astoir_mir};
 use compiler_errors::errs::{BaseResult, base::BaseError, dump_errors};
 use lexer::lexer::lexer_parse_file;
+use llvm_ir_bridge::bridge_llvm;
 
 pub fn parse_astoir_command(arguments: Vec<String>) {
 	if arguments.len() <= 2 {
@@ -34,11 +35,17 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 
 			IRLevel::MIR => {
 				let ctx = run_astoir_mir(ast.unwrap());
-				let res_path = arguments[i].clone() + ".qfmir";
+				let res_path = arguments[i].clone() + ".ll";
 
 				dump_errors();
 
-				fs::write(res_path, format!("{}", ctx.unwrap())).unwrap()
+				let bridge = bridge_llvm(&ctx.unwrap());
+
+				dump_errors();
+
+				let ctx = bridge.unwrap();
+
+				ctx.module.print_to_file(res_path);
 			}
 		}
 	}

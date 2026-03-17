@@ -1,12 +1,12 @@
 //! Definitions for basic types in AstoIR. These are more types of types than concrete types
 
-use std::{any::Any, hash::Hash};
+use std::{hash::Hash};
 
 use compiler_errors::{IR_INCOMPLETE_TYPE, IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 use crate::structs::StructTypeContainer;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BaseType {
 	/// An integer type.
 	/// 0: the size in bits

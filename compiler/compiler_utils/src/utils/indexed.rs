@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct IndexStorage<K> {
 	pub hash_to_ind: HashMap<u64, usize>, 
 	pub vals: Vec<K>

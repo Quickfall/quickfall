@@ -5,7 +5,7 @@ use compiler_utils::utils::indexed::IndexStorage;
 
 use crate::complete::ComplexType;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct StructTypeContainer {
 	pub ind: usize,
 	pub fields: IndexStorage<ComplexType>,

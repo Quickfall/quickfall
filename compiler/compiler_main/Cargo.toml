@@ -9,3 +9,4 @@ compiler_errors = { path = "../compiler_errors" }
 ast = { path = "../ast" }
 ast_parser = { path = "../ast_parser" }
 lexer = { path = "../lexer" }
+llvm_ir_bridge = { path = "../llvm_ir_bridge" }
