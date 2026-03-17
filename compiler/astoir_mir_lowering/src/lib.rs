@@ -29,3 +29,17 @@ pub fn lower_hir_top_level(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> 
 		_ => return Err(BaseError::err(AST_INVALID_TREE!().to_string()))
 	}
 }
+
+pub fn lower_hir(ctx: HIRContext) -> BaseResult<MIRContext> {
+	let mut lowering_ctx = MIRLoweringContext { hir_ctx: ctx, mir_ctx: MIRContext::new() };
+
+	let declarations = lowering_ctx.hir_ctx.function_declarations.clone();
+
+	for decl in declarations {
+		if let Some(node) = decl {
+			lower_hir_top_level(node, &mut lowering_ctx)?;
+		}
+	}
+
+	return Ok(lowering_ctx.mir_ctx);
+}

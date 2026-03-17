@@ -6,7 +6,7 @@ use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum HIRNode {
 	VarDeclaration { variable: usize, var_type: ComplexType, default_val: Option<Box<HIRNode>> },
 	StaticVariableDeclaration { variable: usize, var_type: ComplexType, default_val: Option<Box<HIRNode>> },

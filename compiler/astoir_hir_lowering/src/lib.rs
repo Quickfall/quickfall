@@ -75,9 +75,9 @@ pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> C
 		},
 
 		ASTTreeNodeKind::ShadowFunctionDeclaration { .. } => {
-			lower_ast_shadow_function_declaration(context, node)?;
+			let func_decl = lower_ast_shadow_function_declaration(context, node)?;
 			
-			context.function_declarations.push(None);
+			context.function_declarations.push(Some(func_decl));
 			
 			return Ok(true);
 		},

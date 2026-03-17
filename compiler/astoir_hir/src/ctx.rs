@@ -27,7 +27,7 @@ pub type HIRFunction = (Option<ComplexType>, Vec<(u64, ComplexType)>);
 /// Every branch index stores an end branch index from when it ends (inside of `ending_eras`). This end branch index will be used to calculate when the era of a variable ends.
 /// 
 /// 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HIRBranchedContext {
 	pub hash_to_ind: HashMap<SelfHash, usize>, // TODO: add a layer system to this so you are able to put multiple variables with the same name.
 	pub ending_eras: HashMap<usize, usize>,
@@ -173,7 +173,7 @@ impl HIRBranchedContext {
 	
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
 	pub variable_type: ComplexType,

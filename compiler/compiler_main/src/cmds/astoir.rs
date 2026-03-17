@@ -30,6 +30,10 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 				dump_errors();
 
 				fs::write(res_path, format!("{:#?}", ctx.unwrap())).unwrap()
+			},
+
+			IRLevel::MIR => {
+				
 			}
 		}
 	}
@@ -39,6 +43,7 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 fn parse_astoir_level(str: &String) -> BaseResult<IRLevel> {
 	match str as &str {
 		"hir" | "HIR" | "h" | "H" => return Ok(IRLevel::HIR),
+		"mir" | "MIR" | "m" | "M" => return Ok(IRLevel::MIR),
 
 		_ => return Err(BaseError::critical("Cannot parse AstoIR level".to_string()))
 	};

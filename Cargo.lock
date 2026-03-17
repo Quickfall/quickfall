@@ -27,6 +27,8 @@ dependencies = [
  "ast",
  "astoir_hir",
  "astoir_hir_lowering",
+ "astoir_mir",
+ "astoir_mir_lowering",
  "compiler_errors",
 ]
 
