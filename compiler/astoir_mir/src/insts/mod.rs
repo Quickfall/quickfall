@@ -63,7 +63,7 @@ pub enum MIRInstruction {
 	StaticStringConstant { raw: String },
 
 	// Control
-	Return { val: BaseMIRValue }, 
+	Return { val: Option<BaseMIRValue> }, 
 	UnconditionalBranch { branch: MIRBlockReference },
 	ConditionalBranch { cond: MIRIntValue, if_branch: MIRBlockReference, else_branch: MIRBlockReference }, 
 	Phi { choices: Vec<(MIRBlockReference, BaseMIRValue)> },
@@ -74,7 +74,7 @@ pub enum MIRInstruction {
 	// Pointer utils
 
 	FieldPointer { val: MIRPointerValue, field: usize },
-	IndexPointer { val: MIRPointerValue, index: usize }, 
+	IndexPointer { val: MIRPointerValue, index: MIRIntValue }, 
 	PointerAdd { pointer: MIRPointerValue, right: MIRIntValue }, 
 	PointerSub { pointer: MIRPointerValue, right: MIRIntValue }, 
 
@@ -235,7 +235,13 @@ impl Display for MIRInstruction {
 
 			Self::StaticStringConstant { raw } => writeln!(f, "conststr {}", raw)?,
 
-			Self::Return { val } => writeln!(f, "ret {}", val)?,
+			Self::Return { val } => {
+				if val.is_some() {
+					writeln!(f, "ret {}", val.clone().unwrap())?;
+				} else {
+					writeln!(f, "ret")?;
+				}
+			},
 			
 			Self::UnconditionalBranch { branch } => writeln!(f, "ucondbr {}", branch)?,
 			Self::ConditionalBranch { cond, if_branch, else_branch } => writeln!(f, "condbr {} {} {}", cond, if_branch, else_branch)?,

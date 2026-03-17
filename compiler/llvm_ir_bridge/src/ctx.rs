@@ -9,7 +9,7 @@ use crate::{types::LLVMTypeStorage, utils::{LLVMBasicValue, LLVMBlock, LLVMFunct
 
 pub struct LLVMBridgeContext {
 	pub blocks: HashMap<usize, LLVMBlock>,
-	pub values: Vec<LLVMBasicValue>,
+	pub values: HashMap<usize, LLVMBasicValue>,
 	pub functions: Vec<LLVMFunction>,
 
 	pub types: LLVMTypeStorage,
@@ -30,7 +30,7 @@ impl LLVMBridgeContext {
 			types: LLVMTypeStorage::new(&ctx),
 			functions: vec![],
 			void_type: unsafe { transmute::<VoidType, VoidType<'static>>(ctx.void_type())},
-			values: vec![],
+			values: HashMap::new(),
 			ctx: ctx.clone(),
 			builder: unsafe { transmute::<Builder, Builder<'static>>(ctx.create_builder())},
 			module: unsafe { transmute::<Module, Module<'static>>(ctx.create_module("__qfmirbridge__")) }

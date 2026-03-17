@@ -4,7 +4,7 @@ use astoir_mir::ctx::MIRContext;
 use compiler_errors::errs::BaseResult;
 use inkwell::{basic_block::BasicBlock, types::BasicType};
 
-use crate::{ctx::LLVMBridgeContext, utils::{LLVMBlock, get_block_name}};
+use crate::{ctx::LLVMBridgeContext, utils::{LLVMBlock, LLVMFunction, get_block_name}};
 
 pub fn bridge_llvm_functions(mir: &MIRContext, bridge: &mut LLVMBridgeContext) -> BaseResult<()> {
 	for func in &mir.functions {
@@ -22,10 +22,12 @@ pub fn bridge_llvm_functions(mir: &MIRContext, bridge: &mut LLVMBridgeContext) -
 		let ff = bridge.module.add_function(&func.name.val, t, None);
 
 		for block in &func.blocks {
-			let b = bridge.ctx.append_basic_block(ff, &get_block_name());
+			let b = bridge.ctx.append_basic_block(ff, "entry");
 
 			bridge.blocks.insert(*block, LLVMBlock::new(unsafe { transmute::<BasicBlock, BasicBlock<'static>>(b) }));
 		}
+
+		bridge.functions.push(LLVMFunction::new(ff));
 	}
 
 	Ok(())

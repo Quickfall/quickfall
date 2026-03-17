@@ -38,9 +38,27 @@ pub enum MIRBlockHeldInstruction {
 	Valued(MIRInstruction, usize)
 }
 
+impl Into<MIRInstruction> for  MIRBlockHeldInstruction {
+	fn into(self) -> MIRInstruction {
+		return match self {
+			Self::Valueless(e) => e,
+			Self::Valued(e, _) => e
+		}
+	}
+}
+
+impl MIRBlockHeldInstruction {
+	pub fn as_valuedindex(&self) -> BaseResult<usize> {
+		return match self {
+			Self::Valued(_, b) => Ok(*b),
+			_ => Err(BaseError::err("as_valuedindex requires a valued!".to_string()))
+		}
+	}
+}
+
 /// Represents a function block or a branch.
 pub struct MIRBlock {
-	instructions: Vec<MIRBlockHeldInstruction>,
+	pub instructions: Vec<MIRBlockHeldInstruction>,
 
 	/// The block references that will merge into this one
 	pub merge_blocks: Vec<MIRBlockReference>,

@@ -45,7 +45,7 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 
 				let ctx = bridge.unwrap();
 
-				ctx.module.print_to_file(res_path);
+				ctx.module.print_to_file(res_path).unwrap();
 			}
 		}
 	}

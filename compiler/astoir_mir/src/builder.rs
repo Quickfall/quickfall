@@ -284,7 +284,7 @@ pub fn build_comp_ge(ctx: &mut MIRContext, a: MIRIntValue, b: MIRIntValue) -> Ba
 	return res.as_int();
 }
 
-pub fn build_return(ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool> {
+pub fn build_return(ctx: &mut MIRContext, val: Option<BaseMIRValue>) -> BaseResult<bool> {
 	ctx.append_inst(MIRInstruction::Return { val });
 
 	Ok(true)
