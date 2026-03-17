@@ -13,7 +13,7 @@ pub fn lower_hir_body_member(block: MIRBlockReference, node: Box<HIRNode>, ctx: 
 				return Err(BaseError::err(MATH_OP_NO_ASSIGN!().to_string()))
 			}
 
-			lower_hir_math_operation(block, node, ctx)?;
+			lower_hir_math_operation(block, node, ctx, None)?;
 
 			return Ok(true);
 		},

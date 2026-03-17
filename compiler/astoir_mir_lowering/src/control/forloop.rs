@@ -21,7 +21,7 @@ pub fn lower_hir_for_loop(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mu
 		ctx.mir_ctx.writer.move_end(body_ref);
 
 		lower_hir_body(body_ref, body, ctx)?;
-		lower_hir_math_operation(body_ref, incrementation, ctx)?;
+		lower_hir_math_operation(body_ref, incrementation, ctx, None)?;
 
 		build_unconditional_branch(&mut ctx.mir_ctx, header_ref)?;
 
