@@ -1,3 +1,5 @@
+use std::hash::Hash;
+
 use compiler_errors::{IR_FIND_ELEMENT, errs::{BaseResult, base::BaseError}};
 use compiler_utils::utils::indexed::IndexStorage;
 
@@ -27,5 +29,17 @@ impl StructTypeContainer {
 			Some(v) => Ok(v),
 			None => Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
 		}
+	}
+}
+
+impl Hash for StructTypeContainer {
+	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+		state.write_usize(self.ind);
+		
+		state.write_usize(self.fields.vals.len());
+		for t in &self.fields.vals {
+			t.get_concrete().base.hash(state);
+		}
+
 	}
 }

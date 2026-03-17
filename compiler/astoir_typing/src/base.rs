@@ -1,5 +1,7 @@
 //! Definitions for basic types in AstoIR. These are more types of types than concrete types
 
+use std::{any::Any, hash::Hash};
+
 use compiler_errors::{IR_INCOMPLETE_TYPE, IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 use crate::structs::StructTypeContainer;
@@ -178,5 +180,55 @@ impl BaseType {
 			_ => false
 		}
 	}
+}
 
+impl Hash for BaseType {
+	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+		match self {
+			Self::NumericIntegerType(a, b) => {
+				state.write_usize(0);
+				state.write_u64(*a);
+				state.write_u8(*b as u8);
+			},
+
+			Self::FloatingNumberType(a, b, c) => {
+				state.write_usize(1);
+				state.write_u64(*a);
+				state.write_u64(*b);
+				state.write_u8(*c as u8);
+			},
+
+			Self::FixedPointNumberType(a, b, c) => {
+				state.write_usize(2);
+				state.write_u64(*a);
+				state.write_u64(*b);
+				state.write_u8(*c as u8);
+			},
+
+			Self::Boolean => {
+				state.write_usize(3);
+			},
+
+			Self::ArbitraryType(_) => {
+				state.write_usize(4);
+			},
+
+			Self::Pointer => {
+				state.write_usize(5);
+			},
+
+			Self::StaticStr => {
+				state.write_usize(6);
+			},
+
+			Self::Struct(a, b) => {
+				state.write_usize(7);
+				state.write_u8(*a as u8);
+
+				b.hash(state);
+			},
+
+			_ => {}
+		}
+	}
 }
