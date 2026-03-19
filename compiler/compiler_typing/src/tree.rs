@@ -42,6 +42,7 @@ impl Type {
 				return base.clone().can_transmute(&base2);
 			},
 
+			// TODO: add generic transmutation checking when type storage implemented.
 			(Self::Generic(raw_type, type_params, sizes), Self::Generic(raw_type2, type_params2, sizes2)) => {
 				return raw_type == raw_type2 && type_params == type_params2 && sizes == sizes2;
 			},
