@@ -2,6 +2,7 @@
 
 use crate::RawType;
 
+#[derive(Clone, PartialEq)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
 pub enum Type {
 	/// A generic type node. Represents a classic type.
@@ -19,4 +20,33 @@ pub enum Type {
 	/// 0: The size of the array
 	/// 1: Inner type
 	Array(usize, Box<Type>)
+}
+
+impl Type {
+	/// Checks if the type tree can be transmuted into another one. Transmutation is the process used by the typing system to see if 
+	/// a variable can automatically be casted into another type.
+	/// 
+	/// # Note
+	/// This function uses recursion to go down the type tree and check `can_transmute` on every node.
+	pub fn can_transmute(&self, other: &Type) -> bool {
+		match (self, other) {
+			(Self::Pointer(is_array, _), Self::Pointer(is_array_2, _)) => {
+				return *is_array == *is_array_2;
+			},
+
+			(Self::Array(size, base), Self::Array(size2, base2)) => {
+				if size != size2 {
+					return false;
+				}
+
+				return base.clone().can_transmute(&base2);
+			},
+
+			(Self::Generic(raw_type, type_params, sizes), Self::Generic(raw_type2, type_params2, sizes2)) => {
+				return raw_type == raw_type2 && type_params == type_params2 && sizes == sizes2;
+			},
+
+			_ => false
+		}
+	}
 }
