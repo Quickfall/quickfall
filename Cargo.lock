@@ -132,6 +132,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "compiler_typing"
+version = "0.1.0"
+
+[[package]]
 name = "compiler_utils"
 version = "0.1.0"
 
