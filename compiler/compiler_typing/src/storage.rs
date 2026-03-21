@@ -1,7 +1,8 @@
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash, utils::indexed::IndexStorage};
+use compiler_utils::hash::HashedString;
 
-use crate::raw::RawType;
+use crate::{enums::{RawEnumEntryContainer, RawEnumTypeContainer}, raw::RawType, references::TypeReference};
 
 pub const SIGNED_INTEGER_8: u64 = hash!("s8");
 pub const SIGNED_INTEGER_16: u64 = hash!("s16");
@@ -102,6 +103,15 @@ impl TypeStorage {
 		storage.append(BOOLEAN_TYPE, RawType::Boolean)?;
 		storage.append(POINTER_TYPE, RawType::Pointer)?;
 		storage.append(STATIC_STR, RawType::StaticString)?;
+
+		{
+			let mut result_enum = RawEnumTypeContainer::new(storage.types.vals.len());
+
+			result_enum.append_entry(HashedString::new("value".to_string()), vec![(hash!("val"), TypeReference::make_unresolved(0))]);
+			result_enum.append_entry(HashedString::new("error".to_string()), vec![(hash!("err"), TypeReference::make_unresolved(1))]);
+
+			storage.append(RESULT_TYPE, RawType::Enum(result_enum))?;
+		}
 		
 		return Ok(storage);
 	}
