@@ -1,6 +1,6 @@
 //! The typing tree declarations. Allows for types such as an array of pointer arrays.
 
-use crate::RawType;
+use crate::RawTypeReference;
 
 #[derive(Clone, PartialEq)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
@@ -9,7 +9,7 @@ pub enum Type {
 	/// 0: The raw type index
 	/// 1: The type parameters
 	/// 2: The size specifiers
-	Generic(RawType, Vec<Box<Type>>, Vec<usize>), // Potential lowering to base-sized
+	Generic(RawTypeReference, Vec<Box<Type>>, Vec<usize>), // Potential lowering to base-sized
 
 	/// A pointer type node. Represents a pointer version
 	/// 0: Is the pointer a poiner of arrays
