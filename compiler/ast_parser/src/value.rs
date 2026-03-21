@@ -32,7 +32,7 @@ pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, origi
 
 pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut usize, original: CompilerResult<Box<ASTTreeNode>>) -> CompilerResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
-		LexerTokenType::KEYWORD(s, _) => {
+		LexerTokenType::Keyword(s, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
 				let r_member = parse_function_call(tokens, ind)?;
 				let start = original.as_ref().unwrap().start.clone();
@@ -165,7 +165,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 			return parse_ast_value_post_l(tokens, ind, str, false);
 		},
 
-		LexerTokenType::KEYWORD(str, _) => {
+		LexerTokenType::Keyword(str, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
 				let call = parse_function_call(tokens, ind);
 				return parse_ast_value_post_l(tokens, ind, call, false);

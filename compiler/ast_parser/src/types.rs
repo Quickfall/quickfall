@@ -48,7 +48,7 @@ pub fn parse_type_type_parameters(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 			break;
 		}
 
-		tokens[*ind].expects(LexerTokenType::Comma);
+		tokens[*ind].expects(LexerTokenType::Comma)?;
 	}
 
 	return Ok(types)

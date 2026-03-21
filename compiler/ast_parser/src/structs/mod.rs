@@ -2,7 +2,7 @@ use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::CompleteType};
+use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::{ASTType}};
 
 use crate::{functions::parse_function_declaraction, structs::members::parse_types_field_member};
 
@@ -22,7 +22,7 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 
 	let mut members: Vec<Box<ASTTreeNode>> = Vec::new();	
 
-	let temp_type = CompleteType { base_type: type_name.1, sizes: vec![], types: vec![], pointer: false, pointer_array: false, array_sz: 0 };
+	let temp_type = ASTType::Generic(type_name.0.clone(), vec![], vec![]);
 
 	while tokens[*ind].tok_type != LexerTokenType::BracketClose {
 		if tokens[*ind].tok_type == LexerTokenType::Function {

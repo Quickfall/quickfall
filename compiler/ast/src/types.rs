@@ -12,7 +12,7 @@ pub struct CompleteType {
 }
 
 /// The node-based typing system of Quickfall. Allows for very specific types. Only used for AST since types aren't resolved
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ASTType {
 	/// A generic type node. Represents a classic type.
 	/// 0: The raw type name

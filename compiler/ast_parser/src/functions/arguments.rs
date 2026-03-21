@@ -1,13 +1,13 @@
 //! Module for parsing arguments
 
-use ast::{tree::FunctionDeclarationArgument, types::CompleteType};
+use ast::{tree::FunctionDeclarationArgument, types::{ASTType}};
 use compiler_errors::errs::{CompilerResult, ErrorKind, normal::CompilerError};
 use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::types::parse_type;
 
-pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<CompleteType>) -> CompilerResult<(Vec<FunctionDeclarationArgument>, bool)> {
+pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<ASTType>) -> CompilerResult<(Vec<FunctionDeclarationArgument>, bool)> {
 	*ind += 1;
 
 	let mut depends_on_this: bool = false;
