@@ -1,5 +1,7 @@
 //! The raw type declarations
 
+use crate::structs::RawStructTypeContainer;
+
 /// The raw types. Are also named generics
 pub enum RawType {
 	Integer(usize, bool),
@@ -12,7 +14,7 @@ pub enum RawType {
 
 	StaticString,
 
-	
+	Struct(bool, RawStructTypeContainer),
 
 	SizedInteger(bool),
 	SizedFloating(bool),

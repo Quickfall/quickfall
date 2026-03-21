@@ -1,8 +1,6 @@
-use std::ops::Index;
-
 use compiler_utils::utils::indexed::IndexStorage;
 
-use crate::{TypeReference, TypedFunction, tree::Type};
+use crate::{TypeReference, TypedFunction};
 
 /// Container for structure types
 pub struct RawStructTypeContainer {
