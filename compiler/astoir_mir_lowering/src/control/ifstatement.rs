@@ -1,4 +1,4 @@
-use astoir_hir::{nodes::HIRNode, structs::HIRIfBranch};
+use astoir_hir::{nodes::HIRNode, nodes::HIRIfBranch};
 use astoir_mir::{blocks::{MIRBlock, refer::MIRBlockReference}, builder::{build_conditional_branch, build_unconditional_branch}};
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
