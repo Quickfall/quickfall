@@ -11,4 +11,5 @@ pub mod references;
 /// A function contained within a type.
 pub type TypedFunction = (Vec<TypeReference>, Option<TypeReference>);
 
+
 pub type RawTypeReference = usize;

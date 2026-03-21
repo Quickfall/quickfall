@@ -291,6 +291,20 @@ macro_rules! IR_FIND_PRIMITIVE_TYPE {
 	};
 }
 
+#[macro_export]
+macro_rules! TYPE_UNRESOLVABLE {
+	() => {
+		"Type here cannot be fully resolved! Please put a concrete type"
+	};
+}
+
+#[macro_export]
+macro_rules! TYPE_NO_GENERIC {
+	() => {
+		"Cannot find the generic in this type tree! Are you sure this is a valid type?"
+	};
+}
+
 // Internal & Critical Errors
 #[macro_export]
 macro_rules! INKWELL_FUNC_FAILED {

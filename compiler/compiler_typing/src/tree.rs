@@ -1,5 +1,7 @@
 //! The typing tree declarations. Allows for types such as an array of pointer arrays.
 
+use compiler_errors::errs::{BaseResult, base::BaseError};
+
 use crate::RawTypeReference;
 
 #[derive(Clone, PartialEq)]
@@ -49,5 +51,22 @@ impl Type {
 
 			_ => false
 		}
+	}
+
+	pub fn get_inner_type(&self) -> BaseResult<Box<Type>> {
+		match self {
+			Type::Array(_, inner) => Ok(inner.clone()),
+			Type::Pointer(_, inner) => Ok(inner.clone()),
+
+			_ => Err(BaseError::err("Cannot gather inner type.".to_string()))
+		}
+	}
+
+	pub fn get_generic_info(&self) -> BaseResult<(Vec<Box<Type>>, Vec<usize>)> {
+		if let Type::Generic(_, types, sizes) = self {
+			return Ok((types.clone(), sizes.clone()))
+		}
+
+		return self.get_inner_type()?.get_generic_info();
 	}
 }
