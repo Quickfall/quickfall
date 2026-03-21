@@ -304,7 +304,7 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 		FOR_KEYWORD_HASH => LexerTokenType::For,
 		STATIC_KEYWORD_HASH => LexerTokenType::Static,
 		THIS_KEYWORD_HASH => LexerTokenType::This,
-        _ => LexerTokenType::KEYWORD(slice.to_string(), hash)
+        _ => LexerTokenType::Keyword(slice.to_string(), hash)
     };
 
 	return LexerToken::new(start_pos, end - start, token_type);
