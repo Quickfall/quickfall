@@ -6,7 +6,7 @@ use std::{hash::{Hash}};
 
 pub type TypeHash = u64;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct HashedString {
 	pub val: String,
 	pub hash: u64

@@ -135,6 +135,7 @@ dependencies = [
 name = "compiler_typing"
 version = "0.1.0"
 dependencies = [
+ "compiler_errors",
  "compiler_utils",
 ]
 

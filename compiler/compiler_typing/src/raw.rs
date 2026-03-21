@@ -3,6 +3,7 @@
 use crate::{enums::{RawEnumEntryContainer, RawEnumTypeContainer}, structs::RawStructTypeContainer};
 
 /// The raw types. Are also named generics
+#[derive(Clone)]
 pub enum RawType {
 	Integer(usize, bool),
 	Floating(usize, bool),

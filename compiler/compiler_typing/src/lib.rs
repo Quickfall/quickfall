@@ -13,6 +13,7 @@ pub type TypedFunction = (Vec<TypeReference>, Option<TypeReference>);
 pub type RawTypeReference = usize;
 
 /// References a type from two states: resolved and unresolved. Allows for type parameters
+#[derive(Clone)]
 pub enum TypeReference {
 	Resolved(Type),
 	
