@@ -100,6 +100,12 @@ macro_rules! IR_DIFF_TYPE {
 	};
 }
 
+#[macro_export]
+macro_rules! TYPE_TYPE_PARAMETERS {
+	() => {
+		"Invalid amount of type parameters. Make sure this has the same amount of type parameters for the type."
+	};
+}
 
 #[macro_export]
 macro_rules! IR_EXPECTED_TYPE {

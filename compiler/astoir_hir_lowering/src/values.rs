@@ -1,15 +1,15 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::HIRNode, structs::StructLRUStep};
-use astoir_typing::complete::ComplexType;
 use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}, make_invalid_type_err};
+use compiler_typing::tree::Type;
 
 use crate::{bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, func::lower_ast_function_call, literals::lower_ast_literal, math::lower_ast_math_operation, var::lower_ast_variable_reference};
 
-pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, curr_steps: &mut Vec<StructLRUStep>, curr_type: &mut Option<ComplexType>) -> CompilerResult<bool> {
+pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, curr_steps: &mut Vec<StructLRUStep>, curr_type: &mut Option<Type>) -> CompilerResult<bool> {
 	let struct_descriptor;
 
 	if curr_type.is_some() {
-		struct_descriptor = match curr_type.as_ref().unwrap().get_concrete().base.get_struct_container() {
+		struct_descriptor = match curr_type.as_ref(). {
 			Ok(v) => Some(v),
 			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 		}
@@ -44,9 +44,10 @@ pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedCon
 			for a in args {
 				let lowered = lower_ast_value(context, curr_ctx, a)?;
 
-				if !lowered.get_node_type(context, curr_ctx).unwrap().can_transmute_into(&func_type.1[ind].1) {
-					return Err(CompilerError::from_ast(ErrorKind::Error, IR_FIND_ELEMENT!().to_string(), &node.start, &node.end))
-				}
+				lowered = match lowered.use_as(context, curr_ctx, func_type.1[ind].1.clone()) {
+					Ok(v) => Box::new(v),
+					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
+				};
 
 				hir_args.push(lowered);
 
@@ -108,7 +109,7 @@ pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedCon
 
 pub fn lower_ast_lru(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	let mut steps: Vec<StructLRUStep> = vec![];
-	let mut curr_type: Option<ComplexType> = None;
+	let mut curr_type: Option<Type> = None;
 
 	lower_ast_lru_base(context, curr_ctx, node, &mut steps, &mut curr_type)?;
 

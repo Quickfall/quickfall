@@ -16,7 +16,7 @@ pub mod storage;
 pub mod stated;
 
 /// A function contained within a type.
-pub type TypedFunction = (Vec<TypeReference>, Option<TypeReference>);
+pub type TypedFunction = (Vec<(u64, TypeReference)>, Option<TypeReference>);
 
 pub type TypeParameterContainer = HashMap<HashedString, usize>;
 

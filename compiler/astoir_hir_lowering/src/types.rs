@@ -1,7 +1,7 @@
 use ast::types::ASTType;
 use astoir_hir::ctx::HIRContext;
-use compiler_errors::{IR_EXPECTED_SIZE_SPECIFIED, errs::{BaseResult, base::BaseError}};
-use compiler_typing::tree::Type;
+use compiler_errors::{IR_EXPECTED_SIZE_SPECIFIED, TYPE_TYPE_PARAMETERS, errs::{BaseResult, base::BaseError}};
+use compiler_typing::{raw::RawType, references::TypeReference, structs::RawStructTypeContainer, tree::Type};
 use compiler_utils::hash::HashedString;
 
 pub fn lower_ast_type(context: &HIRContext, t: ASTType) -> BaseResult<Type> {
@@ -11,14 +11,17 @@ pub fn lower_ast_type(context: &HIRContext, t: ASTType) -> BaseResult<Type> {
 
 			let t = context.type_storage.get_type(hash)?;
 
+			if t.get_type_params_count(&context.type_storage) != type_params.len() {
+				return Err(BaseError::err(TYPE_TYPE_PARAMETERS!().to_string()))
+			}
+
 			let mut t_params = vec![];
 
 			for type_param in type_params {
-				t_params.push(lower_ast_type(context, *type_param)?);
+				t_params.push(Box::new(lower_ast_type(context, *type_param)?));
 			}
 
-			Ok(Type::Generic(, (), ()))
-		
+			Ok(Type::Generic(context.type_storage.types.hash_to_ind[&hash], t_params, size_params))
 		},
 
 		ASTType::Pointer(array, inner) => Ok(Type::Pointer(array, Box::new(lower_ast_type(context, *inner)?))),
@@ -26,39 +29,45 @@ pub fn lower_ast_type(context: &HIRContext, t: ASTType) -> BaseResult<Type> {
 	};
 }
 
-pub fn lower_sized_base_type(_context: &HIRContext, t: &BaseType, size_params: &Vec<usize>) -> BaseResult<BaseType> {
-	match t {
-		BaseType::IncompleteNumericType(e) => {
-			if size_params.is_empty() {
+pub fn lower_ast_type_struct(context: &HIRContext, t: ASTType, struct_container: &RawStructTypeContainer) -> BaseResult<TypeReference> {
+	if let ASTType::Generic(id, _, _) = &t {
+		let key = HashedString::new(id.clone());
+
+		if struct_container.type_params.contains_key(&key) {
+			return Ok(TypeReference::Unresolved(struct_container.type_params[&key]));
+		}
+	}
+
+	return Ok(TypeReference::Resolved(lower_ast_type(context, t)?))
+}
+
+pub fn lower_sized_base_type(context: &HIRContext, t: &Type) -> BaseResult<RawType> {
+	let data = t.get_generic_info();
+	
+	match t.get_generic(&context.type_storage) {
+		RawType::SizedInteger(e) => {
+			if data.1.is_empty() {
 				return Err(BaseError::err(IR_EXPECTED_SIZE_SPECIFIED!().to_string()));
 			}
 
-			return Ok(BaseType::NumericIntegerType(size_params[0] as u64, *e))
+			return Ok(RawType::Integer(data.1[0], e))
 		},
 
-		BaseType::IncompleteFloatingType(e) => {
-			if size_params.len() < 2 {
+		RawType::SizedFloating(e) => {
+			if data.1.is_empty() {
 				return Err(BaseError::err(IR_EXPECTED_SIZE_SPECIFIED!().to_string()));
 			}
 
-			return Ok(BaseType::FloatingNumberType(size_params[0] as u64, size_params[1] as u64, *e))
+			return Ok(RawType::Floating(data.1[0], e))
 		},
 
-		BaseType::IncompleteFixedPointType(e) => {
-			if size_params.len() < 2 {
+		RawType::SizedFixedPoint(e) => {
+			if data.1.len() < 2 {
 				return Err(BaseError::err(IR_EXPECTED_SIZE_SPECIFIED!().to_string()));
 			}
 
-			return Ok(BaseType::FixedPointNumberType(size_params[0] as u64, size_params[1] as u64, *e));
+			return Ok(RawType::FixedPoint(data.1[0], data.1[1], e));
 		}, 
-
-		BaseType::IncompleteArbitraryType => {
-			if size_params.is_empty() {
-				return Err(BaseError::err(IR_EXPECTED_SIZE_SPECIFIED!().to_string()));
-			}
-
-			return Ok(BaseType::ArbitraryType(size_params[0] as u64));
-		},
 
 		_ => return Err(BaseError::err("Cannot lower sized base type!".to_string()))
 	}

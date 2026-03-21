@@ -1,6 +1,6 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::HIRNode};
-use compiler_errors::{IR_FIND_ELEMENT, IR_FUNCTION_INVALID_ARGUMENTS, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
+use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 
 use crate::{lower_ast_body, types::lower_ast_type, values::lower_ast_value};
 
@@ -18,11 +18,12 @@ pub fn lower_ast_function_call(context: &HIRContext, curr_ctx: &HIRBranchedConte
 		for ast in args {
 			let hir = lower_ast_value(context, curr_ctx, ast)?;
 
-			if !hir.get_node_type(context, curr_ctx).unwrap().can_transmute_into(&func.1[ind].1) {
-				return Err(CompilerError::from_ast(ErrorKind::Error, IR_FUNCTION_INVALID_ARGUMENTS!().to_string(), &node.start, &node.end));
-			}
+			let val = match hir.use_as(context, curr_ctx, func.1[ind].1.clone()) {
+				Ok(v) => v,
+				Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
+			};
 
-			hir_args.push(hir);
+			hir_args.push(Box::new(val));
 
 			ind += 1;
 		}

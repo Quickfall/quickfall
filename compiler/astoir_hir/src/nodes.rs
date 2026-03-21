@@ -1,14 +1,14 @@
 //! The nodes inside of the AstoIR HIR. 
 
-use compiler_errors::errs::{BaseResult, base::BaseError};
-use compiler_typing::{storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, tree::Type};
+use compiler_errors::{IR_REQ_VARIABLE_ASSIGN, IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
+use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, tree::Type};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
 
 #[derive(Debug, Clone)]
 pub enum HIRNode {
-	CastValue { intentional: bool, value: Box<HIRNode>, new_type: Type }, 
+	CastValue { intentional: bool, value: Box<HIRNode>, old_type: Type, new_type: Type }, 
 
 	VarDeclaration { variable: usize, var_type: Type, default_val: Option<Box<HIRNode>> },
 	StaticVariableDeclaration { variable: usize, var_type: Type, default_val: Option<Box<HIRNode>> },
@@ -23,7 +23,10 @@ pub enum HIRNode {
 	StructLRU { steps: Vec<StructLRUStep>, last: Type },
 
 	StructDeclaration { type_name: usize, container: RawStructTypeContainer, layout: bool },
+	StructFunctionDeclaration { func_name: usize, arguments: Vec<(u64, TypeReference)>, return_type: Option<TypeReference>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
+	
 	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
+	
 	ShadowFunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type> },
 
 	FunctionCall { func_name: usize, arguments: Vec<Box<HIRNode>> },
@@ -35,7 +38,7 @@ pub enum HIRNode {
 
 	ReturnStatement { value: Option<Box<HIRNode>> },
 
-	IntegerLiteral { value: i128, int_type: usize }, 
+	IntegerLiteral { value: i128, int_type: Type }, 
 	StringLiteral { value: String }, 
 
 	BooleanOperator { left: Box<HIRNode>, right: Box<HIRNode>, operator: ComparingOperator },
@@ -59,6 +62,31 @@ impl HIRNode {
 		return Err(BaseError::err("Tried using as_variable_reference on a non var ref".to_string()))
 	}
 	
+	pub fn use_as(self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type) -> BaseResult<HIRNode> {
+		let self_type = match self.get_node_type(context, curr_ctx) {
+			Some(v) => v,
+			None => return Err(BaseError::err("This needs to be a value".to_string()))
+		};
+
+		if self_type == t {
+			return Ok(self);
+		}
+
+		if self_type.can_transmute(&t) {
+			match &self {
+				HIRNode::IntegerLiteral { value, int_type: _ } => {
+					return Ok(HIRNode::IntegerLiteral { value: *value, int_type: t });
+				},
+
+				_ => {
+					return Ok(HIRNode::CastValue { intentional: false, old_type: self_type.clone(), value: Box::new(self), new_type: t });
+				}
+			}
+		}
+
+		return Err(BaseError::err(IR_TRANSMUTATION!().to_string()))
+	}	
+
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<Type> {
 		match self {
 			HIRNode::VariableReference { index, is_static } => {
@@ -70,7 +98,7 @@ impl HIRNode {
 			},
 
 			HIRNode::IntegerLiteral { value: _, int_type } => {
-				return Some(Type::Generic(*int_type, vec![], vec![]))
+				return Some(int_type.clone());
 			},
 
 			HIRNode::StringLiteral { value: _ } => {
