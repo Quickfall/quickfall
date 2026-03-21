@@ -1,5 +1,6 @@
 /// A parsed complete type information
 #[derive(Debug, PartialEq, Clone)]
+#[deprecated(note = "Will be replaced by compiler_typing")]
 pub struct CompleteType {
 	pub base_type: u64, 
 	pub sizes: Vec<usize>,

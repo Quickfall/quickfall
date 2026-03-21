@@ -7,6 +7,7 @@ use compiler_errors::{IR_INCOMPLETE_TYPE, IR_INVALID_NODE_TYPE, errs::{BaseResul
 use crate::structs::StructTypeContainer;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[deprecated(note = "Will be replaced by compiler_typing")]
 pub enum BaseType {
 	/// An integer type.
 	/// 0: the size in bits

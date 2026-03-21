@@ -3,6 +3,7 @@
 use crate::{base::BaseType, complete::ComplexType};
 
 #[derive(Clone, Debug)]
+#[deprecated(note = "Will be replaced by compiler_typing")]
 pub struct CompactedType {
 	pub base: BaseType,
 	pub array: bool,

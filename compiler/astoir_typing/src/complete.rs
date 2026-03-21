@@ -1,6 +1,7 @@
 use crate::base::BaseType;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[deprecated(note = "Will be replaced by compiler_typing")]
 pub struct ConcreteType {
 	pub base: BaseType,
 	
@@ -12,6 +13,7 @@ pub struct ConcreteType {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[deprecated(note = "Will be replaced by compiler_typing")]
 pub enum ComplexType {
 	Array(Box<ComplexType>),
 	Concrete(ConcreteType)
