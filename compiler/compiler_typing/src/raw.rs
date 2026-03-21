@@ -12,6 +12,8 @@ pub enum RawType {
 
 	StaticString,
 
+	
+
 	SizedInteger(bool),
 	SizedFloating(bool),
 	SizedFixedPoint(bool)

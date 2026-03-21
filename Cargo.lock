@@ -134,6 +134,9 @@ dependencies = [
 [[package]]
 name = "compiler_typing"
 version = "0.1.0"
+dependencies = [
+ "compiler_utils",
+]
 
 [[package]]
 name = "compiler_utils"
