@@ -5,7 +5,7 @@ use std::{collections::HashMap};
 use compiler_errors::{IR_FIND_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::{HashedString}, utils::indexed::IndexStorage};
 
-use crate::{RawTypeReference, SizedType, raw::RawType, tree::Type};
+use crate::{RawTypeReference, SizedType, raw::RawType, references::TypeReference, tree::Type};
 
 /// The container for the parent type of enum.
 /// 
@@ -22,7 +22,7 @@ impl RawEnumTypeContainer {
 		RawEnumTypeContainer { self_ref, entries: HashMap::new() }
 	}
 
-	pub fn append_entry(&mut self, name: HashedString, fields: Vec<(u64, Type)>) {
+	pub fn append_entry(&mut self, name: HashedString, fields: Vec<(u64, TypeReference)>) {
 		let entry_container = RawEnumEntryContainer::new(self.self_ref, fields);
 
 		self.entries.insert(name, RawType::EnumEntry(entry_container));
@@ -60,11 +60,11 @@ impl SizedType for RawEnumTypeContainer {
 #[derive(Clone)]
 pub struct RawEnumEntryContainer {
 	pub parent: RawTypeReference,
-	pub fields: IndexStorage<Type>
+	pub fields: IndexStorage<TypeReference>
 }
 
 impl RawEnumEntryContainer {
-	pub fn new(parent: RawTypeReference, fields: Vec<(u64, Type)>) -> Self {
+	pub fn new(parent: RawTypeReference, fields: Vec<(u64, TypeReference)>) -> Self {
 		let mut storage = IndexStorage::new();
 
 		for field in fields {
@@ -80,7 +80,7 @@ impl SizedType for RawEnumEntryContainer {
 		let mut size = 0;
 
 		for tt in &self.fields.vals {
-			size += tt.get_size(t, compacted_size);
+			size += tt.clone().resolve(t).get_size(t, compacted_size);
 		}
 
 		return size;

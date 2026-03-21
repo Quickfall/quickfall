@@ -52,6 +52,7 @@ pub const STATIC_STR: u64 = hash!("staticstr");
 pub const POINTER_TYPE: u64 = hash!("ptr");
 pub const BOOLEAN_TYPE: u64 = hash!("bool");
 
+/// Experimental
 pub const RESULT_TYPE: u64 = hash!("result");
 
 pub struct TypeStorage {
@@ -101,7 +102,7 @@ impl TypeStorage {
 		storage.append(BOOLEAN_TYPE, RawType::Boolean)?;
 		storage.append(POINTER_TYPE, RawType::Pointer)?;
 		storage.append(STATIC_STR, RawType::StaticString)?;
-
+		
 		return Ok(storage);
 	}
 
