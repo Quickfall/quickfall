@@ -1,10 +1,8 @@
 //! The typing tree declarations. Allows for types such as an array of pointer arrays.
 
-use compiler_errors::errs::{BaseResult, base::BaseError};
-
 use crate::{RawTypeReference, SizedType, utils::get_pointer_size};
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
 pub enum Type {
 	/// A generic type node. Represents a classic type.

@@ -1,79 +1,36 @@
 //! Parsing for type related features
 
-use ast::{types::CompleteType};
+use ast::types::ASTType;
 use compiler_errors::errs::CompilerResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<CompleteType> {
-	let pointer;
-	let pointer_array;
+pub enum ParsingASTTypeMember {
+	Generic(String, Vec<Box<ASTType>>, Vec<usize>),
+	Pointer(bool),
+	Array(bool)	
+}
 
-	if tokens[*ind].tok_type == LexerTokenType::Asterisk {
-		*ind += 1;
-		pointer = true;
-	} else {
-		pointer = false;
-	}
+/// Parses the type size specifiers
+pub fn parse_type_size_specifiers(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Vec<usize>> {
+	tokens[*ind].expects(LexerTokenType::Dot)?;
 
-	if tokens[*ind].tok_type == LexerTokenType::ArrayOpen {
-		*ind += 1;
-
-		tokens[*ind].expects(LexerTokenType::ArrayClose)?;
-
-		pointer_array = true;
-		*ind += 1;
-	} else {
-		pointer_array = false;
-	}
-
-	let base_type = tokens[*ind].expects_keyword()?;
-	*ind += 1;
-
-	let mut sizes: Vec<usize> = vec![];
-	let mut types: Vec<u64> = vec![];
+	let mut sizes = vec![];
 
 	while tokens[*ind].tok_type == LexerTokenType::Dot {
 		*ind += 1;
 
-		let size_def = tokens[*ind].expects_int_lit()?.0 as usize;
-		sizes.push(size_def);
+		sizes.push(tokens[*ind].expects_int_lit()?.0 as usize);
 
 		*ind += 1;
 	}
 
-	if tokens[*ind].tok_type == LexerTokenType::AngelBracketOpen {
-		*ind += 1;
+	return Ok(sizes);
+}
 
-		loop {
-			let type_spec = tokens[*ind].expects_keyword()?;
+pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic: bool) -> CompilerResult<ParsingASTTypeMember> {
 
-			types.push(type_spec.1);
+}
 
-			*ind += 1;
-			
-			if tokens[*ind].tok_type == LexerTokenType::AngelBracketClose {
-				break;
-			}
-
-			tokens[*ind].expects(LexerTokenType::Comma)?;
-		}
-	}
-
-	let array_sz: usize;
-
-	if tokens[*ind].tok_type == LexerTokenType::ArrayOpen {
-		*ind += 1;
-
-
-		array_sz = tokens[*ind].expects_int_lit()?.0 as usize;
-		*ind += 1;
-
-		tokens[*ind].expects(LexerTokenType::ArrayClose)?;
-
-		*ind += 1;
-	} else {
-		array_sz = 0;
-	}
-
-	return Ok(CompleteType { base_type: base_type.1, sizes, types, pointer, pointer_array, array_sz })
+pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<ASTType> {
+	
 }
