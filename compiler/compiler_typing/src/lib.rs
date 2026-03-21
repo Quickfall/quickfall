@@ -11,5 +11,10 @@ pub mod references;
 /// A function contained within a type.
 pub type TypedFunction = (Vec<TypeReference>, Option<TypeReference>);
 
-
 pub type RawTypeReference = usize;
+
+/// Represents a basic type that has a size. 
+pub trait SizedType {
+	/// Obtains the size of the type. The `compacted_size` parameter determines if the compacted size should be returned or not
+	fn get_size(&self, compacted_size: bool) -> usize;
+}
