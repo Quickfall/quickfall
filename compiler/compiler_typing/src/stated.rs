@@ -5,6 +5,7 @@ use compiler_errors::{IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
 use crate::tree::Type;
 
 /// Represents a variable type. Can either be inferred or fully enforced
+#[derive(Debug, Clone)]
 pub struct StatedType {
 	pub raw_type: Type,
 	pub inferred: bool

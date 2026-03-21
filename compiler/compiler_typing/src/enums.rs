@@ -5,7 +5,7 @@ use std::{collections::HashMap};
 use compiler_errors::{IR_FIND_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::{HashedString}, utils::indexed::IndexStorage};
 
-use crate::{RawTypeReference, SizedType, raw::RawType, references::TypeReference, storage::TypeStorage, tree::Type};
+use crate::{RawTypeReference, SizedType, TypeParameterContainer, raw::RawType, references::TypeReference, storage::TypeStorage, tree::Type};
 
 /// The container for the parent type of enum.
 /// 
@@ -14,12 +14,13 @@ use crate::{RawTypeReference, SizedType, raw::RawType, references::TypeReference
 #[derive(Clone, Debug)]
 pub struct RawEnumTypeContainer {
 	self_ref: usize,
+	pub type_params: TypeParameterContainer,
 	entries: HashMap<HashedString, RawType>
 }
 
 impl RawEnumTypeContainer {
-	pub fn new(self_ref: usize) -> Self {
-		RawEnumTypeContainer { self_ref, entries: HashMap::new() }
+	pub fn new(self_ref: usize, type_params: TypeParameterContainer) -> Self {
+		RawEnumTypeContainer { self_ref, entries: HashMap::new(), type_params }
 	}
 
 	pub fn append_entry(&mut self, name: HashedString, fields: Vec<(u64, TypeReference)>) {

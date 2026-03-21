@@ -32,6 +32,15 @@ impl RawType {
 
 		return RawType::Integer(bits, false)
 	}
+
+	pub fn get_type_params_count(&self, storage: &TypeStorage) -> usize {
+		match self {
+			RawType::Enum(container) => container.type_params.len(),
+			RawType::EnumEntry(container) => storage.types.vals[container.parent].get_type_params_count(storage),
+
+			_ => 0
+		}
+	}
 }
 
 impl SizedType for RawType {

@@ -1,5 +1,9 @@
 //! The typing system used all across the compiler in all levels of AstoIR and AST.
 
+use std::collections::HashMap;
+
+use compiler_utils::{hash::HashedString, utils::indexed::IndexStorage};
+
 use crate::{references::TypeReference, storage::TypeStorage, tree::Type};
 
 pub mod tree;
@@ -13,6 +17,8 @@ pub mod stated;
 
 /// A function contained within a type.
 pub type TypedFunction = (Vec<TypeReference>, Option<TypeReference>);
+
+pub type TypeParameterContainer = HashMap<HashedString, usize>;
 
 pub type RawTypeReference = usize;
 

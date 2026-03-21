@@ -1,11 +1,12 @@
 use compiler_utils::utils::indexed::IndexStorage;
 
-use crate::{SizedType, TypeReference, TypedFunction, storage::TypeStorage, tree::Type};
+use crate::{SizedType, TypeParameterContainer, TypeReference, TypedFunction, storage::TypeStorage, tree::Type};
 
 /// Container for structure types
 #[derive(Clone, Debug)]
 pub struct RawStructTypeContainer {
 	pub fields: IndexStorage<TypeReference>,
+	pub type_params: TypeParameterContainer,
 	pub functions: IndexStorage<TypedFunction>
 }
 
