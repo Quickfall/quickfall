@@ -7,6 +7,14 @@ pub mod raw;
 pub mod structs;
 
 /// A function contained within a type.
-pub type TypedFunction = (Vec<Type>, Option<Type>);
+pub type TypedFunction = (Vec<TypeReference>, Option<TypeReference>);
 
 pub type RawTypeReference = usize;
+
+/// References a type from two states: resolved and unresolved. Allows for type parameters
+pub enum TypeReference {
+	Resolved(Type),
+	
+	/// Respresents the index of the type parameter
+	Unresolved(usize)
+}
