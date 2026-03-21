@@ -5,6 +5,7 @@ use crate::tree::Type;
 pub mod tree;
 pub mod raw;
 pub mod structs;
+pub mod enums;
 
 /// A function contained within a type.
 pub type TypedFunction = (Vec<TypeReference>, Option<TypeReference>);
