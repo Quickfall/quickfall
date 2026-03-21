@@ -2,6 +2,7 @@
 //! AST tree related definitions.
 //! 
 
+use compiler_typing::TypeParameterContainer;
 use compiler_utils::{Position, hash::HashedString};
 use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
 
@@ -34,7 +35,7 @@ pub enum ASTTreeNodeKind {
 
 	VariableReference(HashedString),
 
-	StructLayoutDeclaration { name: HashedString, layout: bool, members: Vec<Box<ASTTreeNode>> },
+	StructLayoutDeclaration { name: HashedString, layout: bool, members: Vec<Box<ASTTreeNode>>, type_params: TypeParameterContainer },
 	StructFieldMember { name: HashedString, member_type: ASTType },
 
     VarDeclaration { var_name: HashedString, var_type: ASTType, value: Option<Box<ASTTreeNode>> },
@@ -88,7 +89,7 @@ impl ASTTreeNodeKind {
 				return Some(HashedString::new(name.val.clone()));
 			},
 
-			ASTTreeNodeKind::StructLayoutDeclaration { name, layout: _, members: _ } => {
+			ASTTreeNodeKind::StructLayoutDeclaration { name, layout: _, members: _, type_params: _ } => {
 				return Some(HashedString::new(name.val.to_string()));
 			},
 

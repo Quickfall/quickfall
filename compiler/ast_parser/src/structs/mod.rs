@@ -4,7 +4,7 @@ use lexer::token::{LexerToken, LexerTokenType};
 
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::{ASTType}};
 
-use crate::{functions::parse_function_declaraction, structs::members::parse_types_field_member};
+use crate::{functions::parse_function_declaraction, structs::members::parse_types_field_member, types::parse_type_parameters_declaration};
 
 pub mod members;
 
@@ -16,6 +16,11 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 	let type_name = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
+
+	let type_params = parse_type_parameters_declaration(tokens, ind)?;
+
+	*ind += 1;
+
 	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
 	*ind += 1;
@@ -36,5 +41,5 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 
 	*ind += 1;
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLayoutDeclaration { name: HashedString::new(type_name.0), layout, members }, start, end)));
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLayoutDeclaration { name: HashedString::new(type_name.0), layout, members, type_params }, start, end)));
 }

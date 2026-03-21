@@ -2,6 +2,8 @@
 
 use ast::types::ASTType;
 use compiler_errors::{UNEXPECTED_TOKEN, errs::{CompilerResult, ErrorKind}};
+use compiler_typing::TypeParameterContainer;
+use compiler_utils::hash::HashedString;
 use lexer::{token::{LexerToken, LexerTokenType}, toks::math::MathOperator};
 
 #[derive(Clone)]
@@ -49,7 +51,10 @@ pub fn parse_type_type_parameters(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 		}
 
 		tokens[*ind].expects(LexerTokenType::Comma)?;
+		*ind += 1;
 	}
+
+	*ind += 1;
 
 	return Ok(types)
 }
@@ -147,4 +152,31 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<A
 		Some(v) => Ok(*v),
 		None => return Err(tokens[*ind].make_err("Error while parsing type! Latest child member was None!".to_string(), ErrorKind::Critical))
 	};
+}
+
+pub fn parse_type_parameters_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<TypeParameterContainer> {
+	if tokens[*ind].tok_type != LexerTokenType::AngelBracketOpen {
+		return Ok(TypeParameterContainer::new());
+	}
+
+	let mut container = TypeParameterContainer::new();
+
+	*ind += 1;
+
+	while tokens[*ind].is_keyword() {
+		let param = tokens[*ind].expects_keyword()?;
+
+		container.insert(HashedString::new(param.0), container.len());
+
+		*ind += 1;
+		
+		if tokens[*ind].tok_type == LexerTokenType::AngelBracketClose {
+			break;
+		}
+
+		tokens[*ind].expects(LexerTokenType::Comma);
+		*ind += 1;
+	}
+
+	return Ok(container);
 }
