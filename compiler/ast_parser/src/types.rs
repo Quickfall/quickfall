@@ -12,7 +12,9 @@ pub enum ParsingASTTypeMember {
 
 /// Parses the type size specifiers
 pub fn parse_type_size_specifiers(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Vec<usize>> {
-	tokens[*ind].expects(LexerTokenType::Dot)?;
+	if tokens[*ind].tok_type != LexerTokenType::Dot {
+		return Ok(vec![]);
+	}
 
 	let mut sizes = vec![];
 
@@ -25,6 +27,30 @@ pub fn parse_type_size_specifiers(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 	}
 
 	return Ok(sizes);
+}
+
+pub fn parse_type_type_parameters(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Vec<ASTType>> {
+	if tokens[*ind].tok_type != LexerTokenType::AngelBracketOpen {
+		return Ok(vec![]);
+	}
+
+	let mut types = vec![];
+
+	*ind += 1;
+
+	loop {
+		let parsed_type = parse_type(tokens, ind)?;
+
+		types.push(parsed_type);
+
+		if tokens[*ind].tok_type == LexerTokenType::AngelBracketClose {
+			break;
+		}
+
+		tokens[*ind].expects(LexerTokenType::Comma);
+	}
+
+	return Ok(types)
 }
 
 pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic: bool) -> CompilerResult<ParsingASTTypeMember> {
