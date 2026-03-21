@@ -1,7 +1,7 @@
 //! The nodes inside of the AstoIR HIR. 
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
-use compiler_typing::{structs::RawStructTypeContainer, tree::Type};
+use compiler_typing::{storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, tree::Type};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
@@ -72,12 +72,12 @@ impl HIRNode {
 			},
 
 			HIRNode::StringLiteral { value: _ } => {
-				let t = match context.type_storage.get_type(STATIC_STR) {
-					Ok(v) => v,
-					Err(_) => return None
+				let ind = match context.type_storage.types.get_index(STATIC_STR) {
+					Some(v) => v,
+					None => return None
 				};
 
-				return Some(ComplexType::Concrete(ConcreteType { base: t.1.clone(), pointer: false, pointer_array: false, type_params: vec![], size_params: vec![] }))
+				return Some(Type::Generic(ind, vec![], vec![]))
 			},
 
 			HIRNode::StructLRU { steps: _, last } => {
@@ -89,12 +89,12 @@ impl HIRNode {
 			},
 
 			HIRNode::BooleanOperator { .. } | HIRNode::BooleanCondition { .. } => {
-				let t = match context.type_storage.get_type(BOOLEAN_TYPE) {
-					Ok(v) => v,
-					Err(_) => return None
+				let t = match context.type_storage.types.get_index(BOOLEAN_TYPE) {
+					Some(v) => v,
+					None => return None
 				};
 
-				return Some(ComplexType::Concrete(ConcreteType { base: t.1.clone(), pointer: false, pointer_array: false, type_params: vec![], size_params: vec![] }))
+				return Some(Type::Generic(t, vec![], vec![]))
 			},
 
 			HIRNode::FunctionCall { func_name, arguments: _ } => {
