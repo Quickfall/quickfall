@@ -1,14 +1,16 @@
 //! The nodes inside of the AstoIR HIR. 
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
-use compiler_typing::{stated::StatedType, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, tree::Type};
+use compiler_typing::{storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, tree::Type};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
 
 #[derive(Debug, Clone)]
 pub enum HIRNode {
-	VarDeclaration { variable: usize, var_type: StatedType, default_val: Option<Box<HIRNode>> },
+	CastValue { intentional: bool, value: Box<HIRNode>, new_type: Type }, 
+
+	VarDeclaration { variable: usize, var_type: Type, default_val: Option<Box<HIRNode>> },
 	StaticVariableDeclaration { variable: usize, var_type: Type, default_val: Option<Box<HIRNode>> },
 
 	VarAssigment { variable: usize, val: Box<HIRNode> },
