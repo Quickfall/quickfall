@@ -1,6 +1,6 @@
 //! The raw type declarations
 
-use crate::{SizedType, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, structs::RawStructTypeContainer, utils::get_pointer_size};
+use crate::{SizedType, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, structs::RawStructTypeContainer, tree::Type, utils::get_pointer_size};
 
 /// The raw types. Are also named generics
 #[derive(Clone)]
@@ -26,7 +26,7 @@ pub enum RawType {
 }
 
 impl SizedType for RawType {
-	fn get_size(&self, compacted_size: bool) -> usize {
+	fn get_size(&self, t: &Type, compacted_size: bool) -> usize {
 		match self {
 			RawType::Integer(size, _) => *size,
 			RawType::Floating(size, _) => *size,
@@ -42,6 +42,8 @@ impl SizedType for RawType {
 			RawType::Pointer => return get_pointer_size(),
 
 			RawType::StaticString => return 0, // TODO: make sure  we don't need this
+
+			RawType::Struct(_, container) => return container.get_size(t, compacted_size),
 
 			_ => return 0
 		}

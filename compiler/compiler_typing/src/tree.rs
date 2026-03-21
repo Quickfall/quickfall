@@ -53,28 +53,33 @@ impl Type {
 		}
 	}
 
-	pub fn get_inner_type(&self) -> BaseResult<Box<Type>> {
+	pub fn get_inner_type(&self) -> Box<Type> {
 		match self {
-			Type::Array(_, inner) => Ok(inner.clone()),
-			Type::Pointer(_, inner) => Ok(inner.clone()),
+			Type::Array(_, inner) => inner.clone(),
+			Type::Pointer(_, inner) => inner.clone(),
 
-			_ => Err(BaseError::err("Cannot gather inner type.".to_string()))
+			_ => {
+				println!("Error! Compiler tried using get_inner_type on bottom type! Returning bottom type incase!");
+				println!("This error will soon be replaced to trigger a panic!");
+
+				Box::new(self.clone())
+			}
 		}
 	}
 
-	pub fn get_generic_info(&self) -> BaseResult<(Vec<Box<Type>>, Vec<usize>)> {
+	pub fn get_generic_info(&self) -> (Vec<Box<Type>>, Vec<usize>) {
 		if let Type::Generic(_, types, sizes) = self {
-			return Ok((types.clone(), sizes.clone()))
+			return (types.clone(), sizes.clone())
 		}
 
-		return self.get_inner_type()?.get_generic_info();
+		return self.get_inner_type().get_generic_info();
 	}
 }
 
 impl SizedType for Type {
-	fn get_size(&self, compacted_size: bool) -> usize {
+	fn get_size(&self, t: &Type, compacted_size: bool) -> usize {
 		return match self {
-			Self::Array(size, inner) => inner.clone().get_size(compacted_size) * *size,
+			Self::Array(size, inner) => inner.clone().get_size(t, compacted_size) * *size,
 			Self::Pointer(_, _) => get_pointer_size(),
 			Self::Generic(_, _, _) => 0 // TODO: add raw storage check
 		}

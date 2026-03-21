@@ -1,7 +1,7 @@
 use compiler_errors::errs::BaseResult;
 use compiler_utils::utils::indexed::IndexStorage;
 
-use crate::{TypeReference, TypedFunction, tree::Type};
+use crate::{SizedType, TypeReference, TypedFunction, tree::Type};
 
 /// Container for structure types
 #[derive(Clone)]
@@ -10,16 +10,16 @@ pub struct RawStructTypeContainer {
 	pub functions: IndexStorage<TypedFunction>
 }
 
-impl RawStructTypeContainer {
-	pub fn get_size(&self, t: Type, compacted_size: usize) -> BaseResult<usize> {
+impl SizedType for RawStructTypeContainer {
+	fn get_size(&self, t: &Type, compacted_size: bool) -> usize {
 		let mut size = 0;
 
 		for field in &self.fields.vals {
-			let base = field.clone().resolve(&t)?;
+			let base = field.clone().resolve(&t);
 
-			
+			size += base.get_size(t, compacted_size);
 		}
 
-		return Ok(size)
+		return size
 	}
 }

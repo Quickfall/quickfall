@@ -38,13 +38,13 @@ impl TypeReference {
 	}
 
 	/// Attempts to resolve the type reference into a concrete `Type`. 
-	pub fn resolve(self, t: &Type) -> BaseResult<Type> {
+	pub fn resolve(self, t: &Type) -> Type {
 		match &self {
-			TypeReference::Resolved(_) => return self.as_resolved(),
+			TypeReference::Resolved(val) => return val.clone(),
 			TypeReference::Unresolved(index) => {
-				let concrete_info = t.get_generic_info()?;
+				let concrete_info = t.get_generic_info();
 
-				return Ok(concrete_info.0[*index].as_ref().clone())
+				return concrete_info.0[*index].as_ref().clone()
 			}
 		}
 
