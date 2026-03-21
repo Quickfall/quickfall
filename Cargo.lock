@@ -43,11 +43,6 @@ dependencies = [
 [[package]]
 name = "astoir_hir"
 version = "0.1.0"
-dependencies = [
- "compiler_errors",
- "compiler_typing",
- "compiler_utils",
-]
 
 [[package]]
 name = "astoir_hir_lowering"
