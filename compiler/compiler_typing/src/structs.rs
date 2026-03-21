@@ -1,4 +1,3 @@
-use compiler_errors::errs::BaseResult;
 use compiler_utils::utils::indexed::IndexStorage;
 
 use crate::{SizedType, TypeReference, TypedFunction, tree::Type};
