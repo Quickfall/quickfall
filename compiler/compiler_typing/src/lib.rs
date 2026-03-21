@@ -7,6 +7,7 @@ pub mod raw;
 pub mod structs;
 pub mod enums;
 pub mod references;
+pub mod utils;
 
 /// A function contained within a type.
 pub type TypedFunction = (Vec<TypeReference>, Option<TypeReference>);

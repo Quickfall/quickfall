@@ -2,7 +2,7 @@
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::RawTypeReference;
+use crate::{RawTypeReference, SizedType, utils::get_pointer_size};
 
 #[derive(Clone, PartialEq)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
@@ -68,5 +68,15 @@ impl Type {
 		}
 
 		return self.get_inner_type()?.get_generic_info();
+	}
+}
+
+impl SizedType for Type {
+	fn get_size(&self, compacted_size: bool) -> usize {
+		return match self {
+			Self::Array(size, inner) => inner.clone().get_size(compacted_size) * *size,
+			Self::Pointer(_, _) => get_pointer_size(),
+			Self::Generic(_, _, _) => 0 // TODO: add raw storage check
+		}
 	}
 }
