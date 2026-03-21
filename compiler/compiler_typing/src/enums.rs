@@ -5,7 +5,7 @@ use std::{collections::HashMap};
 use compiler_errors::{IR_FIND_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::{HashedString}, utils::indexed::IndexStorage};
 
-use crate::{RawTypeReference, raw::RawType, tree::Type};
+use crate::{RawTypeReference, SizedType, raw::RawType, tree::Type};
 
 /// The container for the parent type of enum.
 /// 
@@ -37,6 +37,25 @@ impl RawEnumTypeContainer {
 	}
 }
 
+impl SizedType for RawEnumTypeContainer {
+	fn get_size(&self, t: &Type, compacted_size: bool) -> usize {
+		let mut entry_size = 0;
+
+		if compacted_size {
+			// TODO: add after Type generic obtain is possible
+		}
+		else {
+			for entry in &self.entries {
+				entry_size = entry_size.max(entry.1.get_size(t, compacted_size));
+			}
+		}
+
+		let hint = RawType::make_hint(self.entries.len());
+
+		return hint.get_size(t, compacted_size) + entry_size;
+	}
+}
+
 /// The container for enum entries.
 #[derive(Clone)]
 pub struct RawEnumEntryContainer {
@@ -53,5 +72,17 @@ impl RawEnumEntryContainer {
 		}
 
 		RawEnumEntryContainer { parent, fields: storage }
+	}
+}
+
+impl SizedType for RawEnumEntryContainer {
+	fn get_size(&self, t: &Type, compacted_size: bool) -> usize {
+		let mut size = 0;
+
+		for tt in &self.fields.vals {
+			size += tt.get_size(t, compacted_size);
+		}
+
+		return size;
 	}
 }

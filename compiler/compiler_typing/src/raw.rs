@@ -25,6 +25,15 @@ pub enum RawType {
 	SizedFixedPoint(bool)
 }
 
+impl RawType {
+	/// Make a hint type.
+	pub fn make_hint(hint_amount: usize) -> RawType {
+		let bits = (hint_amount as f64).log2().ceil() as usize;
+
+		return RawType::Integer(bits, false)
+	}
+}
+
 impl SizedType for RawType {
 	fn get_size(&self, t: &Type, compacted_size: bool) -> usize {
 		match self {
@@ -44,6 +53,8 @@ impl SizedType for RawType {
 			RawType::StaticString => return 0, // TODO: make sure  we don't need this
 
 			RawType::Struct(_, container) => return container.get_size(t, compacted_size),
+			RawType::Enum(container) => return container.get_size(t, compacted_size),
+			RawType::EnumEntry(container) => return container.get_size(t, compacted_size),
 
 			_ => return 0
 		}
