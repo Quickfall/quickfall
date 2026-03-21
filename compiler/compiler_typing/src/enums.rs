@@ -5,13 +5,13 @@ use std::{collections::HashMap};
 use compiler_errors::{IR_FIND_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::{HashedString}, utils::indexed::IndexStorage};
 
-use crate::{RawTypeReference, SizedType, raw::RawType, references::TypeReference, tree::Type};
+use crate::{RawTypeReference, SizedType, raw::RawType, references::TypeReference, storage::TypeStorage, tree::Type};
 
 /// The container for the parent type of enum.
 /// 
 /// # Safety
 /// This struct guarantees that every contained entry is of type RawType::EnumEntry
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RawEnumTypeContainer {
 	self_ref: usize,
 	entries: HashMap<HashedString, RawType>
@@ -38,26 +38,30 @@ impl RawEnumTypeContainer {
 }
 
 impl SizedType for RawEnumTypeContainer {
-	fn get_size(&self, t: &Type, compacted_size: bool) -> usize {
+	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize {
 		let mut entry_size = 0;
 
 		if compacted_size {
-			// TODO: add after Type generic obtain is possible
+			let raw = t.get_generic(storage);
+
+			if let RawType::EnumEntry(container) = raw {
+				entry_size = container.get_size(t, compacted_size, storage);
+			}
 		}
 		else {
 			for entry in &self.entries {
-				entry_size = entry_size.max(entry.1.get_size(t, compacted_size));
+				entry_size = entry_size.max(entry.1.get_size(t, compacted_size, storage));
 			}
 		}
 
 		let hint = RawType::make_hint(self.entries.len());
 
-		return hint.get_size(t, compacted_size) + entry_size;
+		return hint.get_size(t, compacted_size, storage) + entry_size;
 	}
 }
 
 /// The container for enum entries.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RawEnumEntryContainer {
 	pub parent: RawTypeReference,
 	pub fields: IndexStorage<TypeReference>
@@ -76,11 +80,11 @@ impl RawEnumEntryContainer {
 }
 
 impl SizedType for RawEnumEntryContainer {
-	fn get_size(&self, t: &Type, compacted_size: bool) -> usize {
+	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize {
 		let mut size = 0;
 
 		for tt in &self.fields.vals {
-			size += tt.clone().resolve(t).get_size(t, compacted_size);
+			size += tt.clone().resolve(t).get_size(t, compacted_size, storage);
 		}
 
 		return size;

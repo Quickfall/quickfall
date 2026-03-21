@@ -1,6 +1,6 @@
 //! The typing tree declarations. Allows for types such as an array of pointer arrays.
 
-use crate::{RawTypeReference, SizedType, utils::get_pointer_size};
+use crate::{RawTypeReference, SizedType, raw::RawType, storage::{TypeStorage}, utils::get_pointer_size};
 
 #[derive(Clone, PartialEq, Debug)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
@@ -72,12 +72,20 @@ impl Type {
 
 		return self.get_inner_type().get_generic_info();
 	}
+
+	pub fn get_generic(&self, storage: &TypeStorage) -> RawType {
+		if let Type::Generic(raw, _, _) = self {
+			return storage.types.get_ind(*raw).clone();
+		};
+
+		return self.get_inner_type().get_generic(storage);
+	}
 }
 
 impl SizedType for Type {
-	fn get_size(&self, t: &Type, compacted_size: bool) -> usize {
+	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize {
 		return match self {
-			Self::Array(size, inner) => inner.clone().get_size(t, compacted_size) * *size,
+			Self::Array(size, inner) => inner.clone().get_size(t, compacted_size, storage) * *size,
 			Self::Pointer(_, _) => get_pointer_size(),
 			Self::Generic(_, _, _) => 0 // TODO: add raw storage check
 		}

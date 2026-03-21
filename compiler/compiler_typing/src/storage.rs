@@ -56,6 +56,7 @@ pub const BOOLEAN_TYPE: u64 = hash!("bool");
 /// Experimental
 pub const RESULT_TYPE: u64 = hash!("result");
 
+#[derive(Debug)]
 pub struct TypeStorage {
 	pub types: IndexStorage<RawType>
 }

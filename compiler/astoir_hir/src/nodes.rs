@@ -1,15 +1,15 @@
 //! The nodes inside of the AstoIR HIR. 
 
-use astoir_typing::{complete::{ComplexType, ConcreteType}, hashes::{BOOLEAN_TYPE, STATIC_STR}, structs::StructTypeContainer};
 use compiler_errors::errs::{BaseResult, base::BaseError};
+use compiler_typing::{structs::RawStructTypeContainer, tree::Type};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
 
 #[derive(Debug, Clone)]
 pub enum HIRNode {
-	VarDeclaration { variable: usize, var_type: ComplexType, default_val: Option<Box<HIRNode>> },
-	StaticVariableDeclaration { variable: usize, var_type: ComplexType, default_val: Option<Box<HIRNode>> },
+	VarDeclaration { variable: usize, var_type: Type, default_val: Option<Box<HIRNode>> },
+	StaticVariableDeclaration { variable: usize, var_type: Type, default_val: Option<Box<HIRNode>> },
 
 	VarAssigment { variable: usize, val: Box<HIRNode> },
 	
@@ -18,11 +18,11 @@ pub enum HIRNode {
 	VariableReference { index: usize, is_static: bool },
 	FunctionReference { index: usize },
 
-	StructLRU { steps: Vec<StructLRUStep>, last: ComplexType },
+	StructLRU { steps: Vec<StructLRUStep>, last: Type },
 
-	StructDeclaration { type_name: usize, container: StructTypeContainer, layout: bool },
-	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, ComplexType)>, return_type: Option<ComplexType>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
-	ShadowFunctionDeclaration { func_name: usize, arguments: Vec<(u64, ComplexType)>, return_type: Option<ComplexType> },
+	StructDeclaration { type_name: usize, container: RawStructTypeContainer, layout: bool },
+	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
+	ShadowFunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type> },
 
 	FunctionCall { func_name: usize, arguments: Vec<Box<HIRNode>> },
 
@@ -57,7 +57,7 @@ impl HIRNode {
 		return Err(BaseError::err("Tried using as_variable_reference on a non var ref".to_string()))
 	}
 	
-	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<ComplexType> {
+	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<Type> {
 		match self {
 			HIRNode::VariableReference { index, is_static } => {
 				if *is_static {
@@ -68,9 +68,7 @@ impl HIRNode {
 			},
 
 			HIRNode::IntegerLiteral { value: _, int_type } => {
-				let t = context.type_storage.types[*int_type].clone();
-
-				return Some(ComplexType::Concrete(ConcreteType { base: t, pointer: false, pointer_array: false, type_params: vec![], size_params: vec![] }))
+				return Some(Type::Generic(*int_type, vec![], vec![]))
 			},
 
 			HIRNode::StringLiteral { value: _ } => {

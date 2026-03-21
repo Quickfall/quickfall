@@ -1,6 +1,6 @@
 //! The typing system used all across the compiler in all levels of AstoIR and AST.
 
-use crate::{references::TypeReference, tree::Type};
+use crate::{references::TypeReference, storage::TypeStorage, tree::Type};
 
 pub mod tree;
 pub mod raw;
@@ -19,5 +19,5 @@ pub type RawTypeReference = usize;
 /// Represents a basic type that has a size. 
 pub trait SizedType {
 	/// Obtains the size of the type. The `compacted_size` parameter determines if the compacted size should be returned or not
-	fn get_size(&self, t: &Type, compacted_size: bool) -> usize;
+	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize;
 }

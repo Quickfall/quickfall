@@ -1,14 +1,14 @@
 //! The context definitions for the AstoIR HIR layer.
 
-use std::{collections::{HashMap, HashSet}, hash::Hash};
+use std::{collections::{HashMap, HashSet}};
 
-use astoir_typing::{complete::{ComplexType}, storage::TypeStorage};
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
+use compiler_typing::{storage::TypeStorage, tree::Type};
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 
 use crate::{nodes::HIRNode, structs::HIRStructContainer};
 
-pub type HIRFunction = (Option<ComplexType>, Vec<(u64, ComplexType)>, String);
+pub type HIRFunction = (Option<Type>, Vec<(u64, Type)>, String);
 
 /// The function HIR context. Contains a mapping from element name hash to element index and other variable information. 
 /// Uses a branch based system to contain variables.
@@ -62,7 +62,7 @@ impl HIRBranchedContext {
 	}
 
 	/// Introduces a new variable in the current branch era.
-	pub fn introduce_variable(&mut self, hash: u64, t: ComplexType, has_default: bool) -> BaseResult<usize> {
+	pub fn introduce_variable(&mut self, hash: u64, t: Type, has_default: bool) -> BaseResult<usize> {
 		let identity = SelfHash { hash };
 
 		if self.hash_to_ind.contains_key(&identity) {
@@ -176,7 +176,7 @@ impl HIRBranchedContext {
 #[derive(Debug, Clone)]
 pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
-	pub variable_type: ComplexType,
+	pub variable_type: Type,
 	
 	pub requires_address: bool,
 
@@ -188,7 +188,7 @@ pub struct HIRBranchedVariable {
 pub struct HIRContext {
 	pub functions: IndexStorage<HIRFunction>, 
 	pub function_declarations: Vec<Option<Box<HIRNode>>>,
-	pub static_variables: IndexStorage<ComplexType>,
+	pub static_variables: IndexStorage<Type>,
 	pub struct_func_impls: HashMap<usize, HIRStructContainer>,
 	pub type_storage: TypeStorage
 }
@@ -212,7 +212,7 @@ impl HIRContext {
 	}
 }
 
-pub fn get_variable(context: &HIRContext, curr_ctx: &HIRBranchedContext, hash: u64) -> BaseResult<(VariableKind, ComplexType, usize)> {
+pub fn get_variable(context: &HIRContext, curr_ctx: &HIRBranchedContext, hash: u64) -> BaseResult<(VariableKind, Type, usize)> {
 	if curr_ctx.hash_to_ind.contains_key(&SelfHash { hash }) {
 		match curr_ctx.obtain(hash) {
 			Ok(v) => {
