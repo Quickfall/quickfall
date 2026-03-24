@@ -146,8 +146,6 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<A
 	let mut child = None;
 
 	for i in 1..members.len() + 1 {
-		println!("{}", members.len() - i);
-
 		let converted_member = match members[members.len() - i].clone() {
 			ParsingASTTypeMember::Generic(t, types, sizes) => ASTType::Generic(t, types, sizes),
 			ParsingASTTypeMember::Pointer(array) => ASTType::Pointer(array, child.unwrap()),

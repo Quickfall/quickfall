@@ -35,7 +35,7 @@ impl LLVMBridgeContext {
 			values: HashMap::new(),
 			ctx: ctx.clone(),
 			builder: unsafe { transmute::<Builder, Builder<'static>>(ctx.create_builder())},
-			module: unsafe { transmute::<Module, Module<'static>>(ctx.create_module("__qfmirbridge__")) }
+			module: unsafe { transmute::<Module, Module<'static>>(ctx.create_module("")) }
 		}
 	}
 }
