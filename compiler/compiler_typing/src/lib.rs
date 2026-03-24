@@ -31,8 +31,8 @@ pub trait SizedType {
 
 /// Represents types that can contain functions and more
 pub trait StructuredType {
-	fn get_function(&self, hash: u64) -> BaseResult<TypedFunction>;
-	fn get_function_hash(&self, hash: u64) -> BaseResult<usize>;
-	fn get_field(&self, hash: u64) -> BaseResult<TypeReference>;
-	fn get_field_hash(&self, hash: u64) -> BaseResult<usize>;
+	fn get_function(&self, hash: u64, storage: &TypeStorage) -> BaseResult<TypedFunction>;
+	fn get_function_hash(&self, hash: u64, storage: &TypeStorage) -> BaseResult<usize>;
+	fn get_field(&self, hash: u64, storage: &TypeStorage) -> BaseResult<TypeReference>;
+	fn get_field_hash(&self, hash: u64, storage: &TypeStorage) -> BaseResult<usize>;
 }

@@ -2,10 +2,10 @@
 
 use std::{collections::HashMap};
 
-use compiler_errors::{IR_FIND_TYPE, errs::{BaseResult, base::BaseError}};
+use compiler_errors::{ENUM_PARENT_FIELD, IR_FIND_ELEMENT, IR_FIND_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash::{HashedString}, utils::indexed::IndexStorage};
 
-use crate::{RawTypeReference, SizedType, TypeParameterContainer, raw::RawType, references::TypeReference, storage::TypeStorage, tree::Type};
+use crate::{RawTypeReference, SizedType, StructuredType, TypeParameterContainer, TypedFunction, raw::RawType, references::TypeReference, storage::TypeStorage, tree::Type};
 
 /// The container for the parent type of enum.
 /// 
@@ -15,12 +15,13 @@ use crate::{RawTypeReference, SizedType, TypeParameterContainer, raw::RawType, r
 pub struct RawEnumTypeContainer {
 	self_ref: usize,
 	pub type_params: TypeParameterContainer,
+	pub functions: IndexStorage<TypedFunction>,
 	entries: HashMap<HashedString, RawType>
 }
 
 impl RawEnumTypeContainer {
 	pub fn new(self_ref: usize, type_params: TypeParameterContainer) -> Self {
-		RawEnumTypeContainer { self_ref, entries: HashMap::new(), type_params }
+		RawEnumTypeContainer { self_ref, entries: HashMap::new(), type_params, functions: IndexStorage::new() }
 	}
 
 	pub fn append_entry(&mut self, name: HashedString, fields: Vec<(u64, TypeReference)>) {
@@ -89,5 +90,70 @@ impl SizedType for RawEnumEntryContainer {
 		}
 
 		return size;
+	}
+}
+
+impl StructuredType for RawEnumTypeContainer {
+	fn get_field(&self, _hash: u64, _storage: &TypeStorage) -> BaseResult<TypeReference> {
+		return Err(BaseError::err(ENUM_PARENT_FIELD!().to_string()))
+	}
+
+	fn get_field_hash(&self, _hash: u64, _storage: &TypeStorage) -> BaseResult<usize> {
+		return Err(BaseError::err(ENUM_PARENT_FIELD!().to_string()))
+
+	}
+
+	fn get_function(&self, hash: u64, _storage: &TypeStorage) -> BaseResult<TypedFunction> {
+		let k = match self.functions.get_index(hash) {
+			Some(v) => v,
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		};
+
+		return Ok(self.functions.vals[k].clone())
+	}
+
+	fn get_function_hash(&self, hash: u64, _storage: &TypeStorage) -> BaseResult<usize> {
+		let k = match self.functions.get_index(hash) {
+			Some(v) => v,
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		};
+
+		return Ok(k);
+	}
+}
+
+impl StructuredType for RawEnumEntryContainer {
+	fn get_field(&self, hash: u64, _storage: &TypeStorage) -> BaseResult<TypeReference> {
+		let k = match self.fields.get_index(hash) {
+			Some(v) => v,
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		};
+
+		return Ok(self.fields.vals[k].clone());
+	} 
+
+	fn get_field_hash(&self, hash: u64, _storage: &TypeStorage) -> BaseResult<usize> {
+		let k = match self.fields.get_index(hash) {
+			Some(v) => v,
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		};
+
+		return Ok(k);
+	}
+
+	fn get_function(&self, hash: u64, storage: &TypeStorage) -> BaseResult<TypedFunction> {
+		if let RawType::Enum(container) = &storage.types.vals[self.parent] {
+			return container.get_function(hash, storage);
+		}
+
+		panic!("Parent type of enum entry was not an enum!");
+	}
+
+	fn get_function_hash(&self, hash: u64, storage: &TypeStorage) -> BaseResult<usize> {
+		if let RawType::Enum(container) = &storage.types.vals[self.parent] {
+			return container.get_function_hash(hash, storage);
+		}
+
+		panic!("Parent type of enum entry was not an enum!");
 	}
 }

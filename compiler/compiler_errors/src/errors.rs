@@ -163,6 +163,12 @@ macro_rules! IR_OUTSIDE_ERA_HIGHER {
 	};
 }
 
+#[macro_export]
+macro_rules! ENUM_PARENT_FIELD {
+	() => {
+		"Enums parent types cannot have fields."
+	};
+}
 
 #[macro_export]
 macro_rules! IR_TYPE_UNSIGNED {
