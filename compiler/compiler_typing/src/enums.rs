@@ -11,7 +11,7 @@ use crate::{RawTypeReference, SizedType, StructuredType, TypeParameterContainer,
 /// 
 /// # Safety
 /// This struct guarantees that every contained entry is of type RawType::EnumEntry
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RawEnumTypeContainer {
 	self_ref: usize,
 	pub type_params: TypeParameterContainer,
@@ -63,7 +63,7 @@ impl SizedType for RawEnumTypeContainer {
 }
 
 /// The container for enum entries.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RawEnumEntryContainer {
 	pub parent: RawTypeReference,
 	pub fields: IndexStorage<TypeReference>

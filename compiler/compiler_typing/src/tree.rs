@@ -3,7 +3,7 @@
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Eq)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
 pub enum Type {
 	/// A generic type node. Represents a classic type.

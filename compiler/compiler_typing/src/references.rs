@@ -3,7 +3,7 @@ use compiler_errors::{TYPE_UNRESOLVABLE, errs::{BaseResult, base::BaseError}};
 use crate::tree::Type;
 
 /// References a type from two states: resolved and unresolved. Allows for type parameters
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TypeReference {
 	Resolved(Type),
 	

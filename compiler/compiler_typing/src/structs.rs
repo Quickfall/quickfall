@@ -4,14 +4,14 @@ use compiler_utils::utils::indexed::IndexStorage;
 use crate::{SizedType, StructuredType, TypeParameterContainer, TypeReference, TypedFunction, storage::TypeStorage, tree::Type};
 
 /// Container for structure types
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RawStructTypeContainer {
 	pub fields: IndexStorage<TypeReference>,
 	pub type_params: TypeParameterContainer,
 	pub functions: IndexStorage<TypedFunction>
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LoweredStructTypeContainer {
 	pub fields: IndexStorage<Type>,
 	pub functions: IndexStorage<usize>

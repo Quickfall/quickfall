@@ -1,9 +1,11 @@
 //! The raw type declarations
 
+use std::hash::Hash;
+
 use crate::{SizedType, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, structs::{LoweredStructTypeContainer, RawStructTypeContainer}, tree::Type, utils::get_pointer_size};
 
 /// The raw types. Are also named generics
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RawType {
 	Integer(usize, bool),
 	Floating(usize, bool),
@@ -78,6 +80,37 @@ impl SizedType for RawType {
 			RawType::EnumEntry(container) => return container.get_size(t, compacted_size, storage),
 
 			_ => return 0
+		}
+	}
+}
+
+impl Hash for RawType {
+	fn hash<H: std::hash::Hasher>(&self, hasher: &mut H) {
+		match self {
+			Self::Integer(a, b) => {
+				hasher.write_usize(0);
+				hasher.write_usize(*a);
+				hasher.write_u8(*b as u8);
+			},
+
+			Self::Floating(a, b) => {
+				hasher.write_usize(1);
+				hasher.write_usize(*a);
+				hasher.write_u8(*b as u8);
+			},
+
+			Self::FixedPoint(a, b, c) => {
+				hasher.write_usize(2);
+				hasher.write_usize(*a);
+				hasher.write_usize(*b);
+				hasher.write_u8(*c as u8);
+			},
+
+			Self::Boolean => hasher.write_usize(3),
+			Self::Pointer => hasher.write_usize(4),
+			Self::StaticString => hasher.write_usize(5),
+			
+			_ => panic!("Unhashable type {:#?}", self)
 		}
 	}
 }
