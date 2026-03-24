@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use compiler_errors::errs::BaseResult;
-use compiler_utils::{hash::HashedString, utils::indexed::IndexStorage};
+use compiler_utils::{hash::HashedString};
 
 use crate::{references::TypeReference, storage::TypeStorage, tree::Type};
 

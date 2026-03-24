@@ -1,9 +1,7 @@
 //! The typing tree declarations. Allows for types such as an array of pointer arrays.
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
-use compiler_utils::hash;
-
-use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{self, TypeStorage}, utils::get_pointer_size};
+use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
 
 #[derive(Clone, PartialEq, Debug)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
