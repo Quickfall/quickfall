@@ -33,7 +33,7 @@ pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedCon
 					resolved_ret = None;
 				}
 
-				func_type = &(resolved_ret, resolved_args, func.val.clone());
+				func_type = (resolved_ret, resolved_args, func.val.clone());
 				
 				ind = res.0;
 
@@ -43,23 +43,23 @@ pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedCon
 					None => return Err(CompilerError::from_ast(ErrorKind::Error, IR_FIND_ELEMENT!().to_string(), &node.start, &node.end))
 				};
 
-				func_type = &context.functions.vals[ind];
+				func_type = context.functions.vals[ind].clone();
 			}
 
 			let mut hir_args = vec![];
-			let mut ind = 0;
+			let mut iind = 0;
 
 			for a in args {
 				let lowered = lower_ast_value(context, curr_ctx, a)?;
 
-				lowered = match lowered.use_as(context, curr_ctx, func_type.1[ind].1.clone()) {
+				let lowered = match lowered.use_as(context, curr_ctx, func_type.1[iind].1.clone()) {
 					Ok(v) => Box::new(v),
 					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 				};
 
 				hir_args.push(lowered);
 
-				ind += 1;
+				iind += 1;
 			}
 
 			*curr_type = func_type.0.clone();
@@ -73,13 +73,15 @@ pub(crate) fn lower_ast_lru_base(context: &HIRContext, curr_ctx: &HIRBranchedCon
 			let var_type;
 			let ind: usize;
 
-			if struct_descriptor.is_some() {
-				ind = match struct_descriptor.unwrap().get_field(str.hash) {
+			if let Some(curr_type_val) = curr_type {
+				let res = match curr_type_val.get_field(&context.type_storage, str.hash) {
 					Ok(v) => v,
-					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))		
+					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 				};
 
-				var_type = struct_descriptor.unwrap().fields.vals[ind].clone();
+				ind = res.0;
+				var_type = res.1.resolve(curr_type_val);
+
 			} else {
 				match get_variable(context, curr_ctx, str.hash) {
 					Ok(v) => {
