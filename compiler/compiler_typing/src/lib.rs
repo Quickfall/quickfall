@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 
+use compiler_errors::errs::BaseResult;
 use compiler_utils::{hash::HashedString, utils::indexed::IndexStorage};
 
 use crate::{references::TypeReference, storage::TypeStorage, tree::Type};
@@ -26,4 +27,10 @@ pub type RawTypeReference = usize;
 pub trait SizedType {
 	/// Obtains the size of the type. The `compacted_size` parameter determines if the compacted size should be returned or not
 	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize;
+}
+
+/// Represents types that can contain functions and more
+pub trait StructuredType {
+	fn get_function(&self, hash: u64) -> BaseResult<TypedFunction>;
+	fn get_function_hash(&self, hash: u64) -> BaseResult<usize>;
 }

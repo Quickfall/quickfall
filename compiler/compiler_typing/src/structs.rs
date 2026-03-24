@@ -1,6 +1,7 @@
+use compiler_errors::{IR_FIND_ELEMENT, errs::{BaseResult, base::BaseError}};
 use compiler_utils::utils::indexed::IndexStorage;
 
-use crate::{SizedType, TypeParameterContainer, TypeReference, TypedFunction, storage::TypeStorage, tree::Type};
+use crate::{SizedType, StructuredType, TypeParameterContainer, TypeReference, TypedFunction, storage::TypeStorage, tree::Type};
 
 /// Container for structure types
 #[derive(Clone, Debug)]
@@ -21,5 +22,25 @@ impl SizedType for RawStructTypeContainer {
 		}
 
 		return size
+	}
+}
+
+impl StructuredType for RawStructTypeContainer {
+	fn get_function(&self, hash: u64) -> BaseResult<TypedFunction> {
+		let k = match self.functions.get_index(hash) {
+			Some(v) => v,
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		};
+
+		return Ok(self.functions.vals[k].clone())
+	}
+
+	fn get_function_hash(&self, hash: u64) -> BaseResult<usize> {
+		let k = match self.functions.get_index(hash) {
+			Some(v) => v,
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		};
+
+		return Ok(k);
 	}
 }
