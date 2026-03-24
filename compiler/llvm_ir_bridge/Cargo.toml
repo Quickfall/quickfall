@@ -6,7 +6,6 @@ edition = "2024"
 [dependencies]
 inkwell = { git = "https://github.com/TheDan64/inkwell", features = ["llvm22-1"]}
 astoir_mir = { path = "../astoir_mir" }
-astoir_typing = { path = "../astoir_typing" }
 compiler_errors = { path = "../compiler_errors" }
 compiler_typing = { path = "../compiler_typing" }
 rand = "0.8"

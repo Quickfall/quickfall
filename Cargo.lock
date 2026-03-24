@@ -65,7 +65,6 @@ dependencies = [
 name = "astoir_mir"
 version = "0.1.0"
 dependencies = [
- "astoir_typing",
  "compiler_errors",
  "compiler_typing",
  "compiler_utils",
@@ -233,7 +232,6 @@ name = "llvm_ir_bridge"
 version = "0.1.0"
 dependencies = [
  "astoir_mir",
- "astoir_typing",
  "compiler_errors",
  "compiler_typing",
  "inkwell",

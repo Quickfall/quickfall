@@ -4,7 +4,7 @@ use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_typing::tree::Type;
 use compiler_utils::hash::HashedString;
 
-use crate::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::{self, MIRBlockReference}}, ctx::MIRContext, vals::base::BaseMIRValue};
+use crate::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::{MIRBlockReference}}, ctx::MIRContext, vals::base::BaseMIRValue};
 
 /// Represents a function in the MIR. Owns one or more blocks
 pub struct MIRFunction {
