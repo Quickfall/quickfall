@@ -13,8 +13,12 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struc
 	let mut depends_on_this: bool = false;
 	let mut args: Vec<FunctionDeclarationArgument> = Vec::new();
 	
-	while *ind < tokens.len() && (tokens[*ind].is_keyword() || tokens[*ind].tok_type == LexerTokenType::This) {
+	while *ind < tokens.len() {
 		
+		if tokens[*ind].tok_type == LexerTokenType::ParenClose {
+			break;
+		}
+
 		if tokens[*ind].tok_type == LexerTokenType::This {
 			if struct_type.is_none() {
 				return Err(CompilerError::from_ast(ErrorKind::Error, "This requires to be within a struct!".to_string(), &tokens[*ind].pos, &tokens[*ind].get_end_pos()))
@@ -39,11 +43,11 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struc
 			*ind += 1;
 		}
 
+		println!("{:#?}", tokens[*ind]);
+
 		if tokens[*ind].tok_type == LexerTokenType::ParenClose {
 			break;
 		}
-
-		println!("{:#?}", tokens[*ind]);
 
 		tokens[*ind].expects(LexerTokenType::Comma)?;
 		*ind += 1;

@@ -2,8 +2,10 @@
 //! AST tree related definitions.
 //! 
 
+use std::collections::HashMap;
+
 use compiler_typing::TypeParameterContainer;
-use compiler_utils::{Position, hash::HashedString};
+use compiler_utils::{Position, hash::{HashedString, SelfHash}};
 use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
 
 use crate::types::ASTType;
@@ -34,6 +36,10 @@ pub enum ASTTreeNodeKind {
 	MathResult { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: MathOperator, assigns: bool },
 
 	VariableReference(HashedString),
+
+	StructVariableInitializerValue { struct_type: ASTType, map: HashMap<SelfHash, Box<ASTTreeNode>> },
+	ArrayVariableInitializerValueSameValue { size: usize, v: Box<ASTTreeNode> },
+	ArrayVariableInitializerValue { vals: Vec<Box<ASTTreeNode>> },
 
 	StructLayoutDeclaration { name: HashedString, layout: bool, members: Vec<Box<ASTTreeNode>>, type_params: TypeParameterContainer },
 	StructFieldMember { name: HashedString, member_type: ASTType },

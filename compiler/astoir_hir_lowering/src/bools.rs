@@ -5,7 +5,7 @@ use compiler_typing::{storage::BOOLEAN_TYPE, tree::Type};
 
 use crate::values::lower_ast_value;
 
-pub fn lower_ast_boolean_condition(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_boolean_condition(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::BooleanBasedConditionMember { val, negate } = node.kind.clone() {
 		let hir_value = lower_ast_value(context, curr_ctx, val)?;
 
@@ -15,7 +15,7 @@ pub fn lower_ast_boolean_condition(context: &HIRContext, curr_ctx: &HIRBranchedC
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 }
 
-pub fn lower_ast_operator_condition(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_operator_condition(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::OperatorBasedConditionMember { lval, rval, operator } = node.kind.clone() {
 		let left_value = lower_ast_value(context, curr_ctx, lval)?;
 		
@@ -30,7 +30,7 @@ pub fn lower_ast_operator_condition(context: &HIRContext, curr_ctx: &HIRBranched
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 }
 
-pub fn lower_ast_condition(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_condition(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	let start = &node.start.clone();
 	let end = &node.end.clone();
 

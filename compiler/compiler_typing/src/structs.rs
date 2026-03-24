@@ -41,6 +41,14 @@ impl StructuredType for RawStructTypeContainer {
 		return Ok(self.functions.vals[k].clone())
 	}
 
+	fn get_fields(&self, _storage: &TypeStorage) -> Vec<u64> {
+		return self.fields.hash_to_ind.keys().cloned().collect();
+	}
+
+	fn get_functions(&self, _storage: &TypeStorage) -> Vec<u64> {
+		return self.functions.hash_to_ind.keys().cloned().collect();
+	}
+
 	fn get_function_hash(&self, hash: u64, _storage: &TypeStorage) -> BaseResult<usize> {
 		let k = match self.functions.get_index(hash) {
 			Some(v) => v,

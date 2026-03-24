@@ -24,6 +24,8 @@ pub enum LexerTokenType {
 
 	Static,
 
+	New,
+
 	/// 0: the operator
 	/// 1: does the operator affect the original variable!
 	MathOperator(MathOperator, bool),

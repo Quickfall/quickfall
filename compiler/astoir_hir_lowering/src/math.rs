@@ -4,7 +4,7 @@ use compiler_errors::{IR_INVALID_NODE_TYPE, UNUSED_VAR_ACCESS, errs::{CompilerRe
 
 use crate::values::lower_ast_value;
 
-pub fn lower_ast_math_operation(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, enforce_assign: bool) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_math_operation(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, enforce_assign: bool) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::MathResult { lval, rval, operator, assigns } = node.kind.clone() {
 		if enforce_assign && !assigns {
 			return Err(CompilerError::from_ast(ErrorKind::Warn, UNUSED_VAR_ACCESS!().to_string(), &node.start, &node.end))

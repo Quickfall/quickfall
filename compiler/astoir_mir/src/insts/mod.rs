@@ -62,6 +62,10 @@ pub enum MIRInstruction {
 	FixedUnsignedConstant { raw: f64, number: usize, fraction: usize }, 
 	StaticStringConstant { raw: String },
 
+	StructInitializerConstant { struct_type: RawType, values: Vec<BaseMIRValue> },
+	ArrayInitializerConstant { values: Vec<BaseMIRValue> },
+	ArrayInitializerConstantSame { size: usize, val: BaseMIRValue },
+
 	// Control
 	Return { val: Option<BaseMIRValue> }, 
 	UnconditionalBranch { branch: MIRBlockReference },
@@ -163,6 +167,10 @@ impl MIRInstruction {
 			Self::FixedSignedConstant { raw: _, number, fraction } => return Type::GenericLowered(RawType::FixedPoint(*number, *fraction, true)),
 			Self::FixedUnsignedConstant { raw: _, number, fraction } => return Type::GenericLowered(RawType::FixedPoint(*number, *fraction, false)),
 			Self::StaticStringConstant { raw: _ } => return Type::GenericLowered(RawType::Pointer),
+			Self::StructInitializerConstant { struct_type, values: _ } => return Type::GenericLowered(struct_type.clone()),
+
+			Self::ArrayInitializerConstant { values } => return Type::Array(values.len(), Box::new(values[0].vtype.clone())),
+			Self::ArrayInitializerConstantSame { size, val } => return Type::Array(*size, Box::new(val.vtype.clone())),
 
 			Self::Phi { choices } => {
 				return choices[0].1.vtype.clone();
@@ -195,7 +203,7 @@ impl Display for MIRInstruction {
 			Self::StackAlloc { alloc_size, t: _ } => writeln!(f, "stkalloc {}", *alloc_size)?,
 			Self::Load { value } => writeln!(f, "load {}", value)?,
 			Self::Store { variable, value } => writeln!(f, "store d{} s{}", variable, value)?,
-			
+
 			Self::DowncastInteger { val, size } => writeln!(f, "dintcast {} {}", val, size)?,
 			Self::DowncastFloat { val, size } => writeln!(f, "dfcast {} {}", val, size)?,
 			Self::UpcastInteger { val, size } => writeln!(f, "uintcast {} {}", val, size)?,
@@ -239,6 +247,26 @@ impl Display for MIRInstruction {
 			Self::FixedUnsignedConstant { raw, number, fraction } => writeln!(f, "constffu {} {} {}", raw, number, fraction)?,
 
 			Self::StaticStringConstant { raw } => writeln!(f, "conststr {}", raw)?,
+
+			Self::StructInitializerConstant { struct_type: _, values } => {
+				writeln!(f, "conststructinitrz ")?;
+			
+				for v in values {
+					write!(f, "{}", v)?;
+				}
+			},
+
+			Self::ArrayInitializerConstant { values } => {
+				writeln!(f, "constarrinitrz ")?;
+
+				for v in values {
+					write!(f, "{}", v)?;
+				}
+			},
+
+			Self::ArrayInitializerConstantSame { size, val } => {
+				writeln!(f, "constarrinitrzsm {} {}", size, val)?
+			},
 
 			Self::Return { val } => {
 				if val.is_some() {

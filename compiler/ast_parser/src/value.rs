@@ -4,7 +4,7 @@ use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use compiler_errors::{PARSE_VALUE, UNEXPECTED_TOKEN, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::functions::parse_function_call;
+use crate::{functions::parse_function_call, structs::val::parse_struct_initialize};
 use crate::literals::{parse_integer_literal, parse_string_literal};
 use crate::math::parse_math_operation;
 
@@ -155,6 +155,10 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 			return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), ast), ErrorKind::Error));
 		},
 
+		LexerTokenType::BracketOpen | LexerTokenType::ArrayOpen => {
+			return parse_ast_array_init(tokens, ind);
+		}
+
 		LexerTokenType::IntLit(_, _) => {
 			let int = parse_integer_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, int, false);
@@ -164,6 +168,10 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 			let str = parse_string_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, str, false);
 		},
+
+		LexerTokenType::New => {
+			return parse_struct_initialize(tokens, ind);
+		}
 
 		LexerTokenType::Keyword(str, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
@@ -182,4 +190,48 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 
 		_ => return Err(tokens[*ind].make_err(PARSE_VALUE!().to_string(), ErrorKind::Error))
 	}	
+}
+
+pub fn parse_ast_array_init(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+	let start = tokens[*ind].pos.clone();
+
+	if tokens[*ind].tok_type == LexerTokenType::BracketOpen {
+		*ind += 1;
+
+		let int_lit = tokens[*ind].expects_int_lit()?;
+
+		*ind += 1;
+
+		tokens[*ind].expects(LexerTokenType::Dot)?;
+
+		*ind += 1;
+
+		let val = parse_ast_value(tokens, ind)?;
+
+		tokens[*ind].expects(LexerTokenType::BracketClose)?;
+
+		*ind += 1;
+
+		return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ArrayVariableInitializerValueSameValue { size: int_lit.0 as usize, v: val }, start, tokens[*ind].get_end_pos())));
+	}
+
+	tokens[*ind].expects(LexerTokenType::ArrayOpen)?;
+	*ind += 1;
+
+	let mut vals = vec![];
+
+	loop {
+		vals.push(parse_ast_value(tokens, ind)?);
+
+		if tokens[*ind].tok_type == LexerTokenType::ArrayClose {
+			break;
+		}
+
+		tokens[*ind].expects(LexerTokenType::Comma)?;
+		*ind += 1;
+	}
+
+	*ind += 1;
+
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ArrayVariableInitializerValue { vals }, start, tokens[*ind].get_end_pos())))
 }

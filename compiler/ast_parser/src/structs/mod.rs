@@ -7,6 +7,7 @@ use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::{ASTType}};
 use crate::{functions::parse_function_declaraction, structs::members::parse_types_field_member, types::parse_type_parameters_declaration};
 
 pub mod members;
+pub mod val;
 
 pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout: bool) -> CompilerResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();

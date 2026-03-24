@@ -45,7 +45,7 @@ impl RawType {
 			_ => 0
 		}
 	}
-
+	
 	pub fn is_signed(&self) -> bool {
 		match self {
 			Self::Integer(_, signed) => *signed,
@@ -137,6 +137,19 @@ impl Hash for RawType {
 			Self::Boolean => hasher.write_usize(3),
 			Self::Pointer => hasher.write_usize(4),
 			Self::StaticString => hasher.write_usize(5),
+
+			Self::LoweredStruct(a, b) => {
+				hasher.write_usize(6);
+				hasher.write_u8(*a as u8);
+
+				for field in &b.fields.vals {
+					field.hash(hasher);
+				}
+
+				for function in &b.functions.vals {
+					hasher.write_usize(*function);
+				}
+			}
 			
 			_ => panic!("Unhashable type {:#?}", self)
 		}

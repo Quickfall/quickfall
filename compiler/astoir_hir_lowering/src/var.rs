@@ -60,7 +60,7 @@ pub fn lower_ast_variable_reference(context: &HIRContext, curr_ctx: &HIRBranched
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 }
 
-pub fn lower_ast_variable_assign(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_variable_assign(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::VarValueChange { var, value } = node.kind.clone() {
 		let value = lower_ast_value(context, curr_ctx, value)?;
 		let variable_reference = lower_ast_variable_reference(context, curr_ctx, var, false)?;

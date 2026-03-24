@@ -53,6 +53,16 @@ impl LLVMTypeStorage {
 					_ => return Err(BaseError::err("Cannot convert to LLVM type".to_string()))
 				}
 			},
+			
+			RawType::LoweredStruct(layout, b) => {
+				let mut fields = vec![];
+
+				for field in &b.fields.vals {
+					fields.push(self.convert(field.clone())?.inner);
+				}
+
+				self.ctxref.struct_type(&fields, !*layout).into()
+			}
 
 			RawType::FixedPoint(a, b, _) => {
 				let sum = a + b;

@@ -25,6 +25,7 @@ const WHILE_KEYWORD_HASH: u64 = hash!("while");
 const FOR_KEYWORD_HASH: u64 = hash!("for");
 const STATIC_KEYWORD_HASH: u64 = hash!("static");
 const THIS_KEYWORD_HASH: u64 = hash!("this");
+const NEW_KEYWORD_HASH: u64 = hash!("new");
 
 /// Parses a file into a set of lexer tokens.
 /// 
@@ -142,6 +143,10 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	};
 
 	*ind += 1;
+
+	if contents.chars().nth(*ind).unwrap() != '=' {
+		return Ok(LexerToken::make_single_sized(start_pos, LexerTokenType::Asterisk));
+	}
 
 	let assigns = match contents.chars().nth(*ind) {
 		Some(v) => {
@@ -304,6 +309,7 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 		FOR_KEYWORD_HASH => LexerTokenType::For,
 		STATIC_KEYWORD_HASH => LexerTokenType::Static,
 		THIS_KEYWORD_HASH => LexerTokenType::This,
+		NEW_KEYWORD_HASH => LexerTokenType::New,
         _ => LexerTokenType::Keyword(slice.to_string(), hash)
     };
 

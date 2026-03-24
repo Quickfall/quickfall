@@ -3,7 +3,7 @@
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
 
-#[derive(Clone, PartialEq, Debug, Eq)]
+#[derive(Clone, PartialEq, Debug, Eq, Hash)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
 pub enum Type {
 	/// A generic type node. Represents a classic type.
@@ -54,6 +54,14 @@ impl Type {
 
 				return storage.types.vals[*raw_type].can_transmute(sizes.clone(), &storage.types.vals[*raw_type2], sizes2.clone())
 			},
+
+			(Self::GenericLowered(base), Self::Generic(rawtype, type_params, sizes)) => {
+				if !type_params.is_empty() {
+					return false;
+				}
+
+				return base.can_transmute(vec![], &storage.types.vals[*rawtype], sizes.clone())
+			}
 
 			(Self::GenericLowered(base), Self::GenericLowered(base2)) => {
 				return base.can_transmute(vec![], base2, vec![]);
@@ -149,7 +157,24 @@ impl Type {
 			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
 		}
 	}
+
+	pub fn get_fields(&self, storage: &TypeStorage) -> BaseResult<Vec<u64>> {
+		return match self.get_generic(storage) {
+			RawType::Struct(_, container) => Ok(container.get_fields(storage)),
+			RawType::EnumEntry(container) => Ok(container.get_fields(storage)),
+			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
+		}
+	}
 	
+	pub fn get_functions(&self, storage: &TypeStorage) -> BaseResult<Vec<u64>> {
+		return match self.get_generic(storage) {
+			RawType::Struct(_, container) => Ok(container.get_functions(storage)),
+			RawType::EnumEntry(container) => Ok(container.get_functions(storage)),
+			RawType::Enum(container) => Ok(container.get_functions(storage)),
+			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
+		}
+	}
+
 }
 
 impl SizedType for Type {
