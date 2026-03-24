@@ -1,6 +1,5 @@
 use std::fmt::Display;
 
-use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_typing::tree::Type;
 use compiler_utils::hash::HashedString;

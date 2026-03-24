@@ -1,11 +1,10 @@
-use std::{any::TypeId, collections::HashMap, mem::transmute, num::NonZero, ops::Add, rc::Rc};
+use std::{collections::HashMap, mem::transmute, num::NonZero, rc::Rc};
 
-use astoir_typing::base::BaseType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_typing::{raw::RawType, tree::Type};
 use inkwell::{AddressSpace, context::Context, types::{BasicType, BasicTypeEnum}};
 
-use crate::{llvm_to_base, utils::LLVMTypeEnum};
+use crate::{utils::LLVMTypeEnum};
 
 pub struct LLVMTypeStorage {
 	pub map: HashMap<RawType, LLVMTypeEnum>,
@@ -55,7 +54,7 @@ impl LLVMTypeStorage {
 				}
 			},
 
-			RawType::FixedPoint(a, b, c) => {
+			RawType::FixedPoint(a, b, _) => {
 				let sum = a + b;
 
 				self.ctxref.custom_width_int_type(NonZero::new(sum as u32).unwrap()).unwrap().into()

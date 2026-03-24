@@ -1,5 +1,3 @@
-use std::any::TypeId;
-
 use astoir_hir::{ctx::HIRContext, nodes::HIRNode};
 use astoir_mir::ctx::MIRContext;
 use compiler_errors::{AST_INVALID_TREE, errs::{BaseResult, IS_MIR_STAGE, base::BaseError}};
@@ -50,7 +48,7 @@ pub fn lower_hir(ctx: HIRContext) -> BaseResult<MIRContext> {
 	return Ok(lowering_ctx.mir_ctx);
 }
 
-pub fn lower_hir_generic(ctx: &MIRLoweringContext, t: &Type, generic: &RawType) -> BaseResult<Type> {
+pub fn lower_hir_generic(_ctx: &MIRLoweringContext, t: &Type, generic: &RawType) -> BaseResult<Type> {
 	match generic {
 		RawType::Struct(a, b) => {
 			let mut lowered_container = LoweredStructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new() };
@@ -68,7 +66,7 @@ pub fn lower_hir_generic(ctx: &MIRLoweringContext, t: &Type, generic: &RawType) 
 
 pub fn lower_hir_type(ctx: &MIRLoweringContext, t: Type) -> BaseResult<Type> {
 	match &t {
-		Type::Generic(a, b, c) => {
+		Type::Generic(a, _, _) => {
 			return lower_hir_generic(ctx, &t, &ctx.hir_ctx.type_storage.types.vals[*a])
 		},
 

@@ -1,8 +1,7 @@
 use std::fmt::Display;
 
-use astoir_typing::{compacted::CompactedType};
 use compiler_errors::errs::{BaseResult};
-use compiler_typing::{raw::RawType, tree::Type};
+use compiler_typing::tree::Type;
 
 use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
 

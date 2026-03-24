@@ -1,6 +1,5 @@
 use astoir_hir::{nodes::HIRNode};
 use astoir_mir::{builder::{build_signed_int_const, build_static_string_const, build_unsigned_int_const}, vals::base::BaseMIRValue};
-use astoir_typing::compacted::CompactedType;
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_typing::SizedType;
 

@@ -1,6 +1,5 @@
 //! Utility functions to build instructions and more
 
-use astoir_typing::compacted::CompactedType;
 use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, errs::{BaseResult, base::BaseError}};
 use compiler_typing::{raw::RawType, tree::Type};
 

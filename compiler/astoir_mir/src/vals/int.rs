@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
+use compiler_errors::{errs::{BaseResult, base::BaseError}};
 use compiler_typing::raw::RawType;
 
 use crate::vals::base::{BaseMIRValue};

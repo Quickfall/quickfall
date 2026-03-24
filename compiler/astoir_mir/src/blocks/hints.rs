@@ -1,8 +1,7 @@
-use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_typing::tree::Type;
 
-use crate::{blocks::MIRBlockVariableSSAHint, vals::{base::BaseMIRValue, consts::MIRConstantValue}};
+use crate::{vals::consts::MIRConstantValue};
 
 
 /// A hint on a given value, contains constants or pointer types for example

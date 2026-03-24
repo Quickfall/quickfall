@@ -66,7 +66,7 @@ impl RawType {
 		}
 	}
 
-	pub fn can_transmute(&self, self_size: Vec<usize>, b: &RawType, b_sizes: Vec<usize>) -> bool {
+	pub fn can_transmute(&self, _self_size: Vec<usize>, b: &RawType, _b_sizes: Vec<usize>) -> bool {
 		match (self, b) {
 			(Self::Integer(_, _), Self::Integer(_, _)) => true,
 			(Self::SizedInteger(_), Self::Integer(_, _)) => true,

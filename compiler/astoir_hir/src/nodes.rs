@@ -1,7 +1,7 @@
 //! The nodes inside of the AstoIR HIR. 
 
-use compiler_errors::{IR_REQ_VARIABLE_ASSIGN, IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
-use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, POINTER_TYPE, STATIC_STR}, structs::RawStructTypeContainer, tree::Type};
+use compiler_errors::{IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
+use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, POINTER_TYPE}, structs::RawStructTypeContainer, tree::Type};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};

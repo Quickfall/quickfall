@@ -1,4 +1,4 @@
-use astoir_mir::{blocks::MIRBlockHeldInstruction, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::{self, MIRFloatValue}, int::MIRIntValue, ptr::MIRPointerValue}};
+use astoir_mir::{blocks::MIRBlockHeldInstruction, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::{MIRFloatValue}, int::MIRIntValue, ptr::MIRPointerValue}};
 use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_typing::raw::RawType;
 use inkwell::{IntPredicate, module::Linkage, types::StringRadix, values::{BasicValue, BasicValueEnum, FloatValue, IntValue}};

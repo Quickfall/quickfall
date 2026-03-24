@@ -1,6 +1,5 @@
 use astoir_hir::{nodes::HIRNode};
 use astoir_mir::{blocks::{refer::MIRBlockReference}, builder::{build_float_add, build_float_div, build_float_mul, build_float_sub, build_int_add, build_int_div, build_int_mul, build_int_sub}, vals::base::BaseMIRValue};
-use astoir_typing::{base::BaseType, compacted::CompactedType};
 use compiler_errors::{IR_INVALID_NODE_TYPE, IR_REQ_VARIABLE_ASSIGN, errs::{BaseResult, base::BaseError}};
 use compiler_typing::raw::RawType;
 use lexer::toks::math::MathOperator;

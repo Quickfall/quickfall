@@ -7,7 +7,7 @@ use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}}
 use crate::{MIRLoweringContext, values::lower_hir_value};
 
 pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
-	if let HIRNode::VarDeclaration { variable, var_type, default_val } = *node {
+	if let HIRNode::VarDeclaration { variable, var_type: _, default_val } = *node {
 		if default_val.is_some() {
 			let val = lower_hir_value(block_id, default_val.unwrap(), ctx)?;
 
@@ -54,8 +54,6 @@ pub fn lower_hir_variable_assignment(block: MIRBlockReference, node: Box<HIRNode
 	if let HIRNode::VarAssigment { variable, val } = *node {
 		let variable_ref = ctx.mir_ctx.blocks[block].get_variable_ref(variable)?;
  
-		let hint = ctx.mir_ctx.ssa_hints.get_hint(variable_ref.get_hint())?;
-
 		let val = lower_hir_value(block, val, ctx)?;
 
 		variable_ref.write(block, &mut ctx.mir_ctx, val)?;

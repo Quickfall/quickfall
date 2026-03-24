@@ -115,7 +115,7 @@ pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic
 		},
 
 		_ => {
-			if(took_generic) {
+			if took_generic {
 				return Ok(None);
 			}
 
@@ -183,7 +183,7 @@ pub fn parse_type_parameters_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 			break;
 		}
 
-		tokens[*ind].expects(LexerTokenType::Comma);
+		tokens[*ind].expects(LexerTokenType::Comma)?;
 		*ind += 1;
 	}
 

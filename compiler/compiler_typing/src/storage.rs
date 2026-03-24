@@ -4,7 +4,7 @@ use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_TYPE, errs::{BaseResult,
 use compiler_utils::{hash, utils::indexed::IndexStorage};
 use compiler_utils::hash::HashedString;
 
-use crate::{TypeParameterContainer, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, raw::RawType, references::TypeReference};
+use crate::{TypeParameterContainer, enums::{RawEnumTypeContainer}, raw::RawType, references::TypeReference};
 
 pub const SIGNED_INTEGER_8: u64 = hash!("s8");
 pub const SIGNED_INTEGER_16: u64 = hash!("s16");

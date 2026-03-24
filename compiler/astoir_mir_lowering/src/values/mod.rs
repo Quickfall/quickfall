@@ -1,6 +1,5 @@
 use astoir_hir::{nodes::HIRNode};
 use astoir_mir::{blocks::{refer::MIRBlockReference}, vals::base::BaseMIRValue};
-use astoir_typing::compacted::CompactedType;
 use compiler_errors::{EXPECTED_VAL_FUNC, IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 use crate::{MIRLoweringContext, funcs::lower_hir_function_call, math::lower_hir_math_operation, values::{booleans::{lower_hir_boolean_operator, lowering_hir_boolean_condition}, consts::lower_hir_literal}, vars::lower_hir_variable_reference_value};

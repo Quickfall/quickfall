@@ -2,7 +2,6 @@
 
 use std::fmt::Display;
 
-use astoir_typing::{base::BaseType, compacted::CompactedType};
 use compiler_typing::{raw::RawType, tree::Type};
 
 use crate::{blocks::{refer::MIRBlockReference}, ctx::MIRContext, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
@@ -193,7 +192,7 @@ impl MIRInstruction {
 impl Display for MIRInstruction {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
-			Self::StackAlloc { alloc_size, t } => writeln!(f, "stkalloc {}", *alloc_size)?,
+			Self::StackAlloc { alloc_size, t: _ } => writeln!(f, "stkalloc {}", *alloc_size)?,
 			Self::Load { value } => writeln!(f, "load {}", value)?,
 			Self::Store { variable, value } => writeln!(f, "store d{} s{}", variable, value)?,
 			
