@@ -33,4 +33,6 @@ pub trait SizedType {
 pub trait StructuredType {
 	fn get_function(&self, hash: u64) -> BaseResult<TypedFunction>;
 	fn get_function_hash(&self, hash: u64) -> BaseResult<usize>;
+	fn get_field(&self, hash: u64) -> BaseResult<TypeReference>;
+	fn get_field_hash(&self, hash: u64) -> BaseResult<usize>;
 }

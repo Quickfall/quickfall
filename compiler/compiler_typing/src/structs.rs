@@ -43,4 +43,22 @@ impl StructuredType for RawStructTypeContainer {
 
 		return Ok(k);
 	}
+
+	fn get_field(&self, hash: u64) -> BaseResult<TypeReference> {
+		let k = match self.fields.get_index(hash) {
+			Some(v) => v,
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		};
+
+		return Ok(self.fields.vals[k].clone());
+	} 
+
+	fn get_field_hash(&self, hash: u64) -> BaseResult<usize> {
+		let k = match self.fields.get_index(hash) {
+			Some(v) => v,
+			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		};
+
+		return Ok(k);
+	}
 }
