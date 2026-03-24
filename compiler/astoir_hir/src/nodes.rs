@@ -1,7 +1,7 @@
 //! The nodes inside of the AstoIR HIR. 
 
 use compiler_errors::{IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
-use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, POINTER_TYPE}, structs::RawStructTypeContainer, tree::Type};
+use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, tree::Type};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
@@ -102,7 +102,7 @@ impl HIRNode {
 			},
 
 			HIRNode::StringLiteral { value: _ } => {
-				let ind = match context.type_storage.types.get_index(POINTER_TYPE) {
+				let ind = match context.type_storage.types.get_index(STATIC_STR) {
 					Some(v) => v,
 					None => return None
 				};

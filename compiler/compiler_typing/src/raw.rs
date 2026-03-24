@@ -78,6 +78,8 @@ impl RawType {
 			(Self::Floating(_, _), Self::SizedInteger(_)) => true,
 			(Self::SizedInteger(_), Self::Floating(_, _)) => true,
 
+			(Self::StaticString, Self::Pointer) => true,
+
 			_ => false
 		}
 	}

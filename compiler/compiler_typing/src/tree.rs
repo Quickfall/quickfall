@@ -55,6 +55,40 @@ impl Type {
 				return storage.types.vals[*raw_type].can_transmute(sizes.clone(), &storage.types.vals[*raw_type2], sizes2.clone())
 			},
 
+			(Self::GenericLowered(base), Self::GenericLowered(base2)) => {
+				return base.can_transmute(vec![], base2, vec![]);
+			}
+
+
+			_ => false
+		}
+	}
+
+	pub fn is_truly_eq(&self, other: &Type) -> bool {
+		match (self, other) {
+			(Self::Pointer(is_array, _), Self::Pointer(is_array_2, _)) => {
+				return *is_array == *is_array_2;
+			},
+
+			(Self::Array(size, base), Self::Array(size2, base2)) => {
+				if size != size2 {
+					return false;
+				}
+
+				return base.is_truly_eq(base2);
+			},
+
+			(Self::Generic(raw_type, type_params, sizes), Self::Generic(raw_type2, type_params2, sizes2)) => {
+				return raw_type == raw_type2 && type_params == type_params2 && sizes == sizes2;
+			},
+
+			(Self::GenericLowered(base), Self::GenericLowered(base2)) => {
+				if *base == RawType::Pointer && *base2 == RawType::StaticString {
+					return true;
+				}
+
+				return base == base2;
+			}
 
 			_ => false
 		}
