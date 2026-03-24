@@ -1,6 +1,6 @@
 use astoir_mir::{blocks::MIRBlockHeldInstruction, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::{MIRFloatValue}, int::MIRIntValue, ptr::MIRPointerValue}};
 use compiler_errors::errs::{BaseResult, base::BaseError};
-use compiler_typing::{raw::RawType, tree::Type};
+use compiler_typing::{raw::RawType};
 use inkwell::{IntPredicate, module::Linkage, types::{BasicType, BasicTypeEnum, StringRadix}, values::{BasicValue, BasicValueEnum, FloatValue, IntValue}};
 
 use crate::{ctx::LLVMBridgeContext, llvm_to_base, llvm_to_base_returnless, utils::LLVMBasicValue};

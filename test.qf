@@ -1,0 +1,16 @@
+struct test {
+	s32 hai
+	s64 test2
+}
+
+shadowfunc myShadow(test t)
+shadowfunc we((s32*)[3] k)
+
+func main() {
+	var test mytest = new test {hai: 0, test2: 69}
+
+	var s32[3] testtwo = {3.69};
+
+	myShadow(mytest)
+	we(testtwo)
+}
