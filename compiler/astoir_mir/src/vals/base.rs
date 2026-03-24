@@ -13,7 +13,6 @@ pub struct BaseMIRValue {
 }
 
 impl BaseMIRValue {
-	#[deprecated(note = "This is meant for internal purposes, always use builders to safely create this!")]
 	pub fn new(val_index: usize, vtype: Type) -> Self {
 		return BaseMIRValue { val_index, vtype }
 	}
