@@ -37,7 +37,7 @@ pub enum ASTTreeNodeKind {
 
 	VariableReference(HashedString),
 
-	StructVariableInitializerValue { map: HashMap<HashedString, Box<ASTTreeNode>> },
+	StructVariableInitializerValue { struct_type: HashedString, map: HashMap<HashedString, Box<ASTTreeNode>> },
 
 	StructLayoutDeclaration { name: HashedString, layout: bool, members: Vec<Box<ASTTreeNode>>, type_params: TypeParameterContainer },
 	StructFieldMember { name: HashedString, member_type: ASTType },

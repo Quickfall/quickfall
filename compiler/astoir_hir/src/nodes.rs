@@ -25,6 +25,8 @@ pub enum HIRNode {
 	StructDeclaration { type_name: usize, container: RawStructTypeContainer, layout: bool },
 	StructFunctionDeclaration { func_name: usize, arguments: Vec<(u64, TypeReference)>, return_type: Option<TypeReference>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
 	
+	StructVariableInitializerValue { fields: Vec<Box<HIRNode>> },
+
 	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
 	
 	ShadowFunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type> },

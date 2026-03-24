@@ -45,7 +45,7 @@ impl RawType {
 			_ => 0
 		}
 	}
-
+	
 	pub fn is_signed(&self) -> bool {
 		match self {
 			Self::Integer(_, signed) => *signed,

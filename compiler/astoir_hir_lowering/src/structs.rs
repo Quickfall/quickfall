@@ -96,3 +96,9 @@ pub fn lower_ast_struct_declaration(context: &mut HIRContext, node: Box<ASTTreeN
 
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))
 }
+
+pub fn lower_ast_struct_initializer(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+	if let ASTTreeNodeKind::StructVariableInitializerValue { struct_type, map } = node.kind.clone() {
+		let struct_container = context.type_storage.get_type(struct_type.hash)?;
+	}
+}

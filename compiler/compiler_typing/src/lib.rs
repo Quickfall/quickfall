@@ -34,4 +34,7 @@ pub trait StructuredType {
 	fn get_function_hash(&self, hash: u64, storage: &TypeStorage) -> BaseResult<usize>;
 	fn get_field(&self, hash: u64, storage: &TypeStorage) -> BaseResult<TypeReference>;
 	fn get_field_hash(&self, hash: u64, storage: &TypeStorage) -> BaseResult<usize>;
+
+	fn get_fields(&self, storage: &TypeStorage) -> Vec<u64>;
+	fn get_functions(&self, storage: &TypeStorage) -> Vec<u64>;
 }
