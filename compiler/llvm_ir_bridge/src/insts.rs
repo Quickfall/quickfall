@@ -294,6 +294,20 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			Some(global.as_pointer_value().into())
 		},
 
+		MIRInstruction::StructInitializerConstant { struct_type, values } => {
+			let t = bridge.types.convert_raw(struct_type)?.into_struct_type();
+
+			let mut vals = vec![];
+
+			for value in values {
+				vals.push(bridge.values[&value.get_ssa_index()].clone().inner);
+			}
+
+			let val = t.const_named_struct(&vals).into();
+
+			Some(val)
+		}
+
 		MIRInstruction::Return { val } => {
 			if val.is_some() {
 				let v = bridge.values[&val.unwrap().get_ssa_index()].clone();
