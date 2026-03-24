@@ -3,6 +3,7 @@
 use std::fmt::Display;
 
 use astoir_typing::{base::BaseType, compacted::CompactedType};
+use compiler_typing::{raw::RawType, tree::Type};
 
 use crate::{blocks::{refer::MIRBlockReference}, ctx::MIRContext, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
 
@@ -11,7 +12,7 @@ pub mod val;
 /// An instruction inside of the MIR.
 #[derive(Clone)]
 pub enum MIRInstruction {
-	StackAlloc { alloc_size: usize, t: CompactedType },
+	StackAlloc { alloc_size: usize, t: RawType },
 	Load { value: MIRPointerValue },
 	Store { variable: MIRPointerValue, value: BaseMIRValue }, 
 
@@ -19,8 +20,8 @@ pub enum MIRInstruction {
 	DowncastInteger { val: MIRIntValue, size: usize }, // make size smaller
 	UpcastInteger { val: MIRIntValue, size: usize },  // make size bigger
 
-	DowncastFloat { val: MIRFloatValue, exponent: usize, fraction: usize }, 
-	UpcastFloat { val: MIRFloatValue, exponent: usize, fraction: usize }, 
+	DowncastFloat { val: MIRFloatValue, size: usize }, 
+	UpcastFloat { val: MIRFloatValue, size: usize }, 
 
 	// Arithmetrics
 	IntegerAdd { signed: bool, left: MIRIntValue, right: MIRIntValue }, 
@@ -56,8 +57,8 @@ pub enum MIRInstruction {
 	// Constants
 	IntegerSignedConstant { raw: i128, bitsize: usize },
 	IntegerUnsignedConstant { raw: u128, bitsize: usize }, 
-	FloatSignedConstant { raw: f64, exponent: usize, fraction: usize }, 
-	FloatUnsignedConstant { raw: f64, exponent: usize, fraction: usize }, 
+	FloatSignedConstant { raw: f64, size: usize }, 
+	FloatUnsignedConstant { raw: f64, size: usize }, 
 	FixedSignedConstant { raw: f64, number: usize, fraction: usize }, 
 	FixedUnsignedConstant { raw: f64, number: usize, fraction: usize }, 
 	StaticStringConstant { raw: String },
@@ -78,7 +79,7 @@ pub enum MIRInstruction {
 	PointerAdd { pointer: MIRPointerValue, right: MIRIntValue }, 
 	PointerSub { pointer: MIRPointerValue, right: MIRIntValue }, 
 
-	FuncArgumentGrab { ind: usize, argtype: CompactedType },
+	FuncArgumentGrab { ind: usize, argtype: Type },
 
 	/// Indicates to the IR processor that this given value's era is finished and thus we drop the value
 	MarkerEraDrop { value: BaseMIRValue },
@@ -111,9 +112,9 @@ impl MIRInstruction {
 		}
 	}
 
-	pub fn get_return_type(&self, ctx: &MIRContext) -> CompactedType {
+	pub fn get_return_type(&self, ctx: &MIRContext) -> Type {
 		match self {
-			Self::StackAlloc { .. } => return CompactedType::from(BaseType::Pointer),
+			Self::StackAlloc { .. } => return Type::GenericLowered(RawType::Pointer),
 			Self::Load { value} => {
 				let base: BaseMIRValue = value.clone().into();
 
@@ -122,47 +123,47 @@ impl MIRInstruction {
 				return hint.as_pointer().unwrap();
 			},
 
-			Self::DowncastInteger { val, size } => return CompactedType::from(BaseType::NumericIntegerType(*size as u64, val.signed)),
-			Self::UpcastInteger { val, size } => return CompactedType::from(BaseType::NumericIntegerType(*size as u64, val.signed)),
+			Self::DowncastInteger { val, size } => return Type::GenericLowered(RawType::Integer(*size, val.signed)),
+			Self::UpcastInteger { val, size } => return Type::GenericLowered(RawType::Integer(*size, val.signed)),
 
-			Self::DowncastFloat { val, exponent, fraction } => return CompactedType::from(BaseType::FloatingNumberType(*exponent as u64, *fraction as u64, val.signed)),
-			Self::UpcastFloat { val, exponent, fraction } => return CompactedType::from(BaseType::FloatingNumberType(*exponent as u64, *fraction as u64, val.signed)),
+			Self::DowncastFloat { val, size } => return Type::GenericLowered(RawType::Floating(*size, val.signed)),
+			Self::UpcastFloat { val, size } => return Type::GenericLowered(RawType::Floating(*size, val.signed)),
 
-			Self::IntegerAdd { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
-			Self::IntegerSub { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
-			Self::IntegerMul { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
-			Self::IntegerDiv { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
-			Self::IntegerMod { signed, left, right: _ } => return CompactedType::from(BaseType::NumericIntegerType(left.size as u64, *signed)), 
-			Self::IntegerNeg { val } => return CompactedType::from(BaseType::NumericIntegerType(val.size as u64, true)),
+			Self::IntegerAdd { signed, left, right: _ } => return Type::GenericLowered(RawType::Integer(left.size, *signed)), 
+			Self::IntegerSub { signed, left, right: _ } => return Type::GenericLowered(RawType::Integer(left.size, *signed)), 
+			Self::IntegerMul { signed, left, right: _ } => return Type::GenericLowered(RawType::Integer(left.size, *signed)), 
+			Self::IntegerDiv { signed, left, right: _ } => return Type::GenericLowered(RawType::Integer(left.size, *signed)), 
+			Self::IntegerMod { signed, left, right: _ } => return Type::GenericLowered(RawType::Integer(left.size, *signed)), 
+			Self::IntegerNeg { val } => return Type::GenericLowered(RawType::Integer(val.size, true)),
 
-			Self::FloatAdd { signed: _, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
-			Self::FloatSub { signed: _, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
-			Self::FloatMul { signed: _, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
-			Self::FloatDiv { signed: _, left, right: _ } => return CompactedType::from(BaseType::FloatingNumberType(left.exponent as u64, left.fraction as u64, left.signed)),
-			Self::FloatNeg { val } => return CompactedType::from(BaseType::FloatingNumberType(val.exponent as u64, val.fraction as u64, true)),
+			Self::FloatAdd { signed, left, right: _ } => return Type::GenericLowered(RawType::Floating(left.size, *signed)),
+			Self::FloatSub { signed, left, right: _ } => return Type::GenericLowered(RawType::Floating(left.size, *signed)),
+			Self::FloatMul { signed, left, right: _ } => return Type::GenericLowered(RawType::Floating(left.size, *signed)),
+			Self::FloatDiv { signed, left, right: _ } => return Type::GenericLowered(RawType::Floating(left.size, *signed)),
+			Self::FloatNeg { val } => return Type::GenericLowered(RawType::Floating(val.size, true)),
 
-			Self::BitwiseAnd { a, b: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
-			Self::BitwiseOr { a, b: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
-			Self::BitwiseXor { a, b: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
-			Self::BitwiseNot { val } => return CompactedType::from(BaseType::NumericIntegerType(val.size as u64, val.signed)),
+			Self::BitwiseAnd { a, b: _ } => return Type::GenericLowered(RawType::Integer(a.size, a.signed)),
+			Self::BitwiseOr { a, b: _ } => return Type::GenericLowered(RawType::Integer(a.size, a.signed)),
+			Self::BitwiseXor { a, b: _ } => return Type::GenericLowered(RawType::Integer(a.size, a.signed)),
+			Self::BitwiseNot { val } => return Type::GenericLowered(RawType::Integer(val.size, val.signed)),
 
-			Self::ShiftLeft { a, shift: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
-			Self::ShiftRight { a, shift: _ } => return CompactedType::from(BaseType::NumericIntegerType(a.size as u64, a.signed)),
+			Self::ShiftLeft { a, shift: _ } => return Type::GenericLowered(RawType::Integer(a.size, a.signed)),
+			Self::ShiftRight { a, shift: _ } => return Type::GenericLowered(RawType::Integer(a.size, a.signed)),
 
-			Self::CompEq { .. } => return CompactedType::from(BaseType::Boolean),
-			Self::CompNeg { .. } => return CompactedType::from(BaseType::Boolean),
-			Self::CompLt { .. } => return CompactedType::from(BaseType::Boolean),
-			Self::CompLe { .. } => return CompactedType::from(BaseType::Boolean),
-			Self::CompGt { .. } => return CompactedType::from(BaseType::Boolean),
-			Self::CompGe { .. } => return CompactedType::from(BaseType::Boolean),
+			Self::CompEq { .. } => return Type::GenericLowered(RawType::Boolean),
+			Self::CompNeg { .. } => return Type::GenericLowered(RawType::Boolean),
+			Self::CompLt { .. } => return Type::GenericLowered(RawType::Boolean),
+			Self::CompLe { .. } => return Type::GenericLowered(RawType::Boolean),
+			Self::CompGt { .. } => return Type::GenericLowered(RawType::Boolean),
+			Self::CompGe { .. } => return Type::GenericLowered(RawType::Boolean),
 
-			Self::IntegerSignedConstant { raw: _, bitsize } => return CompactedType::from(BaseType::NumericIntegerType(*bitsize as u64, true)),
-			Self::IntegerUnsignedConstant { raw: _, bitsize } => return CompactedType::from(BaseType::NumericIntegerType(*bitsize as u64, true)),
-			Self::FloatUnsignedConstant { raw: _, exponent, fraction } => return CompactedType::from(BaseType::FloatingNumberType(*exponent as u64, *fraction as u64, false)),
-			Self::FloatSignedConstant { raw: _, exponent, fraction } => return CompactedType::from(BaseType::FloatingNumberType(*exponent as u64, *fraction as u64, true)),
-			Self::FixedSignedConstant { raw: _, number, fraction } => return CompactedType::from(BaseType::NumericIntegerType(*number as u64 + *fraction as u64, true)),
-			Self::FixedUnsignedConstant { raw: _, number, fraction } => return CompactedType::from(BaseType::NumericIntegerType(*number as u64 + *fraction as u64, false)),
-			Self::StaticStringConstant { raw: _ } => return CompactedType::from(BaseType::Pointer),
+			Self::IntegerSignedConstant { raw: _, bitsize } => return Type::GenericLowered(RawType::Integer(*bitsize, true)),
+			Self::IntegerUnsignedConstant { raw: _, bitsize } => return Type::GenericLowered(RawType::Integer(*bitsize, false)),
+			Self::FloatUnsignedConstant { raw: _, size } => return Type::GenericLowered(RawType::Floating(*size, false)),
+			Self::FloatSignedConstant { raw: _, size } => return Type::GenericLowered(RawType::Floating(*size, true)),
+			Self::FixedSignedConstant { raw: _, number, fraction } => return Type::GenericLowered(RawType::FixedPoint(*number, *fraction, true)),
+			Self::FixedUnsignedConstant { raw: _, number, fraction } => return Type::GenericLowered(RawType::FixedPoint(*number, *fraction, false)),
+			Self::StaticStringConstant { raw: _ } => return Type::GenericLowered(RawType::Pointer),
 
 			Self::Phi { choices } => {
 				return choices[0].1.vtype.clone();
@@ -176,11 +177,11 @@ impl MIRInstruction {
 				return func.return_type.clone().unwrap();
 			}
 			
-			Self::FieldPointer { .. } => return CompactedType::from(BaseType::Pointer),
-			Self::IndexPointer { .. } => return CompactedType::from(BaseType::Pointer),
+			Self::FieldPointer { .. } => return Type::GenericLowered(RawType::Pointer),
+			Self::IndexPointer { .. } => return Type::GenericLowered(RawType::Pointer),
 
-			Self::PointerAdd { .. } => return CompactedType::from(BaseType::Pointer),
-			Self::PointerSub { .. } => return CompactedType::from(BaseType::Pointer), 
+			Self::PointerAdd { .. } => return Type::GenericLowered(RawType::Pointer),
+			Self::PointerSub { .. } => return Type::GenericLowered(RawType::Pointer), 
 
 			Self::FuncArgumentGrab { ind: _, argtype } => argtype.clone(),
 
@@ -197,9 +198,9 @@ impl Display for MIRInstruction {
 			Self::Store { variable, value } => writeln!(f, "store d{} s{}", variable, value)?,
 			
 			Self::DowncastInteger { val, size } => writeln!(f, "dintcast {} {}", val, size)?,
-			Self::DowncastFloat { val, exponent, fraction } => writeln!(f, "dfcast {} {} {}", val, exponent, fraction)?,
+			Self::DowncastFloat { val, size } => writeln!(f, "dfcast {} {}", val, size)?,
 			Self::UpcastInteger { val, size } => writeln!(f, "uintcast {} {}", val, size)?,
-			Self::UpcastFloat { val, exponent, fraction } => writeln!(f, "ufcast {} {} {}", val, exponent, fraction)?,
+			Self::UpcastFloat { val, size } => writeln!(f, "ufcast {} {}", val, size)?,
 
 			Self::IntegerAdd { signed, left, right } => writeln!(f, "iadd s{} {} {}", signed, left, right)?,
 			Self::IntegerSub { signed, left, right } => writeln!(f, "isub s{} {} {}", signed, left, right)?,
@@ -232,8 +233,8 @@ impl Display for MIRInstruction {
 			Self::IntegerSignedConstant { raw, bitsize } => writeln!(f, "constints {} {}", raw, bitsize)?,
 			Self::IntegerUnsignedConstant { raw, bitsize } => writeln!(f, "constintu {} {}", raw, bitsize)?,
 
-			Self::FloatSignedConstant { raw, exponent, fraction } => writeln!(f, "constfs {} {} {}", raw, exponent, fraction)?,
-			Self::FloatUnsignedConstant { raw, exponent, fraction } => writeln!(f, "constfu {} {} {}", raw, exponent, fraction)?,
+			Self::FloatSignedConstant { raw, size } => writeln!(f, "constfs {} {}", raw, size)?,
+			Self::FloatUnsignedConstant { raw, size } => writeln!(f, "constfu {} {}", raw, size)?,
 
 			Self::FixedSignedConstant { raw, number, fraction } => writeln!(f, "constffs {} {} {}", raw, number, fraction)?,
 			Self::FixedUnsignedConstant { raw, number, fraction } => writeln!(f, "constffu {} {} {}", raw, number, fraction)?,

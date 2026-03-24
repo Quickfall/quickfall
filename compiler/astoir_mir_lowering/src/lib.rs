@@ -1,6 +1,9 @@
+use std::any::TypeId;
+
 use astoir_hir::{ctx::HIRContext, nodes::HIRNode};
 use astoir_mir::ctx::MIRContext;
 use compiler_errors::{AST_INVALID_TREE, errs::{BaseResult, IS_MIR_STAGE, base::BaseError}};
+use compiler_typing::tree::Type;
 
 use crate::funcs::{lower_hir_function_decl, lower_hir_shadow_decl};
 
@@ -44,4 +47,8 @@ pub fn lower_hir(ctx: HIRContext) -> BaseResult<MIRContext> {
 	}
 
 	return Ok(lowering_ctx.mir_ctx);
+}
+
+pub fn lower_hir_type(ctx: &MIRLoweringContext, t: Type) -> BaseResult<Type> {
+	return Ok(t);
 }

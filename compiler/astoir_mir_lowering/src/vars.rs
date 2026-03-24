@@ -1,24 +1,15 @@
 //! Variable related lowering
 
-use std::f32::consts::E;
-
 use astoir_hir::{nodes::HIRNode};
-use astoir_mir::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference}, transmutation::transmute_value, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
-use astoir_typing::compacted::CompactedType;
+use astoir_mir::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
 use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
 use crate::{MIRLoweringContext, values::lower_hir_value};
 
 pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
 	if let HIRNode::VarDeclaration { variable, var_type, default_val } = *node {
-		let lowered = CompactedType::from(var_type);
-
 		if default_val.is_some() {
-			let val = lower_hir_value(block_id, default_val.unwrap(), ctx, Some(lowered.clone()))?;
-
-			if val.vtype.can_transmute(&lowered) {
-				// TODO: allow transmutation here
-			}
+			let val = lower_hir_value(block_id, default_val.unwrap(), ctx)?;
 
 			ctx.mir_ctx.blocks[block_id].variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: Some(val) });
 		} else {
@@ -51,22 +42,12 @@ pub fn lower_hir_variable_reference(block: MIRBlockReference, node: &Box<HIRNode
 
 
 /// Lowers the HIR variable reference as if to obtain it's value. Requires a load
-pub fn lower_hir_variable_reference_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext, expected: Option<CompactedType>) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_variable_reference_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	let ptr = lower_hir_variable_reference(block, &node, ctx)?;
 	
 	let read = ptr.read(block, &mut ctx.mir_ctx)?;
 
-	if expected.is_some() {
-		let expected = expected.unwrap();
-
-		if !read.vtype.can_transmute(&expected) {
-			return Err(BaseError::err("Cannot transmute to given type!".to_string()));
-		}
-
-		return Ok(transmute_value(read, expected.base, &mut ctx.mir_ctx)?);		
-	}
-
-	return Ok(ptr.read(block, &mut ctx.mir_ctx)?);
+	return Ok(read);
 }
 
 pub fn lower_hir_variable_assignment(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
@@ -75,7 +56,7 @@ pub fn lower_hir_variable_assignment(block: MIRBlockReference, node: Box<HIRNode
  
 		let hint = ctx.mir_ctx.ssa_hints.get_hint(variable_ref.get_hint())?;
 
-		let val = lower_hir_value(block, val, ctx, Some(hint.get_type()?))?;
+		let val = lower_hir_value(block, val, ctx)?;
 
 		variable_ref.write(block, &mut ctx.mir_ctx, val)?;
 		return Ok(true);

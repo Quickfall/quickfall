@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
+use compiler_typing::tree::Type;
 use compiler_utils::hash::HashedString;
 
 use crate::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::{self, MIRBlockReference}}, ctx::MIRContext, vals::base::BaseMIRValue};
@@ -17,12 +18,12 @@ pub struct MIRFunction {
 	/// This will prevent the function from being usable by normal function calls if true
 	pub is_from_struct: bool, 
 
-	pub arguments: Vec<CompactedType>,
-	pub return_type: Option<CompactedType>
+	pub arguments: Vec<Type>,
+	pub return_type: Option<Type>
 }
 
 impl MIRFunction {
-	pub fn new(name: String, arguments: Vec<CompactedType>, return_type: Option<CompactedType>, is_from_struct: bool, ctx: &MIRContext) -> Self {
+	pub fn new(name: String, arguments: Vec<Type>, return_type: Option<Type>, is_from_struct: bool, ctx: &MIRContext) -> Self {
 		return MIRFunction { blocks: vec![], name: HashedString::new(name), arguments, return_type, is_from_struct, id: ctx.functions.len()}
 	}
 

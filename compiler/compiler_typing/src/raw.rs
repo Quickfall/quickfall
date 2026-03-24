@@ -1,9 +1,9 @@
 //! The raw type declarations
 
-use crate::{SizedType, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, structs::RawStructTypeContainer, tree::Type, utils::get_pointer_size};
+use crate::{SizedType, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, structs::{LoweredStructTypeContainer, RawStructTypeContainer}, tree::Type, utils::get_pointer_size};
 
 /// The raw types. Are also named generics
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum RawType {
 	Integer(usize, bool),
 	Floating(usize, bool),
@@ -19,6 +19,8 @@ pub enum RawType {
 	
 	Enum(RawEnumTypeContainer),
 	EnumEntry(RawEnumEntryContainer),
+
+	LoweredStruct(bool, LoweredStructTypeContainer),
 
 	SizedInteger(bool),
 	SizedFloating(bool),
@@ -39,6 +41,16 @@ impl RawType {
 			RawType::EnumEntry(container) => storage.types.vals[container.parent].get_type_params_count(storage),
 
 			_ => 0
+		}
+	}
+
+	pub fn is_signed(&self) -> bool {
+		match self {
+			Self::Integer(_, signed) => *signed,
+			Self::Floating(_, signed) => *signed,
+			Self::FixedPoint(_, _, signed) => *signed,
+
+			_ => false
 		}
 	}
 }

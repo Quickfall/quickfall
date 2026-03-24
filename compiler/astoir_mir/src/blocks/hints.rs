@@ -1,5 +1,6 @@
 use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
+use compiler_typing::tree::Type;
 
 use crate::{blocks::MIRBlockVariableSSAHint, vals::{base::BaseMIRValue, consts::MIRConstantValue}};
 
@@ -8,8 +9,8 @@ use crate::{blocks::MIRBlockVariableSSAHint, vals::{base::BaseMIRValue, consts::
 #[derive(Clone)]
 pub enum MIRValueHint {
 	Constant(MIRConstantValue),
-	Pointer(CompactedType),
-	Value(CompactedType)
+	Pointer(Type),
+	Value(Type)
 }
 
 impl MIRValueHint {
@@ -28,7 +29,7 @@ impl MIRValueHint {
 		}
 	}
 
-	pub fn get_type(&self) -> BaseResult<CompactedType> {
+	pub fn get_type(&self) -> BaseResult<Type> {
 		match self {
 			MIRValueHint::Pointer(e) => Ok(e.clone()),
 			MIRValueHint::Value(e) => Ok(e.clone()),
@@ -36,21 +37,21 @@ impl MIRValueHint {
 		}
 	}
 
-	pub fn as_pointer(&self) -> BaseResult<CompactedType> {
+	pub fn as_pointer(&self) -> BaseResult<Type> {
 		match self {
 			MIRValueHint::Pointer(e) => Ok(e.clone()),
 			_ => Err(BaseError::critical("Cannot use as_pointer on a non pointer!".to_string()))
 		}
 	}
 
-	pub fn as_value(&self) -> BaseResult<CompactedType> {
+	pub fn as_value(&self) -> BaseResult<Type> {
 		match self {
 			MIRValueHint::Value(e) => Ok(e.clone()),
 			_ => Err(BaseError::critical("Cannot use as_value on a non value!".to_string()))
 		}
 	}
 
-	pub fn from_ptr(val: CompactedType) -> Self {
+	pub fn from_ptr(val: Type) -> Self {
 		return MIRValueHint::Pointer(val)
 	}
 
@@ -62,7 +63,7 @@ impl Into<MIRValueHint> for MIRConstantValue {
 	}
 }
 
-impl Into<MIRValueHint> for CompactedType {
+impl Into<MIRValueHint> for Type {
 	fn into(self) -> MIRValueHint {
 		return MIRValueHint::Value(self)
 	}

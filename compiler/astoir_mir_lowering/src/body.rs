@@ -13,7 +13,7 @@ pub fn lower_hir_body_member(block: MIRBlockReference, node: Box<HIRNode>, ctx: 
 				return Err(BaseError::err(MATH_OP_NO_ASSIGN!().to_string()))
 			}
 
-			lower_hir_math_operation(block, node, ctx, None)?;
+			lower_hir_math_operation(block, node, ctx)?;
 
 			return Ok(true);
 		},
@@ -21,14 +21,14 @@ pub fn lower_hir_body_member(block: MIRBlockReference, node: Box<HIRNode>, ctx: 
 		HIRNode::ForBlock { .. } => lower_hir_for_loop(block, node, ctx),
 		HIRNode::IfStatement { .. } => lower_hir_if_statement(block, node, ctx),
 		HIRNode::FunctionCall { .. } => {
-			lower_hir_function_call(block, node, ctx, None)?;
+			lower_hir_function_call(block, node, ctx)?;
 
 			return Ok(true)
 		},
 
 		HIRNode::ReturnStatement { value } => {
 			if value.is_some() {
-				let val = lower_hir_value(block, value.unwrap(), ctx, None)?;
+				let val = lower_hir_value(block, value.unwrap(), ctx)?;
 
 				ctx.mir_ctx.append_inst(MIRInstruction::Return { val: Some(val) });
 				return Ok(true);

@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
+use compiler_typing::raw::RawType;
 
 use crate::vals::base::{BaseMIRValue};
 
@@ -8,16 +9,14 @@ use crate::vals::base::{BaseMIRValue};
 pub struct MIRFloatValue {
 	base: BaseMIRValue,
 	pub signed: bool,
-	pub exponent: usize,
-	pub fraction: usize,
+	pub size: usize
 }
 
 impl MIRFloatValue {
 	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if base.vtype.base.is_floating() {
-			let sizes = base.vtype.base.get_floating_size()?;
+		if let RawType::Floating(size, signed) = base.vtype.as_generic_lowered()? {
 
-			return Ok(MIRFloatValue { base: base.clone(), exponent: sizes.0, fraction: sizes.1, signed: base.vtype.base.is_signed() })
+			return Ok(MIRFloatValue { base: base.clone(), size, signed })
 		}
 
 		return Err(BaseError::critical(IR_CASTING_ERROR!().to_string()))

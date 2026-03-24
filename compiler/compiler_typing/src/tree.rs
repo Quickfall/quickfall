@@ -12,6 +12,9 @@ pub enum Type {
 	/// 2: The size specifiers
 	Generic(RawTypeReference, Vec<Box<Type>>, Vec<usize>), // Potential lowering to base-sized
 
+	/// A generic type node but lowered. Represents a concrete type.
+	GenericLowered(RawType),
+
 	/// A pointer type node. Represents a pointer version
 	/// 0: Is the pointer a poiner of arrays
 	/// 1: Inner type
@@ -51,6 +54,13 @@ impl Type {
 			_ => false
 		}
 	}
+
+	pub fn as_generic_lowered(&self) -> BaseResult<RawType> {
+		match self {
+			Type::GenericLowered(a) => return Ok(a.clone()),
+			_ => return Err(BaseError::err("Not lowered generic".to_string()))
+		}
+	}	
 
 	pub fn get_inner_type(&self) -> Box<Type> {
 		match self {
@@ -99,7 +109,7 @@ impl Type {
 			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
 		}
 	}
-
+	
 }
 
 impl SizedType for Type {
@@ -107,7 +117,8 @@ impl SizedType for Type {
 		return match self {
 			Self::Array(size, inner) => inner.clone().get_size(t, compacted_size, storage) * *size,
 			Self::Pointer(_, _) => get_pointer_size(),
-			Self::Generic(_, _, _) => 0 // TODO: add raw storage check
+			Self::Generic(e, _, _) => storage.types.vals[*e].get_size(t, compacted_size, storage), 
+			Self::GenericLowered(e) => e.get_size(t, compacted_size, storage)
 		}
 	}
 }

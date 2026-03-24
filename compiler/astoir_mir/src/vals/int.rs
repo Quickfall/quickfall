@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
+use compiler_typing::raw::RawType;
 
 use crate::vals::base::{BaseMIRValue};
 
@@ -13,8 +14,8 @@ pub struct MIRIntValue {
 
 impl MIRIntValue {
 	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if base.vtype.base.is_integer() | base.vtype.base.is_bool() {
-			return Ok(MIRIntValue { base: base.clone(), size: base.vtype.base.get_size()?, signed: base.vtype.base.is_signed() })
+		if let RawType::Integer(size, signed) = base.vtype.clone().as_generic_lowered()? {
+			return Ok(MIRIntValue { base: base.clone(), size, signed })
 		}
 
 		return Err(BaseError::critical(IR_CASTING_ERROR!().to_string()))
