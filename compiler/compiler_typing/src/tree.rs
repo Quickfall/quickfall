@@ -1,8 +1,9 @@
 //! The typing tree declarations. Allows for types such as an array of pointer arrays.
 
 use compiler_errors::errs::{BaseResult, base::BaseError};
+use compiler_utils::hash;
 
-use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, storage::{self, TypeStorage}, utils::get_pointer_size};
+use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{self, TypeStorage}, utils::get_pointer_size};
 
 #[derive(Clone, PartialEq, Debug)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
@@ -88,6 +89,13 @@ impl Type {
 			RawType::Struct(_, container) => Ok((container.get_function_hash(hash)?, container.get_function(hash)?)),
 			_ => Err(BaseError::err("This cannot contain functions!".to_string()))
 		};
+	}
+
+	pub fn get_field(&self, storage: &TypeStorage, hash: u64) -> BaseResult<(usize, TypeReference)> {
+		return match self.get_generic(storage) {
+			RawType::Struct(_, container) => Ok((container.get_field_hash(hash)?, container.get_field(hash)?)),
+			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
+		}
 	}
 
 }
