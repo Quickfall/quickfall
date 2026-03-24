@@ -11,7 +11,11 @@ pub fn lower_ast_math_operation(context: &HIRContext, curr_ctx: &HIRBranchedCont
 		}
 
 		let left = lower_ast_value(context, curr_ctx, lval)?;
-		let right = lower_ast_value(context, curr_ctx, rval)?;
+
+		let right = match lower_ast_value(context, curr_ctx, rval)?.use_as(context, curr_ctx, left.get_node_type(context, curr_ctx).unwrap()) {
+			Ok(v) => Box::new(v),
+			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
+		};
 
 		return Ok(Box::new(HIRNode::MathOperation { left, right, operation: operator, assignment: assigns }))		
 	} 

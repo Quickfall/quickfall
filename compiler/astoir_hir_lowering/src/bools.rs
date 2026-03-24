@@ -18,7 +18,11 @@ pub fn lower_ast_boolean_condition(context: &HIRContext, curr_ctx: &HIRBranchedC
 pub fn lower_ast_operator_condition(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::OperatorBasedConditionMember { lval, rval, operator } = node.kind.clone() {
 		let left_value = lower_ast_value(context, curr_ctx, lval)?;
-		let right_value = lower_ast_value(context, curr_ctx, rval)?;
+		
+		let right_value = match lower_ast_value(context, curr_ctx, rval)?.use_as(context, curr_ctx, left_value.get_node_type(context, curr_ctx).unwrap()) {
+			Ok(v) => Box::new(v),
+			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
+		};
 
 		return Ok(Box::new(HIRNode::BooleanOperator { left: left_value, right: right_value, operator }))
 	}

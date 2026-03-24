@@ -18,7 +18,11 @@ impl MIRIntValue {
 			return Ok(MIRIntValue { base: base.clone(), size, signed })
 		}
 
-		return Err(BaseError::critical(IR_CASTING_ERROR!().to_string()))
+		if let RawType::Boolean = base.vtype.clone().as_generic_lowered()? {
+			return Ok(MIRIntValue { base: base.clone(), signed: false, size: 1 })
+		}
+
+		return Err(BaseError::critical(format!("{:#?}", base.vtype.clone())))
 	}
 }
 

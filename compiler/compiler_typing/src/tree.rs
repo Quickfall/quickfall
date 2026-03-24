@@ -73,10 +73,7 @@ impl Type {
 			Type::Pointer(_, inner) => inner.clone(),
 
 			_ => {
-				println!("Error! Compiler tried using get_inner_type on bottom type! Returning bottom type incase!");
-				println!("This error will soon be replaced to trigger a panic!");
-
-				Box::new(self.clone())
+				panic!("Error! Compiler tried using get_inner_type on bottom type! Returning bottom type incase!");
 			}
 		}
 	}
@@ -93,6 +90,10 @@ impl Type {
 		if let Type::Generic(raw, _, _) = self {
 			return storage.types.get_ind(*raw).clone();
 		};
+
+		if let Type::GenericLowered(raw) = self {
+			return raw.clone();
+		}
 
 		return self.get_inner_type().get_generic(storage);
 	}
