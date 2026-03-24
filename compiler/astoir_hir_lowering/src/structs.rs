@@ -132,7 +132,7 @@ pub fn lower_ast_struct_initializer(context: &mut HIRContext, curr_ctx: &HIRBran
 
 			let val = lower_ast_value(context, curr_ctx, map[&id].clone())?;
 
-			let val = match val.use_as(context, curr_ctx, tt) {
+			let val = match val.use_as(context, curr_ctx, tt.clone()) {
 				Ok(v) => Box::new(v),
 				Err(e) =>return Err(CompilerError::from_base(e, &node.start, &node.end))
 			};
@@ -140,7 +140,7 @@ pub fn lower_ast_struct_initializer(context: &mut HIRContext, curr_ctx: &HIRBran
 			vals.push(val)
 		}
 
-		return Ok(Box::new(HIRNode::StructVariableInitializerValue { t: hir_type.get_generic(&context.type_storage), fields: vals }))
+		return Ok(Box::new(HIRNode::StructVariableInitializerValue { t: hir_type, fields: vals }))
 	}
 
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))

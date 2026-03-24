@@ -48,13 +48,13 @@ pub fn lower_hir(ctx: HIRContext) -> BaseResult<MIRContext> {
 	return Ok(lowering_ctx.mir_ctx);
 }
 
-pub fn lower_hir_generic(_ctx: &MIRLoweringContext, t: &Type, generic: &RawType) -> BaseResult<Type> {
+pub fn lower_hir_generic(ctx: &MIRLoweringContext, t: &Type, generic: &RawType) -> BaseResult<Type> {
 	match generic {
 		RawType::Struct(a, b) => {
 			let mut lowered_container = LoweredStructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new() };
 
 			for field in &b.fields.vals {
-				lowered_container.fields.vals.push(field.clone().resolve(t));
+				lowered_container.fields.vals.push(lower_hir_type(ctx, field.clone().resolve(t))?);
 			}
 
 			return Ok(Type::GenericLowered(RawType::LoweredStruct(*a, lowered_container)));

@@ -3,7 +3,7 @@
 use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, errs::{BaseResult, base::BaseError}};
 use compiler_typing::{raw::RawType, tree::Type};
 
-use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue}};
+use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::MIRInstruction, vals::{arrays::MIRArrayValue, base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue}};
 
 pub fn build_stack_alloc(ctx: &mut MIRContext, size: usize, t: RawType) -> BaseResult<MIRPointerValue> {
 	let res = ctx.append_inst(MIRInstruction::StackAlloc { alloc_size: size, t: t.clone() }).get()?;
@@ -396,6 +396,18 @@ pub fn build_static_struct_const(ctx: &mut MIRContext, struct_type: RawType, val
 	let res = ctx.append_inst(MIRInstruction::StructInitializerConstant { struct_type, values }).get()?;
 
 	return res.as_struct();
+}
+
+pub fn build_static_array_const(ctx: &mut MIRContext, values: Vec<BaseMIRValue>) -> BaseResult<MIRArrayValue> {
+	let res = ctx.append_inst(MIRInstruction::ArrayInitializerConstant { values }).get()?;
+
+	return res.as_array();
+}
+
+pub fn build_static_array_one_const(ctx: &mut MIRContext, val: BaseMIRValue, size: usize) -> BaseResult<MIRArrayValue> {
+	let res = ctx.append_inst(MIRInstruction::ArrayInitializerConstantSame { size, val }).get()?;
+
+	return res.as_array();
 }
 
 pub fn build_argument_grab(ctx: &mut MIRContext, index: usize, t: Type) -> BaseResult<BaseMIRValue> {

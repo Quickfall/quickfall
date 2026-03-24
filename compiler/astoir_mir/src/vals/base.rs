@@ -3,7 +3,7 @@ use std::fmt::Display;
 use compiler_errors::errs::{BaseResult};
 use compiler_typing::tree::Type;
 
-use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue};
+use crate::vals::{arrays::MIRArrayValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue};
 
 /// Represents a basic value in the MIR.
 #[derive(Clone, Debug)]
@@ -31,6 +31,10 @@ impl BaseMIRValue {
 
 	pub fn as_struct(&self) -> BaseResult<MIRStructValue> {
 		return Ok(MIRStructValue::new(self.clone())?)
+	}
+
+	pub fn as_array(&self) -> BaseResult<MIRArrayValue> {
+		return Ok(MIRArrayValue::new(self.clone())?);
 	}
 
 	pub fn get_ssa_index(&self) -> usize {

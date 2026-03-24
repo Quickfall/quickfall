@@ -63,6 +63,8 @@ pub enum MIRInstruction {
 	StaticStringConstant { raw: String },
 
 	StructInitializerConstant { struct_type: RawType, values: Vec<BaseMIRValue> },
+	ArrayInitializerConstant { values: Vec<BaseMIRValue> },
+	ArrayInitializerConstantSame { size: usize, val: BaseMIRValue },
 
 	// Control
 	Return { val: Option<BaseMIRValue> }, 
@@ -167,6 +169,9 @@ impl MIRInstruction {
 			Self::StaticStringConstant { raw: _ } => return Type::GenericLowered(RawType::Pointer),
 			Self::StructInitializerConstant { struct_type, values: _ } => return Type::GenericLowered(struct_type.clone()),
 
+			Self::ArrayInitializerConstant { values } => return Type::Array(values.len(), Box::new(values[0].vtype.clone())),
+			Self::ArrayInitializerConstantSame { size, val } => return Type::Array(*size, Box::new(val.vtype.clone())),
+
 			Self::Phi { choices } => {
 				return choices[0].1.vtype.clone();
 			},
@@ -249,7 +254,19 @@ impl Display for MIRInstruction {
 				for v in values {
 					write!(f, "{}", v)?;
 				}
-			}
+			},
+
+			Self::ArrayInitializerConstant { values } => {
+				writeln!(f, "constarrinitrz ")?;
+
+				for v in values {
+					write!(f, "{}", v)?;
+				}
+			},
+
+			Self::ArrayInitializerConstantSame { size, val } => {
+				writeln!(f, "constarrinitrzsm {} {}", size, val)?
+			},
 
 			Self::Return { val } => {
 				if val.is_some() {

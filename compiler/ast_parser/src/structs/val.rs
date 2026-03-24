@@ -28,14 +28,19 @@ pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> Com
 
 		map.insert(SelfHash { hash: HashedString::new(field_name.0).hash }, value);
 
-		*ind += 1;
+		println!("{:#?}", tokens[*ind]);
+
+		//*ind += 1;
 
 		if tokens[*ind].tok_type == LexerTokenType::BracketClose {
 			break;
 		}
 
 		tokens[*ind].expects(LexerTokenType::Comma)?;
+		*ind += 1;
 	}
+
+	*ind += 1;
 
 	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructVariableInitializerValue { struct_type: t, map }, start, tokens[*ind].get_end_pos())))
 }

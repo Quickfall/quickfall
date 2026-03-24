@@ -144,6 +144,10 @@ pub fn lower_ast_value(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, 
 			return lower_ast_boolean_condition(context, curr_ctx, node)
 		},
 
+		ASTTreeNodeKind::ArrayVariableInitializerValue { .. } | ASTTreeNodeKind::ArrayVariableInitializerValueSameValue { .. } => {
+			return lower_ast_array_init(context, curr_ctx, node)
+		}
+
 		ASTTreeNodeKind::StructVariableInitializerValue { .. } => {
 			return lower_ast_struct_initializer(context, curr_ctx, node)
 		}
@@ -162,4 +166,22 @@ pub fn lower_ast_value(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, 
 
 		_ => make_invalid_type_err!(node)
 	}
+}
+
+pub fn lower_ast_array_init(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+	if let ASTTreeNodeKind::ArrayVariableInitializerValue { vals } = node.kind.clone() {
+		let mut values = vec![];
+
+		for val in vals {
+			values.push(lower_ast_value(context, curr_ctx, val)?);
+		}
+
+		return Ok(Box::new(HIRNode::ArrayVariableInitializerValue { vals: values }))
+	}
+
+	if let ASTTreeNodeKind::ArrayVariableInitializerValueSameValue { size, v } = node.kind {
+		return Ok(Box::new(HIRNode::ArrayVariableInitializerValueSameValue { size, val: lower_ast_value(context, curr_ctx, v)? }))
+	}
+
+	make_invalid_type_err!(node);
 }

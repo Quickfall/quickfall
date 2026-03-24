@@ -1,7 +1,7 @@
 use astoir_mir::{blocks::MIRBlockHeldInstruction, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::{MIRFloatValue}, int::MIRIntValue, ptr::MIRPointerValue}};
 use compiler_errors::errs::{BaseResult, base::BaseError};
-use compiler_typing::raw::RawType;
-use inkwell::{IntPredicate, module::Linkage, types::StringRadix, values::{BasicValue, BasicValueEnum, FloatValue, IntValue}};
+use compiler_typing::{raw::RawType, tree::Type};
+use inkwell::{IntPredicate, module::Linkage, types::{BasicType, BasicTypeEnum, StringRadix}, values::{BasicValue, BasicValueEnum, FloatValue, IntValue}};
 
 use crate::{ctx::LLVMBridgeContext, llvm_to_base, llvm_to_base_returnless, utils::LLVMBasicValue};
 
@@ -306,7 +306,130 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let val = t.const_named_struct(&vals).into();
 
 			Some(val)
-		}
+		},
+
+		MIRInstruction::ArrayInitializerConstant { values } => {
+			let k = bridge.types.convert(values[0].vtype.clone())?;
+
+			let ke = match k.as_basic_type_enum() {
+
+				BasicTypeEnum::IntType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_int_value())
+					}
+
+					v.const_array(&vals)
+				},
+				
+				BasicTypeEnum::FloatType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_float_value())
+					}
+
+					v.const_array(&vals)
+				},
+				
+				BasicTypeEnum::ArrayType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_array_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				BasicTypeEnum::PointerType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_pointer_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				
+				BasicTypeEnum::StructType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_struct_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				_ => return Err(BaseError::err("Got LLVM invalid type!".to_string()))
+			};
+
+			Some(ke.into())
+		},
+
+		MIRInstruction::ArrayInitializerConstantSame { size, val } => {
+			let k = bridge.types.convert(val.vtype.clone())?;
+
+			let ke = match k.as_basic_type_enum() {
+
+				BasicTypeEnum::IntType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_int_value())
+					}
+
+					v.const_array(&vals)
+				},
+				
+				BasicTypeEnum::FloatType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_float_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				BasicTypeEnum::StructType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_struct_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				BasicTypeEnum::ArrayType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_array_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				BasicTypeEnum::PointerType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_pointer_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				_ => return Err(BaseError::err("Got LLVM invalid type!".to_string()))
+			};
+			
+			Some(ke.into())
+		},
 
 		MIRInstruction::Return { val } => {
 			if val.is_some() {

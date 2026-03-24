@@ -6,7 +6,7 @@ use compiler_typing::TypeParameterContainer;
 use compiler_utils::hash::HashedString;
 use lexer::{token::{LexerToken, LexerTokenType}, toks::math::MathOperator};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ParsingASTTypeMember {
 	Generic(String, Vec<Box<ASTType>>, Vec<usize>),
 	Pointer(bool),
@@ -80,11 +80,19 @@ pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic
 			return Ok(Some(parse_type_generic(tokens, ind)?))
 		},
 
-		LexerTokenType::MathOperator(sign, assigns) => {
-			if *assigns || *sign != MathOperator::MULTIPLY {
-				return Err(tokens[*ind].make_err(UNEXPECTED_TOKEN!().to_string(), ErrorKind::Error))
-			}
+		LexerTokenType::ParenOpen => {
+			*ind += 1;
+			
+			let res = parse_type_member(tokens, ind, took_generic)?;
+			*ind += 1;
 
+			tokens[*ind].expects(LexerTokenType::ParenClose)?;
+			*ind += 1;
+
+			return Ok(res);
+		}
+
+		LexerTokenType::Asterisk => {
 			*ind += 1;
 
 			if tokens[*ind].tok_type == LexerTokenType::ArrayOpen {
@@ -104,6 +112,8 @@ pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic
 			*ind += 1;
 			
 			let size = tokens[*ind].expects_int_lit()?;
+
+			println!("{:#?}", tokens[*ind]);
 
 			*ind += 1;
 
@@ -145,8 +155,10 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<A
 
 	let mut child = None;
 
-	for i in 1..members.len() + 1 {
-		let converted_member = match members[members.len() - i].clone() {
+	for i in 0..members.len() {
+		println!("{:#?}", members[i].clone());
+
+		let converted_member = match members[i].clone() {
 			ParsingASTTypeMember::Generic(t, types, sizes) => ASTType::Generic(t, types, sizes),
 			ParsingASTTypeMember::Pointer(array) => ASTType::Pointer(array, child.unwrap()),
 			ParsingASTTypeMember::Array(size) => ASTType::Array(size, child.unwrap())

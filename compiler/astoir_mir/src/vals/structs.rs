@@ -16,7 +16,7 @@ impl MIRStructValue {
 			return Ok(MIRStructValue { base: base.clone(), t: base.vtype.clone().as_generic_lowered()? })
 		}
 
-		return Err(BaseError::critical(IR_CASTING_ERROR!().to_string()))
+		return Err(BaseError::critical(format!("{:#?}", base.vtype.clone())))
 	}
 }
 
