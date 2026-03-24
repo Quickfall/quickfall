@@ -149,7 +149,24 @@ impl Type {
 			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
 		}
 	}
+
+	pub fn get_fields(&self, storage: &TypeStorage) -> BaseResult<Vec<u64>> {
+		return match self.get_generic(storage) {
+			RawType::Struct(_, container) => Ok(container.get_fields(storage)),
+			RawType::EnumEntry(container) => Ok(container.get_fields(storage)),
+			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
+		}
+	}
 	
+	pub fn get_functions(&self, storage: &TypeStorage) -> BaseResult<Vec<u64>> {
+		return match self.get_generic(storage) {
+			RawType::Struct(_, container) => Ok(container.get_functions(storage)),
+			RawType::EnumEntry(container) => Ok(container.get_functions(storage)),
+			RawType::Enum(container) => Ok(container.get_functions(storage)),
+			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
+		}
+	}
+
 }
 
 impl SizedType for Type {

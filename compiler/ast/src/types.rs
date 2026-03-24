@@ -30,3 +30,13 @@ pub enum ASTType {
 	/// 1: Inner type
 	Array(usize, Box<ASTType>)
 }
+
+impl ASTType {
+	pub fn get_generic_name(&self) -> String {
+		match self {
+			Self::Generic(s, _, _) => s.clone(),
+			Self::Pointer(_, inner) => inner.get_generic_name(),
+			Self::Array(_, inner) => inner.get_generic_name()
+		}
+	}
+}

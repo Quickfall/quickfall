@@ -2,19 +2,23 @@ use std::collections::HashMap;
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use compiler_errors::errs::CompilerResult;
-use compiler_utils::hash::HashedString;
+use compiler_utils::hash::{HashedString, SelfHash};
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::value::parse_ast_value;
+use crate::{types::parse_type, value::parse_ast_value};
 
 pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+	*ind += 1;
+
+	let t = parse_type(tokens, ind)?;
+
 	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;
 
-	let mut map: HashMap<HashedString, Box<ASTTreeNode>> = HashMap::new();
+	let mut map: HashMap<SelfHash, Box<ASTTreeNode>> = HashMap::new();
 
 	while tokens[*ind].is_keyword() {
 		let field_name = tokens[*ind].as_keyword()?;
@@ -22,7 +26,7 @@ pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> Com
 
 		let value = parse_ast_value(tokens, ind)?;
 
-		map.insert(HashedString::new(field_name.0), value);
+		map.insert(SelfHash { hash: HashedString::new(field_name.0).hash }, value);
 
 		*ind += 1;
 
@@ -33,5 +37,5 @@ pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> Com
 		tokens[*ind].expects(LexerTokenType::Comma)?;
 	}
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructVariableInitializerValue { map }, start, tokens[*ind].get_end_pos())))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructVariableInitializerValue { struct_type: t, map }, start, tokens[*ind].get_end_pos())))
 }
