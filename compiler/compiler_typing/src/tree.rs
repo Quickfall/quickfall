@@ -86,14 +86,18 @@ impl Type {
 
 	pub fn get_function(&self, storage: &TypeStorage, hash: u64) -> BaseResult<(usize, TypedFunction)> {
 		return match self.get_generic(storage) {
-			RawType::Struct(_, container) => Ok((container.get_function_hash(hash)?, container.get_function(hash)?)),
+			RawType::Struct(_, container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),
+			RawType::Enum(container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),
+			RawType::EnumEntry(container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),
 			_ => Err(BaseError::err("This cannot contain functions!".to_string()))
 		};
 	}
 
 	pub fn get_field(&self, storage: &TypeStorage, hash: u64) -> BaseResult<(usize, TypeReference)> {
 		return match self.get_generic(storage) {
-			RawType::Struct(_, container) => Ok((container.get_field_hash(hash)?, container.get_field(hash)?)),
+			RawType::Struct(_, container) => Ok((container.get_field_hash(hash, storage)?, container.get_field(hash, storage)?)),
+			RawType::Enum(container) => Ok((container.get_field_hash(hash, storage)?, container.get_field(hash, storage)?)),
+			RawType::EnumEntry(container) => Ok((container.get_field_hash(hash, storage)?, container.get_field(hash, storage)?)),
 			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
 		}
 	}
