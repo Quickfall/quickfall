@@ -140,7 +140,7 @@ pub fn lower_ast_struct_initializer(context: &mut HIRContext, curr_ctx: &HIRBran
 			vals.push(val)
 		}
 
-		return Ok(Box::new(HIRNode::StructVariableInitializerValue { fields: vals }))
+		return Ok(Box::new(HIRNode::StructVariableInitializerValue { t: hir_type.get_generic(&context.type_storage), fields: vals }))
 	}
 
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))

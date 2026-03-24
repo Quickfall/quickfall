@@ -2,10 +2,11 @@ use astoir_hir::{nodes::HIRNode};
 use astoir_mir::{blocks::{refer::MIRBlockReference}, vals::base::BaseMIRValue};
 use compiler_errors::{EXPECTED_VAL_FUNC, IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 
-use crate::{MIRLoweringContext, funcs::lower_hir_function_call, math::lower_hir_math_operation, values::{booleans::{lower_hir_boolean_operator, lowering_hir_boolean_condition}, consts::lower_hir_literal}, vars::lower_hir_variable_reference_value};
+use crate::{MIRLoweringContext, funcs::lower_hir_function_call, math::lower_hir_math_operation, values::{booleans::{lower_hir_boolean_operator, lowering_hir_boolean_condition}, consts::lower_hir_literal, structs::lower_hir_struct_init}, vars::lower_hir_variable_reference_value};
 
 pub mod consts;
 pub mod booleans;
+pub mod structs;
 
 pub fn lower_hir_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	match *node {
@@ -14,6 +15,7 @@ pub fn lower_hir_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut M
 		HIRNode::BooleanCondition { .. } => return Ok(lowering_hir_boolean_condition(block, node, ctx)?.into()),
 		HIRNode::BooleanOperator { .. } => return Ok(lower_hir_boolean_operator(block, node, ctx)?.into()),
 		HIRNode::MathOperation { .. } => return Ok(lower_hir_math_operation(block, node, ctx)?),
+		HIRNode::StructVariableInitializerValue { .. } => return Ok(lower_hir_struct_init(block, node, ctx)?.into()),
 		HIRNode::FunctionCall { .. } => {
 			let res = lower_hir_function_call(block, node, ctx)?;
 
