@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash, utils::indexed::IndexStorage};
 use compiler_utils::hash::HashedString;
@@ -58,52 +60,53 @@ pub const RESULT_TYPE: u64 = hash!("result");
 
 #[derive(Debug)]
 pub struct TypeStorage {
-	pub types: IndexStorage<RawType>
+	pub types: IndexStorage<RawType>,
+	pub type_to_ind: HashMap<RawType, usize>
 }
 
 impl TypeStorage {
 	pub fn new() -> BaseResult<Self> {
-		let mut storage = TypeStorage { types: IndexStorage::new() };
+		let mut storage = TypeStorage { types: IndexStorage::new(), type_to_ind: HashMap::new() };
 
-		storage.append(SIGNED_INTEGER_8, RawType::Integer(8, true))?;
-		storage.append(SIGNED_INTEGER_16, RawType::Integer(16, true))?;
-		storage.append(SIGNED_INTEGER_32, RawType::Integer(32, true))?;
-		storage.append(SIGNED_INTEGER_64, RawType::Integer(64, true))?;
-		storage.append(SIGNED_INTEGER_128, RawType::Integer(128, true))?;
+		storage.append_with_hash(SIGNED_INTEGER_8, RawType::Integer(8, true))?;
+		storage.append_with_hash(SIGNED_INTEGER_16, RawType::Integer(16, true))?;
+		storage.append_with_hash(SIGNED_INTEGER_32, RawType::Integer(32, true))?;
+		storage.append_with_hash(SIGNED_INTEGER_64, RawType::Integer(64, true))?;
+		storage.append_with_hash(SIGNED_INTEGER_128, RawType::Integer(128, true))?;
 
-		storage.append(UNSIGNED_INTEGER_8, RawType::Integer(8, false))?;
-		storage.append(UNSIGNED_INTEGER_16, RawType::Integer(16, false))?;
-		storage.append(UNSIGNED_INTEGER_32, RawType::Integer(32, false))?;
-		storage.append(UNSIGNED_INTEGER_64, RawType::Integer(64, false))?;
-		storage.append(UNSIGNED_INTEGER_128, RawType::Integer(128, false))?;
+		storage.append_with_hash(UNSIGNED_INTEGER_8, RawType::Integer(8, false))?;
+		storage.append_with_hash(UNSIGNED_INTEGER_16, RawType::Integer(16, false))?;
+		storage.append_with_hash(UNSIGNED_INTEGER_32, RawType::Integer(32, false))?;
+		storage.append_with_hash(UNSIGNED_INTEGER_64, RawType::Integer(64, false))?;
+		storage.append_with_hash(UNSIGNED_INTEGER_128, RawType::Integer(128, false))?;
 
-		storage.append(SIGNED_FLOATING_POINT_8, RawType::Floating(8, true))?;
-		storage.append(SIGNED_FLOATING_POINT_16, RawType::Floating(16, true))?;
-		storage.append(SIGNED_FLOATING_POINT_32, RawType::Floating(32, true))?;
-		storage.append(SIGNED_FLOATING_POINT_64, RawType::Floating(64, true))?;
-		storage.append(SIGNED_FLOATING_POINT_128, RawType::Floating(128, true))?;
+		storage.append_with_hash(SIGNED_FLOATING_POINT_8, RawType::Floating(8, true))?;
+		storage.append_with_hash(SIGNED_FLOATING_POINT_16, RawType::Floating(16, true))?;
+		storage.append_with_hash(SIGNED_FLOATING_POINT_32, RawType::Floating(32, true))?;
+		storage.append_with_hash(SIGNED_FLOATING_POINT_64, RawType::Floating(64, true))?;
+		storage.append_with_hash(SIGNED_FLOATING_POINT_128, RawType::Floating(128, true))?;
 
-		storage.append(UNSIGNED_FLOATING_POINT_8, RawType::Floating(8, false))?;
-		storage.append(UNSIGNED_FLOATING_POINT_16, RawType::Floating(16, false))?;
-		storage.append(UNSIGNED_FLOATING_POINT_32, RawType::Floating(32, false))?;
-		storage.append(UNSIGNED_FLOATING_POINT_64, RawType::Floating(64, false))?;
-		storage.append(UNSIGNED_FLOATING_POINT_128, RawType::Floating(128, false))?;
+		storage.append_with_hash(UNSIGNED_FLOATING_POINT_8, RawType::Floating(8, false))?;
+		storage.append_with_hash(UNSIGNED_FLOATING_POINT_16, RawType::Floating(16, false))?;
+		storage.append_with_hash(UNSIGNED_FLOATING_POINT_32, RawType::Floating(32, false))?;
+		storage.append_with_hash(UNSIGNED_FLOATING_POINT_64, RawType::Floating(64, false))?;
+		storage.append_with_hash(UNSIGNED_FLOATING_POINT_128, RawType::Floating(128, false))?;
 
-		storage.append(SIGNED_FIXED_POINT_8, RawType::FixedPoint(4, 4, true))?;
-		storage.append(SIGNED_FIXED_POINT_16, RawType::FixedPoint(8, 8, true))?;
-		storage.append(SIGNED_FIXED_POINT_32, RawType::FixedPoint(16, 16, true))?;
-		storage.append(SIGNED_FIXED_POINT_64, RawType::FixedPoint(32, 32, true))?;
-		storage.append(SIGNED_FIXED_POINT_128, RawType::FixedPoint(64, 64, true))?;
+		storage.append_with_hash(SIGNED_FIXED_POINT_8, RawType::FixedPoint(4, 4, true))?;
+		storage.append_with_hash(SIGNED_FIXED_POINT_16, RawType::FixedPoint(8, 8, true))?;
+		storage.append_with_hash(SIGNED_FIXED_POINT_32, RawType::FixedPoint(16, 16, true))?;
+		storage.append_with_hash(SIGNED_FIXED_POINT_64, RawType::FixedPoint(32, 32, true))?;
+		storage.append_with_hash(SIGNED_FIXED_POINT_128, RawType::FixedPoint(64, 64, true))?;
 
-		storage.append(UNSIGNED_FIXED_POINT_8, RawType::FixedPoint(4, 4, false))?;
-		storage.append(UNSIGNED_FIXED_POINT_16, RawType::FixedPoint(8, 8, false))?;
-		storage.append(UNSIGNED_FIXED_POINT_32, RawType::FixedPoint(16, 16, false))?;
-		storage.append(UNSIGNED_FIXED_POINT_64, RawType::FixedPoint(32, 32, false))?;
-		storage.append(UNSIGNED_FIXED_POINT_128, RawType::FixedPoint(64, 64, false))?;
+		storage.append_with_hash(UNSIGNED_FIXED_POINT_8, RawType::FixedPoint(4, 4, false))?;
+		storage.append_with_hash(UNSIGNED_FIXED_POINT_16, RawType::FixedPoint(8, 8, false))?;
+		storage.append_with_hash(UNSIGNED_FIXED_POINT_32, RawType::FixedPoint(16, 16, false))?;
+		storage.append_with_hash(UNSIGNED_FIXED_POINT_64, RawType::FixedPoint(32, 32, false))?;
+		storage.append_with_hash(UNSIGNED_FIXED_POINT_128, RawType::FixedPoint(64, 64, false))?;
 		
-		storage.append(BOOLEAN_TYPE, RawType::Boolean)?;
-		storage.append(POINTER_TYPE, RawType::Pointer)?;
-		storage.append(STATIC_STR, RawType::StaticString)?;
+		storage.append_with_hash(BOOLEAN_TYPE, RawType::Boolean)?;
+		storage.append_with_hash(POINTER_TYPE, RawType::Pointer)?;
+		storage.append_with_hash(STATIC_STR, RawType::StaticString)?;
 
 		{
 
@@ -123,12 +126,26 @@ impl TypeStorage {
 		return Ok(storage);
 	}
 
+	pub fn append_with_hash(&mut self, hash: u64, base: RawType) -> BaseResult<usize> {
+		if self.types.hash_to_ind.contains_key(&hash) {
+			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()))
+		}
+
+		let res = self.types.append(hash, base.clone());
+
+		self.type_to_ind.insert(base, res);
+
+		return Ok(res);
+	}
+
 	pub fn append(&mut self, hash: u64, base: RawType) -> BaseResult<usize> {
 		if self.types.hash_to_ind.contains_key(&hash) {
 			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()))
 		}
 
-		return Ok(self.types.append(hash, base));
+		let res = self.types.append(hash, base.clone());
+
+		return Ok(res);
 	}
 
 	pub fn get_type(&self, hash: u64) -> BaseResult<RawType> {

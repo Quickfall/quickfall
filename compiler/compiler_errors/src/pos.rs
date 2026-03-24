@@ -29,7 +29,7 @@ impl BoundPosition {
 		let start_line = split[self.start.line - 1];
 
 		if self.start.line == self.end.line {
-			return start_line[self.start.col..self.end.col].to_string();
+			return start_line[self.start.col..self.end.col.min(start_line.len())].to_string();
 		}
 
 		let mut str = start_line[self.start.col..].to_string();

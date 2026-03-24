@@ -4,7 +4,7 @@ use compiler_errors::{IR_EXPECTED_SIZE_SPECIFIED, TYPE_TYPE_PARAMETERS, errs::{B
 use compiler_typing::{raw::RawType, references::TypeReference, structs::RawStructTypeContainer, tree::Type};
 use compiler_utils::hash::HashedString;
 
-pub fn lower_ast_type(context: &HIRContext, t: ASTType) -> BaseResult<Type> {
+pub fn lower_ast_type(context: &mut HIRContext, t: ASTType) -> BaseResult<Type> {
 	return match t {
 		ASTType::Generic(type_id, type_params, size_params) => {
 			let hash = HashedString::new(type_id).hash;
@@ -21,7 +21,21 @@ pub fn lower_ast_type(context: &HIRContext, t: ASTType) -> BaseResult<Type> {
 				t_params.push(Box::new(lower_ast_type(context, *type_param)?));
 			}
 
-			Ok(Type::Generic(context.type_storage.types.hash_to_ind[&hash], t_params, size_params))
+			let res = Type::Generic(context.type_storage.types.hash_to_ind[&hash], t_params, size_params);
+			
+			if t.is_sized() {
+				let lower = lower_sized_base_type(context, &res)?;
+
+				if context.type_storage.type_to_ind.contains_key(&lower) {
+					return Ok(Type::Generic(context.type_storage.type_to_ind[&lower], vec![], vec![]));
+				} else {
+					let ind = context.type_storage.append_with_hash(hash, lower)?;
+
+					return Ok(Type::Generic(ind, vec![], vec![]))
+				}
+			}
+
+			return Ok(res);
 		},
 
 		ASTType::Pointer(array, inner) => Ok(Type::Pointer(array, Box::new(lower_ast_type(context, *inner)?))),
@@ -29,7 +43,7 @@ pub fn lower_ast_type(context: &HIRContext, t: ASTType) -> BaseResult<Type> {
 	};
 }
 
-pub fn lower_ast_type_struct(context: &HIRContext, t: ASTType, struct_container: &RawStructTypeContainer) -> BaseResult<TypeReference> {
+pub fn lower_ast_type_struct(context: &mut HIRContext, t: ASTType, struct_container: &RawStructTypeContainer) -> BaseResult<TypeReference> {
 	if let ASTType::Generic(id, _, _) = &t {
 		let key = HashedString::new(id.clone());
 

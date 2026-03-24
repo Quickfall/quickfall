@@ -72,7 +72,7 @@ impl HIRNode {
 			return Ok(self);
 		}
 
-		if self_type.can_transmute(&t) {
+		if self_type.can_transmute(&t, &context.type_storage) {
 			match &self {
 				HIRNode::IntegerLiteral { value, int_type: _ } => {
 					return Ok(HIRNode::IntegerLiteral { value: *value, int_type: t });

@@ -114,7 +114,14 @@ pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic
 			return Ok(Some(ParsingASTTypeMember::Array(size.0 as usize)))
 		},
 
-		_ => return Err(tokens[*ind].make_err(UNEXPECTED_TOKEN!().to_string(), ErrorKind::Error))
+		_ => {
+			if(took_generic) {
+				return Ok(None);
+			}
+
+			return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), tokens[*ind]), ErrorKind::Error))
+		}
+		//_ => return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), tokens[*ind]), ErrorKind::Error))
 	}
 }
 
@@ -138,8 +145,10 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<A
 
 	let mut child = None;
 
-	for i in members.len()..0 {
-		let converted_member = match members[i].clone() {
+	for i in 1..members.len() + 1 {
+		println!("{}", members.len() - i);
+
+		let converted_member = match members[members.len() - i].clone() {
 			ParsingASTTypeMember::Generic(t, types, sizes) => ASTType::Generic(t, types, sizes),
 			ParsingASTTypeMember::Pointer(array) => ASTType::Pointer(array, child.unwrap()),
 			ParsingASTTypeMember::Array(size) => ASTType::Array(size, child.unwrap())

@@ -10,3 +10,4 @@ compiler_errors = {path = "../compiler_errors"}
 lexer = {path = "../lexer"}
 astoir_typing = { path = "../astoir_typing"}
 compiler_typing = { path = "../compiler_typing" }
+compiler_utils = { path = "../compiler_utils" }

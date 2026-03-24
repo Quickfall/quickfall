@@ -32,7 +32,7 @@ impl Type {
 	/// 
 	/// # Note
 	/// This function uses recursion to go down the type tree and check `can_transmute` on every node.
-	pub fn can_transmute(&self, other: &Type) -> bool {
+	pub fn can_transmute(&self, other: &Type, storage: &TypeStorage) -> bool {
 		match (self, other) {
 			(Self::Pointer(is_array, _), Self::Pointer(is_array_2, _)) => {
 				return *is_array == *is_array_2;
@@ -43,13 +43,18 @@ impl Type {
 					return false;
 				}
 
-				return base.clone().can_transmute(&base2);
+				return base.clone().can_transmute(&base2, storage);
 			},
 
 			// TODO: add generic transmutation checking when type storage implemented.
 			(Self::Generic(raw_type, type_params, sizes), Self::Generic(raw_type2, type_params2, sizes2)) => {
-				return raw_type == raw_type2 && type_params == type_params2 && sizes == sizes2;
+				if type_params != type_params2 {
+					return false;
+				}
+
+				return storage.types.vals[*raw_type].can_transmute(sizes.clone(), &storage.types.vals[*raw_type2], sizes2.clone())
 			},
+
 
 			_ => false
 		}

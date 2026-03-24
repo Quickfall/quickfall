@@ -55,6 +55,32 @@ impl RawType {
 			_ => false
 		}
 	}
+
+	pub fn is_sized(&self) -> bool {
+		match self {
+			Self::SizedInteger(_) => true,
+			Self::SizedFloating(_) => true,
+			Self::SizedFixedPoint(_) => true,
+
+			_ => false
+		}
+	}
+
+	pub fn can_transmute(&self, self_size: Vec<usize>, b: &RawType, b_sizes: Vec<usize>) -> bool {
+		match (self, b) {
+			(Self::Integer(_, _), Self::Integer(_, _)) => true,
+			(Self::SizedInteger(_), Self::Integer(_, _)) => true,
+			(Self::Integer(_, _), Self::SizedInteger(_)) => true,
+
+			(Self::Floating(_, _), Self::Integer(_, _)) => true,
+			(Self::Integer(_, _), Self::Floating(_, _)) => true,
+
+			(Self::Floating(_, _), Self::SizedInteger(_)) => true,
+			(Self::SizedInteger(_), Self::Floating(_, _)) => true,
+
+			_ => false
+		}
+	}
 }
 
 impl SizedType for RawType {

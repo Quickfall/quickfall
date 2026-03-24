@@ -4,7 +4,7 @@ use compiler_errors::{IR_INVALID_NODE_TYPE, VARIABLE_REQ_VALUE, errs::{CompilerR
 
 use crate::{types::lower_ast_type, values::lower_ast_value};
 
-pub fn lower_ast_variable_declaration(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_variable_declaration(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::VarDeclaration { var_name, var_type, value} = node.kind.clone() {
 		let lowered = match lower_ast_type(context, var_type) {
 			Ok(v) => v,
