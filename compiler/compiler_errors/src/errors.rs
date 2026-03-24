@@ -145,7 +145,7 @@ macro_rules! IR_FIND_ELEMENT {
 #[macro_export]
 macro_rules! IR_FUNCTION_INVALID_ARGUMENTS {
 	() => {
-		"Invalid argument provided! Cannot transmute {} into {}"
+		"Invalid argument provided! Cannot transmute {:#?} into {:#?}"
 	};
 }
 

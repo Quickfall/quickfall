@@ -404,7 +404,7 @@ pub fn build_call(ctx: &mut MIRContext, func: usize, ind: usize, args: Vec<BaseM
 
 	for(arg, t) in args.iter().zip(func.arguments.iter()) {
 		if &arg.vtype != t {
-			return Err(BaseError::err(IR_FUNCTION_INVALID_ARGUMENTS!().to_string()));
+			return Err(BaseError::err(format!(IR_FUNCTION_INVALID_ARGUMENTS!(), arg.vtype, t)));
 		}
 	}
 
