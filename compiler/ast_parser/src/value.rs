@@ -4,7 +4,7 @@ use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use compiler_errors::{PARSE_VALUE, UNEXPECTED_TOKEN, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::functions::parse_function_call;
+use crate::{functions::parse_function_call, structs::val::parse_struct_initialize};
 use crate::literals::{parse_integer_literal, parse_string_literal};
 use crate::math::parse_math_operation;
 
@@ -164,6 +164,10 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 			let str = parse_string_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, str, false);
 		},
+
+		LexerTokenType::BracketOpen => {
+			return parse_struct_initialize(tokens, ind);
+		}
 
 		LexerTokenType::Keyword(str, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
