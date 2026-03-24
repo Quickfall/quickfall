@@ -76,19 +76,10 @@ version = "0.1.0"
 dependencies = [
  "astoir_hir",
  "astoir_mir",
- "astoir_typing",
  "compiler_errors",
  "compiler_typing",
  "compiler_utils",
  "lexer",
-]
-
-[[package]]
-name = "astoir_typing"
-version = "0.1.0"
-dependencies = [
- "compiler_errors",
- "compiler_utils",
 ]
 
 [[package]]
