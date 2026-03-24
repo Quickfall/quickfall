@@ -19,8 +19,6 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 
 	let type_params = parse_type_parameters_declaration(tokens, ind)?;
 
-	*ind += 1;
-
 	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
 	*ind += 1;
