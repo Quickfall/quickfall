@@ -192,6 +192,7 @@ pub struct HIRBranchedVariable {
 pub struct HIRContext {
 	pub functions: IndexStorage<HIRFunction>, 
 	pub function_declarations: Vec<Option<Box<HIRNode>>>,
+	pub function_contexts: Vec<HIRBranchedContext>,
 	pub static_variables: IndexStorage<Type>,
 	pub struct_func_impls: HashMap<usize, HIRStructContainer>,
 	pub type_storage: TypeStorage
@@ -205,7 +206,7 @@ pub enum VariableKind {
 
 impl HIRContext {
 	pub fn new() -> BaseResult<Self> {
-		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_declarations: vec![], struct_func_impls: HashMap::new() })
+		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_contexts: vec![], function_declarations: vec![], struct_func_impls: HashMap::new() })
 	}
 
 	pub fn translate_function(&self, func_hash: u64) -> BaseResult<usize> {

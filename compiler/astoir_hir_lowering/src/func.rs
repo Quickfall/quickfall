@@ -74,8 +74,9 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 
 		let ind = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone(), func_name.val.clone()));
 
-
 		let body = lower_ast_body(context, &mut curr_ctx, body, false)?;
+
+		context.function_contexts.push(curr_ctx.clone());
 
 		curr_ctx.end_branch(branch);
 
