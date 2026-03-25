@@ -338,10 +338,10 @@ pub fn build_field_pointer(ctx: &mut MIRContext, ptr: MIRPointerValue, field: us
 	return val.as_ptr();
 }
 
-pub fn build_index_pointer(ctx: &mut MIRContext, val: MIRPointerValue, index: MIRIntValue) -> BaseResult<bool> {
-	ctx.append_inst(MIRInstruction::IndexPointer { val, index });
+pub fn build_index_pointer(ctx: &mut MIRContext, val: MIRPointerValue, index: MIRIntValue) -> BaseResult<MIRPointerValue> {
+	let res = ctx.append_inst(MIRInstruction::IndexPointer { val, index }).get()?;
 
-	Ok(true)
+	Ok(res.as_ptr()?)
 }
 
 pub fn build_marker_era_drop(ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool> {
