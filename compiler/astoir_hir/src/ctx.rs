@@ -175,7 +175,7 @@ impl HIRBranchedContext {
 	pub fn is_eligible_for_ssa(&self, ind: usize) -> bool {
 		let var = &self.variables[ind];
 
-		return !var.requires_address && var.mutation_count <= 1;
+		return !var.requires_address && var.mutation_count <= 1 && !var.variable_type.can_use_index_access()
 	}
 	
 }
