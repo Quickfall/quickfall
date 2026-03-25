@@ -6,12 +6,15 @@ use crate::{MIRLoweringContext, values::lower_hir_value};
 
 pub fn lower_hir_aray_index_access(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	if let HIRNode::ArrayIndexAccess { val, index } = *node {
-		let array = lower_hir_value(block, val, ctx)?.as_ptr()?;
-		let index = lower_hir_value(block, index, ctx)?.as_int()?;
+		let array = lower_hir_value(block, val, ctx)?;
 
-		let res = build_index_pointer(&mut ctx.mir_ctx, array, index)?;
+		if ctx.mir_ctx.ssa_hints.get_hint(array.get_ssa_index())?.is_pointer() {
+			let index = lower_hir_value(block, index, ctx)?.as_int()?;
 
-		return Ok(res.into())
+			let res = build_index_pointer(&mut ctx.mir_ctx, array.as_ptr()?, index)?;
+	
+			return Ok(res.into())
+		}
 	}
 
 	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))

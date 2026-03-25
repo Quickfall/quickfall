@@ -21,6 +21,14 @@ impl MIRValueHint {
 		return false;
 	}
 
+	pub fn is_pointer(&self) -> bool {
+		if let &MIRValueHint::Pointer(_) = self {
+			return true;
+		}
+
+		return false;
+	}
+
 	pub fn as_const(&self) -> BaseResult<MIRConstantValue> {
 		match self {
 			MIRValueHint::Constant(e) => Ok(e.clone()),
