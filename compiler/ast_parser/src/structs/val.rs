@@ -28,8 +28,6 @@ pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> Com
 
 		map.insert(SelfHash { hash: HashedString::new(field_name.0).hash }, value);
 
-		println!("{:#?}", tokens[*ind]);
-
 		//*ind += 1;
 
 		if tokens[*ind].tok_type == LexerTokenType::BracketClose {

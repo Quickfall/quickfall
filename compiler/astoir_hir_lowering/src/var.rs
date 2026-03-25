@@ -63,7 +63,13 @@ pub fn lower_ast_variable_reference(context: &HIRContext, curr_ctx: &HIRBranched
 pub fn lower_ast_variable_assign(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::VarValueChange { var, value } = node.kind.clone() {
 		let value = lower_ast_value(context, curr_ctx, value)?;
+
 		let variable_reference = lower_ast_variable_reference(context, curr_ctx, var, false)?;
+
+		let value = match value.use_as(context, curr_ctx, variable_reference.get_node_type(context, curr_ctx).unwrap()) {
+			Ok(v) => Box::new(v),
+			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
+		};
 
 		let var = match variable_reference.as_variable_reference() {
 			Ok(v) => v,

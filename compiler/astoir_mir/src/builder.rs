@@ -28,8 +28,8 @@ pub fn build_store(ctx: &mut MIRContext, ptr: MIRPointerValue, val: BaseMIRValue
 
 	let hint = ctx.ssa_hints.get_hint(base.get_ssa_index())?.as_pointer()?;
 
-	if hint != base.vtype {
-		return Err(BaseError::err("Cannot put this value onto this pointer as it is not the same type!".to_string()))
+	if hint != val.vtype {
+		return Err(BaseError::err(format!("Cannot put this value onto this pointer as it is not the same type! {:#?} {:#?}", hint, base.vtype)))
 	}
 
 	ctx.append_inst(MIRInstruction::Store { variable: ptr, value: val });
