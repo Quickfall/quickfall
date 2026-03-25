@@ -120,6 +120,13 @@ impl Type {
 		}
 	}
 
+	pub fn can_use_index_access(&self) -> bool {
+		match self {
+			Type::Array(_, _) => true,
+			_ => false
+		}
+	}
+
 	pub fn get_generic_info(&self) -> (Vec<Box<Type>>, Vec<usize>) {
 		if let Type::Generic(_, types, sizes) = self {
 			return (types.clone(), sizes.clone())
