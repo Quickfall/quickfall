@@ -28,6 +28,8 @@ pub enum HIRNode {
 	ArrayVariableInitializerValue { vals: Vec<Box<HIRNode>> },
 	ArrayVariableInitializerValueSameValue { size: usize, val: Box<HIRNode> },
 
+	ArrayIndexAccess { val: Box<HIRNode>, index: Box<HIRNode> },
+
 	StructVariableInitializerValue { t: Type, fields: Vec<Box<HIRNode>> },
 
 	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },

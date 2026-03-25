@@ -3,7 +3,7 @@ use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::HIR
 use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}, make_invalid_type_err};
 use compiler_typing::tree::Type;
 
-use crate::{bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, func::lower_ast_function_call, literals::lower_ast_literal, math::lower_ast_math_operation, structs::lower_ast_struct_initializer, var::lower_ast_variable_reference};
+use crate::{arrays::lower_ast_array_index_access, bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, func::lower_ast_function_call, literals::lower_ast_literal, math::lower_ast_math_operation, structs::lower_ast_struct_initializer, var::lower_ast_variable_reference};
 
 pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, curr_steps: &mut Vec<StructLRUStep>, curr_type: &mut Option<Type>) -> CompilerResult<bool> {
 	match node.kind {
@@ -143,6 +143,10 @@ pub fn lower_ast_value(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, 
 		ASTTreeNodeKind::BooleanBasedConditionMember { .. } => {
 			return lower_ast_boolean_condition(context, curr_ctx, node)
 		},
+
+		ASTTreeNodeKind::ArrayIndexAccess { .. } => {
+			return lower_ast_array_index_access(context, curr_ctx, node)
+		}
 
 		ASTTreeNodeKind::ArrayVariableInitializerValue { .. } | ASTTreeNodeKind::ArrayVariableInitializerValueSameValue { .. } => {
 			return lower_ast_array_init(context, curr_ctx, node)
