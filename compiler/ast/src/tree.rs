@@ -42,6 +42,7 @@ pub enum ASTTreeNodeKind {
 	ArrayVariableInitializerValue { vals: Vec<Box<ASTTreeNode>> },
 
 	ArrayIndexAccess { val: Box<ASTTreeNode>, index: Box<ASTTreeNode> },
+	ArrayIndexModifiy { array: Box<ASTTreeNode>, index: Box<ASTTreeNode>, val: Box<ASTTreeNode> },
 
 	StructLayoutDeclaration { name: HashedString, layout: bool, members: Vec<Box<ASTTreeNode>>, type_params: TypeParameterContainer },
 	StructFieldMember { name: HashedString, member_type: ASTType },

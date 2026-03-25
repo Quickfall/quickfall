@@ -14,6 +14,8 @@ pub fn lower_hir_aray_index_access(block: MIRBlockReference, node: Box<HIRNode>,
 			let res = build_index_pointer(&mut ctx.mir_ctx, array.as_ptr()?, index)?;
 	
 			return Ok(res.into())
+		} else {
+			return Err(BaseError::err("Tried lowering a non SSA array!".to_string()))
 		}
 	}
 

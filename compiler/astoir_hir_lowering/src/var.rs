@@ -2,7 +2,7 @@ use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, VariableKind, get_variable}, nodes::HIRNode};
 use compiler_errors::{IR_INVALID_NODE_TYPE, VARIABLE_REQ_VALUE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 
-use crate::{types::lower_ast_type, values::lower_ast_value};
+use crate::{arrays::lower_ast_array_index_access, types::lower_ast_type, values::lower_ast_value};
 
 pub fn lower_ast_variable_declaration(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::VarDeclaration { var_name, var_type, value} = node.kind.clone() {
@@ -37,7 +37,7 @@ pub fn lower_ast_variable_declaration(context: &mut HIRContext, curr_ctx: &mut H
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 }
 
-pub fn lower_ast_variable_reference(context: &HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, requires_value: bool) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_variable_reference(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, requires_value: bool) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::VariableReference(str) = node.kind.clone() {		
 		let var = match get_variable(context, curr_ctx, str.hash) {
 			Ok(v) => v,
@@ -57,12 +57,18 @@ pub fn lower_ast_variable_reference(context: &HIRContext, curr_ctx: &HIRBranched
 		return Ok(Box::new(HIRNode::VariableReference { index: var.2, is_static: false }))
 	}
 
-	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
+	if let ASTTreeNodeKind::ArrayIndexAccess { .. } = node.kind.clone() {
+		return lower_ast_array_index_access(context, curr_ctx, node)
+	}
+
+	return Err(CompilerError::from_ast(ErrorKind::Error, format!(IR_INVALID_NODE_TYPE!(), node), &node.start, &node.end))
 }
 
 pub fn lower_ast_variable_assign(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::VarValueChange { var, value } = node.kind.clone() {
 		let value = lower_ast_value(context, curr_ctx, value)?;
+
+		println!("{:#?}", value);
 
 		let variable_reference = lower_ast_variable_reference(context, curr_ctx, var, false)?;
 

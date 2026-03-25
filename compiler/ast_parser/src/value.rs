@@ -91,17 +91,35 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 		},
 
 		LexerTokenType::ArrayOpen => {
-			return parse_array_access(tokens, ind, original?)
+			let k = parse_array_access(tokens, ind, original?)?;
+
+			return parse_ast_value_post_l(tokens, ind, Ok(k), invoked_on_body)
 		},
 
 		LexerTokenType::EqualSign => {
 			*ind += 1;
+
+			if let Ok(v) = original.as_ref() {
+				if let ASTTreeNodeKind::ArrayIndexAccess { val, index } = &v.kind {
+					let start = original.clone()?.start.clone();
+		
+					let right_val = parse_ast_value(tokens, ind)?;
+		
+					let end = right_val.end.clone();
+
+					let kind = ASTTreeNodeKind::ArrayIndexModifiy { array: val.clone(), index: index.clone(), val: right_val };
+
+					return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
+				}
+			}
 
 			let start = original.clone()?.start.clone();
 		
 			let right_val = parse_ast_value(tokens, ind)?;
 
 			let end = right_val.end.clone();
+
+			
 
 			let kind = ASTTreeNodeKind::VarValueChange { var: original?, value: right_val };
 			return Ok(Box::new(ASTTreeNode::new(kind, start, end)));

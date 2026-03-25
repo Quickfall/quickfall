@@ -91,7 +91,7 @@ impl HIRNode {
 			}
 		}
 
-		return Err(BaseError::err(IR_TRANSMUTATION!().to_string()))
+		return Err(BaseError::err(format!("{} {:#?} {:#?}", IR_TRANSMUTATION!(), self_type, t)))
 	}	
 
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<Type> {
@@ -103,6 +103,12 @@ impl HIRNode {
 
 				return Some(curr_ctx.variables[*index].variable_type.clone());
 			},
+
+			HIRNode::ArrayIndexAccess { val, index: _ } => {
+				let t = val.get_node_type(context, curr_ctx).unwrap();
+
+				return Some(*t.get_inner_type())
+			}
 
 			HIRNode::IntegerLiteral { value: _, int_type } => {
 				return Some(int_type.clone());

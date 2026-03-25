@@ -61,6 +61,14 @@ impl Type {
 				}
 
 				return base.can_transmute(vec![], &storage.types.vals[*rawtype], sizes.clone())
+			},
+
+			(Self::Generic(rawtype, type_params, sizes), Self::GenericLowered(base)) => {
+				if !type_params.is_empty() {
+					return false;
+				}
+
+				return base.can_transmute(vec![], &storage.types.vals[*rawtype], sizes.clone())
 			}
 
 			(Self::GenericLowered(base), Self::GenericLowered(base2)) => {
