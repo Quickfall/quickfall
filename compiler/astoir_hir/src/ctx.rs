@@ -69,7 +69,12 @@ impl HIRBranchedContext {
 			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
-		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0 };
+		let mut var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0 };
+				
+		if has_default {
+			var.mutation_count += 1;
+		}
+
 		self.variables.push(var);
 
 		let ind: usize = self.current_element_index;
@@ -83,11 +88,12 @@ impl HIRBranchedContext {
 	pub fn introduce_variable_assign(&mut self, ind: usize) -> bool {
 		let var = &mut self.variables[ind];
 
+		var.mutation_count += 1;
+
 		if var.has_default {
 			return true;
 		}
 
-		var.mutation_count += 1;
 		var.introduced_values.insert(self.current_branch);
 
 		return true;
@@ -192,7 +198,7 @@ pub struct HIRBranchedVariable {
 pub struct HIRContext {
 	pub functions: IndexStorage<HIRFunction>, 
 	pub function_declarations: Vec<Option<Box<HIRNode>>>,
-	pub function_contexts: Vec<HIRBranchedContext>,
+	pub function_contexts: Vec<Option<HIRBranchedContext>>,
 	pub static_variables: IndexStorage<Type>,
 	pub struct_func_impls: HashMap<usize, HIRStructContainer>,
 	pub type_storage: TypeStorage

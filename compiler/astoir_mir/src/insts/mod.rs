@@ -91,7 +91,7 @@ pub enum MIRInstruction {
 impl MIRInstruction {
 	pub fn has_return(&self, ctx: &MIRContext) -> bool {
 		match self {
-			Self::MarkerEraDrop { .. } | Self::UnconditionalBranch { .. } | Self::ConditionalBranch { .. } | Self::Return { .. } => {
+			Self::MarkerEraDrop { .. } | Self::UnconditionalBranch { .. } | Self::ConditionalBranch { .. } | Self::Return { .. } | Self::Store { .. } => {
 				return false;
 			},
 
@@ -192,7 +192,7 @@ impl MIRInstruction {
 
 			Self::FuncArgumentGrab { ind: _, argtype } => argtype.clone(),
 
-			_ => panic!("Tried using get_return_type on non returning type!")
+			_ => panic!("Tried using get_return_type on non returning type! {}", self)
 		}
 	}
 }

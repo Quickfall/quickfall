@@ -43,8 +43,6 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struc
 			*ind += 1;
 		}
 
-		println!("{:#?}", tokens[*ind]);
-
 		if tokens[*ind].tok_type == LexerTokenType::ParenClose {
 			break;
 		}
