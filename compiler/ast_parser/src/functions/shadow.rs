@@ -25,7 +25,6 @@ pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 
 	if tokens[*ind].is_keyword() {
 		ret_type = Some(parse_type(tokens, ind)?);
-		*ind += 1;
 
 		end = tokens[*ind].get_end_pos().clone();
 	} else {

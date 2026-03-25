@@ -113,8 +113,6 @@ pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic
 			
 			let size = tokens[*ind].expects_int_lit()?;
 
-			println!("{:#?}", tokens[*ind]);
-
 			*ind += 1;
 
 			tokens[*ind].expects(LexerTokenType::ArrayClose)?;
@@ -156,8 +154,6 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<A
 	let mut child = None;
 
 	for i in 0..members.len() {
-		println!("{:#?}", members[i].clone());
-
 		let converted_member = match members[i].clone() {
 			ParsingASTTypeMember::Generic(t, types, sizes) => ASTType::Generic(t, types, sizes),
 			ParsingASTTypeMember::Pointer(array) => ASTType::Pointer(array, child.unwrap()),

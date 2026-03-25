@@ -14,8 +14,6 @@ pub fn lower_hir_struct_init(block: MIRBlockReference, node: Box<HIRNode>, ctx: 
 
 		let lowered_type = lower_hir_type(ctx, t)?.get_generic(&ctx.hir_ctx.type_storage);
 
-		println!("{:#?}", lowered_type);
-
 		return build_static_struct_const(&mut ctx.mir_ctx, lowered_type, values);
 	}
 

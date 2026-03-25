@@ -69,7 +69,12 @@ impl HIRBranchedContext {
 			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
 		}
 
-		let var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false };
+		let mut var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0 };
+				
+		if has_default {
+			var.mutation_count += 1;
+		}
+
 		self.variables.push(var);
 
 		let ind: usize = self.current_element_index;
@@ -82,6 +87,8 @@ impl HIRBranchedContext {
 
 	pub fn introduce_variable_assign(&mut self, ind: usize) -> bool {
 		let var = &mut self.variables[ind];
+
+		var.mutation_count += 1;
 
 		if var.has_default {
 			return true;
@@ -168,7 +175,7 @@ impl HIRBranchedContext {
 	pub fn is_eligible_for_ssa(&self, ind: usize) -> bool {
 		let var = &self.variables[ind];
 
-		return !var.requires_address;
+		return !var.requires_address && var.mutation_count <= 1;
 	}
 	
 }
@@ -180,6 +187,9 @@ pub struct HIRBranchedVariable {
 	
 	pub requires_address: bool,
 
+	/// The amount of times the variable has been changed
+	pub mutation_count: usize,
+
 	pub has_default: bool,
 	pub introduced_values: HashSet<usize> // TODO: try to potentially reduce this
 }
@@ -188,6 +198,7 @@ pub struct HIRBranchedVariable {
 pub struct HIRContext {
 	pub functions: IndexStorage<HIRFunction>, 
 	pub function_declarations: Vec<Option<Box<HIRNode>>>,
+	pub function_contexts: Vec<Option<HIRBranchedContext>>,
 	pub static_variables: IndexStorage<Type>,
 	pub struct_func_impls: HashMap<usize, HIRStructContainer>,
 	pub type_storage: TypeStorage
@@ -201,7 +212,7 @@ pub enum VariableKind {
 
 impl HIRContext {
 	pub fn new() -> BaseResult<Self> {
-		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_declarations: vec![], struct_func_impls: HashMap::new() })
+		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_contexts: vec![], function_declarations: vec![], struct_func_impls: HashMap::new() })
 	}
 
 	pub fn translate_function(&self, func_hash: u64) -> BaseResult<usize> {

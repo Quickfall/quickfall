@@ -51,8 +51,8 @@ impl MIRVariableReference {
 
 		let block = &mut ctx.blocks[block];
 
-		if block.variables[&ind].hint.is_some() && block.variables[&ind].hint.clone().unwrap().vtype != val.vtype {
-			return Err(BaseError::err("Cannot write on this variable reference since the two types differ!".to_string()));
+		if block.variables[&ind].hint.is_some() && !block.variables[&ind].hint.clone().unwrap().vtype.is_truly_eq(&val.vtype) {
+			return Err(BaseError::err(format!("Cannot write on this variable reference since the two types differ! {:#?} {:#?}", block.variables[&ind].hint.clone().unwrap().vtype, val.vtype)));
 		}
 
 		let mut hint = block.variables[&ind].clone();
