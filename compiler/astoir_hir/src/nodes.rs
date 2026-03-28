@@ -29,6 +29,7 @@ pub enum HIRNode {
 	ArrayVariableInitializerValueSameValue { size: usize, val: Box<HIRNode> },
 
 	ArrayIndexAccess { val: Box<HIRNode>, index: Box<HIRNode> },
+	ArrayIndexModify { array: Box<HIRNode>, index: Box<HIRNode>, new_val : Box<HIRNode> },
 
 	StructVariableInitializerValue { t: Type, fields: Vec<Box<HIRNode>> },
 
