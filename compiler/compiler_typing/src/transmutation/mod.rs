@@ -2,6 +2,8 @@
 
 use crate::{storage::TypeStorage, tree::Type};
 
+pub mod array;
+
 impl Type {
 	/// Checks if the type tree can be transmuted into another one. Transmutation is the process used by the typing system to see if 
 	/// a variable can automatically be casted into another type.
