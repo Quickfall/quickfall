@@ -8,7 +8,7 @@ use crate::{storage::TypeStorage, tree::Type};
 
 /// Utility function to determinate if an array type can be transmutated by the inner type. 
 /// This determines if we use the array strategy or a cast node.
-pub fn can_transmute_inner(array_type: Type, new_type: Type, storage: &TypeStorage) -> bool {
+pub fn can_transmute_inner(array_type: &Type, new_type: &Type, storage: &TypeStorage) -> bool {
 	if !array_type.can_use_index_access() || !new_type.can_use_index_access() {
 		panic!("Either ones of the types sent when using can_transmute_inner were not actual array types!")
 	}

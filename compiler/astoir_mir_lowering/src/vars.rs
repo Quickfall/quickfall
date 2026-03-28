@@ -24,7 +24,7 @@ pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIR
 			let lowered = lower_hir_type(ctx, var_type)?;
 
 			// TODO: allow build_stack_allow to allocate non-raw types
-			let ptr = build_stack_alloc(&mut ctx.mir_ctx, lowered.get_size(&lowered, false, &ctx.hir_ctx.type_storage), lowered.get_generic(&ctx.hir_ctx.type_storage))?;
+			let ptr = build_stack_alloc(&mut ctx.mir_ctx, lowered.get_size(&lowered, false, &ctx.hir_ctx.type_storage), lowered)?;
 		
 			ctx.mir_ctx.blocks[block_id].variables.insert(variable, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::Pointer, hint: Some(ptr.clone().into()) });
 

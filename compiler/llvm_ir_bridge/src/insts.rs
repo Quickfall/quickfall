@@ -9,7 +9,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 
 	let res: Option<BasicValueEnum<'static>> = match MIRInstruction::from(instruction.clone().into()) {
 		MIRInstruction::StackAlloc { alloc_size: _, t } => {
-			let res = llvm_to_base!(bridge.builder.build_alloca(bridge.types.convert_raw(t)?.inner, ""));
+			let res = llvm_to_base!(bridge.builder.build_alloca(bridge.types.convert(t)?.inner, ""));
 		
 			Some(res.into())
 		},

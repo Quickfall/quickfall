@@ -1,7 +1,7 @@
 //! The nodes inside of the AstoIR HIR. 
 
 use compiler_errors::{IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
-use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, tree::Type};
+use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
@@ -70,14 +70,14 @@ impl HIRNode {
 		return Err(BaseError::err("Tried using as_variable_reference on a non var ref".to_string()))
 	}
 	
-	pub fn use_as(self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type) -> BaseResult<HIRNode> {
+	pub fn use_as(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type) -> BaseResult<HIRNode> {
 		let self_type = match self.get_node_type(context, curr_ctx) {
 			Some(v) => v,
 			None => return Err(BaseError::err("This needs to be a value".to_string()))
 		};
 
 		if self_type == t {
-			return Ok(self);
+			return Ok(self.clone());
 		}
 
 		if self_type.can_transmute(&t, &context.type_storage) {
@@ -86,8 +86,29 @@ impl HIRNode {
 					return Ok(HIRNode::IntegerLiteral { value: *value, int_type: t });
 				},
 
+				HIRNode::ArrayVariableInitializerValue { vals } => {
+					if can_transmute_inner(&self_type, &t, &context.type_storage) {
+						let mut new_vals = vec![];
+						let inner = t.get_inner_type();
+
+						for val in vals {
+							new_vals.push(Box::new(val.use_as(context, curr_ctx, *inner.clone())?));
+						}
+
+						return Ok(HIRNode::ArrayVariableInitializerValue { vals: new_vals })
+					}
+				},
+
+				HIRNode::ArrayVariableInitializerValueSameValue { size, val } => {
+					if can_transmute_inner(&self_type, &t, &context.type_storage) {
+						let new_val = Box::new(val.use_as(context, curr_ctx, *t.get_inner_type())?);
+
+						return Ok(HIRNode::ArrayVariableInitializerValueSameValue { size: *size, val: new_val })					
+					}
+				},
+
 				_ => {
-					return Ok(HIRNode::CastValue { intentional: false, old_type: self_type.clone(), value: Box::new(self), new_type: t });
+					return Ok(HIRNode::CastValue { intentional: false, old_type: self_type.clone(), value: Box::new(self.clone()), new_type: t });
 				}
 			}
 		}
