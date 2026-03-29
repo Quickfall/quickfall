@@ -1,6 +1,6 @@
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum MIRConstantValue {
 	Int(u128),
 	Float(f64)

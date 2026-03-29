@@ -11,7 +11,7 @@ pub mod val;
 /// An instruction inside of the MIR.
 #[derive(Clone)]
 pub enum MIRInstruction {
-	StackAlloc { alloc_size: usize, t: RawType },
+	StackAlloc { alloc_size: usize, t: Type },
 	Load { value: MIRPointerValue },
 	Store { variable: MIRPointerValue, value: BaseMIRValue }, 
 

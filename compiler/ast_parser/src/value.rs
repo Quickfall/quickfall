@@ -4,7 +4,7 @@ use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use compiler_errors::{PARSE_VALUE, UNEXPECTED_TOKEN, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{functions::parse_function_call, structs::val::parse_struct_initialize};
+use crate::{arrays::parse_array_access, functions::parse_function_call, structs::val::parse_struct_initialize};
 use crate::literals::{parse_integer_literal, parse_string_literal};
 use crate::math::parse_math_operation;
 
@@ -90,14 +90,36 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
 		},
 
+		LexerTokenType::ArrayOpen => {
+			let k = parse_array_access(tokens, ind, original?)?;
+
+			return parse_ast_value_post_l(tokens, ind, Ok(k), invoked_on_body)
+		},
+
 		LexerTokenType::EqualSign => {
 			*ind += 1;
+
+			if let Ok(v) = original.as_ref() {
+				if let ASTTreeNodeKind::ArrayIndexAccess { val, index } = &v.kind {
+					let start = original.clone()?.start.clone();
+		
+					let right_val = parse_ast_value(tokens, ind)?;
+		
+					let end = right_val.end.clone();
+
+					let kind = ASTTreeNodeKind::ArrayIndexModifiy { array: val.clone(), index: index.clone(), val: right_val };
+
+					return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
+				}
+			}
 
 			let start = original.clone()?.start.clone();
 		
 			let right_val = parse_ast_value(tokens, ind)?;
 
 			let end = right_val.end.clone();
+
+			
 
 			let kind = ASTTreeNodeKind::VarValueChange { var: original?, value: right_val };
 			return Ok(Box::new(ASTTreeNode::new(kind, start, end)));

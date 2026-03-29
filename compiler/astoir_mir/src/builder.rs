@@ -5,10 +5,10 @@ use compiler_typing::{raw::RawType, tree::Type};
 
 use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::MIRInstruction, vals::{arrays::MIRArrayValue, base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue}};
 
-pub fn build_stack_alloc(ctx: &mut MIRContext, size: usize, t: RawType) -> BaseResult<MIRPointerValue> {
+pub fn build_stack_alloc(ctx: &mut MIRContext, size: usize, t: Type) -> BaseResult<MIRPointerValue> {
 	let res = ctx.append_inst(MIRInstruction::StackAlloc { alloc_size: size, t: t.clone() }).get()?;
 
-	let hint = ctx.ssa_hints.append_hint(MIRValueHint::Pointer(Type::GenericLowered(t)));
+	let hint = ctx.ssa_hints.append_hint(MIRValueHint::Pointer(t));
 
 	if res.get_ssa_index() != hint {
 		return Err(BaseError::err("Couldn't hint SSA value for pointer! Indexes are different".to_string()))
@@ -29,7 +29,7 @@ pub fn build_store(ctx: &mut MIRContext, ptr: MIRPointerValue, val: BaseMIRValue
 	let hint = ctx.ssa_hints.get_hint(base.get_ssa_index())?.as_pointer()?;
 
 	if hint != val.vtype {
-		return Err(BaseError::err(format!("Cannot put this value onto this pointer as it is not the same type! {:#?} {:#?}", hint, base.vtype)))
+		return Err(BaseError::err(format!("Cannot put this value onto this pointer as it is not the same type! {:#?} - {:#?}", hint, val.vtype)))
 	}
 
 	ctx.append_inst(MIRInstruction::Store { variable: ptr, value: val });
@@ -338,10 +338,19 @@ pub fn build_field_pointer(ctx: &mut MIRContext, ptr: MIRPointerValue, field: us
 	return val.as_ptr();
 }
 
-pub fn build_index_pointer(ctx: &mut MIRContext, val: MIRPointerValue, index: MIRIntValue) -> BaseResult<bool> {
-	ctx.append_inst(MIRInstruction::IndexPointer { val, index });
+pub fn build_index_pointer(ctx: &mut MIRContext, val: MIRPointerValue, index: MIRIntValue) -> BaseResult<MIRPointerValue> {
+	let res = ctx.append_inst(MIRInstruction::IndexPointer { val: val.clone(), index }).get()?;
+	let base: BaseMIRValue = MIRPointerValue::into(val);
 
-	Ok(true)
+	let t = base.vtype.get_inner_type();
+
+	let ind = ctx.ssa_hints.append_hint(MIRValueHint::Pointer(*t));
+
+	if ind != res.get_ssa_index() {
+		return Err(BaseError::err("Couldn't hint SSA value for pointer! Indexes are different".to_string()))
+	}
+
+	res.as_ptr()
 }
 
 pub fn build_marker_era_drop(ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool> {

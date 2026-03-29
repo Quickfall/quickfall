@@ -12,7 +12,7 @@ pub struct MIRArrayValue {
 
 impl MIRArrayValue {
 	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if let Type::Array(size, k) = base.vtype.clone() {
+		if let Type::Array(size, _) = base.vtype.clone() {
 			return Ok(MIRArrayValue { base, size });
 		}
 
