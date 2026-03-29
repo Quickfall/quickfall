@@ -339,9 +339,18 @@ pub fn build_field_pointer(ctx: &mut MIRContext, ptr: MIRPointerValue, field: us
 }
 
 pub fn build_index_pointer(ctx: &mut MIRContext, val: MIRPointerValue, index: MIRIntValue) -> BaseResult<MIRPointerValue> {
-	let res = ctx.append_inst(MIRInstruction::IndexPointer { val, index }).get()?;
+	let res = ctx.append_inst(MIRInstruction::IndexPointer { val: val.clone(), index }).get()?;
+	let base: BaseMIRValue = MIRPointerValue::into(val);
 
-	Ok(res.as_ptr()?)
+	let t = base.vtype.get_inner_type();
+
+	let ind = ctx.ssa_hints.append_hint(MIRValueHint::Pointer(*t));
+
+	if ind != res.get_ssa_index() {
+		return Err(BaseError::err("Couldn't hint SSA value for pointer! Indexes are different".to_string()))
+	}
+
+	res.as_ptr()
 }
 
 pub fn build_marker_era_drop(ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool> {

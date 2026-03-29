@@ -12,7 +12,7 @@ pub struct MIRPointerValue {
 
 impl MIRPointerValue {
 	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if base.vtype.is_pointer() || base.vtype.is_array() {
+		if base.vtype.is_pointer() || base.vtype.is_array() || base.vtype.as_generic_lowered()? == RawType::Pointer {
 			return Ok(MIRPointerValue { base: base.clone() })
 		}
 

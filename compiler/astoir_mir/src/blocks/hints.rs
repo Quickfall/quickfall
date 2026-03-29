@@ -5,7 +5,7 @@ use crate::{vals::consts::MIRConstantValue};
 
 
 /// A hint on a given value, contains constants or pointer types for example
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum MIRValueHint {
 	Constant(MIRConstantValue),
 	Pointer(Type),
@@ -94,6 +94,8 @@ impl HintStorage {
 	/// Using hint indexes to represent different SSA values allows us to guarantee that SSA values will work on inner blocks.
 	pub fn append_hint(&mut self, hint: MIRValueHint) -> usize {
 		let ind = self.vec.len();
+
+		println!("- Pushed hint #{} -> {:#?}", ind, hint);
 
 		self.vec.push(hint);
 
