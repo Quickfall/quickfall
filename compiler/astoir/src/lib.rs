@@ -7,7 +7,8 @@ use compiler_errors::errs::{CompilerResult, normal::CompilerError};
 
 pub enum IRLevel {
 	HIR,
-	MIR
+	MIR,
+	LLVM
 }
 
 pub fn run_astoir_hir(ctx: ParserCtx) -> CompilerResult<HIRContext> {

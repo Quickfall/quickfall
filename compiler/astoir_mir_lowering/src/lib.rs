@@ -73,6 +73,7 @@ pub fn lower_hir_type(ctx: &MIRLoweringContext, t: Type) -> BaseResult<Type> {
 
 		Type::Array(a, b) => return Ok(Type::Array(*a, Box::new(lower_hir_type(ctx, *b.clone())?))), 
 		Type::Pointer(a, b) => return Ok(Type::Pointer(*a, Box::new(lower_hir_type(ctx, *b.clone())?))),
+		Type::Reference(inner) => return Ok(Type::Reference(Box::new(lower_hir_type(ctx, *inner.clone())?))),
 
 		_ => return Err(BaseError::err("Type is already lowered!".to_string()))
 	}

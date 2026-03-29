@@ -38,6 +38,31 @@ impl Type {
 		}
 	}
 
+	pub fn is_technically_pointer(&self) -> bool {
+		match self {
+			Self::Pointer(_, _) => true,
+			Self::Reference(_) => true,
+			_ => false
+		}
+	}
+
+	pub fn is_ptr(&self) -> bool {
+		match self {
+			Self::Pointer(_, _) => true,
+			Self::Reference(_) => true,
+			Self::GenericLowered(inner) => inner == &RawType::Pointer,
+			_ => false
+		}
+	}
+
+	pub fn get_maybe_containing_type(&self) -> Type {
+		match self {
+			Self::Pointer(_, inner) => *inner.clone(),
+			Self::Reference(inner) => *inner.clone(),
+			_ => self.clone()
+		}
+	}
+
 	pub fn is_array(&self) -> bool {
 		match self {
 			Self::Array(_, _) => true,
@@ -49,6 +74,14 @@ impl Type {
 		match (self, other) {
 			(Self::Pointer(is_array, _), Self::Pointer(is_array_2, _)) => {
 				return *is_array == *is_array_2;
+			},
+
+			(Self::Reference(_), Self::GenericLowered(lowered)) => {
+				return lowered == &RawType::Pointer
+			},
+
+			(Self::Reference(inner), Self::Reference(inner2)) => {
+				return inner.is_truly_eq(inner2);
 			},
 
 			(Self::Array(size, base), Self::Array(size2, base2)) => {

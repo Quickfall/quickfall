@@ -65,6 +65,15 @@ impl HIRNode {
 		return false;
 	}
 
+	pub fn get_variable_represent(&self) -> BaseResult<(usize, bool)> {
+		match self {
+			HIRNode::VariableReference { index, is_static} => return Ok((*index, *is_static)),
+			HIRNode::ArrayIndexAccess { val, index: _ } => return val.get_variable_represent(),
+
+			_ => return Err(BaseError::err("Used get_variable_represent on a non representing var".to_string()))
+		}
+	}
+
 	pub fn is_variable_representative(&self) -> bool {
 		if let HIRNode::ArrayIndexAccess { .. } = self {
 			return true;

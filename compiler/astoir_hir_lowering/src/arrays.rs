@@ -5,7 +5,7 @@ use compiler_typing::{raw::RawType, tree::Type};
 
 use crate::{values::lower_ast_value, var::lower_ast_variable_reference};
 
-pub fn lower_ast_array_index_access(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_array_index_access(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::ArrayIndexAccess { val, index } = node.kind {
 		let array = lower_ast_value(context, curr_ctx, val)?;
 
@@ -24,7 +24,7 @@ pub fn lower_ast_array_index_access(context: &mut HIRContext, curr_ctx: &HIRBran
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end));
 }
 
-pub fn lower_ast_array_modify(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_array_modify(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::ArrayIndexModifiy { array, index, val } = node.kind {
 		let array = lower_ast_variable_reference(context, curr_ctx, array, true)?;
 

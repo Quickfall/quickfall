@@ -99,6 +99,14 @@ impl HIRBranchedContext {
 		return true;
 	}
 
+	pub fn introduce_variable_refer(&mut self, ind: usize) -> bool {
+		let var = &mut self.variables[ind];
+
+		var.requires_address = true;
+
+		return true;
+	}
+
 	/// Determines if the element with the given index is still alive in the current branch.
 	pub fn is_alive(&self, ind: usize) -> bool {
 		let start_branch = self.variables[ind].introduced_in_era;

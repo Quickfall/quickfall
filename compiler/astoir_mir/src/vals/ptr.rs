@@ -5,14 +5,14 @@ use compiler_typing::raw::RawType;
 
 use crate::vals::base::{BaseMIRValue};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MIRPointerValue {
 	base: BaseMIRValue
 }
 
 impl MIRPointerValue {
 	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if base.vtype.is_pointer() || base.vtype.is_array() || base.vtype.as_generic_lowered()? == RawType::Pointer {
+		if base.vtype.is_technically_pointer() || base.vtype.is_array() || base.vtype.as_generic_lowered()? == RawType::Pointer {
 			return Ok(MIRPointerValue { base: base.clone() })
 		}
 

@@ -95,8 +95,6 @@ impl HintStorage {
 	pub fn append_hint(&mut self, hint: MIRValueHint) -> usize {
 		let ind = self.vec.len();
 
-		println!("- Pushed hint #{} -> {:#?}", ind, hint);
-
 		self.vec.push(hint);
 
 		return ind;

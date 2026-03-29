@@ -26,9 +26,9 @@ pub fn build_load(ctx: &mut MIRContext, ptr: MIRPointerValue) -> BaseResult<Base
 pub fn build_store(ctx: &mut MIRContext, ptr: MIRPointerValue, val: BaseMIRValue) -> BaseResult<bool> {
 	let base: BaseMIRValue = ptr.clone().into();
 
-	let hint = ctx.ssa_hints.get_hint(base.get_ssa_index())?.as_pointer()?;
+	let hint = ctx.ssa_hints.get_hint(base.get_ssa_index())?.get_type()?;
 
-	if hint != val.vtype {
+	if !hint.get_maybe_containing_type().is_truly_eq(&val.vtype) && !hint.is_ptr() {
 		return Err(BaseError::err(format!("Cannot put this value onto this pointer as it is not the same type! {:#?} - {:#?}", hint, val.vtype)))
 	}
 
