@@ -27,6 +27,20 @@ pub enum Type {
 }
 
 impl Type {
+	pub fn is_pointer(&self) -> bool {
+		match self {
+			Self::Pointer(_, _) => true,
+			_ => false
+		}
+	}
+
+	pub fn is_array(&self) -> bool {
+		match self {
+			Self::Array(_, _) => true,
+			_ => false
+		}
+	}
+
 	pub fn is_truly_eq(&self, other: &Type) -> bool {
 		match (self, other) {
 			(Self::Pointer(is_array, _), Self::Pointer(is_array_2, _)) => {
@@ -60,7 +74,7 @@ impl Type {
 	pub fn as_generic_lowered(&self) -> BaseResult<RawType> {
 		match self {
 			Type::GenericLowered(a) => return Ok(a.clone()),
-			_ => return Err(BaseError::err("Not lowered generic".to_string()))
+			_ => return Err(BaseError::err(format!("Not lowered generic {:#?}", self)))
 		}
 	}	
 
