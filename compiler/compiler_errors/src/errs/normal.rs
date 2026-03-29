@@ -23,13 +23,15 @@ pub struct HeldError {
 impl HeldError {
 	pub fn from(err: CompilerError) -> Self {
 		#[cfg(debug_assertions)]
-		{
-			let trace = Backtrace::capture();
-			
-			return HeldError { err, btrace: Some(trace) }
-		}
+        {
+            let trace = std::backtrace::Backtrace::capture();
+            HeldError { err, btrace: Some(trace) }
+        }
 
-		return HeldError { err, btrace: None }
+        #[cfg(not(debug_assertions))]
+        {
+            HeldError { err, btrace: None }
+        }
 	}
 }
 

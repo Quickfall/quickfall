@@ -1,11 +1,11 @@
 //! Utility functions to build instructions and more
 
-use astoir_typing::compacted::CompactedType;
 use compiler_errors::{IR_FUNCTION_INVALID_ARGUMENTS, errs::{BaseResult, base::BaseError}};
+use compiler_typing::{raw::RawType, tree::Type};
 
-use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue}};
+use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::MIRInstruction, vals::{arrays::MIRArrayValue, base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue}};
 
-pub fn build_stack_alloc(ctx: &mut MIRContext, size: usize, t: CompactedType) -> BaseResult<MIRPointerValue> {
+pub fn build_stack_alloc(ctx: &mut MIRContext, size: usize, t: Type) -> BaseResult<MIRPointerValue> {
 	let res = ctx.append_inst(MIRInstruction::StackAlloc { alloc_size: size, t: t.clone() }).get()?;
 
 	let hint = ctx.ssa_hints.append_hint(MIRValueHint::Pointer(t));
@@ -28,8 +28,8 @@ pub fn build_store(ctx: &mut MIRContext, ptr: MIRPointerValue, val: BaseMIRValue
 
 	let hint = ctx.ssa_hints.get_hint(base.get_ssa_index())?.as_pointer()?;
 
-	if !hint.base.is_equal(&val.vtype.base) {
-		return Err(BaseError::err("Cannot put this value onto this pointer as it is not the same type!".to_string()))
+	if hint != val.vtype {
+		return Err(BaseError::err(format!("Cannot put this value onto this pointer as it is not the same type! {:#?} - {:#?}", hint, val.vtype)))
 	}
 
 	ctx.append_inst(MIRInstruction::Store { variable: ptr, value: val });
@@ -57,22 +57,22 @@ pub fn build_upcast_int(ctx: &mut MIRContext, val: MIRIntValue, size: usize) -> 
 	return res.as_int();
 }
 
-pub fn build_downcast_float(ctx: &mut MIRContext, val: MIRFloatValue, exponent: usize, fraction: usize) -> BaseResult<MIRFloatValue> {
-	if val.exponent + val.fraction <= exponent + fraction {
+pub fn build_downcast_float(ctx: &mut MIRContext, val: MIRFloatValue, size: usize) -> BaseResult<MIRFloatValue> {
+	if val.size <= size {
 		return Err(BaseError::critical("Tried using downfloatcast on a smaller sized int!".to_string()));
 	}
 
-	let res = ctx.append_inst(MIRInstruction::DowncastFloat { val, exponent, fraction }).get()?;
+	let res = ctx.append_inst(MIRInstruction::DowncastFloat { val, size }).get()?;
 
 	return res.as_float();
 }
 
-pub fn build_upcast_float(ctx: &mut MIRContext, val: MIRFloatValue, exponent: usize, fraction: usize) -> BaseResult<MIRFloatValue> {
-	if val.exponent + val.fraction >= exponent + fraction {
+pub fn build_upcast_float(ctx: &mut MIRContext, val: MIRFloatValue, size: usize) -> BaseResult<MIRFloatValue> {
+	if val.size >= size {
 		return Err(BaseError::critical("Tried using upfloatcast on a higher sized int!".to_string()));
 	}
 
-	let res = ctx.append_inst(MIRInstruction::UpcastFloat { val, exponent, fraction }).get()?;
+	let res = ctx.append_inst(MIRInstruction::UpcastFloat { val, size }).get()?;
 
 	return res.as_float();
 }
@@ -124,7 +124,7 @@ pub fn build_int_neg(ctx: &mut MIRContext, val: MIRIntValue) -> BaseResult<MIRIn
 }
 
 pub fn build_float_add(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> BaseResult<MIRFloatValue> {
-	if left.exponent != right.exponent || left.fraction != right.fraction {
+	if left.size != right.size {
 		return Err(BaseError::critical("Tried using fadd on different sized integers".to_string()));
 	}
 
@@ -134,7 +134,7 @@ pub fn build_float_add(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloa
 }
 
 pub fn build_float_sub(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> BaseResult<MIRFloatValue> {
-	if left.exponent != right.exponent || left.fraction != right.fraction {
+	if left.size != right.size {
 		return Err(BaseError::critical("Tried using fsub on different sized integers".to_string()));
 	}
 
@@ -145,7 +145,7 @@ pub fn build_float_sub(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloa
 
 
 pub fn build_float_mul(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> BaseResult<MIRFloatValue> {
-	if left.exponent != right.exponent || left.fraction != right.fraction {
+	if left.size != right.size {
 		return Err(BaseError::critical("Tried using fmul on different sized integers".to_string()));
 	}
 
@@ -156,7 +156,7 @@ pub fn build_float_mul(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloa
 
 
 pub fn build_float_div(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> BaseResult<MIRFloatValue> {
-	if left.exponent != right.exponent || left.fraction != right.fraction {
+	if left.size != right.size {
 		return Err(BaseError::critical("Tried using fdiv on different sized integers".to_string()));
 	}
 
@@ -309,7 +309,7 @@ pub fn build_select(ctx: &mut MIRContext, condition: MIRIntValue, if_val: BaseMI
 		return Err(BaseError::err("Provided cond to build_select is not a boolean".to_string()));
 	}
 
-	if !if_val.vtype.base.is_equal(&else_val.vtype.base) {
+	if if_val.vtype != else_val.vtype {
 		return Err(BaseError::err("Both values do not have the same type in build_select!".to_string()))
 	}
 
@@ -320,10 +320,14 @@ pub fn build_field_pointer(ctx: &mut MIRContext, ptr: MIRPointerValue, field: us
 	let val = ctx.append_inst(MIRInstruction::FieldPointer { val: ptr.clone(), field }).get()?;
 	let base: &BaseMIRValue = &ptr.into();
 
-	let pointer_hint = ctx.ssa_hints.get_hint(base.get_ssa_index())?.as_pointer()?;
-	let ptr_t = pointer_hint.base.get_struct_container()?;
+	let pointer_hint = ctx.ssa_hints.get_hint(base.get_ssa_index())?.as_pointer()?.as_generic_lowered()?;
+	let t;
 
-	let t = CompactedType::from(ptr_t.fields.vals[field].clone());
+	if let RawType::LoweredStruct(_, container) = pointer_hint {
+		t = container.fields.vals[field].clone();
+	} else {
+		return Err(BaseError::err("Field pointer hint was not a lowered struct!".to_string()))
+	}
 
 	let ind = ctx.ssa_hints.append_hint(MIRValueHint::Pointer(t));
 
@@ -334,10 +338,19 @@ pub fn build_field_pointer(ctx: &mut MIRContext, ptr: MIRPointerValue, field: us
 	return val.as_ptr();
 }
 
-pub fn build_index_pointer(ctx: &mut MIRContext, val: MIRPointerValue, index: MIRIntValue) -> BaseResult<bool> {
-	ctx.append_inst(MIRInstruction::IndexPointer { val, index });
+pub fn build_index_pointer(ctx: &mut MIRContext, val: MIRPointerValue, index: MIRIntValue) -> BaseResult<MIRPointerValue> {
+	let res = ctx.append_inst(MIRInstruction::IndexPointer { val: val.clone(), index }).get()?;
+	let base: BaseMIRValue = MIRPointerValue::into(val);
 
-	Ok(true)
+	let t = base.vtype.get_inner_type();
+
+	let ind = ctx.ssa_hints.append_hint(MIRValueHint::Pointer(*t));
+
+	if ind != res.get_ssa_index() {
+		return Err(BaseError::err("Couldn't hint SSA value for pointer! Indexes are different".to_string()))
+	}
+
+	res.as_ptr()
 }
 
 pub fn build_marker_era_drop(ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool> {
@@ -358,14 +371,14 @@ pub fn build_unsigned_int_const(ctx: &mut MIRContext, raw: u128, bitsize: usize)
 	return res.as_int();
 }
 
-pub fn build_signed_float_const(ctx: &mut MIRContext, raw: f64, exponent: usize, fraction: usize) -> BaseResult<MIRFloatValue> {
-	let res = ctx.append_inst(MIRInstruction::FloatSignedConstant { raw, exponent, fraction }).get()?;
+pub fn build_signed_float_const(ctx: &mut MIRContext, raw: f64, size: usize) -> BaseResult<MIRFloatValue> {
+	let res = ctx.append_inst(MIRInstruction::FloatSignedConstant { raw, size }).get()?;
 
 	return res.as_float();
 }
 
-pub fn build_unsigned_float_const(ctx: &mut MIRContext, raw: f64, exponent: usize, fraction: usize) -> BaseResult<MIRFloatValue> {
-	let res = ctx.append_inst(MIRInstruction::FloatUnsignedConstant { raw, exponent, fraction }).get()?;
+pub fn build_unsigned_float_const(ctx: &mut MIRContext, raw: f64, size: usize) -> BaseResult<MIRFloatValue> {
+	let res = ctx.append_inst(MIRInstruction::FloatUnsignedConstant { raw, size }).get()?;
 
 	return res.as_float();
 }
@@ -388,7 +401,25 @@ pub fn build_static_string_const(ctx: &mut MIRContext, raw: String) -> BaseResul
 	return res.as_ptr();
 }
 
-pub fn build_argument_grab(ctx: &mut MIRContext, index: usize, t: CompactedType) -> BaseResult<BaseMIRValue> {
+pub fn build_static_struct_const(ctx: &mut MIRContext, struct_type: RawType, values: Vec<BaseMIRValue>) -> BaseResult<MIRStructValue> {
+	let res = ctx.append_inst(MIRInstruction::StructInitializerConstant { struct_type, values }).get()?;
+
+	return res.as_struct();
+}
+
+pub fn build_static_array_const(ctx: &mut MIRContext, values: Vec<BaseMIRValue>) -> BaseResult<MIRArrayValue> {
+	let res = ctx.append_inst(MIRInstruction::ArrayInitializerConstant { values }).get()?;
+
+	return res.as_array();
+}
+
+pub fn build_static_array_one_const(ctx: &mut MIRContext, val: BaseMIRValue, size: usize) -> BaseResult<MIRArrayValue> {
+	let res = ctx.append_inst(MIRInstruction::ArrayInitializerConstantSame { size, val }).get()?;
+
+	return res.as_array();
+}
+
+pub fn build_argument_grab(ctx: &mut MIRContext, index: usize, t: Type) -> BaseResult<BaseMIRValue> {
 	let res = ctx.append_inst(MIRInstruction::FuncArgumentGrab { ind: index, argtype: t }).get()?;
 
 	return Ok(res);
@@ -398,8 +429,8 @@ pub fn build_call(ctx: &mut MIRContext, func: usize, ind: usize, args: Vec<BaseM
 	let func = &ctx.functions[func];
 
 	for(arg, t) in args.iter().zip(func.arguments.iter()) {
-		if !arg.vtype.base.can_transmute_into(&t.base) {
-			return Err(BaseError::err(IR_FUNCTION_INVALID_ARGUMENTS!().to_string()));
+		if !arg.vtype.is_truly_eq(t) {
+			return Err(BaseError::err(format!(IR_FUNCTION_INVALID_ARGUMENTS!(), arg.vtype, t)));
 		}
 	}
 

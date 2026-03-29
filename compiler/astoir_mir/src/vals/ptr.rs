@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use astoir_typing::base::BaseType;
 use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
+use compiler_typing::raw::RawType;
 
 use crate::vals::base::{BaseMIRValue};
 
@@ -12,7 +12,7 @@ pub struct MIRPointerValue {
 
 impl MIRPointerValue {
 	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if let BaseType::Pointer = &base.vtype.base {
+		if base.vtype.is_pointer() || base.vtype.is_array() || base.vtype.as_generic_lowered()? == RawType::Pointer {
 			return Ok(MIRPointerValue { base: base.clone() })
 		}
 

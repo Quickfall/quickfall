@@ -64,7 +64,7 @@ pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> Comp
 			return parse_function_return_statement(tokens, ind);
 		}
 
-		LexerTokenType::KEYWORD(str, _) => {
+		LexerTokenType::Keyword(str, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
 				let call = parse_function_call(tokens, ind);
 				return parse_ast_value_post_l(tokens, ind, call, true);

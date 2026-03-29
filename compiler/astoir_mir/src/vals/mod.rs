@@ -8,6 +8,8 @@ pub mod float;
 pub mod ptr;
 pub mod consts;
 pub mod refer;
+pub mod structs;
+pub mod arrays;
 
 pub enum MIRAnyValue {
 	Int(MIRIntValue), 

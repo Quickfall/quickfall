@@ -21,7 +21,7 @@ pub fn lower_hir_for_loop(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mu
 		ctx.mir_ctx.writer.move_end(body_ref);
 
 		lower_hir_body(body_ref, body, ctx)?;
-		lower_hir_math_operation(body_ref, incrementation, ctx, None)?;
+		lower_hir_math_operation(body_ref, incrementation, ctx)?;
 
 		build_unconditional_branch(&mut ctx.mir_ctx, header_ref)?;
 
@@ -31,7 +31,7 @@ pub fn lower_hir_for_loop(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mu
 		build_unconditional_branch(&mut ctx.mir_ctx, cond_ref)?;
 
 		ctx.mir_ctx.writer.move_end(cond_ref);
-		let cond_val = lower_hir_value(block, condition, ctx, None)?;
+		let cond_val = lower_hir_value(block, condition, ctx)?;
 
 		build_conditional_branch(&mut ctx.mir_ctx, cond_val.as_int()?, body_ref, exit_ref)?;
 

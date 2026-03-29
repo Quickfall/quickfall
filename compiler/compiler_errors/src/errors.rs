@@ -100,6 +100,12 @@ macro_rules! IR_DIFF_TYPE {
 	};
 }
 
+#[macro_export]
+macro_rules! TYPE_TYPE_PARAMETERS {
+	() => {
+		"Invalid amount of type parameters. Make sure this has the same amount of type parameters for the type."
+	};
+}
 
 #[macro_export]
 macro_rules! IR_EXPECTED_TYPE {
@@ -139,7 +145,7 @@ macro_rules! IR_FIND_ELEMENT {
 #[macro_export]
 macro_rules! IR_FUNCTION_INVALID_ARGUMENTS {
 	() => {
-		"Invalid argument provided! Cannot transmute {} into {}"
+		"Invalid argument provided! Cannot transmute {:#?} into {:#?}"
 	};
 }
 
@@ -157,6 +163,12 @@ macro_rules! IR_OUTSIDE_ERA_HIGHER {
 	};
 }
 
+#[macro_export]
+macro_rules! ENUM_PARENT_FIELD {
+	() => {
+		"Enums parent types cannot have fields."
+	};
+}
 
 #[macro_export]
 macro_rules! IR_TYPE_UNSIGNED {
@@ -288,6 +300,20 @@ macro_rules! FUNC_RETVOID_USE_VAL {
 macro_rules! IR_FIND_PRIMITIVE_TYPE {
 	() => {
 		"Cannot find said primitive type in the type storage.\nPlease send a bug report at https://github.com/quickfall/quickfall"
+	};
+}
+
+#[macro_export]
+macro_rules! TYPE_UNRESOLVABLE {
+	() => {
+		"Type here cannot be fully resolved! Please put a concrete type"
+	};
+}
+
+#[macro_export]
+macro_rules! TYPE_NO_GENERIC {
+	() => {
+		"Cannot find the generic in this type tree! Are you sure this is a valid type?"
 	};
 }
 

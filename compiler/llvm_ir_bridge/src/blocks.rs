@@ -25,8 +25,6 @@ pub fn bridge_llvm_block(mir: &MIRContext, func: usize, block: &MIRBlock, bridge
 	bridge.builder.position_at_end(bridge.blocks[&block.self_ref].clone().inner);
 
 	for inst in block.instructions.clone() {
-		println!("res: {}", inst);
-
 		let res = bridge_llvm_instruction(inst.clone(), func, bridge, mir)?;
 
 		if res.is_some() {

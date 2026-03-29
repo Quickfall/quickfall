@@ -1,20 +1,19 @@
 use std::fmt::Display;
 
-use astoir_typing::{compacted::CompactedType};
 use compiler_errors::errs::{BaseResult};
+use compiler_typing::tree::Type;
 
-use crate::vals::{float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue};
+use crate::vals::{arrays::MIRArrayValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue};
 
 /// Represents a basic value in the MIR.
 #[derive(Clone, Debug)]
 pub struct BaseMIRValue {
 	val_index: usize,
-	pub vtype: CompactedType
+	pub vtype: Type
 }
 
 impl BaseMIRValue {
-	#[deprecated(note = "This is meant for internal purposes, always use builders to safely create this!")]
-	pub fn new(val_index: usize, vtype: CompactedType) -> Self {
+	pub fn new(val_index: usize, vtype: Type) -> Self {
 		return BaseMIRValue { val_index, vtype }
 	}
 
@@ -28,6 +27,14 @@ impl BaseMIRValue {
 
 	pub fn as_ptr(&self) -> BaseResult<MIRPointerValue> {
 		return Ok(MIRPointerValue::new(self.clone())?)
+	}
+
+	pub fn as_struct(&self) -> BaseResult<MIRStructValue> {
+		return Ok(MIRStructValue::new(self.clone())?)
+	}
+
+	pub fn as_array(&self) -> BaseResult<MIRArrayValue> {
+		return Ok(MIRArrayValue::new(self.clone())?);
 	}
 
 	pub fn get_ssa_index(&self) -> usize {

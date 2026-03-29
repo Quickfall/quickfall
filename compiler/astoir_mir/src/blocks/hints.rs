@@ -1,20 +1,28 @@
-use astoir_typing::compacted::CompactedType;
 use compiler_errors::errs::{BaseResult, base::BaseError};
+use compiler_typing::tree::Type;
 
-use crate::{blocks::MIRBlockVariableSSAHint, vals::{base::BaseMIRValue, consts::MIRConstantValue}};
+use crate::{vals::consts::MIRConstantValue};
 
 
 /// A hint on a given value, contains constants or pointer types for example
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum MIRValueHint {
 	Constant(MIRConstantValue),
-	Pointer(CompactedType),
-	Value(CompactedType)
+	Pointer(Type),
+	Value(Type)
 }
 
 impl MIRValueHint {
 	pub fn is_determined(&self) -> bool {
 		if let &MIRValueHint::Constant(_) = self {
+			return true;
+		}
+
+		return false;
+	}
+
+	pub fn is_pointer(&self) -> bool {
+		if let &MIRValueHint::Pointer(_) = self {
 			return true;
 		}
 
@@ -28,7 +36,7 @@ impl MIRValueHint {
 		}
 	}
 
-	pub fn get_type(&self) -> BaseResult<CompactedType> {
+	pub fn get_type(&self) -> BaseResult<Type> {
 		match self {
 			MIRValueHint::Pointer(e) => Ok(e.clone()),
 			MIRValueHint::Value(e) => Ok(e.clone()),
@@ -36,21 +44,21 @@ impl MIRValueHint {
 		}
 	}
 
-	pub fn as_pointer(&self) -> BaseResult<CompactedType> {
+	pub fn as_pointer(&self) -> BaseResult<Type> {
 		match self {
 			MIRValueHint::Pointer(e) => Ok(e.clone()),
 			_ => Err(BaseError::critical("Cannot use as_pointer on a non pointer!".to_string()))
 		}
 	}
 
-	pub fn as_value(&self) -> BaseResult<CompactedType> {
+	pub fn as_value(&self) -> BaseResult<Type> {
 		match self {
 			MIRValueHint::Value(e) => Ok(e.clone()),
 			_ => Err(BaseError::critical("Cannot use as_value on a non value!".to_string()))
 		}
 	}
 
-	pub fn from_ptr(val: CompactedType) -> Self {
+	pub fn from_ptr(val: Type) -> Self {
 		return MIRValueHint::Pointer(val)
 	}
 
@@ -62,7 +70,7 @@ impl Into<MIRValueHint> for MIRConstantValue {
 	}
 }
 
-impl Into<MIRValueHint> for CompactedType {
+impl Into<MIRValueHint> for Type {
 	fn into(self) -> MIRValueHint {
 		return MIRValueHint::Value(self)
 	}
@@ -86,6 +94,8 @@ impl HintStorage {
 	/// Using hint indexes to represent different SSA values allows us to guarantee that SSA values will work on inner blocks.
 	pub fn append_hint(&mut self, hint: MIRValueHint) -> usize {
 		let ind = self.vec.len();
+
+		println!("- Pushed hint #{} -> {:#?}", ind, hint);
 
 		self.vec.push(hint);
 

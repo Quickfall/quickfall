@@ -18,7 +18,7 @@ pub fn run_test(path: String) -> bool {
 		return false;
 	}
 
-	let hir_result = run_astoir_hir(ast.unwrap());
+	let _hir_result = run_astoir_hir(ast.unwrap());
 	
 	if has_errors() {
 		dump_errors();

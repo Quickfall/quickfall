@@ -8,4 +8,3 @@ pub mod builder;
 pub mod funcs;
 pub mod ctx;
 pub mod inst_writer;
-pub mod transmutation;

@@ -7,8 +7,8 @@ use crate::{MIRLoweringContext, values::lower_hir_value};
 
 pub fn lower_hir_boolean_operator(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<MIRIntValue> {
 	if let HIRNode::BooleanOperator { left, right, operator } = *node {
-		let a = lower_hir_value(block, left, ctx, None)?.as_int()?;
-		let b = lower_hir_value(block, right, ctx, None)?.as_int()?;
+		let a = lower_hir_value(block, left, ctx)?.as_int()?;
+		let b = lower_hir_value(block, right, ctx)?.as_int()?;
 
 		let val = match operator {
 			ComparingOperator::Equal => build_comp_eq(&mut ctx.mir_ctx, a, b)?,
@@ -27,7 +27,7 @@ pub fn lower_hir_boolean_operator(block: MIRBlockReference, node: Box<HIRNode>, 
 
 pub fn lowering_hir_boolean_condition(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<MIRIntValue> {
 	if let HIRNode::BooleanCondition { value, negation } = *node {
-		let mut val = lower_hir_value(block, value, ctx, None)?.as_int()?;
+		let mut val = lower_hir_value(block, value, ctx)?.as_int()?;
 
 		if negation {
 			val = build_bitwise_not(&mut ctx.mir_ctx, val)?;

@@ -2,11 +2,12 @@ use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::CompleteType};
+use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::{ASTType}};
 
-use crate::{functions::parse_function_declaraction, structs::members::parse_types_field_member};
+use crate::{functions::parse_function_declaraction, structs::members::parse_types_field_member, types::parse_type_parameters_declaration};
 
 pub mod members;
+pub mod val;
 
 pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout: bool) -> CompilerResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
@@ -16,13 +17,16 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 	let type_name = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
+
+	let type_params = parse_type_parameters_declaration(tokens, ind)?;
+
 	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
 	*ind += 1;
 
 	let mut members: Vec<Box<ASTTreeNode>> = Vec::new();	
 
-	let temp_type = CompleteType { base_type: type_name.1, sizes: vec![], types: vec![], pointer: false, pointer_array: false, array_sz: 0 };
+	let temp_type = ASTType::Generic(type_name.0.clone(), vec![], vec![]);
 
 	while tokens[*ind].tok_type != LexerTokenType::BracketClose {
 		if tokens[*ind].tok_type == LexerTokenType::Function {
@@ -36,5 +40,5 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 
 	*ind += 1;
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLayoutDeclaration { name: HashedString::new(type_name.0), layout, members }, start, end)));
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLayoutDeclaration { name: HashedString::new(type_name.0), layout, members, type_params }, start, end)));
 }

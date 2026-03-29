@@ -1,6 +1,6 @@
 //! Parser module for functions
 
-use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::CompleteType};
+use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::{ASTType}};
 use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
@@ -11,7 +11,7 @@ pub mod shadow;
 pub mod arguments;
 pub mod returns;
 
-pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<CompleteType>) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<ASTType>) -> CompilerResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;
@@ -78,7 +78,21 @@ pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
     let mut tok: &LexerToken = &tokens[*ind];
     let mut body: Vec<Box<ASTTreeNode>> = Vec::new();
 
+	let mut stock = 1;
+
     while tok.tok_type != LexerTokenType::EndOfFile && tok.tok_type != LexerTokenType::BracketClose {
+		if tok.tok_type == LexerTokenType::BracketClose {
+			stock -= 1;
+		}
+
+		if stock == 0 {
+			break;
+		}
+
+		if tok.tok_type == LexerTokenType::BracketOpen {
+			stock += 1;
+		}
+
         let n = parse_ast_node_in_body(tokens, ind)?;
 
         body.push(n);

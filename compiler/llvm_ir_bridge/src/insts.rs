@@ -1,7 +1,7 @@
-use astoir_mir::{blocks::MIRBlockHeldInstruction, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::{self, MIRFloatValue}, int::MIRIntValue, ptr::MIRPointerValue}};
-use astoir_typing::base::BaseType;
+use astoir_mir::{blocks::MIRBlockHeldInstruction, ctx::MIRContext, insts::MIRInstruction, vals::{base::BaseMIRValue, float::{MIRFloatValue}, int::MIRIntValue, ptr::MIRPointerValue}};
 use compiler_errors::errs::{BaseResult, base::BaseError};
-use inkwell::{IntPredicate, module::Linkage, types::StringRadix, values::{BasicValue, BasicValueEnum, FloatValue, IntValue}};
+use compiler_typing::{raw::RawType};
+use inkwell::{IntPredicate, module::Linkage, types::{BasicType, BasicTypeEnum, StringRadix}, values::{BasicValue, BasicValueEnum, FloatValue, IntValue}};
 
 use crate::{ctx::LLVMBridgeContext, llvm_to_base, llvm_to_base_returnless, utils::LLVMBasicValue};
 
@@ -9,7 +9,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 
 	let res: Option<BasicValueEnum<'static>> = match MIRInstruction::from(instruction.clone().into()) {
 		MIRInstruction::StackAlloc { alloc_size: _, t } => {
-			let res = llvm_to_base!(bridge.builder.build_alloca(bridge.types.convert(t.base)?.inner, &format!("{}", instruction.as_valuedindex()?)));
+			let res = llvm_to_base!(bridge.builder.build_alloca(bridge.types.convert(t)?.inner, ""));
 		
 			Some(res.into())
 		},
@@ -17,7 +17,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 		MIRInstruction::Load { value } => {
 			let base = BaseMIRValue::from(value.into());
 
-			let res = llvm_to_base!(bridge.builder.build_load(bridge.types.convert(mir.ssa_hints.get_hint(base.get_ssa_index())?.get_type()?.base)?.inner, bridge.values[&base.get_ssa_index()].into_pointer_value(),  &format!("{}", instruction.as_valuedindex()?)));
+			let res = llvm_to_base!(bridge.builder.build_load(bridge.types.convert(mir.ssa_hints.get_hint(base.get_ssa_index())?.get_type()?)?.inner, bridge.values[&base.get_ssa_index()].into_pointer_value(),  &format!("{}", instruction.as_valuedindex()?)));
 		
 			Some(res.into())
 		},
@@ -29,7 +29,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_int_add(l.into_int_value(), r.into_int_value(), "e"));
+			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_int_add(l.into_int_value(), r.into_int_value(), ""));
 
 			Some(res.into())
 		},
@@ -41,7 +41,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_int_sub(l.into_int_value(), r.into_int_value(), "e"));
+			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_int_sub(l.into_int_value(), r.into_int_value(), ""));
 
 			Some(res.into())
 		},
@@ -53,7 +53,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_int_mul(l.into_int_value(), r.into_int_value(), "e"));
+			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_int_mul(l.into_int_value(), r.into_int_value(), ""));
 
 			Some(res.into())
 		},
@@ -68,9 +68,9 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let res: IntValue<'static>;
 
 			if signed {
-				res = llvm_to_base!(bridge.builder.build_int_signed_div(l.into_int_value(), r.into_int_value(), "e"))
+				res = llvm_to_base!(bridge.builder.build_int_signed_div(l.into_int_value(), r.into_int_value(), ""))
 			} else {
-				res = llvm_to_base!(bridge.builder.build_int_unsigned_div(l.into_int_value(), r.into_int_value(), "e"))
+				res = llvm_to_base!(bridge.builder.build_int_unsigned_div(l.into_int_value(), r.into_int_value(), ""))
 			}
 
 			Some(res.into())
@@ -83,7 +83,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: FloatValue<'static> = llvm_to_base!(bridge.builder.build_float_add(l.into_float_value(), r.into_float_value(), "e"));
+			let res: FloatValue<'static> = llvm_to_base!(bridge.builder.build_float_add(l.into_float_value(), r.into_float_value(), ""));
 
 			Some(res.into())
 		},
@@ -95,7 +95,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: FloatValue<'static> = llvm_to_base!(bridge.builder.build_float_sub(l.into_float_value(), r.into_float_value(), "e"));
+			let res: FloatValue<'static> = llvm_to_base!(bridge.builder.build_float_sub(l.into_float_value(), r.into_float_value(), ""));
 
 			Some(res.into())
 		},
@@ -107,7 +107,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: FloatValue<'static> = llvm_to_base!(bridge.builder.build_float_mul(l.into_float_value(), r.into_float_value(), "e"));
+			let res: FloatValue<'static> = llvm_to_base!(bridge.builder.build_float_mul(l.into_float_value(), r.into_float_value(), ""));
 
 			Some(res.into())
 		},
@@ -119,7 +119,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: FloatValue<'static> = llvm_to_base!(bridge.builder.build_float_div(l.into_float_value(), r.into_float_value(), "e"));
+			let res: FloatValue<'static> = llvm_to_base!(bridge.builder.build_float_div(l.into_float_value(), r.into_float_value(), ""));
 
 			Some(res.into())
 		},
@@ -131,7 +131,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_and(l.into_int_value(), r.into_int_value(), "e"));
+			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_and(l.into_int_value(), r.into_int_value(), ""));
 			
 			Some(res.into())
 		},
@@ -143,7 +143,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_or(l.into_int_value(), r.into_int_value(), "e"));
+			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_or(l.into_int_value(), r.into_int_value(), ""));
 			
 			Some(res.into())
 		}
@@ -155,7 +155,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let l = bridge.values[&left.get_ssa_index()].clone();
 			let r = bridge.values[&right.get_ssa_index()].clone();
 
-			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_xor(l.into_int_value(), r.into_int_value(), "e"));
+			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_xor(l.into_int_value(), r.into_int_value(), ""));
 			
 			Some(res.into())
 		},
@@ -177,7 +177,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let v = bridge.values[&val.get_ssa_index()].clone();
 			let shift = bridge.values[&shift.get_ssa_index()].clone();
 
-			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_left_shift(v.into_int_value(), shift.into_int_value(), "e"));
+			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_left_shift(v.into_int_value(), shift.into_int_value(), ""));
 
 			Some(res.into())
 		},
@@ -192,7 +192,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let v = bridge.values[&val.get_ssa_index()].clone();
 			let shift = bridge.values[&shift.get_ssa_index()].clone();
 
-			let res = llvm_to_base!(bridge.builder.build_right_shift(v.into_int_value(), shift.into_int_value(), signed, "e"));
+			let res = llvm_to_base!(bridge.builder.build_right_shift(v.into_int_value(), shift.into_int_value(), signed, ""));
 
 			Some(res.into())
 		},
@@ -232,37 +232,37 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 		},
 
 		MIRInstruction::IntegerSignedConstant { raw, bitsize } => {
-			let t = BaseType::NumericIntegerType(bitsize as u64, true);
+			let t = RawType::Integer(bitsize, true);
 
-			let int_type = bridge.types.convert(t)?.into_int_type();
+			let int_type = bridge.types.convert_raw(t)?.into_int_type();
 			let res = int_type.const_int_from_string(&raw.to_string(), StringRadix::Decimal).unwrap();
 
 			Some(res.into())
 		},
 
 		MIRInstruction::IntegerUnsignedConstant { raw, bitsize } => {
-			let t = BaseType::NumericIntegerType(bitsize as u64, false);
+			let t = RawType::Integer(bitsize, false);
 
-			let int_type = bridge.types.convert(t)?.into_int_type();
+			let int_type = bridge.types.convert_raw(t)?.into_int_type();
 			let res = int_type.const_int_from_string(&raw.to_string(), StringRadix::Decimal).unwrap();
 
 			Some(res.into())
 		},
 
-		MIRInstruction::FloatSignedConstant { raw, exponent, fraction } => {
-			let t = BaseType::FloatingNumberType(exponent as u64, fraction as u64, true);
+		MIRInstruction::FloatSignedConstant { raw, size } => {
+			let t = RawType::Floating(size, true);
 
-			let float_type = bridge.types.convert(t)?.into_float_type();
+			let float_type = bridge.types.convert_raw(t)?.into_float_type();
 
 			let res = unsafe { float_type.const_float_from_string(&raw.to_string()) };
 
 			Some(res.into())
 		},
 
-		MIRInstruction::FloatUnsignedConstant { raw, exponent, fraction } => {
-			let t = BaseType::FloatingNumberType(exponent as u64, fraction as u64, false);
+		MIRInstruction::FloatUnsignedConstant { raw, size } => {
+			let t = RawType::Floating(size, false);
 
-			let float_type = bridge.types.convert(t)?.into_float_type();
+			let float_type = bridge.types.convert_raw(t)?.into_float_type();
 
 			let res = unsafe { float_type.const_float_from_string(&raw.to_string()) };
 
@@ -275,7 +275,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 
 		MIRInstruction::StaticStringConstant { raw } => {
 			let bytes = raw.as_bytes();
-			let byte_type = bridge.types.convert(BaseType::NumericIntegerType(8, false))?.into_int_type();
+			let byte_type = bridge.types.convert_raw(RawType::Integer(8, false))?.into_int_type();
 
 			let arr_type = byte_type.array_type((bytes.len() + 1) as u32);
 
@@ -292,6 +292,143 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			global.set_initializer(&byte_type.const_array(&vals));
 			
 			Some(global.as_pointer_value().into())
+		},
+
+		MIRInstruction::StructInitializerConstant { struct_type, values } => {
+			let t = bridge.types.convert_raw(struct_type)?.into_struct_type();
+
+			let mut vals = vec![];
+
+			for value in values {
+				vals.push(bridge.values[&value.get_ssa_index()].clone().inner);
+			}
+
+			let val = t.const_named_struct(&vals).into();
+
+			Some(val)
+		},
+
+		MIRInstruction::ArrayInitializerConstant { values } => {
+			let k = bridge.types.convert(values[0].vtype.clone())?;
+
+			let ke = match k.as_basic_type_enum() {
+
+				BasicTypeEnum::IntType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_int_value())
+					}
+
+					v.const_array(&vals)
+				},
+				
+				BasicTypeEnum::FloatType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_float_value())
+					}
+
+					v.const_array(&vals)
+				},
+				
+				BasicTypeEnum::ArrayType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_array_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				BasicTypeEnum::PointerType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_pointer_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				
+				BasicTypeEnum::StructType(v) => {
+					let mut vals = vec![];
+
+					for value in values {
+						vals.push(bridge.values[&value.get_ssa_index()].into_struct_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				_ => return Err(BaseError::err("Got LLVM invalid type!".to_string()))
+			};
+
+			Some(ke.into())
+		},
+
+		MIRInstruction::ArrayInitializerConstantSame { size, val } => {
+			let k = bridge.types.convert(val.vtype.clone())?;
+
+			let ke = match k.as_basic_type_enum() {
+
+				BasicTypeEnum::IntType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_int_value())
+					}
+
+					v.const_array(&vals)
+				},
+				
+				BasicTypeEnum::FloatType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_float_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				BasicTypeEnum::StructType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_struct_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				BasicTypeEnum::ArrayType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_array_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				BasicTypeEnum::PointerType(v) => {
+					let mut vals = vec![];
+
+					for _ in 0..size {
+						vals.push(bridge.values[&val.get_ssa_index()].into_pointer_value())
+					}
+
+					v.const_array(&vals)
+				},
+
+				_ => return Err(BaseError::err("Got LLVM invalid type!".to_string()))
+			};
+			
+			Some(ke.into())
 		},
 
 		MIRInstruction::Return { val } => {
@@ -330,7 +467,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 		MIRInstruction::Phi { choices } => {
 			let mut llvm_choices = vec![];
 
-			let t = bridge.types.convert(choices[0].1.vtype.base.clone())?;
+			let t = bridge.types.convert(choices[0].1.vtype.clone())?;
 
 			for choice in choices {
 				let block = bridge.blocks[&choice.0].clone().inner;
@@ -363,7 +500,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 
 		MIRInstruction::FieldPointer { val, field } => {
 			let val: BaseMIRValue = MIRPointerValue::into(val);
-			let struct_type = bridge.types.convert(mir.ssa_hints.get_hint(val.get_ssa_index())?.get_type()?.base)?.inner;
+			let struct_type = bridge.types.convert(mir.ssa_hints.get_hint(val.get_ssa_index())?.get_type()?)?.inner;
 
 			let ptr_val = bridge.values[&val.get_ssa_index()].inner;
 
@@ -374,9 +511,9 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 
 		MIRInstruction::IndexPointer { val, index } => {
 			let val: BaseMIRValue = MIRPointerValue::into(val);
-			let struct_type = bridge.types.convert(mir.ssa_hints.get_hint(val.get_ssa_index())?.get_type()?.base)?.inner;
+			let struct_type = bridge.types.convert(mir.ssa_hints.get_hint(val.get_ssa_index())?.get_type()?)?.inner;
 
-			let index_type = bridge.types.convert(BaseType::NumericIntegerType(32, false))?.inner.into_int_type();
+			let index_type = bridge.types.convert_raw(RawType::Integer(32, false))?.inner.into_int_type();
 
 			let ptr_val = bridge.values[&val.get_ssa_index()].inner;
 
@@ -391,7 +528,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 		MIRInstruction::PointerAdd { pointer, right } => {
 			let pointer: BaseMIRValue = MIRPointerValue::into(pointer);
 			let right: BaseMIRValue = MIRIntValue::into(right);
-			let t = bridge.types.convert(BaseType::NumericIntegerType(8, false))?.inner;
+			let t = bridge.types.convert_raw(RawType::Integer(8, false))?.inner;
 
 			let pointer = bridge.values[&pointer.get_ssa_index()].inner;
 			let right = bridge.values[&right.get_ssa_index()].inner;
@@ -404,7 +541,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 		MIRInstruction::PointerSub { pointer, right } => {
 			let pointer: BaseMIRValue = MIRPointerValue::into(pointer);
 			let right: BaseMIRValue = MIRIntValue::into(right);
-			let t = bridge.types.convert(BaseType::NumericIntegerType(8, false))?.inner;
+			let t = bridge.types.convert_raw(RawType::Integer(8, false))?.inner;
 
 			let pointer = bridge.values[&pointer.get_ssa_index()].inner;
 			let right = bridge.values[&right.get_ssa_index()].inner;

@@ -1,12 +1,12 @@
 use astoir_hir::{nodes::HIRNode};
 use astoir_mir::{blocks::{refer::MIRBlockReference}, builder::{build_float_add, build_float_div, build_float_mul, build_float_sub, build_int_add, build_int_div, build_int_mul, build_int_sub}, vals::base::BaseMIRValue};
-use astoir_typing::{base::BaseType, compacted::CompactedType};
 use compiler_errors::{IR_INVALID_NODE_TYPE, IR_REQ_VARIABLE_ASSIGN, errs::{BaseResult, base::BaseError}};
+use compiler_typing::raw::RawType;
 use lexer::toks::math::MathOperator;
 
 use crate::{MIRLoweringContext, values::lower_hir_value, vars::lower_hir_variable_reference};
  
-pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext, expected: Option<CompactedType>) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
 	if let HIRNode::MathOperation { left, right, operation, assignment } = *node {
 		if assignment && !left.is_variable_reference() {
 			return Err(BaseError::err(IR_REQ_VARIABLE_ASSIGN!().to_string()))
@@ -20,13 +20,13 @@ pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ct
 			ptr = None
 		}
 
-		let left_val = lower_hir_value(block, left, ctx, expected.clone())?;
-		let right_val = lower_hir_value(block, right, ctx, expected)?;
+		let left_val = lower_hir_value(block, left, ctx)?;
+		let right_val = lower_hir_value(block, right, ctx)?;
 				
 
-		let val = match left_val.vtype.base {
-			BaseType::NumericIntegerType(_, _) => lower_hir_math_operation_int(left_val, right_val, operation, ctx)?,
-			BaseType::FloatingNumberType(_, _, _) => lower_hir_math_operation_float(left_val, right_val, operation, ctx)?,
+		let val = match left_val.vtype.get_generic(&ctx.hir_ctx.type_storage) {
+			RawType::Integer(_, _) | RawType::FixedPoint(_, _, _) => lower_hir_math_operation_int(left_val, right_val, operation, ctx)?,
+			RawType::Floating(_, _) => lower_hir_math_operation_float(left_val, right_val, operation, ctx)?,
 
 			// TODO: see if fixed point are needed or do they automatically fallback to int
 

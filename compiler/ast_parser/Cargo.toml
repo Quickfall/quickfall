@@ -7,4 +7,5 @@ edition = "2024"
 ast = { path = "../ast" }
 compiler_errors = { path = "../compiler_errors" }
 compiler_utils = { path = "../compiler_utils" }
+compiler_typing = { path = "../compiler_typing" }
 lexer = { path = "../lexer" }

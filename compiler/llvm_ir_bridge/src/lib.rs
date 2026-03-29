@@ -32,10 +32,7 @@ pub fn bridge_llvm(mir: &MIRContext) -> BaseResult<LLVMBridgeContext> {
 macro_rules! llvm_to_base  {
 	($exp:expr) => {
 		match $exp {
-			Ok(v) => {
-				println!("Suceee!!! {}", v);
-				v
-			},
+			Ok(v) => v,
 			Err(e) => return Err(compiler_errors::errs::base::BaseError::new(compiler_errors::errs::ErrorKind::Critical, format!(compiler_errors::INKWELL_FUNC_FAILED!(), "unamed", e)))
 		}
 	};

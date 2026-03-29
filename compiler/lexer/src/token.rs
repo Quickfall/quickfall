@@ -24,6 +24,8 @@ pub enum LexerTokenType {
 
 	Static,
 
+	New,
+
 	/// 0: the operator
 	/// 1: does the operator affect the original variable!
 	MathOperator(MathOperator, bool),
@@ -66,7 +68,7 @@ pub enum LexerTokenType {
     AngelBracketOpen,
     AngelBracketClose,
 
-    KEYWORD(String, u64),
+    Keyword(String, u64),
     EndOfFile
 }
 
@@ -129,7 +131,7 @@ impl LexerToken {
 
 	pub fn expects_keyword(&self) -> CompilerResult<(String, u64)> {
 		match &self.tok_type {
-			LexerTokenType::KEYWORD(s, h) => return Ok((s.to_string(), *h)),
+			LexerTokenType::Keyword(s, h) => return Ok((s.to_string(), *h)),
 			_ => return Err(self.make_err(format!(EXPECTED_TOKEN!(), "keyword", self.tok_type), ErrorKind::Error))
 		};
 	}
@@ -140,14 +142,14 @@ impl LexerToken {
 
 	pub fn as_keyword(&self) -> CompilerResult<(String, u64)> {
 		match &self.tok_type {
-			LexerTokenType::KEYWORD(str, hash) => Ok((str.clone(), *hash)),
+			LexerTokenType::Keyword(str, hash) => Ok((str.clone(), *hash)),
 			_ => Err(self.make_err(format!(EXPECTED_TOKEN!(), "keyword", self.tok_type), ErrorKind::Error))
 		}
 	}
 
 	pub fn is_keyword(&self) -> bool {
 		match &self.tok_type {
-			LexerTokenType::KEYWORD(_, _) => true,
+			LexerTokenType::Keyword(_, _) => true,
 			_ => false
 		}
 	}

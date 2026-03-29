@@ -1,20 +1,24 @@
 //! Module for parsing arguments
 
-use ast::{tree::FunctionDeclarationArgument, types::CompleteType};
+use ast::{tree::FunctionDeclarationArgument, types::{ASTType}};
 use compiler_errors::errs::{CompilerResult, ErrorKind, normal::CompilerError};
 use compiler_utils::hash::HashedString;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::types::parse_type;
 
-pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<CompleteType>) -> CompilerResult<(Vec<FunctionDeclarationArgument>, bool)> {
+pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<ASTType>) -> CompilerResult<(Vec<FunctionDeclarationArgument>, bool)> {
 	*ind += 1;
 
 	let mut depends_on_this: bool = false;
 	let mut args: Vec<FunctionDeclarationArgument> = Vec::new();
 	
-	while *ind < tokens.len() && (tokens[*ind].is_keyword() || tokens[*ind].tok_type == LexerTokenType::This) {
+	while *ind < tokens.len() {
 		
+		if tokens[*ind].tok_type == LexerTokenType::ParenClose {
+			break;
+		}
+
 		if tokens[*ind].tok_type == LexerTokenType::This {
 			if struct_type.is_none() {
 				return Err(CompilerError::from_ast(ErrorKind::Error, "This requires to be within a struct!".to_string(), &tokens[*ind].pos, &tokens[*ind].get_end_pos()))
@@ -42,8 +46,6 @@ pub fn parse_function_arguments(tokens: &Vec<LexerToken>, ind: &mut usize, struc
 		if tokens[*ind].tok_type == LexerTokenType::ParenClose {
 			break;
 		}
-
-		println!("{:#?}", tokens[*ind]);
 
 		tokens[*ind].expects(LexerTokenType::Comma)?;
 		*ind += 1;
