@@ -4,7 +4,7 @@ use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResu
 
 use crate::{lower_ast_body, types::lower_ast_type, values::lower_ast_value};
 
-pub fn lower_ast_function_call(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_function_call(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::FunctionCall { func, args } = node.kind.clone() {
 		let f_ind = match context.functions.get_index(func.hash) {
 			Some(v) => v,

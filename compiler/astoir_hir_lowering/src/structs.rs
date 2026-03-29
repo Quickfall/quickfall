@@ -97,7 +97,7 @@ pub fn lower_ast_struct_declaration(context: &mut HIRContext, node: Box<ASTTreeN
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))
 }
 
-pub fn lower_ast_struct_initializer(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_struct_initializer(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::StructVariableInitializerValue { struct_type, map } = node.kind.clone() {
 		let raw = match context.type_storage.get_type(HashedString::new(struct_type.get_generic_name()).hash) {
 			Ok(v) => Type::GenericLowered(v),

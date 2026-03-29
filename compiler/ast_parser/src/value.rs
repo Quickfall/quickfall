@@ -181,6 +181,9 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 			return parse_ast_array_init(tokens, ind);
 		}
 
+		LexerTokenType::Asterisk => return parse_ast_pointer(tokens, ind),
+		LexerTokenType::Ampersand => return parse_ast_reference(tokens, ind),
+
 		LexerTokenType::IntLit(_, _) => {
 			let int = parse_integer_literal(tokens, ind);
 			return parse_ast_value_post_l(tokens, ind, int, false);
@@ -256,4 +259,26 @@ pub fn parse_ast_array_init(tokens: &Vec<LexerToken>, ind: &mut usize) -> Compil
 	*ind += 1;
 
 	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ArrayVariableInitializerValue { vals }, start, tokens[*ind].get_end_pos())))
+}
+
+pub fn parse_ast_pointer(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+	let start = tokens[*ind].pos.clone();
+
+	tokens[*ind].expects(LexerTokenType::Asterisk)?;
+	*ind += 1;
+
+	let value = parse_ast_value(tokens, ind)?;
+
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::PointerGrab(value), start, tokens[*ind].get_end_pos())))
+}
+
+pub fn parse_ast_reference(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+	let start = tokens[*ind].pos.clone();
+
+	tokens[*ind].expects(LexerTokenType::Ampersand)?;
+	*ind += 1;
+
+	let value = parse_ast_value(tokens, ind)?;
+
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ReferenceGrab(value), start, tokens[*ind].get_end_pos())))
 }

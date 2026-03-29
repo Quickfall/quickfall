@@ -37,7 +37,7 @@ pub fn lower_ast_variable_declaration(context: &mut HIRContext, curr_ctx: &mut H
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 }
 
-pub fn lower_ast_variable_reference(context: &mut HIRContext, curr_ctx: &HIRBranchedContext, node: Box<ASTTreeNode>, requires_value: bool) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_variable_reference(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>, requires_value: bool) -> CompilerResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::VariableReference(str) = node.kind.clone() {		
 		let var = match get_variable(context, curr_ctx, str.hash) {
 			Ok(v) => v,
@@ -68,11 +68,9 @@ pub fn lower_ast_variable_assign(context: &mut HIRContext, curr_ctx: &mut HIRBra
 	if let ASTTreeNodeKind::VarValueChange { var, value } = node.kind.clone() {
 		let value = lower_ast_value(context, curr_ctx, value)?;
 
-		println!("{:#?}", value);
-
 		let variable_reference = lower_ast_variable_reference(context, curr_ctx, var, false)?;
 
-		let value = match value.use_as(context, curr_ctx, variable_reference.get_node_type(context, curr_ctx).unwrap()) {
+		let value = match value.use_as(context, curr_ctx, variable_reference.get_node_type(context, curr_ctx).unwrap().get_maybe_containing_type()) {
 			Ok(v) => Box::new(v),
 			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 		};

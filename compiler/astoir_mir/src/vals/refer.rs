@@ -1,6 +1,6 @@
 use compiler_errors::errs::{BaseResult, base::BaseError};
 
-use crate::{blocks::{refer::MIRBlockReference}, builder::{build_load, build_store}, ctx::MIRContext, vals::{base::BaseMIRValue, ptr::MIRPointerValue}};
+use crate::{blocks::refer::MIRBlockReference, builder::{build_load, build_store}, ctx::MIRContext, vals::{base::BaseMIRValue, ptr::{self, MIRPointerValue}}};
 
 /// Represents a reference to a variable. This is not a reference to individual SSA values.
 /// 
@@ -15,6 +15,7 @@ use crate::{blocks::{refer::MIRBlockReference}, builder::{build_load, build_stor
 /// 
 /// # Usage
 /// This can be used to reference any true variable to modify it's content or read it. This will automatically handle diverse instructions needed such as `load` and `store`.
+#[derive(Debug)]
 pub enum MIRVariableReference {
 	PointerReference(MIRPointerValue),
 	SSAReference(usize)
@@ -40,7 +41,12 @@ impl MIRVariableReference {
 
 	pub fn write(&self, block: MIRBlockReference, ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool> {
 		if self.is_pointer_ref() {
-			let ptr_ref = self.as_pointer_ref()?;
+			let mut ptr_ref = self.as_pointer_ref()?;	
+			let hint = ctx.ssa_hints.get_hint(BaseMIRValue::from(ptr_ref.clone().into()).get_ssa_index())?;
+
+			if hint.get_type()?.is_technically_pointer() {
+				ptr_ref = build_load(ctx, ptr_ref)?.as_ptr()?;
+			}
 
 			build_store(ctx, ptr_ref, val)?;
 
@@ -84,7 +90,7 @@ impl MIRVariableReference {
 	pub fn as_pointer_ref(&self) -> BaseResult<MIRPointerValue> {
 		return match self {
 			Self::PointerReference(e) => Ok(e.clone()),
-			_ => Err(BaseError::err("as_pointer_ref requires a pointer var ref!".to_string()))
+			_ => Err(BaseError::err(format!("as_pointer_ref requires a pointer var ref! {:#?}", self)))
 		}
 	}
 

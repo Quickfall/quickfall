@@ -16,6 +16,10 @@ impl Type {
 				return *is_array == *is_array_2;
 			},
 
+			(Self::Reference(inner), Self::Pointer(array, inner2)) => {
+				return !*array && inner.can_transmute(inner2, storage);
+			}
+
 			(Self::Array(size, base), Self::Array(size2, base2)) => {
 				if size != size2 {
 					return false;

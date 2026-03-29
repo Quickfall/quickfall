@@ -22,6 +22,16 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			Some(res.into())
 		},
 
+		MIRInstruction::Store { variable, value } => {
+			let base = BaseMIRValue::from(variable.into());
+			let ptr = bridge.values[&base.get_ssa_index()].into_pointer_value();
+			let val = bridge.values[&value.get_ssa_index()].inner;
+
+			llvm_to_base_returnless!(bridge.builder.build_store(ptr, val));
+	
+			None
+		}
+
 		MIRInstruction::IntegerAdd { signed: _, left, right } => {
 			let left: BaseMIRValue = MIRIntValue::into(left);
 			let right: BaseMIRValue = MIRIntValue::into(right);

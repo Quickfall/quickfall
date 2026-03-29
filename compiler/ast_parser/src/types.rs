@@ -10,6 +10,7 @@ use lexer::{token::{LexerToken, LexerTokenType}, toks::math::MathOperator};
 pub enum ParsingASTTypeMember {
 	Generic(String, Vec<Box<ASTType>>, Vec<usize>),
 	Pointer(bool),
+	Reference,
 	Array(usize)	
 }
 
@@ -92,6 +93,12 @@ pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic
 			return Ok(res);
 		}
 
+		LexerTokenType::Ampersand => {
+			*ind += 1;
+
+			return Ok(Some(ParsingASTTypeMember::Reference));
+		}
+
 		LexerTokenType::Asterisk => {
 			*ind += 1;
 
@@ -157,6 +164,7 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<A
 		let converted_member = match members[i].clone() {
 			ParsingASTTypeMember::Generic(t, types, sizes) => ASTType::Generic(t, types, sizes),
 			ParsingASTTypeMember::Pointer(array) => ASTType::Pointer(array, child.unwrap()),
+			ParsingASTTypeMember::Reference => ASTType::Reference(child.unwrap()),
 			ParsingASTTypeMember::Array(size) => ASTType::Array(size, child.unwrap())
 		};
 

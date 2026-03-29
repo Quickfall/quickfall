@@ -35,11 +35,24 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 
 			IRLevel::MIR => {
 				let ctx = run_astoir_mir(ast.unwrap());
-				let res_path = arguments[i].clone() + ".ll";
+				let res_path = arguments[i].clone() + ".qfmir";
 
 				dump_errors();
 
 				fs::write(res_path, format!("{}", ctx.unwrap()));
+			},
+
+			IRLevel::LLVM => {
+				let ctx = run_astoir_mir(ast.unwrap());
+				let res_path = arguments[i].clone() + ".llvm";
+
+				dump_errors();
+
+				let ctx = bridge_llvm(&ctx.unwrap());
+
+				dump_errors();
+
+				ctx.unwrap().module.print_to_file(res_path);
 			}
 		}
 	}
@@ -50,6 +63,7 @@ fn parse_astoir_level(str: &String) -> BaseResult<IRLevel> {
 	match str as &str {
 		"hir" | "HIR" | "h" | "H" => return Ok(IRLevel::HIR),
 		"mir" | "MIR" | "m" | "M" => return Ok(IRLevel::MIR),
+		"llvm" | "LLVM" => return Ok(IRLevel::LLVM),
 
 		_ => return Err(BaseError::critical("Cannot parse AstoIR level".to_string()))
 	};
