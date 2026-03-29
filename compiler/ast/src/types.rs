@@ -25,6 +25,8 @@ pub enum ASTType {
 	/// 1: Inner type
 	Pointer(bool, Box<ASTType>),
 
+	Reference(Box<ASTType>),
+
 	/// An array type node. Represents an array version
 	/// 0: The size of the array
 	/// 1: Inner type
@@ -36,7 +38,8 @@ impl ASTType {
 		match self {
 			Self::Generic(s, _, _) => s.clone(),
 			Self::Pointer(_, inner) => inner.get_generic_name(),
-			Self::Array(_, inner) => inner.get_generic_name()
+			Self::Reference(inner) => inner.get_generic_name(),
+ 			Self::Array(_, inner) => inner.get_generic_name()
 		}
 	}
 }

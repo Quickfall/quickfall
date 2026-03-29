@@ -39,6 +39,7 @@ pub fn lower_ast_type(context: &mut HIRContext, t: ASTType) -> BaseResult<Type> 
 		},
 
 		ASTType::Pointer(array, inner) => Ok(Type::Pointer(array, Box::new(lower_ast_type(context, *inner)?))),
+		ASTType::Reference(inner) => Ok(Type::Reference(Box::new(lower_ast_type(context, *inner)?))),
 		ASTType::Array(size, inner) => Ok(Type::Array(size, Box::new(lower_ast_type(context, *inner)?)))
 	};
 }

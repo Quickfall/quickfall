@@ -20,6 +20,10 @@ pub enum Type {
 	/// 1: Inner type
 	Pointer(bool, Box<Type>),
 
+	/// A reference to a variable.
+	/// 0: Inner type
+	Reference(Box<Type>),
+
 	/// An array type node. Represents an array version
 	/// 0: The size of the array
 	/// 1: Inner type
@@ -82,6 +86,7 @@ impl Type {
 		match self {
 			Type::Array(_, inner) => inner.clone(),
 			Type::Pointer(_, inner) => inner.clone(),
+			Type::Reference(inner) => inner.clone(),
 
 			_ => {
 				panic!("Error! Compiler tried using get_inner_type on bottom type! Returning bottom type incase!");
@@ -158,6 +163,7 @@ impl SizedType for Type {
 		return match self {
 			Self::Array(size, inner) => inner.clone().get_size(t, compacted_size, storage) * *size,
 			Self::Pointer(_, _) => get_pointer_size(),
+			Self::Reference(_) => get_pointer_size(),
 			Self::Generic(e, _, _) => storage.types.vals[*e].get_size(t, compacted_size, storage), 
 			Self::GenericLowered(e) => e.get_size(t, compacted_size, storage)
 		}
