@@ -37,6 +37,9 @@ pub enum ASTTreeNodeKind {
 
 	VariableReference(HashedString),
 
+	PointerGrab(Box<ASTTreeNode>),
+	ReferenceGrab(Box<ASTTreeNode>),
+
 	StructVariableInitializerValue { struct_type: ASTType, map: HashMap<SelfHash, Box<ASTTreeNode>> },
 	ArrayVariableInitializerValueSameValue { size: usize, v: Box<ASTTreeNode> },
 	ArrayVariableInitializerValue { vals: Vec<Box<ASTTreeNode>> },
