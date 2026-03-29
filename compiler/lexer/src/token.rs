@@ -15,6 +15,12 @@ pub enum LexerTokenType {
     Function,
 	ShadowFunction,
 
+	/// A comment on a function
+	LocalComment(String),
+
+	/// A comment on a whole file
+	GlobalComment(String),
+
 	Var,
 	Struct,
 	Layout,
