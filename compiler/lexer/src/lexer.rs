@@ -43,11 +43,9 @@ pub fn lexer_parse_file(file_path: &String) -> CompilerResult<Vec<LexerToken>> {
     let mut tokens: Vec<LexerToken> = Vec::new();
 
     let mut i: usize = 0;
-
 	let mut line: usize = 1;
-
 	let mut last_line_break: usize = 0;
-    
+	
     while i < contents.len() {
         let c: char = contents.chars().nth(i).unwrap();
 		
@@ -99,6 +97,21 @@ pub fn lexer_parse_file(file_path: &String) -> CompilerResult<Vec<LexerToken>> {
 			i -= 2; // Try parsing operator as normal token.
 		}
 
+		if c == '/' {
+			let cc = contents.chars().nth(i + 1).unwrap();
+			if cc == '/' {
+				let col = i - last_line_break;
+
+				tokens.push(parse_comment(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
+				continue;
+			} else if cc == '.' {
+				let col = i - last_line_break;
+
+				tokens.push(parse_global_comment(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
+				continue;
+			}
+		}
+
         i += 1;
 
 
@@ -129,6 +142,50 @@ pub fn lexer_parse_file(file_path: &String) -> CompilerResult<Vec<LexerToken>> {
     tokens.push(LexerToken::make_single_sized(Position::new(file_path.to_string(), line, i - last_line_break + 1), LexerTokenType::EndOfFile));
 
     Ok(tokens)
+}
+
+fn parse_comment(contents: &String, ind: &mut usize, start_pos: Position) -> CompilerResult<LexerToken> {
+	*ind += 2;
+
+	let start = *ind;
+	let mut end = start;
+
+	for (i, c) in contents[start..].char_indices() {
+		if c == '\n' || c == '\0' {
+			end = start + i + c.len_utf8();
+			break;
+		}
+
+		end = start + i + c.len_utf16();
+	}
+
+	let slice = &contents[*ind + 1..end - 1];
+
+	*ind = end;
+
+	return Ok(LexerToken::new(start_pos, end - start, LexerTokenType::Comment(slice.to_string())))
+}
+
+fn parse_global_comment(contents: &String, ind: &mut usize, start_pos: Position) -> CompilerResult<LexerToken> {
+	*ind += 2;
+
+	let start = *ind;
+	let mut end = start;
+
+	for (i, c) in contents[start..].char_indices() {
+		if c == '\n' || c == '\0' {
+			end = start + i + c.len_utf8();
+			break;
+		}
+
+		end = start + i + c.len_utf16();
+	}
+
+	let slice = &contents[*ind + 1..end - 1];
+
+	*ind = end;
+
+	return Ok(LexerToken::new(start_pos, end - start, LexerTokenType::GlobalComment(slice.to_string())))
 }
 
 fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) -> CompilerResult<LexerToken> {
