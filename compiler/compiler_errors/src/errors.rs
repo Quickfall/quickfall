@@ -192,6 +192,13 @@ macro_rules! IR_TYPE_BOOL {
 }
 
 #[macro_export]
+macro_rules! NON_VAR_REF_POINTER {
+	() => {
+		"The value must refer to a variable in order to grab a pointer or a reference!"
+	};
+}
+
+#[macro_export]
 macro_rules! IR_STATIC_STR_TYPE {
 	() => {
 		"Expected type staticstr for static string variable values. Change the type of this variable to staticstr"

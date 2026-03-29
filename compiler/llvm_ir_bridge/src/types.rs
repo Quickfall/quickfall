@@ -22,6 +22,7 @@ impl LLVMTypeStorage {
 			Type::GenericLowered(raw) => return self.convert_raw(raw),
 			Type::Generic(_, _, _) => return Err(BaseError::err("Cannot lower non lowered generics!".to_string())),
 
+			Type::Reference(_) => return self.convert_raw(RawType::Pointer),
 			Type::Pointer(_, _) => return self.convert_raw(RawType::Pointer),
 
 			Type::Array(size, inner) => {

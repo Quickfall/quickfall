@@ -20,6 +20,9 @@ pub enum HIRNode {
 	VariableReference { index: usize, is_static: bool },
 	FunctionReference { index: usize },
 
+	PointerGrab { val: Box<HIRNode> },
+	ReferenceGrab { val: Box<HIRNode> },
+
 	StructLRU { steps: Vec<StructLRUStep>, last: Type },
 
 	StructDeclaration { type_name: usize, container: RawStructTypeContainer, layout: bool },
@@ -55,6 +58,18 @@ pub enum HIRNode {
 
 impl HIRNode {
 	pub fn is_variable_reference(&self) -> bool {
+		if let HIRNode::VariableReference { .. } = self {
+			return true;
+		}
+
+		return false;
+	}
+
+	pub fn is_variable_representative(&self) -> bool {
+		if let HIRNode::ArrayIndexAccess { .. } = self {
+			return true;
+		}
+
 		if let HIRNode::VariableReference { .. } = self {
 			return true;
 		}
@@ -125,6 +140,14 @@ impl HIRNode {
 
 				return Some(curr_ctx.variables[*index].variable_type.clone());
 			},
+
+			HIRNode::PointerGrab { val } => {
+				return Some(Type::Pointer(false, Box::new(val.get_node_type(context, curr_ctx).unwrap())));
+			},
+
+			HIRNode::ReferenceGrab { val } => {
+				return Some(Type::Reference(Box::new(val.get_node_type(context, curr_ctx).unwrap())))
+			}
 
 			HIRNode::ArrayIndexAccess { val, index: _ } => {
 				let t = val.get_node_type(context, curr_ctx).unwrap();
