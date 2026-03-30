@@ -15,6 +15,7 @@ pub mod references;
 pub mod utils;
 pub mod storage;
 pub mod transmutation;
+pub mod bounds;
 
 /// A function contained within a type.
 pub type TypedFunction = (Vec<(u64, TypeReference)>, Option<TypeReference>);
