@@ -1,5 +1,5 @@
 //! # Trait bounds
-//! Trait bounds are used to select types with given features. These traits can be represented with a `!` prefix. 
+//! Trait bounds are used to select types with given features. These traits can be represented with a `!` prefix. They can also be used to exclude certain types with the given features.
 //! 
 //! Here's a list of every trait bound with their corresponding feature:
 //! - `!numeric`: Is a numeric type
@@ -14,8 +14,8 @@
 //! 
 //! # Examples
 //! ```
-//! struct test<A: !numeric> {
-//! 	..
+//! struct test<A: !numeric ~:!cpusupported> {
+//! 	// A can now only be a numeric type and not supported by the CPU
 //! }
 //! ```
 
@@ -30,3 +30,16 @@ pub const TRAIT_NON_INTEGER: u64 = hash!("noninteger");
 pub const TRAIT_CPU_SUPPORTED: u64 = hash!("cpusupported");
 pub const TRAIT_STRING: u64 = hash!("stringlike");
 pub const TRAIT_STATIC: u64 = hash!("static");
+
+pub enum TraitBoundMember {
+	/// Selects a trait to require it
+	Select(usize),
+
+	/// Excludes a trait. Types having this trait will not be accepted
+	Exclude(usize)
+}
+
+/// Represents the actual trait bound. Is used to make sure that the type is compatible
+pub struct TraitBound {
+	pub members: Vec<TraitBoundMember>
+}
