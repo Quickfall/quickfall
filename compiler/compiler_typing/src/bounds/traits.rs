@@ -31,12 +31,24 @@ pub const TRAIT_CPU_SUPPORTED: u64 = hash!("cpusupported");
 pub const TRAIT_STRING: u64 = hash!("stringlike");
 pub const TRAIT_STATIC: u64 = hash!("static");
 
+pub enum Trait {
+	Numeric,
+	Signed,
+	Integer,
+	Floating,
+	Fixed,
+	NonInteger,
+	CpuSupported,
+	String,
+	Static
+}
+
 pub enum TraitBoundMember {
 	/// Selects a trait to require it
-	Select(usize),
+	Select(Trait),
 
 	/// Excludes a trait. Types having this trait will not be accepted
-	Exclude(usize)
+	Exclude(Trait)
 }
 
 /// Represents the actual trait bound. Is used to make sure that the type is compatible
