@@ -114,6 +114,17 @@ impl Type {
 			_ => return Err(BaseError::err(format!("Not lowered generic {:#?}", self)))
 		}
 	}	
+ 
+	pub fn as_generic(&self, storage: &TypeStorage) -> BaseResult<RawType> {
+		match self {
+			Self::GenericLowered(a) => return Ok(a.clone()),
+			Self::Generic(a, b, c) => {
+				return Ok(storage.types.vals[*a].clone());
+			},
+
+			_ => return Err(BaseError::err(format!("Cannot obtain generic!")))
+		}
+	}
 
 	pub fn get_inner_type(&self) -> Box<Type> {
 		match self {

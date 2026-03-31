@@ -19,7 +19,10 @@
 //! }
 //! ```
 
+use compiler_errors::{TYPE_TRAIT_MISSING, errs::{BaseResult, base::BaseError}};
 use compiler_utils::hash;
+
+use crate::{storage::TypeStorage, tree::Type};
 
 pub const TRAIT_NUMERIC: u64 = hash!("numeric");
 pub const TRAIT_SIGNED: u64 = hash!("signed");
@@ -31,6 +34,7 @@ pub const TRAIT_CPU_SUPPORTED: u64 = hash!("cpusupported");
 pub const TRAIT_STRING: u64 = hash!("stringlike");
 pub const TRAIT_STATIC: u64 = hash!("static");
 
+#[derive(Clone)]
 pub enum Trait {
 	Numeric,
 	Signed,
@@ -54,4 +58,26 @@ pub enum TraitBoundMember {
 /// Represents the actual trait bound. Is used to make sure that the type is compatible
 pub struct TraitBound {
 	pub members: Vec<TraitBoundMember>
+}
+
+impl TraitBound {
+	pub fn check(&self, t: &Type, storage: &TypeStorage) -> BaseResult<()> {
+		for member in &self.members {
+			match member {
+				TraitBoundMember::Select(tt) => {
+					if !t.as_generic(storage)?.has_trait(tt.clone(), t) {
+						return Err(BaseError::err(TYPE_TRAIT_MISSING!().to_string()));
+					}
+				},
+
+				TraitBoundMember::Exclude(tt) => {
+					if t.as_generic(storage)?.has_trait(tt.clone(), t) {
+						return Err(BaseError::err(TYPE_TRAIT_MISSING!().to_string()));
+					}
+				}
+			}
+		}
+
+		return Ok(());
+	}
 }

@@ -1,6 +1,6 @@
 //! The raw type declarations
 
-use std::hash::Hash;
+use std::{hash::Hash};
 
 use crate::{SizedType, bounds::traits::Trait, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, structs::{LoweredStructTypeContainer, RawStructTypeContainer}, tree::Type, utils::get_pointer_size};
 
@@ -92,13 +92,41 @@ impl RawType {
 		}
 	}
 
-	pub fn has_trait(&self, t: Trait) -> bool {
+	pub fn is_static(&self) -> bool {
+		match self {
+			Self::StaticString => true,
+			_ => false
+		}
+	}
+
+	pub fn has_trait(&self, t: Trait, raw_type: &Type) -> bool {
 		match t {
 			Trait::Integer => self.is_integer(),
 			Trait::Floating => self.is_floating_point(),
 			Trait::Fixed => self.is_fixed_point(),
+			Trait::Signed => self.is_signed(),
+			Trait::String => self == &RawType::StaticString,
+			Trait::Static => self.is_static(),
+			Trait::NonInteger => self.is_floating_point() || self.is_fixed_point(),
+			Trait::Numeric => self.is_integer() || self.is_floating_point() || self.is_fixed_point(),
+			Trait::CpuSupported => {
+				match self {
+					Self::Floating(size, _) => {
+						let log = size.ilog2();
 
-			_ => todo!("Add other traits")
+						return (log >= 4 && log <= 7) || *size == 80;
+					},
+
+					Self::SizedFloating(_) => {
+						let size = raw_type.get_generic_info().1[0];
+						let log = size.ilog2();
+
+						return (log >= 4 && log <= 7) || size == 80;
+					}
+
+					_ => return true
+				}
+			}
 		}
 	}
 

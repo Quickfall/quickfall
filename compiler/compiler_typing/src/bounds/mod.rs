@@ -4,3 +4,4 @@
 //! - Normal bound: Allows to select which kind of type you want
 
 pub mod traits;
+pub mod normal;
