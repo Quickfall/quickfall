@@ -129,6 +129,8 @@ dependencies = [
  "ast_parser",
  "astoir",
  "compiler_errors",
+ "compiler_utils",
+ "diagnostics",
  "lexer",
  "llvm_ir_bridge",
 ]
