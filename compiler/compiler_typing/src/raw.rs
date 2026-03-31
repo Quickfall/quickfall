@@ -2,7 +2,7 @@
 
 use std::hash::Hash;
 
-use crate::{SizedType, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, structs::{LoweredStructTypeContainer, RawStructTypeContainer}, tree::Type, utils::get_pointer_size};
+use crate::{SizedType, bounds::traits::Trait, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, structs::{LoweredStructTypeContainer, RawStructTypeContainer}, tree::Type, utils::get_pointer_size};
 
 /// The raw types. Are also named generics
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -63,6 +63,42 @@ impl RawType {
 			Self::SizedFixedPoint(_) => true,
 
 			_ => false
+		}
+	}
+	
+	pub fn is_integer(&self) -> bool {
+		match self {
+			Self::SizedInteger(_) => true,
+			Self::Integer(_, _) => true,
+
+			_ => false
+		}
+	}
+
+	pub fn is_floating_point(&self) -> bool {
+		match self {
+			Self::SizedFloating(_) => true,
+			Self::Floating(_, _) => true,
+
+			_ => false
+		}
+	}
+
+	pub fn is_fixed_point(&self) -> bool {
+		match self {
+			Self::SizedFixedPoint(_) => true,
+			Self::FixedPoint(_, _, _) => true,
+			_ => false
+		}
+	}
+
+	pub fn has_trait(&self, t: Trait) -> bool {
+		match t {
+			Trait::Integer => self.is_integer(),
+			Trait::Floating => self.is_floating_point(),
+			Trait::Fixed => self.is_fixed_point(),
+
+			_ => todo!("Add other traits")
 		}
 	}
 
