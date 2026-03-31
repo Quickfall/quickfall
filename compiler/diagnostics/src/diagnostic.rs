@@ -11,6 +11,20 @@ pub enum Level {
 	Note
 }
 
+pub enum SpanKind {
+	Primary,
+	Secondary
+}
+
+impl SpanKind {
+	pub fn get_marker_char(&self) -> char {
+		match self {
+			Self::Primary => '-',
+			Self::Secondary => '^'
+		}
+	}
+}
+
 impl Level {
 	pub fn apply_color(&self, str: ColoredString) -> ColoredString {
 		match self {
@@ -45,7 +59,7 @@ pub struct Diagnostic {
 	pub message: String,
 
 	pub primary_span: Span,
-	pub secondary_spans: Vec<Span>,
+	pub spans: Vec<Span>,
 
 	pub note: Vec<String>,
 	pub help: Vec<String>
@@ -55,19 +69,36 @@ pub struct Span {
 	pub start: Position,
 	pub end_col: usize,
 
-	pub label: String
+	pub label: String,
+	pub kind: SpanKind
 }
 
-fn print_underline(f: &mut std::fmt::Formatter<'_>, start: usize, end: usize) -> std::fmt::Result {
-	for i in 0..start {
+fn print_underline(f: &mut std::fmt::Formatter<'_>, start: usize, end: usize, c: char) -> std::fmt::Result {
+	for _ in 0..start {
 		write!(f, " ")?;
 	}
 
-	for i in start..end {
-		write!(f, "^")?;
+	for _ in start..end {
+		write!(f, "{}", c)?;
 	}
 
 	Ok(())
+}
+
+impl Display for Span {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let line = match self.start.get_line_content() {
+			Ok(v) => v,
+			Err(_) => "".to_string()
+		};
+
+		writeln!(f, "{}", line)?;
+
+		print_underline(f, self.start.col, self.end_col, self.kind.get_marker_char())?;
+		writeln!(f, " {}\n", self.label)?;
+
+		Ok(())
+	}
 }
 
 impl Display for Diagnostic {
@@ -79,16 +110,11 @@ impl Display for Diagnostic {
 		writeln!(f, "  --> {}", self.primary_span.start)?;
 		writeln!(f, "   |\n")?;
 
-		// Primary span
-		let line = match self.primary_span.start.get_line_content() {
-			Ok(v) => v,
-			Err(_) => "".to_string()
-		};
+		writeln!(f, "{}", self.primary_span)?;
 
-		writeln!(f, "{}", line)?;
-
-		print_underline(f, self.primary_span.start.col, self.primary_span.end_col)?;
-		writeln!(f, " {}\n", self.primary_span.label)?;
+		for span in &self.spans {
+			writeln!(f, "{}", span)?;
+		}
 		
 		Ok(())
 	}
