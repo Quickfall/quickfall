@@ -22,7 +22,7 @@
 use compiler_errors::{TYPE_TRAIT_MISSING, errs::{BaseResult, base::BaseError}};
 use compiler_utils::hash;
 
-use crate::{raw::RawType, storage::TypeStorage, tree::Type};
+use crate::{storage::TypeStorage, tree::Type};
 
 pub const TRAIT_NUMERIC: u64 = hash!("numeric");
 pub const TRAIT_SIGNED: u64 = hash!("signed");

@@ -206,6 +206,13 @@ macro_rules! TYPE_TRAIT_MISSING {
 }
 
 #[macro_export]
+macro_rules! TYPE_BOUND_MISSING {
+	() => {
+		"Bound cannot be applied to this generic type."
+	};
+}
+
+#[macro_export]
 macro_rules! IR_STATIC_STR_TYPE {
 	() => {
 		"Expected type staticstr for static string variable values. Change the type of this variable to staticstr"

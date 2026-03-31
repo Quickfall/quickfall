@@ -19,6 +19,7 @@ pub mod bounds;
 
 /// A function contained within a type.
 pub type TypedFunction = (Vec<(u64, TypeReference)>, Option<TypeReference>);
+pub type TypedResolvedFunction = (Vec<(u64, Type)>, Option<Type>);
 
 pub type TypeParameterContainer = HashMap<HashedString, usize>;
 
