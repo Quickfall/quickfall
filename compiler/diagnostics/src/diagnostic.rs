@@ -19,8 +19,8 @@ pub enum SpanKind {
 impl SpanKind {
 	pub fn get_marker_char(&self) -> char {
 		match self {
-			Self::Primary => '-',
-			Self::Secondary => '^'
+			Self::Primary => '^',
+			Self::Secondary => '-'
 		}
 	}
 }
@@ -28,9 +28,9 @@ impl SpanKind {
 impl Level {
 	pub fn apply_color(&self, str: ColoredString) -> ColoredString {
 		match self {
-			Self::Error => str.red(),
-			Self::Warning => str.yellow(),
-			Self::Note => str.blue()
+			Self::Error => str.bright_red().bold(),
+			Self::Warning => str.yellow().bold(),
+			Self::Note => str.blue().bold()
 		}
 	}
 
@@ -73,16 +73,27 @@ pub struct Span {
 	pub kind: SpanKind
 }
 
-fn print_underline(f: &mut std::fmt::Formatter<'_>, start: usize, end: usize, c: char) -> std::fmt::Result {
+fn print_underline(start: usize, end: usize, c: char) -> String {
+	let mut str = "".to_string();
 	for _ in 0..start {
-		write!(f, " ")?;
+		str += " ";
 	}
 
 	for _ in start..end {
-		write!(f, "{}", c)?;
+		str += &c.to_string();
 	}
 
-	Ok(())
+	str
+}
+
+fn print_space(start: usize) -> String {
+	let mut str = "".to_string();
+
+	for _ in 0..start {
+		str += " ";
+	}
+
+	str
 }
 
 impl Display for Span {
@@ -92,10 +103,14 @@ impl Display for Span {
 			Err(_) => "".to_string()
 		};
 
-		writeln!(f, "{}", line)?;
+		writeln!(f, "   {}    {}", "|".bright_blue() , line)?;
 
-		print_underline(f, self.start.col, self.end_col, self.kind.get_marker_char())?;
-		writeln!(f, " {}\n", self.label)?;
+		let underline = print_underline(self.start.col, self.end_col, self.kind.get_marker_char());
+
+		writeln!(f, "   {}    {}", "|".bright_blue(), underline.bright_yellow())?;
+
+		let space = print_space(self.start.col + 4);
+		writeln!(f, "   {}{}{}", "|".bright_blue(), space, self.label)?;
 
 		Ok(())
 	}
@@ -103,17 +118,28 @@ impl Display for Span {
 
 impl Display for Diagnostic {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		let header = ColoredString::from(format!("{}[{}{}], ", self.level, self.level.get_code_char(), self.code));
+		let header = ColoredString::from(format!("{}[{}{}]", self.level, self.level.get_code_char(), self.code));
 		let header = self.level.apply_color(header);
 
 		writeln!(f, "{}: {}", header, self.message)?;
-		writeln!(f, "  --> {}", self.primary_span.start)?;
-		writeln!(f, "   |\n")?;
+		writeln!(f, "  {} {}", "-->".bright_blue(), self.primary_span.start)?;
+		writeln!(f, "   {}", "|".bright_blue())?;
 
-		writeln!(f, "{}", self.primary_span)?;
+		write!(f, "{}", self.primary_span)?;
 
 		for span in &self.spans {
 			writeln!(f, "{}", span)?;
+		}
+
+		writeln!(f, "   {}", "|".bright_blue())?;
+		
+		let mut ind = 0;
+		for note in &self.note {
+			writeln!(f, "   {} {}: {}", "=".bright_blue(), "note".bold(), note)?;
+			writeln!(f, "   {} {}: {}", "=".bright_blue(), "help".bold(), self.help[ind])?;
+			write!(f, "   {}", "|".bright_blue())?;
+
+			ind += 1;
 		}
 		
 		Ok(())
