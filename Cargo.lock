@@ -149,6 +149,7 @@ version = "0.1.0"
 name = "diagnostics"
 version = "0.1.0"
 dependencies = [
+ "colored",
  "compiler_utils",
 ]
 

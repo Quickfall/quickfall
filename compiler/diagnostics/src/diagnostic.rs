@@ -1,11 +1,22 @@
 //! The core of diagnostics
 
+use colored::{ColoredString, Colorize};
 use compiler_utils::Position;
 
 pub enum Level {
 	Error,
 	Warning,
 	Note
+}
+
+impl Level {
+	pub fn apply_color(&self, str: ColoredString) -> ColoredString {
+		match self {
+			Self::Error => str.red(),
+			Self::Warning => str.yellow(),
+			Self::Note => str.blue()
+		}
+	}
 }
 
 pub struct Diagnostic {
