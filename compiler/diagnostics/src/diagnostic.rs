@@ -65,6 +65,12 @@ pub struct Diagnostic {
 	pub help: Vec<String>
 }
 
+impl Diagnostic {
+	pub fn new(level: Level, decl: (usize, &str), primary_span: Span, spans: Vec<Span>, note: Vec<String>, help: Vec<String>) -> Self {
+		Diagnostic { level, code: decl.0, message: decl.1.to_string(), primary_span, spans, note, help}
+ 	}
+}
+
 pub struct Span {
 	pub start: Position,
 	pub end_col: usize,
