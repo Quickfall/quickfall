@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Level, Span, SpanPosition}, errors::{EXPECTED_TOKEN, UNEXPECTED_TOKEN}};
+use crate::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Level, Span, SpanPosition}, errors::{EXPECTED_FREE, EXPECTED_TOKEN, UNEXPECTED_TOKEN}, warnings::UNUSED_VAR};
 
 pub fn make_expected_simple_error<K: DiagnosticSpanOrigin, E: Display, G: Display>(origin: &K, expected: &E, got: &G) -> Diagnostic {
 	origin.make_simple_diagnostic(EXPECTED_TOKEN.0, Level::Error, format!("expected {} but got {}", expected, got), None, vec![], vec![])
@@ -14,4 +14,12 @@ pub fn make_unexpected_simple_error_outside<K: Display>(got: &K, pos: SpanPositi
 	let span = Span::make_primary(pos, None);
 
 	Diagnostic::new_base(Level::Error, EXPECTED_TOKEN.0, format!("unexpected {}", got), span, vec![], vec![], vec![])
+}
+
+pub fn make_expected_single_simple_error<K: DiagnosticSpanOrigin, E: Display>(origin: &K, got: &E) -> Diagnostic {
+	origin.make_simple_diagnostic(EXPECTED_FREE.0, Level::Error, format!("expected {}", got), None, vec![], vec![])
+}
+
+pub fn make_unused_variable<K: DiagnosticSpanOrigin, E: Display>(origin: &K, var: &E) -> Diagnostic {
+	origin.make_simple_diagnostic(UNUSED_VAR.0, Level::Warning, format!("unused variable {}", var), None, vec![], vec![])
 }

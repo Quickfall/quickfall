@@ -1,10 +1,10 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
-use compiler_errors::errs::CompilerResult;
+use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::value::parse_ast_value;
 
-pub fn parse_array_access(tokens: &Vec<LexerToken>, ind: &mut usize, original: Box<ASTTreeNode>) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_array_access(tokens: &Vec<LexerToken>, ind: &mut usize, original: Box<ASTTreeNode>) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;

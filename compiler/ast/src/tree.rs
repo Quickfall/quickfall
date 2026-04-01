@@ -2,10 +2,11 @@
 //! AST tree related definitions.
 //! 
 
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use compiler_typing::TypeParameterContainer;
 use compiler_utils::{Position, hash::{HashedString, SelfHash}};
+use diagnostics::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}};
 use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
 
 use crate::types::ASTType;
@@ -125,6 +126,65 @@ pub struct ASTTreeNode {
 impl ASTTreeNode {
 	pub fn new(kind: ASTTreeNodeKind, start: Position, end: Position) -> Self {
 		return ASTTreeNode { kind, start, end }
+	}
+}
+
+impl DiagnosticSpanOrigin for ASTTreeNode {
+	fn make_span(&self, kind: diagnostics::diagnostic::SpanKind, msg: Option<String>) -> diagnostics::diagnostic::Span {
+		Span { start: SpanPosition::from_pos2(self.start.clone(), self.end.clone()), label: msg, kind }
+	}
+
+	fn make_simple_diagnostic(&self, code: usize, level: diagnostics::diagnostic::Level, message: String, primary_span_msg: Option<String>, notes: Vec<String>, help: Vec<String>) -> diagnostics::diagnostic::Diagnostic {
+		let primary = self.make_span(SpanKind::Primary, primary_span_msg);
+
+		Diagnostic { level, code, message, primary_span: primary, spans: vec![], note: notes, help }
+	}
+}
+
+impl Display for ASTTreeNode {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", self.kind)?;
+
+		Ok(())
+	}
+}
+
+impl Display for ASTTreeNodeKind {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let s = match self {
+			Self::IntegerLit { .. } => "integer literal",
+			Self::StringLit(_) => "string literal",
+			Self::ThisStructParam => "this reference",
+			Self::OperatorBasedConditionMember { .. } => "operator condition",
+			Self::BooleanBasedConditionMember { .. } => "boolean condition",
+			Self::MathResult { .. } => "math operation",
+			Self::VariableReference(_) => "variable reference",
+			Self::PointerGrab(_) => "pointer grabbing",
+			Self::ReferenceGrab(_) => "reference",
+			Self::StructVariableInitializerValue { .. } => "struct value initializer",
+			Self::ArrayVariableInitializerValue { .. } | Self::ArrayVariableInitializerValueSameValue { .. } => "array value initializer",
+			Self::ArrayIndexAccess { .. } | Self::ArrayIndexModifiy { .. } => "index access",
+			Self::VarDeclaration { .. } => "variable declaration",
+			Self::VarValueChange { .. } => "variable assignment",
+			Self::VarIncrement { .. } => "variable incrementation",
+			Self::IfStatement { .. } => "if statement",
+			Self::ElseStatement { .. } => "else statement",
+			Self::IfElseStatement { .. } => "if else statement",
+			Self::ReturnStatement { .. } => "return statement",
+			Self::StaticVariableDeclaration { .. } => "static variable declaration",
+			Self::WhileBlock { .. } => "while block",
+			Self::ForBlock { .. } => "for block",
+			Self::FunctionCall { .. } => "function call",
+			Self::FunctionDeclaration { .. } => "function declaration",
+			Self::ShadowFunctionDeclaration { .. } => "shadow function declaration",
+			Self::StructLRFunction { .. } => "struct LRU function usage",
+			Self::StructLRVariable { .. } => "struct LRU variable usage",
+			Self::StructLayoutDeclaration { .. } => "struct / layout declaration",
+			Self::StructFieldMember { .. } => "struct field"
+		};
+
+		write!(f, "{}", s)?;
+		Ok(())
 	}
 }
 

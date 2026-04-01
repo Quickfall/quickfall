@@ -1,8 +1,8 @@
 //! Parser module for functions
 
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::{ASTType}};
-use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::HashedString;
+use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{functions::arguments::parse_function_arguments, parser::parse_ast_node_in_body, types::parse_type, value::parse_ast_value};
@@ -11,7 +11,7 @@ pub mod shadow;
 pub mod arguments;
 pub mod returns;
 
-pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<ASTType>) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<ASTType>) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;
@@ -40,10 +40,10 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, st
 	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionDeclaration { func_name: HashedString::new(function_name.0), args: args.0, body, return_type: ret_type, requires_this: args.1 }, start, end)));
 }
 
-pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
-	let func = HashedString::new(tokens[*ind].expects_keyword()?.unwrap().0);
+	let func = HashedString::new(tokens[*ind].expects_keyword()?.0);
 
 	*ind += 1;
 
@@ -72,7 +72,7 @@ pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> Compile
 	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionCall { func , args: vals }, start, end)))
 }
 
-pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Vec<Box<ASTTreeNode>>> {
+pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Vec<Box<ASTTreeNode>>> {
     *ind += 1;
 
     let mut tok: &LexerToken = &tokens[*ind];

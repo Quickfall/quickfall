@@ -23,3 +23,4 @@ declare_error!(TYPE_RESOLVE, 15, "type cannot be fully resolved here");
 declare_error!(DIFF_SIZE_SPECIFIERS, 16, "expected {} size specifiers on this type, got {}");
 declare_error!(DIFF_TYPE_SPECIFIERS, 18, "expected {} type specifiers on this type, got {}");
 declare_error!(IR_CAST, 19, "cannot cast IR value to given type!");
+declare_error!(EXPECTED_FREE, 20, "expected a {}");

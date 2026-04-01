@@ -3,7 +3,7 @@
 //!
 
 use ast::ctx::ParserCtx;
-use compiler_errors::{AST_INVALID_TREE, errs::{CompilerResult, ErrorKind}};
+use diagnostics::{DiagnosticResult, builders::make_unexpected_simple_error};
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::parser::parse_ast_node;
@@ -19,7 +19,7 @@ pub mod variables;
 pub mod types;
 pub mod arrays;
 
-pub fn parse_ast_ctx(tokens: &Vec<LexerToken>) -> CompilerResult<ParserCtx> {
+pub fn parse_ast_ctx(tokens: &Vec<LexerToken>) -> DiagnosticResult<ParserCtx> {
 	let mut ind = 0;
 
 	let mut ctx = ParserCtx::new();
@@ -28,10 +28,10 @@ pub fn parse_ast_ctx(tokens: &Vec<LexerToken>) -> CompilerResult<ParserCtx> {
 		let node = parse_ast_node(tokens, &mut ind)?;
 
 		if !node.kind.is_tree_permissible() {
-			return Err(tokens[ind - 1].make_err(format!(AST_INVALID_TREE!(), node), ErrorKind::Critical));
+			return Err(make_unexpected_simple_error(&*node, &node).into())
 		}
 
-		ctx.insert(node.kind.get_tree_name().unwrap().val, node); // might cause panic if tree name is null which SHOULD NOT happen.
+		ctx.insert(node.kind.get_tree_name().unwrap().val, node);
 	}
 
 	return Ok(ctx);

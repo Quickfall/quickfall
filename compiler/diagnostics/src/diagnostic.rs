@@ -113,6 +113,10 @@ impl SpanPosition {
 		SpanPosition { line: pos.line, col: pos.col, file_path: pos.file_path, end_col }
 	}
 
+	pub fn from_pos2(start: Position, end: Position) -> Self {
+		SpanPosition { line: start.line, col: start.col, file_path: start.file_path, end_col: end.col }
+	}
+
 	pub fn get_line_content(&self) -> Result<String, Error> {
 		let contents = fs::read_to_string(&self.file_path)?;
 

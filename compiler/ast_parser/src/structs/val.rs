@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
-use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::{HashedString, SelfHash};
+use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{types::parse_type, value::parse_ast_value};
 
-pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	*ind += 1;
 
 	let t = parse_type(tokens, ind)?;
