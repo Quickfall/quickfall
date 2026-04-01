@@ -1,6 +1,6 @@
 //! The core of diagnostics
 
-use std::fmt::Display;
+use std::{fmt::Display, fs, io::Error};
 
 use colored::{ColoredString, Colorize};
 use compiler_utils::Position;
@@ -75,9 +75,38 @@ impl Diagnostic {
 }
 
 #[derive(Clone)]
+pub struct SpanPosition {
+	pub line: usize,
+	pub col: usize,
+	pub file_path: String,
+	pub end_col: usize
+}
+
+impl SpanPosition {
+	pub fn from_pos(pos: Position, end_col: usize) -> Self {
+		SpanPosition { line: pos.line, col: pos.col, file_path: pos.file_path, end_col }
+	}
+
+	pub fn get_line_content(&self) -> Result<String, Error> {
+		let contents = fs::read_to_string(&self.file_path)?;
+
+		let spl: Vec<&str> = contents.split('\n').collect();
+
+		return Ok(String::from(spl[self.line - 1]));
+	}
+}
+
+impl Display for SpanPosition {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let _ = write!(f, "{}:{}:{}", self.file_path, self.line, self.col);
+
+		Ok(())
+	}
+}
+
+#[derive(Clone)]
 pub struct Span {
-	pub start: Position,
-	pub end_col: usize,
+	pub start: SpanPosition,
 
 	pub label: String,
 	pub kind: SpanKind
@@ -115,7 +144,7 @@ impl Display for Span {
 
 		writeln!(f, "   {}    {}", "|".bright_blue() , line)?;
 
-		let underline = print_underline(self.start.col, self.end_col, self.kind.get_marker_char());
+		let underline = print_underline(self.start.col, self.start.end_col, self.kind.get_marker_char());
 
 		writeln!(f, "   {}    {}", "|".bright_blue(), underline.bright_yellow())?;
 
