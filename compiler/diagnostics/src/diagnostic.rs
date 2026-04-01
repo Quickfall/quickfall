@@ -5,12 +5,14 @@ use std::fmt::Display;
 use colored::{ColoredString, Colorize};
 use compiler_utils::Position;
 
+#[derive(Clone)]
 pub enum Level {
 	Error,
 	Warning,
 	Note
 }
 
+#[derive(Clone)]
 pub enum SpanKind {
 	Primary,
 	Secondary
@@ -53,6 +55,7 @@ impl Display for Level {
 	}
 }
 
+#[derive(Clone)]
 pub struct Diagnostic {
 	pub level: Level,
 	pub code: usize,
@@ -71,6 +74,7 @@ impl Diagnostic {
  	}
 }
 
+#[derive(Clone)]
 pub struct Span {
 	pub start: Position,
 	pub end_col: usize,
