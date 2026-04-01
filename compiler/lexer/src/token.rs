@@ -157,6 +157,11 @@ impl LexerToken {
 		}
 	}
 
+	pub fn get_size(&self) -> usize {
+		return self.pos_size;
+	}
+
+	#[deprecated = "Will be useless when errors are replaced"]
 	pub fn get_end_pos(&self) -> Position {
 		return self.pos.increment_by(self.pos_size);
 	}

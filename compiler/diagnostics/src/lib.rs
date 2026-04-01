@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use crate::diagnostic::Diagnostic;
+use crate::diagnostic::{Diagnostic, Level, SpanKind};
 
 pub mod diagnostic;
 pub mod errors;
@@ -18,6 +18,12 @@ pub struct DiagnosticPosition {
 	pub line: usize,
 	pub start_col: usize,
 	pub end_col: usize
+}
+
+/// Origin that can generate diagnostics easily
+pub trait DiagnosticSpanOrigin {
+	fn make_span(kind: SpanKind, msg: String);
+	fn make_simple_diagnostic(code: usize, level: Level, message: String, primary_span_msg: String, notes: Vec<String>, help: Vec<String>);
 }
 
 pub struct DiagnosticContainer {
