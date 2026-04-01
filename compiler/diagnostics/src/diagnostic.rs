@@ -5,6 +5,8 @@ use std::{fmt::Display, fs, io::Error};
 use colored::{ColoredString, Colorize};
 use compiler_utils::Position;
 
+use crate::DIAGNOSTIC_CONTAINER;
+
 #[derive(Clone)]
 pub enum Level {
 	Error,
@@ -70,8 +72,32 @@ pub struct Diagnostic {
 
 impl Diagnostic {
 	pub fn new(level: Level, decl: (usize, &str), primary_span: Span, spans: Vec<Span>, note: Vec<String>, help: Vec<String>) -> Self {
-		Diagnostic { level, code: decl.0, message: decl.1.to_string(), primary_span, spans, note, help}
+		let d = Diagnostic { level, code: decl.0, message: decl.1.to_string(), primary_span, spans, note, help};
+		
+		d.push_to_storage();
+
+		d
  	}
+
+	pub fn new_base(level: Level, code: usize, message: String, primary_span: Span, spans: Vec<Span>, note: Vec<String>, help: Vec<String>) -> Self {
+		let d = Diagnostic { level, code, message, primary_span, spans, note, help};
+
+		d.push_to_storage();
+
+		d
+	}
+
+	fn push_to_storage(&self) {
+		DIAGNOSTIC_CONTAINER.with_borrow_mut(|f| {
+			f.append(self.clone());
+		})
+	}
+}
+
+impl Into<()> for Diagnostic {
+	fn into(self) -> () {
+		
+	}
 }
 
 #[derive(Clone)]
@@ -108,8 +134,18 @@ impl Display for SpanPosition {
 pub struct Span {
 	pub start: SpanPosition,
 
-	pub label: String,
+	pub label: Option<String>,
 	pub kind: SpanKind
+}
+
+impl Span {
+	pub fn make_primary(pos: SpanPosition, label: Option<String>) -> Self {
+		Span { start: pos, label, kind: SpanKind::Primary }
+	}
+
+	pub fn make_secondary(pos: SpanPosition, label: Option<String>) -> Self {
+		Span { start: pos, label, kind: SpanKind::Secondary }
+	}
 }
 
 fn print_underline(start: usize, end: usize, c: char) -> String {
@@ -148,8 +184,10 @@ impl Display for Span {
 
 		writeln!(f, "   {}    {}", "|".bright_blue(), underline.bright_yellow())?;
 
-		let space = print_space(self.start.col + 4);
-		writeln!(f, "   {}{}{}", "|".bright_blue(), space, self.label)?;
+		if let Some(v) = self.label.clone() {
+			let space = print_space(self.start.col + 4);
+			writeln!(f, "   {}{}{}", "|".bright_blue(), space, v)?;
+		}
 
 		Ok(())
 	}

@@ -43,7 +43,7 @@ pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, st
 pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
-	let func = HashedString::new(tokens[*ind].as_keyword().unwrap().0);
+	let func = HashedString::new(tokens[*ind].expects_keyword()?.unwrap().0);
 
 	*ind += 1;
 

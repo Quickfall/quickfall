@@ -21,7 +21,7 @@ pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> Com
 	let mut map: HashMap<SelfHash, Box<ASTTreeNode>> = HashMap::new();
 
 	while tokens[*ind].is_keyword() {
-		let field_name = tokens[*ind].as_keyword()?;
+		let field_name = tokens[*ind].expects_keyword()?;
 		*ind += 1;
 
 		let value = parse_ast_value(tokens, ind)?;

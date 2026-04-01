@@ -5,8 +5,9 @@
 use std::fs;
 
 use compiler_utils::{Position, hash};
-use compiler_errors::{IO_ERROR_READ, PARSE_INT, PARSE_OPERATOR, pos::BoundPosition };
-use compiler_errors::{errs::{CompilerResult, ErrorKind, base::BaseError, normal::CompilerError}};
+use diagnostics::DiagnosticResult;
+use diagnostics::builders::{make_unexpected_simple_error_outside};
+use diagnostics::diagnostic::SpanPosition;
 
 use crate::{token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
 
@@ -34,10 +35,10 @@ const NEW_KEYWORD_HASH: u64 = hash!("new");
 /// ```
 /// let result: LexerParseResult<Vec<LexerToken>> = lexer_parse_file("test_file.qf").expect("Lexer didn't work");
 /// ```
-pub fn lexer_parse_file(file_path: &String) -> CompilerResult<Vec<LexerToken>> {
+pub fn lexer_parse_file(file_path: &String) -> DiagnosticResult<Vec<LexerToken>> {
     let contents: String = match fs::read_to_string(file_path) {
         Ok(v) => v,
-        Err(_) => return Err(CompilerError::from_base_posless(BaseError::critical(IO_ERROR_READ!().to_string()))),
+        Err(_) => panic!("Couldn't read the file"),
     };
 
     let mut tokens: Vec<LexerToken> = Vec::new();
@@ -144,7 +145,7 @@ pub fn lexer_parse_file(file_path: &String) -> CompilerResult<Vec<LexerToken>> {
     Ok(tokens)
 }
 
-fn parse_comment(contents: &String, ind: &mut usize, start_pos: Position) -> CompilerResult<LexerToken> {
+fn parse_comment(contents: &String, ind: &mut usize, start_pos: Position) -> DiagnosticResult<LexerToken> {
 	*ind += 2;
 
 	let start = *ind;
@@ -166,7 +167,7 @@ fn parse_comment(contents: &String, ind: &mut usize, start_pos: Position) -> Com
 	return Ok(LexerToken::new(start_pos, end - start, LexerTokenType::Comment(slice.to_string())))
 }
 
-fn parse_global_comment(contents: &String, ind: &mut usize, start_pos: Position) -> CompilerResult<LexerToken> {
+fn parse_global_comment(contents: &String, ind: &mut usize, start_pos: Position) -> DiagnosticResult<LexerToken> {
 	*ind += 2;
 
 	let start = *ind;
@@ -188,7 +189,7 @@ fn parse_global_comment(contents: &String, ind: &mut usize, start_pos: Position)
 	return Ok(LexerToken::new(start_pos, end - start, LexerTokenType::GlobalComment(slice.to_string())))
 }
 
-fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) -> CompilerResult<LexerToken> {
+fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) -> DiagnosticResult<LexerToken> {
 	let operator_char = contents.chars().nth(*ind).unwrap();
 
 	let operator = match operator_char {
@@ -196,7 +197,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 		'-' => MathOperator::SUBSTRACT,
 		'*' => MathOperator::MULTIPLY,
 		'/' => MathOperator::DIVIDE,
-		_ => return Err(CompilerError::new(ErrorKind::Error, format!(PARSE_OPERATOR!(), operator_char.to_string()), BoundPosition::from_size(start_pos, 1)))
+		_ => return Err(make_unexpected_simple_error_outside(&operator_char, SpanPosition::from_pos(start_pos.clone(), start_pos.col + 1)).into())
 	};
 
 	*ind += 1;
@@ -208,7 +209,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	let assigns = match contents.chars().nth(*ind) {
 		Some(v) => {
 			if v != ' ' && v != '=' {
-				return Err(CompilerError::new(ErrorKind::Error, format!(PARSE_OPERATOR!(), contents.chars().nth(*ind).unwrap()), BoundPosition::from_size(start_pos, 2)));
+				return Err(make_unexpected_simple_error_outside(&v, SpanPosition::from_pos(start_pos.clone(), start_pos.col + 2).into()).into())
 			}
 
 			v == '='
@@ -273,7 +274,7 @@ fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 
 }
 
-fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> CompilerResult<LexerToken> {
+fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> DiagnosticResult<LexerToken> {
     let start = *ind + 1;
     let mut end: usize = start;
     
@@ -288,7 +289,7 @@ fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> Com
     let slice = &str[*ind..end];
     let num: i128 = match slice.parse() {
         Ok(v) => v,
-        Err(_) => return Err(CompilerError::new(ErrorKind::Error, PARSE_INT!().to_string(), BoundPosition::from_size(start_pos, end - start)))
+		Err(_) => return Err(make_unexpected_simple_error_outside(&slice, SpanPosition::from_pos(start_pos.clone(), start_pos.col + (end - start))).into())
     };
 
     *ind = end;
