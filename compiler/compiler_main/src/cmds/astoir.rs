@@ -52,7 +52,7 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 
 				dump_errors();
 
-				ctx.unwrap().module.print_to_file(res_path);
+				ctx.module.print_to_file(res_path);
 			}
 		}
 	}

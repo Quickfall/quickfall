@@ -1,11 +1,11 @@
-use astoir_hir::{nodes::HIRNode, structs::HIRIfBranch};
+use astoir_hir::{nodes::{HIRNode, HIRNodeKind}, structs::HIRIfBranch};
 use astoir_mir::{blocks::{MIRBlock, refer::MIRBlockReference}, builder::{build_conditional_branch, build_unconditional_branch}};
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+use diagnostics::DiagnosticResult;
 
 use crate::{MIRLoweringContext, body::lower_hir_body, values::lower_hir_value};
 
-pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
-	if let HIRNode::IfStatement { branches } = *node {
+pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
+	if let HIRNodeKind::IfStatement { branches } = node.kind.clone() {
 		let merge_ref = MIRBlock::new_merge(block, &mut ctx.mir_ctx, false);
 		let mut branch_blocks = vec![];
 
@@ -100,6 +100,6 @@ pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 		return Ok(true);
 	}
 	
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()));
+	panic!("Invalid node");
 }
 

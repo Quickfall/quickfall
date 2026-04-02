@@ -1,31 +1,29 @@
-use astoir_hir::{nodes::HIRNode};
+use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_index_pointer, build_load, build_store}, vals::base::BaseMIRValue};
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+use diagnostics::{DiagnosticResult, unsure_panic};
 
 use crate::{MIRLoweringContext, values::lower_hir_value};
 
-pub fn lower_hir_aray_index_access(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
-	if let HIRNode::ArrayIndexAccess { val, index } = *node {
+pub fn lower_hir_aray_index_access(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
+	if let HIRNodeKind::ArrayIndexAccess { val, index } = node.kind {
 		let array = lower_hir_value(block, val, ctx)?;
 
-		println!("{:#?}", ctx.mir_ctx.ssa_hints.get_hint(array.get_ssa_index())?);
-
-		if true || ctx.mir_ctx.ssa_hints.get_hint(array.get_ssa_index())?.is_pointer() {
+		if ctx.mir_ctx.ssa_hints.get_hint(array.get_ssa_index()).is_pointer() {
 			let index = lower_hir_value(block, index, ctx)?.as_int()?;
 
 			let res = build_index_pointer(&mut ctx.mir_ctx, array.as_ptr()?, index)?;
 
 			return build_load(&mut ctx.mir_ctx, res);
 		} else {
-			return Err(BaseError::err("Tried lowering a non SSA array!".to_string()))
+			unsure_panic!("tried lowering a non SSA array!")
 		}
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node type")
 }
 
-pub fn lower_hir_array_modify(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
-	if let HIRNode::ArrayIndexModify { array, index, new_val } = *node {
+pub fn lower_hir_array_modify(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
+	if let HIRNodeKind::ArrayIndexModify { array, index, new_val } = node.kind.clone() {
 		let array = lower_hir_value(block, array, ctx)?.as_ptr()?;
 		let index = lower_hir_value(block, index, ctx)?.as_int()?;
 		let val = lower_hir_value(block, new_val, ctx)?;
@@ -37,5 +35,5 @@ pub fn lower_hir_array_modify(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 		return Ok(true);
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node type")
 }

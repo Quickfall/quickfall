@@ -1,15 +1,15 @@
-use astoir_hir::{nodes::HIRNode};
+use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::{refer::MIRBlockReference}, builder::{build_float_add, build_float_div, build_float_mul, build_float_sub, build_int_add, build_int_div, build_int_mul, build_int_sub}, vals::base::BaseMIRValue};
-use compiler_errors::{IR_INVALID_NODE_TYPE, IR_REQ_VARIABLE_ASSIGN, errs::{BaseResult, base::BaseError}};
 use compiler_typing::raw::RawType;
+use diagnostics::{DiagnosticResult, builders::make_math_operation_req_assign, unsure_panic};
 use lexer::toks::math::MathOperator;
 
 use crate::{MIRLoweringContext, values::lower_hir_value, vars::lower_hir_variable_reference};
  
-pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
-	if let HIRNode::MathOperation { left, right, operation, assignment } = *node {
+pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
+	if let HIRNodeKind::MathOperation { left, right, operation, assignment } = node.clone().kind {
 		if assignment && !left.is_variable_reference() {
-			return Err(BaseError::err(IR_REQ_VARIABLE_ASSIGN!().to_string()))
+			return Err(make_math_operation_req_assign(&*node).into())
 		}			
 
 		let ptr;
@@ -28,9 +28,7 @@ pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ct
 			RawType::Integer(_, _) | RawType::FixedPoint(_, _, _) => lower_hir_math_operation_int(left_val, right_val, operation, ctx)?,
 			RawType::Floating(_, _) => lower_hir_math_operation_float(left_val, right_val, operation, ctx)?,
 
-			// TODO: see if fixed point are needed or do they automatically fallback to int
-
-			_ => return Err(BaseError::err("Cannot use lower_hir_math_operation on this given value kind!".to_string()))
+			_  => unsure_panic!("Cannot use lower_hir_math_operator on this given value kind!")
 		};
 
 		if assignment {
@@ -42,10 +40,10 @@ pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ct
 		return Ok(val)
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node")
 }
 
-pub fn lower_hir_math_operation_int(left: BaseMIRValue, right: BaseMIRValue, operator: MathOperator, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_math_operation_int(left: BaseMIRValue, right: BaseMIRValue, operator: MathOperator, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
 	let left = left.as_int()?;
 	let right = right.as_int()?;
 
@@ -61,7 +59,7 @@ pub fn lower_hir_math_operation_int(left: BaseMIRValue, right: BaseMIRValue, ope
 	return Ok(res.into());
 }
 
-pub fn lower_hir_math_operation_float(left: BaseMIRValue, right: BaseMIRValue, operator: MathOperator, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_math_operation_float(left: BaseMIRValue, right: BaseMIRValue, operator: MathOperator, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
 	let left = left.as_float()?;
 	let right = right.as_float()?;
 

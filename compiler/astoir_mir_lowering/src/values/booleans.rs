@@ -1,12 +1,12 @@
-use astoir_hir::{nodes::HIRNode};
+use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::{refer::MIRBlockReference}, builder::{build_bitwise_not, build_comp_eq, build_comp_ge, build_comp_gt, build_comp_le, build_comp_lt, build_comp_neg}, vals::int::MIRIntValue};
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+use diagnostics::DiagnosticResult;
 use lexer::toks::comp::ComparingOperator;
 
 use crate::{MIRLoweringContext, values::lower_hir_value};
 
-pub fn lower_hir_boolean_operator(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<MIRIntValue> {
-	if let HIRNode::BooleanOperator { left, right, operator } = *node {
+pub fn lower_hir_boolean_operator(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<MIRIntValue> {
+	if let HIRNodeKind::BooleanOperator { left, right, operator } = node.kind {
 		let a = lower_hir_value(block, left, ctx)?.as_int()?;
 		let b = lower_hir_value(block, right, ctx)?.as_int()?;
 
@@ -22,11 +22,11 @@ pub fn lower_hir_boolean_operator(block: MIRBlockReference, node: Box<HIRNode>, 
 		return Ok(val);
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node");
 }
 
-pub fn lowering_hir_boolean_condition(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<MIRIntValue> {
-	if let HIRNode::BooleanCondition { value, negation } = *node {
+pub fn lowering_hir_boolean_condition(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<MIRIntValue> {
+	if let HIRNodeKind::BooleanCondition { value, negation } = node.kind {
 		let mut val = lower_hir_value(block, value, ctx)?.as_int()?;
 
 		if negation {
@@ -36,5 +36,5 @@ pub fn lowering_hir_boolean_condition(block: MIRBlockReference, node: Box<HIRNod
 		return Ok(val);
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node");
 }

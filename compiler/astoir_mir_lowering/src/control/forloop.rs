@@ -1,13 +1,13 @@
 //! Lowering for for loops
 
-use astoir_hir::nodes::HIRNode;
+use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::{MIRBlock, refer::MIRBlockReference}, builder::{build_conditional_branch, build_unconditional_branch}};
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+use diagnostics::DiagnosticResult;
 
 use crate::{MIRLoweringContext, body::lower_hir_body, math::lower_hir_math_operation, values::lower_hir_value, vars::lower_hir_variable_declaration};
 
-pub fn lower_hir_for_loop(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
-	if let HIRNode::ForBlock { initial_state, condition, incrementation, body } = *node {
+pub fn lower_hir_for_loop(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
+	if let HIRNodeKind::ForBlock { initial_state, condition, incrementation, body } = node.kind.clone() {
 		let header_ref = MIRBlock::new_merge(block, &mut ctx.mir_ctx, false);
 		let cond_ref = MIRBlock::new_merge(header_ref, &mut ctx.mir_ctx, false);
 		let body_ref = MIRBlock::new_merge(header_ref, &mut ctx.mir_ctx, false);
@@ -39,5 +39,5 @@ pub fn lower_hir_for_loop(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mu
 
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node")
 }

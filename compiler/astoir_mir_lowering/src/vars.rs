@@ -1,14 +1,14 @@
 //! Variable related lowering
 
-use astoir_hir::{nodes::HIRNode};
+use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference}, builder::{build_stack_alloc, build_store}, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_typing::SizedType;
+use diagnostics::DiagnosticResult;
 
 use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
 
-pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
-	if let HIRNode::VarDeclaration { variable, var_type, default_val } = *node {
+pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
+	if let HIRNodeKind::VarDeclaration { variable, var_type, default_val } = node.clone().kind {
 		let func = ctx.mir_ctx.block_to_func[&block_id];
 		let local_ctx = ctx.hir_ctx.function_contexts[func].as_ref().unwrap();
 
@@ -37,20 +37,20 @@ pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIR
 		return Ok(true)
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node")
 }
 
-pub fn lower_hir_variable_reference(block: MIRBlockReference, node: &Box<HIRNode>, ctx: &MIRLoweringContext) -> BaseResult<MIRVariableReference> {
-	if let HIRNode::VariableReference { index, is_static: _ } = &**node { // TODO: add support for static variables
+pub fn lower_hir_variable_reference(block: MIRBlockReference, node: &Box<HIRNode>, ctx: &MIRLoweringContext) -> DiagnosticResult<MIRVariableReference> {
+	if let HIRNodeKind::VariableReference { index, is_static: _ } = &node.kind { // TODO: add support for static variables
 		return ctx.mir_ctx.blocks[block].get_variable_ref(*index)
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node")
 }
 
 
 /// Lowers the HIR variable reference as if to obtain it's value. Requires a load
-pub fn lower_hir_variable_reference_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<BaseMIRValue> {
+pub fn lower_hir_variable_reference_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
 	let ptr = lower_hir_variable_reference(block, &node, ctx)?;
 	
 	let read = ptr.read(block, &mut ctx.mir_ctx)?;
@@ -58,8 +58,8 @@ pub fn lower_hir_variable_reference_value(block: MIRBlockReference, node: Box<HI
 	return Ok(read);
 }
 
-pub fn lower_hir_variable_assignment(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
-	if let HIRNode::VarAssigment { variable, val } = *node {
+pub fn lower_hir_variable_assignment(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
+	if let HIRNodeKind::VarAssigment { variable, val } = node.clone().kind {
 		let variable_ref = ctx.mir_ctx.blocks[block].get_variable_ref(variable)?;
  
 		let val = lower_hir_value(block, val, ctx)?;
@@ -68,5 +68,5 @@ pub fn lower_hir_variable_assignment(block: MIRBlockReference, node: Box<HIRNode
 		return Ok(true);
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node")
 }
