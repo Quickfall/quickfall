@@ -61,7 +61,7 @@ pub fn lower_ast_if_statement_branch(context: &mut HIRContext, curr_ctx: &mut HI
 			return Ok(HIRIfBranch::IfBranch { cond: condition, body })
 		},
 
-		ç => panic!("Invalid node passed!")
+		_ => panic!("Invalid node passed!")
 	}
 }
 
@@ -69,7 +69,7 @@ pub fn lower_ast_if_statement(context: &mut HIRContext, curr_ctx: &mut HIRBranch
 	if let ASTTreeNodeKind::IfStatement { cond: _, body: _, branches, depth: _ } = node.kind.clone() {
 		let mut hir_branches = vec![];
 
-		hir_branches.push(lower_ast_if_statement_branch(context, curr_ctx, node)?);
+		hir_branches.push(lower_ast_if_statement_branch(context, curr_ctx, node.clone())?);
 		
 		for b in branches {
 			hir_branches.push(lower_ast_if_statement_branch(context, curr_ctx, b)?);

@@ -1,6 +1,5 @@
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, VariableKind, get_variable}, nodes::{HIRNode, HIRNodeKind}};
-use compiler_errors::{IR_INVALID_NODE_TYPE, VARIABLE_REQ_VALUE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 use diagnostics::{DiagnosticResult, builders::make_variable_uninit};
 
 use crate::{arrays::lower_ast_array_index_access, types::lower_ast_type, values::lower_ast_value};
@@ -14,7 +13,7 @@ pub fn lower_ast_variable_declaration(context: &mut HIRContext, curr_ctx: &mut H
 		let default_val;
 
 		if value.is_some() {
-			let hir_val = Box::new(lower_ast_value(context, curr_ctx, value.unwrap())?.use_as(context, curr_ctx, lowered.clone(), origin, None)?);
+			let hir_val = Box::new(lower_ast_value(context, curr_ctx, value.unwrap())?.use_as(context, curr_ctx, lowered.clone(), &*node, None)?);
 
 			default_val = Some(hir_val);
 		} else {
@@ -29,7 +28,7 @@ pub fn lower_ast_variable_declaration(context: &mut HIRContext, curr_ctx: &mut H
 
 pub fn lower_ast_variable_reference(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>, requires_value: bool) -> DiagnosticResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::VariableReference(str) = node.kind.clone() {		
-		let var = get_variable(context, curr_ctx, str.hash, &node)?;
+		let var = get_variable(context, curr_ctx, str.hash, &*node)?;
 
 		if var.0 == VariableKind::STATIC {
 			return Ok(Box::new(HIRNode::new(HIRNodeKind::VariableReference { index: var.2, is_static: true }, &node.start, &node.end)))
@@ -37,7 +36,7 @@ pub fn lower_ast_variable_reference(context: &mut HIRContext, curr_ctx: &mut HIR
 
 		if requires_value {
 			if !curr_ctx.has_variable_value(var.2) {
-				return Err(make_variable_uninit(&node, &str.val).into())
+				return Err(make_variable_uninit(&*node, &str.val).into())
 			}
 		}
 
@@ -55,9 +54,9 @@ pub fn lower_ast_variable_assign(context: &mut HIRContext, curr_ctx: &mut HIRBra
 	if let ASTTreeNodeKind::VarValueChange { var, value } = node.kind.clone() {
 		let value = lower_ast_value(context, curr_ctx, value)?;
 
-		let variable_reference = lower_ast_variable_reference(context, curr_ctx, var, false)?;
+		let variable_reference = lower_ast_variable_reference(context, curr_ctx, var.clone(), false)?;
 
-		let value = Box::new(value.use_as(context, curr_ctx, variable_reference.get_node_type(context, curr_ctx).unwrap().get_maybe_containing_type(), &var, Some(&node))?);
+		let value = Box::new(value.use_as(context, curr_ctx, variable_reference.get_node_type(context, curr_ctx).unwrap().get_maybe_containing_type(), &*var, Some(&*node))?);
 
 		let var = variable_reference.as_variable_reference();
 

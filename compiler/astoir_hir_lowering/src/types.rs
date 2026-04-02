@@ -1,6 +1,5 @@
 use ast::types::ASTType;
 use astoir_hir::ctx::HIRContext;
-use compiler_errors::{IR_EXPECTED_SIZE_SPECIFIED, errs::{BaseResult, base::BaseError}};
 use compiler_typing::{raw::RawType, references::TypeReference, structs::RawStructTypeContainer, tree::Type};
 use compiler_utils::hash::HashedString;
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_cannot_find_type, make_diff_size_specifiers}};

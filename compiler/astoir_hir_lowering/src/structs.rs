@@ -1,6 +1,5 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}, structs::HIRStructContainer};
-use compiler_errors::{IR_TYPE_WRONG_KIND, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 use compiler_typing::{raw::RawType, structs::RawStructTypeContainer, tree::Type};
 use compiler_utils::{hash::{HashedString, SelfHash}, utils::indexed::IndexStorage};
 use diagnostics::{DiagnosticResult, builders::{make_already_in_scope, make_cannot_find_type, make_struct_init_missing_field, make_struct_missing_field}};
@@ -9,7 +8,7 @@ use crate::{lower_ast_body, types::{lower_ast_type, lower_ast_type_struct}, valu
 
 fn lower_ast_struct_member(context: &mut HIRContext, node: Box<ASTTreeNode>, container: &mut RawStructTypeContainer) -> DiagnosticResult<bool> {
 	if let ASTTreeNodeKind::StructFieldMember { name, member_type } = node.kind.clone() {
-		let t = lower_ast_type_struct(context, member_type, container, &node)?;
+		let t = lower_ast_type_struct(context, member_type, container, &*node)?;
 
 		container.fields.append(name.hash, t);
 		return Ok(true);
@@ -23,7 +22,7 @@ fn lower_ast_struct_function_decl(context: &mut HIRContext, node: Box<ASTTreeNod
 		let mut arguments = vec![];
 
 		for arg in args {
-			let lowered = lower_ast_type_struct(context, arg.argument_type, container, &node)?;
+			let lowered = lower_ast_type_struct(context, arg.argument_type, container, &*node)?;
 
 			arguments.push((arg.name.hash, lowered));
 		}
@@ -31,7 +30,7 @@ fn lower_ast_struct_function_decl(context: &mut HIRContext, node: Box<ASTTreeNod
 		let ret_type;
 
 		if return_type.is_some() {
-			let lowered = lower_ast_type_struct(context, return_type.unwrap(), container, &node)?;
+			let lowered = lower_ast_type_struct(context, return_type.unwrap(), container, &*node)?;
 
 			ret_type = Some(lowered)
 		} else {
@@ -59,7 +58,7 @@ pub fn lower_ast_struct_declaration(context: &mut HIRContext, node: Box<ASTTreeN
 
 		let ind = match context.type_storage.append(name.hash, base) {
 			Ok(v) => v,
-			Err(e) => return Err(make_already_in_scope(&node, &name.val).into())
+			Err(_) => return Err(make_already_in_scope(&*node, &name.val).into())
 		};
 
 		for member in members {
@@ -93,10 +92,10 @@ pub fn lower_ast_struct_initializer(context: &mut HIRContext, curr_ctx: &mut HIR
 	if let ASTTreeNodeKind::StructVariableInitializerValue { struct_type, map } = node.kind.clone() {
 		let raw = match context.type_storage.get_type(HashedString::new(struct_type.get_generic_name()).hash) {
 			Ok(v) => Type::GenericLowered(v),
-			Err(e) => return Err(make_cannot_find_type(&node, &struct_type.get_generic_name()).into())
+			Err(_) => return Err(make_cannot_find_type(&*node, &struct_type.get_generic_name()).into())
 		};
 
-		let hir_type = lower_ast_type(context, struct_type, &node)?;
+		let hir_type = lower_ast_type(context, struct_type, &*node)?;
 
 		let fields = raw.get_fields(&context.type_storage);
 
@@ -106,19 +105,19 @@ pub fn lower_ast_struct_initializer(context: &mut HIRContext, curr_ctx: &mut HIR
 			let id = SelfHash { hash: field };
 
 			if !map.contains_key(&id) {
-				return Err(make_struct_init_missing_field(&node, &hir_type, &field).into())
+				return Err(make_struct_init_missing_field(&*node, &hir_type, &field).into())
 			}
 
 			let field = match raw.get_field(&context.type_storage, field) {
 				Ok(v) => v,
-				Err(_) => return Err(make_struct_missing_field(&hir_type, ty, &id.hash).into())
+				Err(_) => return Err(make_struct_missing_field(&*node, &hir_type, &id.hash).into())
 			};
 
 			let tt = field.1.resolve(&hir_type);
 
 			let val = lower_ast_value(context, curr_ctx, map[&id].clone())?;
 
-			let val = Box::new(val.use_as(context, curr_ctx, tt.clone(), &node, None)?);
+			let val = Box::new(val.use_as(context, curr_ctx, tt.clone(), &*node, None)?);
 
 			vals.push(val)
 		}

@@ -1,6 +1,5 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}};
-use compiler_errors::{IR_FIND_ELEMENT, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 use diagnostics::{DiagnosticResult, builders::{make_already_in_scope, make_cannot_find_func}};
 
 use crate::{lower_ast_body, types::lower_ast_type, values::lower_ast_value};
@@ -9,7 +8,7 @@ pub fn lower_ast_function_call(context: &mut HIRContext, curr_ctx: &mut HIRBranc
 	if let ASTTreeNodeKind::FunctionCall { func, args } = node.kind.clone() {
 		let f_ind = match context.functions.get_index(func.hash) {
 			Some(v) => v,
-			None => return Err(make_cannot_find_func(&node, &func.hash).into())
+			None => return Err(make_cannot_find_func(&*node, &func.hash).into())
 		};
 
 		let func = &context.functions.vals[f_ind].clone();
@@ -19,7 +18,7 @@ pub fn lower_ast_function_call(context: &mut HIRContext, curr_ctx: &mut HIRBranc
 		for ast in args {
 			let hir = lower_ast_value(context, curr_ctx, ast)?;
 
-			let val = hir.use_as(context, curr_ctx, func.1[ind].1.clone(), &node, None)?;
+			let val = hir.use_as(context, curr_ctx, func.1[ind].1.clone(), &*node, None)?;
 
 			hir_args.push(Box::new(val));
 
@@ -33,11 +32,11 @@ pub fn lower_ast_function_call(context: &mut HIRContext, curr_ctx: &mut HIRBranc
 }
 
 pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
-	if let ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, return_type, requires_this } = node.kind {
+	if let ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, return_type, requires_this } = node.clone().kind {
 		let ret_type;
 
 		if return_type.is_some() {
-			let lower = lower_ast_type(context, return_type.unwrap(), &node)?;
+			let lower = lower_ast_type(context, return_type.unwrap(), &*node)?;
 			
 			ret_type = Some(lower)
 		} else {
@@ -49,7 +48,7 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 
 		for arg in args {
 			types.push(arg.argument_type.clone());
-			let t = lower_ast_type(context, arg.argument_type, &node)?;
+			let t = lower_ast_type(context, arg.argument_type, &*node)?;
 
 			arguments.push((arg.name.hash, t));
 		}
@@ -85,12 +84,12 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 	panic!("Invalid node passed!");
 }
 
-pub fn lower_ast_shadow_function_declaration(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_shadow_function_declaration(context: &mut HIRContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::ShadowFunctionDeclaration { func_name, args, return_type } = node.kind.clone() {
 		let ret_type;
 
 		if return_type.is_some() {
-			let lower = lower_ast_type(context, return_type.unwrap(), &node)?;
+			let lower = lower_ast_type(context, return_type.unwrap(), &*node)?;
 			
 			ret_type = Some(lower)
 		} else {
@@ -102,7 +101,7 @@ pub fn lower_ast_shadow_function_declaration(context: &mut HIRContext, node: Box
 
 		for arg in args {
 			types.push(arg.argument_type.clone());
-			let t = lower_ast_type(context, arg.argument_type, &node)?;
+			let t = lower_ast_type(context, arg.argument_type, &*node)?;
 
 			arguments.push((arg.name.hash, t));
 		}

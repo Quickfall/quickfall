@@ -1,6 +1,5 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::HIRContext, nodes::{HIRNode, HIRNodeKind}};
-use compiler_errors::{IR_FIND_TYPE, IR_TYPE_WRONG_KIND, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 use compiler_typing::tree::Type;
 use diagnostics::{DiagnosticResult, builders::make_cannot_find_type};
 
@@ -9,7 +8,7 @@ pub fn lower_ast_literal(context: &HIRContext, node: Box<ASTTreeNode>) -> Diagno
 		ASTTreeNodeKind::IntegerLit { val, hash } => {
 			let lit_type = match context.type_storage.types.get_index(hash) {
 				Some(v) => v,
-				None => return Err(make_cannot_find_type(&node, &hash).into())
+				None => return Err(make_cannot_find_type(&*node, &hash).into())
 			};
 
 			return Ok(Box::new(HIRNode::new(HIRNodeKind::IntegerLiteral { value: val, int_type: Type::Generic(lit_type, vec![], vec![]) }, &node.start, &node.end)))

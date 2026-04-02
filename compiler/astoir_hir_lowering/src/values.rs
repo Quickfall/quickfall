@@ -1,13 +1,12 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::{HIRNode, HIRNodeKind}, structs::StructLRUStep};
-use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, NON_VAR_REF_POINTER, errs::{CompilerResult, ErrorKind, normal::CompilerError}, make_invalid_type_err};
 use compiler_typing::tree::Type;
 use diagnostics::{DiagnosticResult, builders::{make_cannot_find_func, make_invalid_pointing, make_struct_missing_field, make_struct_missing_func}};
 
-use crate::{arrays::lower_ast_array_index_access, bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, func::lower_ast_function_call, literals::lower_ast_literal, math::lower_ast_math_operation, structs::lower_ast_struct_initializer, var::lower_ast_variable_reference};
+use crate::{arrays::lower_ast_array_index_access, bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, func::lower_ast_function_call, literals::lower_ast_literal, math::lower_ast_math_operation, structs::lower_ast_struct_initializer, var::{lower_ast_variable_reference}};
 
 pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>, curr_steps: &mut Vec<StructLRUStep>, curr_type: &mut Option<Type>) -> DiagnosticResult<bool> {
-	match node.kind {
+	match node.clone().kind {
 		ASTTreeNodeKind::FunctionCall { func, args } => {
 			let func_type;
 			let ind: usize;
@@ -15,7 +14,7 @@ pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBra
 			if let Some(curr_type_val) = curr_type {
 				let res = match curr_type_val.get_function(&context.type_storage, func.hash) {
 					Ok(v) => v,
-					Err(e) => return Err(make_struct_missing_func(&node, curr_type_val, &func.val).into())
+					Err(_) => return Err(make_struct_missing_func(&*node, curr_type_val, &func.val).into())
 				};
 
 				let abstract_func = res.1;
@@ -41,7 +40,7 @@ pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBra
 			} else {
 				ind = match context.functions.get_index(func.hash) {
 					Some(v) => v,
-					None => return Err(make_cannot_find_func(&node, &func.val).into())
+					None => return Err(make_cannot_find_func(&*node, &func.val).into())
 				};
 
 				func_type = context.functions.vals[ind].clone();
@@ -53,7 +52,7 @@ pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBra
 			for a in args {
 				let lowered = lower_ast_value(context, curr_ctx, a)?;
 
-				let lowered = Box::new(lowered.use_as(context, curr_ctx, func_type.1[iind].1.clone(), &node, None))?;
+				let lowered = Box::new(lowered.use_as(context, curr_ctx, func_type.1[iind].1.clone(), &*node, None)?);
 
 				hir_args.push(lowered);
 
@@ -74,15 +73,17 @@ pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBra
 			if let Some(curr_type_val) = curr_type {
 				let res = match curr_type_val.get_field(&context.type_storage, str.hash) {
 					Ok(v) => v,
-					Err(_) => return Err(make_struct_missing_field(&node, curr_type_val, &str.val).into())
+					Err(_) => return Err(make_struct_missing_field(&*node, curr_type_val, &str.val).into())
 				};
 
 				ind = res.0;
 				var_type = res.1.resolve(curr_type_val);
 
 			} else {
-				let r =  get_variable(context, curr_ctx, str.hash, &node)?;
+				let r =  get_variable(context, curr_ctx, str.hash, &*node)?;
 
+				ind = r.2;
+				var_type = r.1;
 			}
 
 			curr_steps.push(StructLRUStep::VariableStep { variable: ind });
@@ -196,7 +197,7 @@ pub fn lower_ast_pointer(context: &mut HIRContext, curr_ctx: &mut HIRBranchedCon
 		let val = lower_ast_value(context, curr_ctx, val)?;
 
 		if !val.is_variable_representative() {
-			return Err(make_invalid_pointing(&node).into())
+			return Err(make_invalid_pointing(&*node).into())
 		}
 		
 		let r = val.get_variable_represent();
@@ -214,7 +215,7 @@ pub fn lower_ast_reference(context: &mut HIRContext, curr_ctx: &mut HIRBranchedC
 		let val = lower_ast_value(context, curr_ctx, val)?;
 
 		if !val.is_variable_representative() {
-			return Err(make_invalid_pointing(&node).into())
+			return Err(make_invalid_pointing(&*node).into())
 		}
 
 		let r = val.get_variable_represent();

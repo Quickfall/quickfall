@@ -1,6 +1,5 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}};
-use compiler_errors::{IR_INVALID_NODE_TYPE, UNUSED_VAR_ACCESS, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, diagnostic::Level, errors::MATH_OPERATION_ASSIGNS};
 
 use crate::values::lower_ast_value;
@@ -13,7 +12,7 @@ pub fn lower_ast_math_operation(context: &mut HIRContext, curr_ctx: &mut HIRBran
 
 		let left = lower_ast_value(context, curr_ctx, lval)?;
 
-		let right = Box::new(lower_ast_value(context, curr_ctx, rval)?.use_as(context, curr_ctx, left.get_node_type(context, curr_ctx).unwrap(), &node, None)?);
+		let right = Box::new(lower_ast_value(context, curr_ctx, rval)?.use_as(context, curr_ctx, left.get_node_type(context, curr_ctx).unwrap(), &*node, None)?);
 
 		return Ok(Box::new(HIRNode::new(HIRNodeKind::MathOperation { left, right, operation: operator, assignment: assigns }, &node.start, &node.end)))		
 	} 
