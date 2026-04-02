@@ -1,6 +1,6 @@
 use astoir_hir::{nodes::{HIRNode, HIRNodeKind}, structs::HIRIfBranch};
 use astoir_mir::{blocks::{MIRBlock, refer::MIRBlockReference}, builder::{build_conditional_branch, build_unconditional_branch}};
-use diagnostics::DiagnosticResult;
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos};
 
 use crate::{MIRLoweringContext, body::lower_hir_body, values::lower_hir_value};
 
@@ -51,6 +51,7 @@ pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 				HIRIfBranch::IfBranch { cond, body } => {
 					ctx.mir_ctx.writer.move_end(block);
 
+					move_current_diagnostic_pos(cond.get_pos());
 					let val = lower_hir_value(block, cond, ctx)?.as_int()?;
 
 					build_conditional_branch(&mut ctx.mir_ctx, val, branch_blocks[branch_ind], branch_blocks[branch_ind + 1])?;
@@ -67,6 +68,7 @@ pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 				HIRIfBranch::ElseIfBranch { cond, body } => {
 					ctx.mir_ctx.writer.move_end(branch_blocks[branch_ind]);
 
+					move_current_diagnostic_pos(cond.get_pos());
 					let val = lower_hir_value(branch_blocks[branch_ind], cond, ctx)?.as_int()?;
 
 					build_conditional_branch(&mut ctx.mir_ctx, val, branch_blocks[branch_ind + 1], branch_blocks[branch_ind + 2])?;

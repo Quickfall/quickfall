@@ -87,7 +87,7 @@ impl Diagnostic {
 		d
 	}
 
-	fn push_to_storage(&self) {
+	fn push_to_storage(&self) {		
 		DIAGNOSTIC_CONTAINER.with_borrow_mut(|f| {
 			f.append(self.clone());
 		})

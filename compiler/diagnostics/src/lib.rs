@@ -35,6 +35,7 @@ macro_rules! unsure_panic {
 pub trait DiagnosticSpanOrigin {
 	fn make_span(&self, kind: SpanKind, msg: Option<String>) -> Span;
 	fn make_simple_diagnostic(&self, code: usize, level: Level, message: String, primary_span_msg: Option<String>, spans: Vec<Span>, notes: Vec<String>, help: Vec<String>) -> Diagnostic;
+	fn get_pos(&self) -> SpanPosition;
 }
 
 pub struct DiagnosticContainer {

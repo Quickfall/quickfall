@@ -1,6 +1,6 @@
 use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_static_array_const, build_static_array_one_const}, vals::base::BaseMIRValue};
-use diagnostics::{DiagnosticResult, unsure_panic};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos, unsure_panic};
 
 use crate::{MIRLoweringContext, arrays::lower_hir_aray_index_access, funcs::lower_hir_function_call, math::lower_hir_math_operation, values::{booleans::{lower_hir_boolean_operator, lowering_hir_boolean_condition}, consts::lower_hir_literal, structs::lower_hir_struct_init}, vars::{lower_hir_variable_reference, lower_hir_variable_reference_value}};
 
@@ -9,6 +9,8 @@ pub mod booleans;
 pub mod structs;
 
 pub fn lower_hir_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
+	move_current_diagnostic_pos(node.get_pos());
+	
 	match node.kind {
 		HIRNodeKind::IntegerLiteral { .. } | HIRNodeKind::StringLiteral { .. } => return lower_hir_literal(node, ctx),
 		HIRNodeKind::VariableReference { .. } => return lower_hir_variable_reference_value(block, node, ctx),

@@ -1,10 +1,12 @@
 use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::refer::MIRBlockReference, insts::MIRInstruction};
-use diagnostics::{DiagnosticResult, builders::make_math_operation_req_assign};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_math_operation_req_assign, move_current_diagnostic_pos};
 
 use crate::{MIRLoweringContext, arrays::lower_hir_array_modify, control::{forloop::lower_hir_for_loop, ifstatement::lower_hir_if_statement}, funcs::lower_hir_function_call, math::lower_hir_math_operation, values::lower_hir_value, vars::{lower_hir_variable_assignment, lower_hir_variable_declaration}};
 
 pub fn lower_hir_body_member(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
+	move_current_diagnostic_pos(node.get_pos());
+	
 	return match node.kind.clone() {
 		HIRNodeKind::VarAssigment { .. } => lower_hir_variable_assignment(block, node, ctx),
 		HIRNodeKind::VarDeclaration { .. } => lower_hir_variable_declaration(block, node, ctx),

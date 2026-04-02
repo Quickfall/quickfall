@@ -28,7 +28,11 @@ impl DiagnosticSpanOrigin for HIRNode {
 	fn make_simple_diagnostic(&self, code: usize, level: diagnostics::diagnostic::Level, message: String, primary_span_msg: Option<String>, spans: Vec<Span>, notes: Vec<String>, help: Vec<String>) -> Diagnostic {
 		let span = self.make_span(SpanKind::Primary, primary_span_msg);
 
-		Diagnostic { level, code, message, primary_span: span, spans, note: notes, help }
+		Diagnostic::new_base(level, code, message, span, spans, notes, help)
+	}
+
+	fn get_pos(&self) -> SpanPosition {
+		SpanPosition::from_pos2(self.start.clone(), self.end.clone())
 	}
 
 	fn make_span(&self, kind: SpanKind, msg: Option<String>) -> Span {

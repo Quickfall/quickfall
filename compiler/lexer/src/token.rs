@@ -214,6 +214,10 @@ impl DiagnosticSpanOrigin for LexerToken {
 		Span { kind, label: msg, start: SpanPosition::from_pos(self.pos.clone(), self.get_size()) }
 	}
 
+	fn get_pos(&self) -> SpanPosition {
+		SpanPosition::from_pos(self.pos.clone(), self.get_size())
+	}
+
 	fn make_simple_diagnostic(&self, code: usize, level: diagnostics::diagnostic::Level, message: String, primary_span_msg: Option<String>, spans: Vec<Span>, notes: Vec<String>, help: Vec<String>) -> diagnostics::diagnostic::Diagnostic {
 		let primary = Span { kind: SpanKind::Primary, label: primary_span_msg, start: SpanPosition::from_pos(self.pos.clone(), self.get_size()) };
 		
