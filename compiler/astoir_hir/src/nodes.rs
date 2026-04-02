@@ -1,11 +1,8 @@
 //! The nodes inside of the AstoIR HIR. 
 
-use std::env::var;
-
-use compiler_errors::{IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
 use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
 use compiler_utils::Position;
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_diff_type, make_expected_simple_error}};
+use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, unsure_panic};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
@@ -86,13 +83,13 @@ impl HIRNode {
 		return false;
 	}
 
-	pub fn get_variable_represent(&self) -> BaseResult<(usize, bool)> {
+	pub fn get_variable_represent(&self) -> (usize, bool) {
 		match &self.kind {
-			HIRNodeKind::VariableReference { index, is_static} => return Ok((*index, *is_static)),
+			HIRNodeKind::VariableReference { index, is_static} => return (*index, *is_static),
 			HIRNodeKind::ArrayIndexAccess { val, index: _ } => return val.get_variable_represent(),
 
-			_ => return Err(BaseError::err("Used get_variable_represent on a non representing var".to_string()))
-		}
+			_ => unsure_panic!("Used get_variable_represent on a non representing val")
+		};
 	}
 
 	pub fn is_variable_representative(&self) -> bool {
@@ -118,7 +115,7 @@ impl HIRNode {
 	pub fn use_as<K: DiagnosticSpanOrigin>(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type, origin: &K, var_origin: Option<&K>) -> Result<HIRNode, ()> {
 		let self_type = match self.get_node_type(context, curr_ctx) {
 			Some(v) => v,
-			_ => return Err(())
+			_ => panic!("Tried using a typeless node in use_as: {:#?}", self)
 		};
 
 		if self_type == t {
@@ -158,7 +155,11 @@ impl HIRNode {
 			}
 		}
 
-		return Err(())
+		if let Some(v) = var_origin {
+			return Err(make_diff_type(origin, &"unnamed".to_string(), &t, &self.get_node_type(context, curr_ctx).unwrap(), v).into())
+		}
+
+		return Err(make_diff_type_val(origin, &t, &self.get_node_type(context, curr_ctx).unwrap()).into())
 	}	
 
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<Type> {

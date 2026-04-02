@@ -1,7 +1,7 @@
 //! Normal bounds are kind of bounds that allow to require specific functions or fields on the given type. 
 //! Thus allowing you to use these with generics.
 
-use diagnostics::{MaybeDiagnostic, builders::{make_bound_fail_field, make_bound_fail_function}, diagnostic::{Diagnostic, Level, Span}, errors::BOUND_MISSING, get_current_diagnostic_pos};
+use diagnostics::{MaybeDiagnostic, builders::{make_bound_fail_field, make_bound_fail_function}};
 
 use crate::{TypedResolvedFunction, storage::TypeStorage, tree::Type};
 
@@ -29,8 +29,10 @@ impl NormalBound {
 		for field in &self.fields {
 			let ff = t.get_field(storage, field.0)?.1;
 
-			if !field.1.is_truly_eq(&ff.resolve(t)) {
-				return Err(make_bound_fail_field(&"unnamed".to_string(), &"unnamed".to_string(), &field.0, &ff, &field.1).into())
+			let resolved = ff.resolve(t);
+
+			if !field.1.is_truly_eq(&resolved) {
+				return Err(make_bound_fail_field(&"unnamed".to_string(), &"unnamed".to_string(), &field.0, &resolved, &field.1).into())
 			}
  		}
 

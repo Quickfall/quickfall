@@ -1,6 +1,7 @@
 use ast::{ctx::ParserCtx, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}};
 use compiler_errors::{IR_INVALID_NODE_TYPE, IR_TYPE_WRONG_KIND, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
+use diagnostics::DiagnosticResult;
 
 use crate::{arrays::lower_ast_array_modify, control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block}, func::{lower_ast_function_call, lower_ast_function_declaration, lower_ast_shadow_function_declaration}, math::lower_ast_math_operation, structs::lower_ast_struct_declaration, values::lower_ast_value, var::{lower_ast_variable_assign, lower_ast_variable_declaration}};
 
@@ -15,7 +16,7 @@ pub mod control;
 pub mod structs;
 pub mod arrays;
 
-pub fn lower_ast_body_node(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_body_node(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	match node.kind.clone() {
 		ASTTreeNodeKind::VarDeclaration { .. } => return lower_ast_variable_declaration(context, curr_ctx, node),
 		ASTTreeNodeKind::FunctionCall { .. } =>  return lower_ast_function_call(context, curr_ctx, node),
@@ -40,11 +41,11 @@ pub fn lower_ast_body_node(context: &mut HIRContext, curr_ctx: &mut HIRBranchedC
 		ASTTreeNodeKind::WhileBlock { .. } => return lower_ast_while_block(context, curr_ctx, node),
 		ASTTreeNodeKind::IfStatement { .. } => return lower_ast_if_statement(context, curr_ctx, node),
 		
-		_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
+		_ => panic!("Invalid node type")
 	}
 }
 
-pub fn lower_ast_body(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, nodes: Vec<Box<ASTTreeNode>>, introduce_era: bool) -> CompilerResult<Vec<Box<HIRNode>>> {
+pub fn lower_ast_body(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, nodes: Vec<Box<ASTTreeNode>>, introduce_era: bool) -> DiagnosticResult<Vec<Box<HIRNode>>> {
 	let mut hir_nodes = vec![];
 
 	let branch;
@@ -66,7 +67,7 @@ pub fn lower_ast_body(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContex
 	return Ok(hir_nodes);
 }
 
-pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<bool> {
+pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> DiagnosticResult<bool> {
 	match node.kind {
 		ASTTreeNodeKind::FunctionDeclaration { .. } => {
 			let func_decl = lower_ast_function_declaration(context, node)?;
@@ -90,15 +91,12 @@ pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> C
 			return Ok(true)
 		},
 
-		_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_TYPE_WRONG_KIND!().to_string(), &node.start, &node.end))
+		_ => panic!("Invalid node type")
 	}
 } 
 
-pub fn lower_ast(ctx: ParserCtx) -> CompilerResult<HIRContext> {
-	let mut hir_ctx = match HIRContext::new() {
-		Ok(v) => v,
-		Err(e) => return Err(CompilerError::from_base_posless(e))
-	};
+pub fn lower_ast(ctx: ParserCtx) -> DiagnosticResult<HIRContext> {
+	let mut hir_ctx = HIRContext::new();
 
 	for s in ctx.iter_order {
 		let k = ctx.map[&s].clone();

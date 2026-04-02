@@ -134,10 +134,10 @@ impl DiagnosticSpanOrigin for ASTTreeNode {
 		Span { start: SpanPosition::from_pos2(self.start.clone(), self.end.clone()), label: msg, kind }
 	}
 
-	fn make_simple_diagnostic(&self, code: usize, level: diagnostics::diagnostic::Level, message: String, primary_span_msg: Option<String>, notes: Vec<String>, help: Vec<String>) -> diagnostics::diagnostic::Diagnostic {
+	fn make_simple_diagnostic(&self, code: usize, level: diagnostics::diagnostic::Level, message: String, primary_span_msg: Option<String>, spans: Vec<Span>, notes: Vec<String>, help: Vec<String>) -> diagnostics::diagnostic::Diagnostic {
 		let primary = self.make_span(SpanKind::Primary, primary_span_msg);
 
-		Diagnostic { level, code, message, primary_span: primary, spans: vec![], note: notes, help }
+		Diagnostic { level, code, message, primary_span: primary, spans, note: notes, help }
 	}
 }
 

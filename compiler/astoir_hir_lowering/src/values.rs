@@ -2,7 +2,7 @@ use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::{HIRNode, HIRNodeKind}, structs::StructLRUStep};
 use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, NON_VAR_REF_POINTER, errs::{CompilerResult, ErrorKind, normal::CompilerError}, make_invalid_type_err};
 use compiler_typing::tree::Type;
-use diagnostics::DiagnosticResult;
+use diagnostics::{DiagnosticResult, builders::{make_cannot_find_func, make_invalid_pointing, make_struct_missing_field, make_struct_missing_func}};
 
 use crate::{arrays::lower_ast_array_index_access, bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, func::lower_ast_function_call, literals::lower_ast_literal, math::lower_ast_math_operation, structs::lower_ast_struct_initializer, var::lower_ast_variable_reference};
 
@@ -15,7 +15,7 @@ pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBra
 			if let Some(curr_type_val) = curr_type {
 				let res = match curr_type_val.get_function(&context.type_storage, func.hash) {
 					Ok(v) => v,
-					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
+					Err(e) => return Err(make_struct_missing_func(&node, curr_type_val, &func.val).into())
 				};
 
 				let abstract_func = res.1;
@@ -41,7 +41,7 @@ pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBra
 			} else {
 				ind = match context.functions.get_index(func.hash) {
 					Some(v) => v,
-					None => return Err(CompilerError::from_ast(ErrorKind::Error, IR_FIND_ELEMENT!().to_string(), &node.start, &node.end))
+					None => return Err(make_cannot_find_func(&node, &func.val).into())
 				};
 
 				func_type = context.functions.vals[ind].clone();
@@ -53,10 +53,7 @@ pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBra
 			for a in args {
 				let lowered = lower_ast_value(context, curr_ctx, a)?;
 
-				let lowered = match lowered.use_as(context, curr_ctx, func_type.1[iind].1.clone()) {
-					Ok(v) => Box::new(v),
-					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
-				};
+				let lowered = Box::new(lowered.use_as(context, curr_ctx, func_type.1[iind].1.clone(), &node, None))?;
 
 				hir_args.push(lowered);
 
@@ -77,20 +74,15 @@ pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBra
 			if let Some(curr_type_val) = curr_type {
 				let res = match curr_type_val.get_field(&context.type_storage, str.hash) {
 					Ok(v) => v,
-					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
+					Err(_) => return Err(make_struct_missing_field(&node, curr_type_val, &str.val).into())
 				};
 
 				ind = res.0;
 				var_type = res.1.resolve(curr_type_val);
 
 			} else {
-				match get_variable(context, curr_ctx, str.hash) {
-					Ok(v) => {
-						var_type = v.1;
-						ind = v.2;
-					}
-					Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
-				};
+				let r =  get_variable(context, curr_ctx, str.hash, &node)?;
+
 			}
 
 			curr_steps.push(StructLRUStep::VariableStep { variable: ind });
@@ -113,7 +105,7 @@ pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBra
 			return Ok(true);
 		}
 
-		_ => return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
+		_ => panic!("Invalid node type")
 
 	}
 }
@@ -196,7 +188,7 @@ pub fn lower_ast_array_init(context: &mut HIRContext, curr_ctx: &mut HIRBranched
 		return Ok(Box::new(HIRNode::new(HIRNodeKind::ArrayVariableInitializerValueSameValue { size, val: lower_ast_value(context, curr_ctx, v)? }, &node.start, &node.end)))
 	}
 
-	make_invalid_type_err!(node);
+	panic!("Invalid node")
 }
 
 pub fn lower_ast_pointer(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
@@ -204,20 +196,17 @@ pub fn lower_ast_pointer(context: &mut HIRContext, curr_ctx: &mut HIRBranchedCon
 		let val = lower_ast_value(context, curr_ctx, val)?;
 
 		if !val.is_variable_representative() {
-			return Err(CompilerError::from_ast(ErrorKind::Error, NON_VAR_REF_POINTER!().to_string(), &node.start, &node.end))
+			return Err(make_invalid_pointing(&node).into())
 		}
 		
-		let r = match val.get_variable_represent() {
-			Ok(v) => v,
-			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
-		};
+		let r = val.get_variable_represent();
 
 		curr_ctx.introduce_variable_refer(r.0);
 
 		return Ok(Box::new(HIRNode::new(HIRNodeKind::PointerGrab { val }, &node.start, &node.end)))
 	}
 
-	make_invalid_type_err!(node);
+	panic!("Invalid node")
 }
 
 pub fn lower_ast_reference(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
@@ -225,18 +214,15 @@ pub fn lower_ast_reference(context: &mut HIRContext, curr_ctx: &mut HIRBranchedC
 		let val = lower_ast_value(context, curr_ctx, val)?;
 
 		if !val.is_variable_representative() {
-			return Err(CompilerError::from_ast(ErrorKind::Error, NON_VAR_REF_POINTER!().to_string(), &node.start, &node.end))
+			return Err(make_invalid_pointing(&node).into())
 		}
 
-		let r = match val.get_variable_represent() {
-			Ok(v) => v,
-			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
-		};
+		let r = val.get_variable_represent();
 
 		curr_ctx.introduce_variable_refer(r.0);
 
 		return Ok(Box::new(HIRNode::new(HIRNodeKind::ReferenceGrab { val }, &node.start, &node.end)))
 	}
 
-	make_invalid_type_err!(node);
+	panic!("Invalid node")
 }
