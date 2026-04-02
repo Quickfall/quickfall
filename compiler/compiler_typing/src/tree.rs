@@ -1,6 +1,5 @@
 //! The typing tree declarations. Allows for types such as an array of pointer arrays.
 
-use compiler_errors::errs::{BaseResult, base::BaseError};
 use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
 
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
@@ -199,7 +198,6 @@ impl Type {
 			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
 		}
 	}
-
 }
 
 impl SizedType for Type {
