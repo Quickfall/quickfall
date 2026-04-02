@@ -1,5 +1,5 @@
-use compiler_errors::{IR_FIND_ELEMENT, errs::{BaseResult, base::BaseError}};
 use compiler_utils::utils::indexed::IndexStorage;
+use diagnostics::{DiagnosticResult, builders::{make_cannot_find_type_field, make_cannot_find_type_function}};
 
 use crate::{SizedType, StructuredType, TypeParameterContainer, TypeReference, TypedFunction, storage::TypeStorage, tree::Type};
 
@@ -32,10 +32,11 @@ impl SizedType for RawStructTypeContainer {
 }
 
 impl StructuredType for RawStructTypeContainer {
-	fn get_function(&self, hash: u64, _storage: &TypeStorage) -> BaseResult<TypedFunction> {
+	fn get_function(&self, hash: u64, _storage: &TypeStorage) -> DiagnosticResult<TypedFunction> {
 		let k = match self.functions.get_index(hash) {
 			Some(v) => v,
-			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+			None => return Err(make_cannot_find_type_function(&hash, &"unnamed".to_string()).into())
+			//None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
 		};
 
 		return Ok(self.functions.vals[k].clone())
@@ -49,28 +50,28 @@ impl StructuredType for RawStructTypeContainer {
 		return self.functions.hash_to_ind.keys().cloned().collect();
 	}
 
-	fn get_function_hash(&self, hash: u64, _storage: &TypeStorage) -> BaseResult<usize> {
+	fn get_function_hash(&self, hash: u64, _storage: &TypeStorage) -> DiagnosticResult<usize> {
 		let k = match self.functions.get_index(hash) {
 			Some(v) => v,
-			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+			None => return Err(make_cannot_find_type_function(&hash, &"unnamed".to_string()).into())
 		};
 
 		return Ok(k);
 	}
 
-	fn get_field(&self, hash: u64, _storage: &TypeStorage) -> BaseResult<TypeReference> {
+	fn get_field(&self, hash: u64, _storage: &TypeStorage) -> DiagnosticResult<TypeReference> {
 		let k = match self.fields.get_index(hash) {
 			Some(v) => v,
-			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+			None => return Err(make_cannot_find_type_field(&hash, &"unamed".to_string()).into())
 		};
 
 		return Ok(self.fields.vals[k].clone());
 	} 
 
-	fn get_field_hash(&self, hash: u64, _storage: &TypeStorage) -> BaseResult<usize> {
+	fn get_field_hash(&self, hash: u64, _storage: &TypeStorage) -> DiagnosticResult<usize> {
 		let k = match self.fields.get_index(hash) {
 			Some(v) => v,
-			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+			None => return Err(make_cannot_find_type_field(&hash, &"unamed".to_string()).into())
 		};
 
 		return Ok(k);

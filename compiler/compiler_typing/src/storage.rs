@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_TYPE, errs::{BaseResult, base::BaseError}};
 use compiler_utils::{hash, utils::indexed::IndexStorage};
 use compiler_utils::hash::HashedString;
 
@@ -65,6 +64,7 @@ pub struct TypeStorage {
 }
 
 impl TypeStorage {
+	#[must_use = "must handle errors outside"]
 	pub fn new() -> Result<Self, ()> {
 		let mut storage = TypeStorage { types: IndexStorage::new(), type_to_ind: HashMap::new() };
 
@@ -126,6 +126,7 @@ impl TypeStorage {
 		return Ok(storage);
 	}
 
+	#[must_use = "must handle errors outside"]
 	pub fn append_with_hash(&mut self, hash: u64, base: RawType) -> Result<usize, ()> {
 		if self.types.hash_to_ind.contains_key(&hash) {
 			return Err(())
@@ -138,6 +139,7 @@ impl TypeStorage {
 		return Ok(res);
 	}
 
+	#[must_use = "must handle errors outside"]
 	pub fn append(&mut self, hash: u64, base: RawType) -> Result<usize, ()> {
 		if self.types.hash_to_ind.contains_key(&hash) {
 			return Err(())
@@ -148,6 +150,7 @@ impl TypeStorage {
 		return Ok(res);
 	}
 
+	#[must_use = "must handle errors outside"]
 	pub fn get_type(&self, hash: u64) -> Result<RawType, ()> {
 		if let Some(v) = self.types.get_index(hash) {
 			return Ok(self.types.get_ind(v).clone());

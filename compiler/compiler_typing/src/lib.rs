@@ -2,8 +2,8 @@
 
 use std::collections::HashMap;
 
-use compiler_errors::errs::BaseResult;
 use compiler_utils::{hash::HashedString};
+use diagnostics::DiagnosticResult;
 
 use crate::{references::TypeReference, storage::TypeStorage, tree::Type};
 
@@ -33,11 +33,21 @@ pub trait SizedType {
 
 /// Represents types that can contain functions and more
 pub trait StructuredType {
-	fn get_function(&self, hash: u64, storage: &TypeStorage) -> BaseResult<TypedFunction>;
-	fn get_function_hash(&self, hash: u64, storage: &TypeStorage) -> BaseResult<usize>;
-	fn get_field(&self, hash: u64, storage: &TypeStorage) -> BaseResult<TypeReference>;
-	fn get_field_hash(&self, hash: u64, storage: &TypeStorage) -> BaseResult<usize>;
+	#[must_use = "Must set the diagnostic position beforehand"]
+	fn get_function(&self, hash: u64, storage: &TypeStorage) -> DiagnosticResult<TypedFunction>;
 
+	#[must_use = "Must set the diagnostic position beforehand"]
+	fn get_function_hash(&self, hash: u64, storage: &TypeStorage) -> DiagnosticResult<usize>;
+
+	#[must_use = "Must set the diagnostic position beforehand"]
+	fn get_field(&self, hash: u64, storage: &TypeStorage) -> DiagnosticResult<TypeReference>;
+
+	#[must_use = "Must set the diagnostic position beforehand"]
+	fn get_field_hash(&self, hash: u64, storage: &TypeStorage) -> DiagnosticResult<usize>;
+
+	#[must_use = "Must set the diagnostic position beforehand"]
 	fn get_fields(&self, storage: &TypeStorage) -> Vec<u64>;
+
+	#[must_use = "Must set the diagnostic position beforehand"]
 	fn get_functions(&self, storage: &TypeStorage) -> Vec<u64>;
 }
