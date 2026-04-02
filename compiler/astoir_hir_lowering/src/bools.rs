@@ -1,21 +1,22 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
-use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::HIRNode};
+use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}};
 use compiler_errors::{IR_FIND_TYPE, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
 use compiler_typing::{storage::BOOLEAN_TYPE, tree::Type};
+use diagnostics::DiagnosticResult;
 
 use crate::values::lower_ast_value;
 
-pub fn lower_ast_boolean_condition(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_boolean_condition(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::BooleanBasedConditionMember { val, negate } = node.kind.clone() {
 		let hir_value = lower_ast_value(context, curr_ctx, val)?;
 
-		return Ok(Box::new(HIRNode::BooleanCondition { value: hir_value, negation: negate }))
+		return Ok(Box::new(HIRNode::new(HIRNodeKind::BooleanCondition { value: hir_value, negation: negate }, &node.start, &node.end)));
 	}
 
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 }
 
-pub fn lower_ast_operator_condition(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_operator_condition(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::OperatorBasedConditionMember { lval, rval, operator } = node.kind.clone() {
 		let left_value = lower_ast_value(context, curr_ctx, lval)?;
 		
@@ -24,13 +25,13 @@ pub fn lower_ast_operator_condition(context: &mut HIRContext, curr_ctx: &mut HIR
 			Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
 		};
 
-		return Ok(Box::new(HIRNode::BooleanOperator { left: left_value, right: right_value, operator }))
+		return Ok(Box::new(HIRNode::new(HIRNodeKind::BooleanOperator { left: left_value, right: right_value, operator }, &node.start, &node.end)))
 	}
 
 	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
 }
 
-pub fn lower_ast_condition(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_condition(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	let start = &node.start.clone();
 	let end = &node.end.clone();
 

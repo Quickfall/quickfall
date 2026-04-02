@@ -1,10 +1,11 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
-use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::HIRNode};
-use compiler_errors::{IR_FIND_ELEMENT, IR_INVALID_NODE_TYPE, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
+use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}};
+use compiler_errors::{IR_FIND_ELEMENT, errs::{CompilerResult, ErrorKind, normal::CompilerError}};
+use diagnostics::{DiagnosticResult, builders::make_already_in_scope};
 
 use crate::{lower_ast_body, types::lower_ast_type, values::lower_ast_value};
 
-pub fn lower_ast_function_call(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_function_call(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::FunctionCall { func, args } = node.kind.clone() {
 		let f_ind = match context.functions.get_index(func.hash) {
 			Some(v) => v,
@@ -28,12 +29,13 @@ pub fn lower_ast_function_call(context: &mut HIRContext, curr_ctx: &mut HIRBranc
 			ind += 1;
 		}
 
-		return Ok(Box::new(HIRNode::FunctionCall { func_name: f_ind, arguments: hir_args }))
+		return Ok(Box::new(HIRNode::new(HIRNodeKind::FunctionCall { func_name: f_ind, arguments: hir_args }, &node.start, &node.end)))
 	}
-	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
+	
+	panic!("Invalid node passed!");
 }
 
-pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
+pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	if let ASTTreeNodeKind::FunctionDeclaration { func_name, args, body, return_type, requires_this } = node.kind {
 		let ret_type;
 
@@ -68,7 +70,7 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 		for arg in &arguments {
 			match curr_ctx.introduce_variable(arg.0, arg.1.clone(), true) {
 				Ok(_) => {},
-				Err(e) => return Err(CompilerError::from_base(e, &node.start, &node.end))
+				Err(_) => return Err(make_already_in_scope(&*node, &arg.0).into())
 			}
 		}
 
@@ -86,10 +88,10 @@ pub fn lower_ast_function_declaration(context: &mut HIRContext, node: Box<ASTTre
 			}
 		}
 
-		return Ok(Box::new(HIRNode::FunctionDeclaration { func_name: ind, arguments, return_type: ret_type, body, ctx: curr_ctx, requires_this }))
+		return Ok(Box::new(HIRNode::new(HIRNodeKind::FunctionDeclaration { func_name: ind, arguments, return_type: ret_type, body, ctx: curr_ctx, requires_this }, &node.start, &node.end)));
 	}
 
-	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
+	panic!("Invalid node passed!");
 }
 
 pub fn lower_ast_shadow_function_declaration(context: &mut HIRContext, node: Box<ASTTreeNode>) -> CompilerResult<Box<HIRNode>> {
@@ -124,8 +126,8 @@ pub fn lower_ast_shadow_function_declaration(context: &mut HIRContext, node: Box
 
 		context.function_contexts.push(None);
 
-		return Ok(Box::new(HIRNode::ShadowFunctionDeclaration { func_name: ind, arguments, return_type: ret_type }))
+		return Ok(Box::new(HIRNode::new(HIRNodeKind::ShadowFunctionDeclaration { func_name: ind, arguments, return_type: ret_type }, &node.start, &node.end)))
 	}
 
-	return Err(CompilerError::from_ast(ErrorKind::Error, IR_INVALID_NODE_TYPE!().to_string(), &node.start, &node.end))
+	panic!("Invalid node passed!");
 }

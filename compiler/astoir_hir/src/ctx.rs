@@ -62,11 +62,11 @@ impl HIRBranchedContext {
 	}
 
 	/// Introduces a new variable in the current branch era.
-	pub fn introduce_variable(&mut self, hash: u64, t: Type, has_default: bool) -> BaseResult<usize> {
+	pub fn introduce_variable(&mut self, hash: u64, t: Type, has_default: bool) -> Result<usize, ()> {
 		let identity = SelfHash { hash };
 
 		if self.hash_to_ind.contains_key(&identity) {
-			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
+			return Err(());
 		}
 
 		let mut var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0 };
@@ -219,8 +219,8 @@ pub enum VariableKind {
 }
 
 impl HIRContext {
-	pub fn new() -> BaseResult<Self> {
-		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_contexts: vec![], function_declarations: vec![], struct_func_impls: HashMap::new() })
+	pub fn new() -> Self {
+		return HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new().unwrap(), function_contexts: vec![], function_declarations: vec![], struct_func_impls: HashMap::new() }
 	}
 
 	pub fn translate_function(&self, func_hash: u64) -> BaseResult<usize> {

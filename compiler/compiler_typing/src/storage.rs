@@ -65,7 +65,7 @@ pub struct TypeStorage {
 }
 
 impl TypeStorage {
-	pub fn new() -> BaseResult<Self> {
+	pub fn new() -> Result<Self, ()> {
 		let mut storage = TypeStorage { types: IndexStorage::new(), type_to_ind: HashMap::new() };
 
 		storage.append_with_hash(SIGNED_INTEGER_8, RawType::Integer(8, true))?;
@@ -126,9 +126,9 @@ impl TypeStorage {
 		return Ok(storage);
 	}
 
-	pub fn append_with_hash(&mut self, hash: u64, base: RawType) -> BaseResult<usize> {
+	pub fn append_with_hash(&mut self, hash: u64, base: RawType) -> Result<usize, ()> {
 		if self.types.hash_to_ind.contains_key(&hash) {
-			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()))
+			return Err(())
 		}
 
 		let res = self.types.append(hash, base.clone());
@@ -138,9 +138,9 @@ impl TypeStorage {
 		return Ok(res);
 	}
 
-	pub fn append(&mut self, hash: u64, base: RawType) -> BaseResult<usize> {
+	pub fn append(&mut self, hash: u64, base: RawType) -> Result<usize, ()> {
 		if self.types.hash_to_ind.contains_key(&hash) {
-			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()))
+			return Err(())
 		}
 
 		let res = self.types.append(hash, base.clone());
@@ -148,11 +148,11 @@ impl TypeStorage {
 		return Ok(res);
 	}
 
-	pub fn get_type(&self, hash: u64) -> BaseResult<RawType> {
+	pub fn get_type(&self, hash: u64) -> Result<RawType, ()> {
 		if let Some(v) = self.types.get_index(hash) {
 			return Ok(self.types.get_ind(v).clone());
 		}
 
-		return Err(BaseError::err(IR_FIND_TYPE!().to_string()))
+		return Err(())
 	}
 }

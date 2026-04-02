@@ -49,6 +49,7 @@ dependencies = [
  "compiler_errors",
  "compiler_typing",
  "compiler_utils",
+ "diagnostics",
  "lexer",
 ]
 
@@ -61,6 +62,7 @@ dependencies = [
  "compiler_errors",
  "compiler_typing",
  "compiler_utils",
+ "diagnostics",
 ]
 
 [[package]]
