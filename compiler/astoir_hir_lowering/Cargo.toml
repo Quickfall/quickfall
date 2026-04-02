@@ -8,5 +8,4 @@ astoir_hir = { path = "../astoir_hir" }
 compiler_typing = { path = "../compiler_typing" }
 ast = { path = "../ast" }
 diagnostics = { path = "../diagnostics" }
-compiler_errors = { path = "../compiler_errors" }
 compiler_utils = { path = "../compiler_utils" }

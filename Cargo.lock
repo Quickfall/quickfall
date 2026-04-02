@@ -23,7 +23,6 @@ name = "ast_parser"
 version = "0.1.0"
 dependencies = [
  "ast",
- "compiler_errors",
  "compiler_typing",
  "compiler_utils",
  "diagnostics",
@@ -46,7 +45,6 @@ dependencies = [
 name = "astoir_hir"
 version = "0.1.0"
 dependencies = [
- "compiler_errors",
  "compiler_typing",
  "compiler_utils",
  "diagnostics",
@@ -59,7 +57,6 @@ version = "0.1.0"
 dependencies = [
  "ast",
  "astoir_hir",
- "compiler_errors",
  "compiler_typing",
  "compiler_utils",
  "diagnostics",
@@ -118,21 +115,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "compiler_errors"
-version = "0.1.0"
-dependencies = [
- "colored",
- "compiler_utils",
-]
-
-[[package]]
 name = "compiler_main"
 version = "0.1.0"
 dependencies = [
  "ast",
  "ast_parser",
  "astoir",
- "compiler_errors",
  "compiler_utils",
  "diagnostics",
  "lexer",
@@ -208,7 +196,6 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 name = "lexer"
 version = "0.1.0"
 dependencies = [
- "compiler_errors",
  "compiler_utils",
  "diagnostics",
 ]
@@ -327,17 +314,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "testing"
-version = "0.1.0"
-dependencies = [
- "ast",
- "ast_parser",
- "astoir",
- "compiler_errors",
- "lexer",
 ]
 
 [[package]]

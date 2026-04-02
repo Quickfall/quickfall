@@ -4,6 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-compiler_errors = { path = "../compiler_errors" }
 compiler_utils = { path = "../compiler_utils" }
 diagnostics = { path = "../diagnostics" }
