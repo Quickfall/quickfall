@@ -8,7 +8,7 @@ pub fn parse_math_operation(tokens: &Vec<LexerToken>, ind: &mut usize, original:
 	let oper = tokens[*ind].expects_math_operator()?;
 
 	if !oper.1 && restricts_to_assigns {
-		return Err(tokens[*ind].make_simple_diagnostic(MATH_OPERATION_ASSIGNS.0, Level::Error, MATH_OPERATION_ASSIGNS.1.to_string(), None, vec!["consider assigning this to variable".to_string()], vec!["add = at the end of the operator".to_string()]).into())
+		return Err(tokens[*ind].make_simple_diagnostic(MATH_OPERATION_ASSIGNS.0, Level::Error, MATH_OPERATION_ASSIGNS.1.to_string(), None, vec![], vec!["consider assigning this to variable".to_string()], vec!["add = at the end of the operator".to_string()]).into())
 	}
 
 	*ind += 1;

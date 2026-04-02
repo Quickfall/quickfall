@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
 use compiler_typing::raw::RawType;
+use diagnostics::{DiagnosticResult, builders::make_invalid_var_type_ir};
 
 use crate::vals::base::BaseMIRValue;
 
@@ -11,12 +11,12 @@ pub struct MIRStructValue {
 }
 
 impl MIRStructValue {
-	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
-		if let RawType::LoweredStruct(_, _) = base.vtype.clone().as_generic_lowered()? {
-			return Ok(MIRStructValue { base: base.clone(), t: base.vtype.clone().as_generic_lowered()? })
+	pub fn new(base: BaseMIRValue) -> DiagnosticResult<Self> {
+		if let RawType::LoweredStruct(_, _) = base.vtype.clone().as_generic_lowered() {
+			return Ok(MIRStructValue { base: base.clone(), t: base.vtype.clone().as_generic_lowered() })
 		}
 
-		return Err(BaseError::critical(format!("{:#?}", base.vtype.clone())))
+		return Err(make_invalid_var_type_ir().into())
 	}
 }
 

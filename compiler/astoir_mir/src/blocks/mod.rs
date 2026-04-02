@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use compiler_errors::errs::{BaseResult, base::BaseError};
+use diagnostics::{DiagnosticResult, unsure_panic};
 
 use crate::{blocks::refer::MIRBlockReference, builder::build_phi, ctx::MIRContext, inst_writer::BlockPosition, insts::MIRInstruction, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
 
@@ -48,10 +48,10 @@ impl Into<MIRInstruction> for  MIRBlockHeldInstruction {
 }
 
 impl MIRBlockHeldInstruction {
-	pub fn as_valuedindex(&self) -> BaseResult<usize> {
+	pub fn as_valuedindex(&self) -> usize {
 		return match self {
-			Self::Valued(_, b) => Ok(*b),
-			_ => Err(BaseError::err("as_valuedindex requires a valued!".to_string()))
+			Self::Valued(_, b) => *b,
+			_ => unsure_panic!("as_valuedindex requires a valued!")
 		}
 	}
 }
@@ -93,7 +93,7 @@ impl MIRBlock {
 		return ind;
 	}
 
-	pub fn get_variable_ref(&self, var_ind: usize) -> BaseResult<MIRVariableReference> {
+	pub fn get_variable_ref(&self, var_ind: usize) -> DiagnosticResult<MIRVariableReference> {
 		let var = &self.variables[&var_ind];
 
 		if var.kind == MIRBlockVariableType::SSA {
@@ -102,7 +102,7 @@ impl MIRBlock {
 
 		let unpacked = match &var.hint {
 			Some(v) => v.clone(),
-			None => return Err(BaseError::err("Missing BaseMIRValue in pointer hint".to_string()))
+			None => unsure_panic!("missing BaseMIRValue in pointer hint")
 		};
 
 		return Ok(MIRVariableReference::from(unpacked.as_ptr()?));

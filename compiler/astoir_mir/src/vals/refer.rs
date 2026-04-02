@@ -1,6 +1,6 @@
-use compiler_errors::errs::{BaseResult, base::BaseError};
+use diagnostics::{DiagnosticResult, builders::make_invalid_assign_diff_type_ir, unsure_panic};
 
-use crate::{blocks::refer::MIRBlockReference, builder::{build_load, build_store}, ctx::MIRContext, vals::{base::BaseMIRValue, ptr::{self, MIRPointerValue}}};
+use crate::{blocks::refer::MIRBlockReference, builder::{build_load, build_store}, ctx::MIRContext, vals::{base::BaseMIRValue, ptr::{MIRPointerValue}}};
 
 /// Represents a reference to a variable. This is not a reference to individual SSA values.
 /// 
@@ -22,7 +22,7 @@ pub enum MIRVariableReference {
 }
 
 impl MIRVariableReference {
-	pub fn read(&self, block: MIRBlockReference, ctx: &mut MIRContext) -> BaseResult<BaseMIRValue> {
+	pub fn read(&self, block: MIRBlockReference, ctx: &mut MIRContext) -> DiagnosticResult<BaseMIRValue> {
 		if self.is_pointer_ref() {
 			let ptr_ref = self.as_pointer_ref()?;
 
@@ -35,11 +35,11 @@ impl MIRVariableReference {
 
 		return match &ctx.blocks[block].variables[&ind].hint {
 			Some(v) => Ok(v.clone()),
-			None => Err(BaseError::err("Cannot unpack SSA reference for variable in MIRVariableReference::read".to_string()))
+			None => unsure_panic!("cannot unpack SSA reference for variable in MIRVariableReference::read")
 		}
 	}
 
-	pub fn write(&self, block: MIRBlockReference, ctx: &mut MIRContext, val: BaseMIRValue) -> BaseResult<bool> {
+	pub fn write(&self, block: MIRBlockReference, ctx: &mut MIRContext, val: BaseMIRValue) -> DiagnosticResult<bool> {
 		if self.is_pointer_ref() {
 			let mut ptr_ref = self.as_pointer_ref()?;	
 			let hint = ctx.ssa_hints.get_hint(BaseMIRValue::from(ptr_ref.clone().into()).get_ssa_index())?;
@@ -58,7 +58,7 @@ impl MIRVariableReference {
 		let block = &mut ctx.blocks[block];
 
 		if block.variables[&ind].hint.is_some() && !block.variables[&ind].hint.clone().unwrap().vtype.is_truly_eq(&val.vtype) {
-			return Err(BaseError::err(format!("Cannot write on this variable reference since the two types differ! {:#?} {:#?}", block.variables[&ind].hint.clone().unwrap().vtype, val.vtype)));
+			return Err(make_invalid_assign_diff_type_ir().into());
 		}
 
 		let mut hint = block.variables[&ind].clone();
@@ -87,17 +87,17 @@ impl MIRVariableReference {
 		}
 	}
 
-	pub fn as_pointer_ref(&self) -> BaseResult<MIRPointerValue> {
+	pub fn as_pointer_ref(&self) -> DiagnosticResult<MIRPointerValue> {
 		return match self {
 			Self::PointerReference(e) => Ok(e.clone()),
-			_ => Err(BaseError::err(format!("as_pointer_ref requires a pointer var ref! {:#?}", self)))
+			_ => unsure_panic!("as_pointer_ref requires a pointer var ref!")
 		}
 	}
 
-	pub fn as_ssa_ref(&self) -> BaseResult<usize> {
+	pub fn as_ssa_ref(&self) -> DiagnosticResult<usize> {
 		return match self {
 			Self::SSAReference(e) => Ok(*e),
-			_ => Err(BaseError::err("as_ssa_ref requires a SSA var ref!".to_string()))
+			_ => unsure_panic!("as_ssa_ref requires a SSA var ref!")
 		}
 	}
 

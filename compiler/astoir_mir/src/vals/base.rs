@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use compiler_errors::errs::{BaseResult};
 use compiler_typing::tree::Type;
+use diagnostics::DiagnosticResult;
 
 use crate::vals::{arrays::MIRArrayValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue};
 
@@ -17,23 +17,23 @@ impl BaseMIRValue {
 		return BaseMIRValue { val_index, vtype }
 	}
 
-	pub fn as_int(&self) -> BaseResult<MIRIntValue> {
+	pub fn as_int(&self) -> DiagnosticResult<MIRIntValue> {
 		return Ok(MIRIntValue::new(self.clone())?);
 	}
 
-	pub fn as_float(&self) -> BaseResult<MIRFloatValue> {
+	pub fn as_float(&self) -> DiagnosticResult<MIRFloatValue> {
 		return Ok(MIRFloatValue::new(self.clone())?)
 	}
 
-	pub fn as_ptr(&self) -> BaseResult<MIRPointerValue> {
+	pub fn as_ptr(&self) -> DiagnosticResult<MIRPointerValue> {
 		return Ok(MIRPointerValue::new(self.clone())?)
 	}
 
-	pub fn as_struct(&self) -> BaseResult<MIRStructValue> {
+	pub fn as_struct(&self) -> DiagnosticResult<MIRStructValue> {
 		return Ok(MIRStructValue::new(self.clone())?)
 	}
 
-	pub fn as_array(&self) -> BaseResult<MIRArrayValue> {
+	pub fn as_array(&self) -> DiagnosticResult<MIRArrayValue> {
 		return Ok(MIRArrayValue::new(self.clone())?);
 	}
 

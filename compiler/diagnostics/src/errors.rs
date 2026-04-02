@@ -31,3 +31,8 @@ declare_error!(FIELD_STRUCT_INIT, 24, "field {} of type {} is missing in the ini
 declare_error!(FIELD_MISSING, 25, "field {} was not found in type {}");
 declare_error!(FUNC_MISSING, 25, "function {} was not found in type {}");
 declare_error!(FIND_VAR, 25, "cannot find variable {} in the current context");
+
+// IR internals
+declare_error!(LOWER_TYPE_IR, 26, "cannot cast MIR variable to given type");
+declare_error!(ASSIGN_DIFF_TYPE_IR, 27, "cannot write on this value since the two types differ");
+declare_error!(IR_DIFF_SSA_INDEXES, 28, "cannot hint SSA val for pointers! indexes are different");
