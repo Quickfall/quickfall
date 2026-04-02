@@ -1,4 +1,4 @@
-use compiler_errors::errs::{BaseResult, base::BaseError};
+use diagnostics::{DiagnosticResult, builders::make_invalid_instruction_held_val};
 
 use crate::vals::base::BaseMIRValue;
 
@@ -11,10 +11,10 @@ impl InstructionValue {
 		return InstructionValue { val }
 	}
 	
-	pub fn get(self) -> BaseResult<BaseMIRValue> {
+	pub fn get(self) -> DiagnosticResult<BaseMIRValue> {
 		match self.val {
 			Some(v) => return Ok(v),
-			None => return Err(BaseError::err("Tried unpacking InstructionValue when contained null!".to_string()))
+			None => return Err(make_invalid_instruction_held_val().into())
 		}
 	}
 }

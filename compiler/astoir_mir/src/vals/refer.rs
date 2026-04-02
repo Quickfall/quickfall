@@ -42,9 +42,9 @@ impl MIRVariableReference {
 	pub fn write(&self, block: MIRBlockReference, ctx: &mut MIRContext, val: BaseMIRValue) -> DiagnosticResult<bool> {
 		if self.is_pointer_ref() {
 			let mut ptr_ref = self.as_pointer_ref()?;	
-			let hint = ctx.ssa_hints.get_hint(BaseMIRValue::from(ptr_ref.clone().into()).get_ssa_index())?;
+			let hint = ctx.ssa_hints.get_hint(BaseMIRValue::from(ptr_ref.clone().into()).get_ssa_index());
 
-			if hint.get_type()?.is_technically_pointer() {
+			if hint.get_type().is_technically_pointer() {
 				ptr_ref = build_load(ctx, ptr_ref)?.as_ptr()?;
 			}
 

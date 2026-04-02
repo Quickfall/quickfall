@@ -26,7 +26,7 @@ pub fn build_load(ctx: &mut MIRContext, ptr: MIRPointerValue) -> DiagnosticResul
 pub fn build_store(ctx: &mut MIRContext, ptr: MIRPointerValue, val: BaseMIRValue) -> DiagnosticResult<bool> {
 	let base: BaseMIRValue = ptr.clone().into();
 
-	let hint = ctx.ssa_hints.get_hint(base.get_ssa_index())?.get_type()?;
+	let hint = ctx.ssa_hints.get_hint(base.get_ssa_index()).get_type();
 
 	if !hint.get_maybe_containing_type().is_truly_eq(&val.vtype) && !hint.is_ptr() {
 		unsure_panic!("cannot put this value onto this pointer since it's not the type");
@@ -320,7 +320,7 @@ pub fn build_field_pointer(ctx: &mut MIRContext, ptr: MIRPointerValue, field: us
 	let val = ctx.append_inst(MIRInstruction::FieldPointer { val: ptr.clone(), field }).get()?;
 	let base: &BaseMIRValue = &ptr.into();
 
-	let pointer_hint = ctx.ssa_hints.get_hint(base.get_ssa_index())?.as_pointer()?.as_generic_lowered();
+	let pointer_hint = ctx.ssa_hints.get_hint(base.get_ssa_index()).as_pointer().as_generic_lowered();
 	let t;
 
 	if let RawType::LoweredStruct(_, container) = pointer_hint {

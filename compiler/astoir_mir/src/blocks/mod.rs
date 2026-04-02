@@ -130,7 +130,7 @@ impl MIRBlock {
 	/// First checks inside of every merge blocks for changes of SSA values for variables in the hinting table.
 	/// Then uses a `phi` instruction to obtain the SSA values in this block. Also automatically updates the variable hints inside of this block.
 	///
-	pub fn resolve_ssa_changes(&mut self, ctx: &mut MIRContext) -> BaseResult<bool> {
+	pub fn resolve_ssa_changes(&mut self, ctx: &mut MIRContext) -> DiagnosticResult<bool> {
 		let mut vals = vec![];
 
 		for (ind, hint) in self.variables.iter() {

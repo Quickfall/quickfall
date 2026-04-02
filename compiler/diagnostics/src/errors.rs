@@ -36,3 +36,4 @@ declare_error!(FIND_VAR, 25, "cannot find variable {} in the current context");
 declare_error!(LOWER_TYPE_IR, 26, "cannot cast MIR variable to given type");
 declare_error!(ASSIGN_DIFF_TYPE_IR, 27, "cannot write on this value since the two types differ");
 declare_error!(IR_DIFF_SSA_INDEXES, 28, "cannot hint SSA val for pointers! indexes are different");
+declare_error!(IR_INSTRUCTION_HELD_VAL, 29, "cannot extract held value from instruction since it doesnt exist");

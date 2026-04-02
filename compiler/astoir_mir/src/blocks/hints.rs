@@ -1,5 +1,5 @@
-use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_typing::tree::Type;
+use diagnostics::unsure_panic;
 
 use crate::{vals::consts::MIRConstantValue};
 
@@ -29,32 +29,32 @@ impl MIRValueHint {
 		return false;
 	}
 
-	pub fn as_const(&self) -> BaseResult<MIRConstantValue> {
+	pub fn as_const(&self) -> MIRConstantValue {
 		match self {
-			MIRValueHint::Constant(e) => Ok(e.clone()),
-			_ => Err(BaseError::critical("Cannot use as_const on a non const!".to_string()))
+			MIRValueHint::Constant(e) => e.clone(),
+			_ => unsure_panic!("cannot use as_const on a non const!")
 		}
 	}
 
-	pub fn get_type(&self) -> BaseResult<Type> {
+	pub fn get_type(&self) -> Type {
 		match self {
-			MIRValueHint::Pointer(e) => Ok(e.clone()),
-			MIRValueHint::Value(e) => Ok(e.clone()),
-			_ => Err(BaseError::critical("Cannot use get_type on an non typed hint".to_string()))
+			MIRValueHint::Pointer(e) => e.clone(),
+			MIRValueHint::Value(e) => e.clone(),
+			_ => unsure_panic!("cannot use get_type on a non typed hint")
 		}
 	}
 
-	pub fn as_pointer(&self) -> BaseResult<Type> {
+	pub fn as_pointer(&self) -> Type {
 		match self {
-			MIRValueHint::Pointer(e) => Ok(e.clone()),
-			_ => Err(BaseError::critical("Cannot use as_pointer on a non pointer!".to_string()))
+			MIRValueHint::Pointer(e) => e.clone(),
+			_ => unsure_panic!("Cannot use as_pointer on a non pointer!")
 		}
 	}
 
-	pub fn as_value(&self) -> BaseResult<Type> {
+	pub fn as_value(&self) -> Type {
 		match self {
-			MIRValueHint::Value(e) => Ok(e.clone()),
-			_ => Err(BaseError::critical("Cannot use as_value on a non value!".to_string()))
+			MIRValueHint::Value(e) => e.clone(),
+			_ => unsure_panic!("Cannot use as_value on a non value!")
 		}
 	}
 
@@ -101,11 +101,11 @@ impl HintStorage {
 	}
 
 	/// Gets the hint based on the hint index.
-	pub fn get_hint(&self, hint_ind: usize) -> BaseResult<MIRValueHint> {
+	pub fn get_hint(&self, hint_ind: usize) -> MIRValueHint {
 		if self.vec.len() <= hint_ind {
-			return Err(BaseError::err("Invalid hint".to_string()))
+			unsure_panic!("invalid hint provided");
 		}
 
-		return Ok(self.vec[hint_ind].clone())
+		return self.vec[hint_ind].clone()
 	}
 }

@@ -121,9 +121,9 @@ impl MIRInstruction {
 			Self::Load { value} => {
 				let base: BaseMIRValue = value.clone().into();
 
-				let hint = ctx.ssa_hints.get_hint(base.get_ssa_index()).unwrap();
+				let hint = ctx.ssa_hints.get_hint(base.get_ssa_index());
 
-				return hint.as_pointer().unwrap();
+				return hint.as_pointer();
 			},
 
 			Self::DowncastInteger { val, size } => return Type::GenericLowered(RawType::Integer(*size, val.signed)),

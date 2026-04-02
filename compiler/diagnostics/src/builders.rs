@@ -1,6 +1,6 @@
 use std::{fmt::Display};
 
-use crate::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Level, Span, SpanKind, SpanPosition}, errors::{ALREADY_IN_SCOPE, ASSIGN_DIFF_TYPE_IR, BOUND_MISSING, DIFF_SIZE_SPECIFIERS, ENUM_PARENT_FIELDS, ERA_NOT_EXIST, EXPECTED_FREE, EXPECTED_TOKEN, EXPECTED_TYPE, FIELD_MISSING, FIELD_STRUCT_INIT, FIND_TYPE, FIND_TYPE_FIELD, FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING, INDEX_USAGE, INVALID_POINTING, IR_CAST, TRAIT_MISSING, UNEXPECTED_TOKEN, VARIABLE_UNINIT}, get_current_diagnostic_pos, warnings::UNUSED_VAR};
+use crate::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Level, Span, SpanKind, SpanPosition}, errors::{ALREADY_IN_SCOPE, ASSIGN_DIFF_TYPE_IR, BOUND_MISSING, DIFF_SIZE_SPECIFIERS, ENUM_PARENT_FIELDS, ERA_NOT_EXIST, EXPECTED_FREE, EXPECTED_TOKEN, EXPECTED_TYPE, FIELD_MISSING, FIELD_STRUCT_INIT, FIND_TYPE, FIND_TYPE_FIELD, FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING, INDEX_USAGE, INVALID_POINTING, IR_CAST, IR_INSTRUCTION_HELD_VAL, TRAIT_MISSING, UNEXPECTED_TOKEN, VARIABLE_UNINIT}, get_current_diagnostic_pos, warnings::UNUSED_VAR};
 
 pub fn make_expected_simple_error<K: DiagnosticSpanOrigin, E: Display, G: Display>(origin: &K, expected: &E, got: &G) -> Diagnostic {
 	origin.make_simple_diagnostic(EXPECTED_TOKEN.0, Level::Error, format!("expected {} but got {}", expected, got), None, vec![], vec![], vec![])
@@ -162,4 +162,10 @@ pub fn make_invalid_assign_diff_type_ir() -> Diagnostic {
 	let span = Span::make_primary(get_current_diagnostic_pos(), None);
 
 	Diagnostic::new_base(Level::Error, ASSIGN_DIFF_TYPE_IR.0, ASSIGN_DIFF_TYPE_IR.1.to_string(), span, vec![], vec![], vec![])
+}
+
+pub fn make_invalid_instruction_held_val() -> Diagnostic {
+	let span = Span::make_primary(get_current_diagnostic_pos(), None);
+
+	Diagnostic::new_base(Level::Error, IR_INSTRUCTION_HELD_VAL.0, IR_INSTRUCTION_HELD_VAL.1.to_string(), span, vec![], vec![], vec![])
 }
