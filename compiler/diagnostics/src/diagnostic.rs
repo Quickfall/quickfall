@@ -182,6 +182,8 @@ impl Display for Span {
 			Err(_) => "".to_string()
 		};
 
+		let line = line.replace("\t", "");
+
 		writeln!(f, "   {}    {}", "|".bright_blue() , line)?;
 
 		let underline = print_underline(self.start.col, self.start.end_col, self.kind.get_marker_char());
