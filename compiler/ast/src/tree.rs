@@ -31,6 +31,9 @@ pub enum ASTTreeNodeKind {
 
 	ThisStructParam,
 
+	UnwrapCondition { original: Box<ASTTreeNode>, target_type: ASTType, unsafe_unwrap: bool },
+	UnwrapValue { original: Box<ASTTreeNode>, target_type: ASTType, unsafe_unwrap: bool },
+
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ComparingOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
 
@@ -156,6 +159,7 @@ impl Display for ASTTreeNode {
 impl Display for ASTTreeNodeKind {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		let s = match self {
+			Self::UnwrapCondition { .. } | Self::UnwrapValue { .. } => "unwrap",
 			Self::IntegerLit { .. } => "integer literal",
 			Self::StringLit(_) => "string literal",
 			Self::ThisStructParam => "this reference",
