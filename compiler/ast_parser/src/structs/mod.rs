@@ -1,5 +1,5 @@
-use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::HashedString;
+use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::{ASTType}};
@@ -9,7 +9,7 @@ use crate::{functions::parse_function_declaraction, structs::members::parse_type
 pub mod members;
 pub mod val;
 
-pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout: bool) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout: bool) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;

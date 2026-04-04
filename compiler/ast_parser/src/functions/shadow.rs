@@ -1,13 +1,13 @@
 //! Shadow function parsing
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
-use compiler_errors::errs::CompilerResult;
 use compiler_utils::hash::HashedString;
+use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{functions::arguments::parse_function_arguments, types::parse_type};
 
-pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_shadow_function_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;

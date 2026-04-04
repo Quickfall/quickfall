@@ -1,11 +1,11 @@
-use compiler_errors::errs::CompilerResult;
+use diagnostics::DiagnosticResult;
 use lexer::token::LexerToken;
 
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 
 use crate::{control::if_else::parse_condition_member, functions::parse_node_body};
 
-pub fn parse_while_block(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_while_block(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;

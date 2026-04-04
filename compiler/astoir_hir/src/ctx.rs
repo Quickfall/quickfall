@@ -2,9 +2,9 @@
 
 use std::{collections::{HashMap, HashSet}};
 
-use compiler_errors::{IR_ALREADY_EXISTING_ELEM, IR_FIND_ELEMENT, IR_OUTSIDE_ERA_HIGHER, IR_OUTSIDE_ERA_LOWER, errs::{BaseResult, base::BaseError}};
 use compiler_typing::{storage::TypeStorage, tree::Type};
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_cannot_find_func, make_cannot_find_var, make_doesnt_exist_in_era}};
 
 use crate::{nodes::HIRNode, structs::HIRStructContainer};
 
@@ -62,11 +62,11 @@ impl HIRBranchedContext {
 	}
 
 	/// Introduces a new variable in the current branch era.
-	pub fn introduce_variable(&mut self, hash: u64, t: Type, has_default: bool) -> BaseResult<usize> {
+	pub fn introduce_variable(&mut self, hash: u64, t: Type, has_default: bool) -> Result<usize, ()> {
 		let identity = SelfHash { hash };
 
 		if self.hash_to_ind.contains_key(&identity) {
-			return Err(BaseError::err(IR_ALREADY_EXISTING_ELEM!().to_string()));
+			return Err(());
 		}
 
 		let mut var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0 };
@@ -159,20 +159,20 @@ impl HIRBranchedContext {
 	}
 
 	/// Obtains the variable index from the hash if it's available, otherwise returns an error explaining why it failed
-	pub fn obtain(&self, hash: u64) -> BaseResult<usize> {
+	pub fn obtain<K: DiagnosticSpanOrigin>(&self, hash: u64, origin: &K) -> DiagnosticResult<usize> {
 		let identity = SelfHash { hash };
 
 		match self.hash_to_ind.get(&identity) {
-			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string())),
+			None => return Err(make_cannot_find_var(origin, &hash).into()),
 			Some(ind) => {
 				let ind = *ind;
 
 				if !self.is_alive(ind) {
 					if self.is_dropped_before(ind) {
-						return Err(BaseError::err(format!(IR_OUTSIDE_ERA_HIGHER!(), self.get_ending_era(ind))))
-					} else {
-						return Err(BaseError::err(format!(IR_OUTSIDE_ERA_LOWER!(), self.variables[ind].introduced_in_era)))
+						return Err(make_doesnt_exist_in_era(origin, &hash).into())
 					}
+
+					panic!("Dropped unalived variable")
 				}
 
 				return Ok(ind)
@@ -219,27 +219,23 @@ pub enum VariableKind {
 }
 
 impl HIRContext {
-	pub fn new() -> BaseResult<Self> {
-		return Ok(HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new()?, function_contexts: vec![], function_declarations: vec![], struct_func_impls: HashMap::new() })
+	pub fn new() -> Self {
+		return HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new().unwrap(), function_contexts: vec![], function_declarations: vec![], struct_func_impls: HashMap::new() }
 	}
 
-	pub fn translate_function(&self, func_hash: u64) -> BaseResult<usize> {
+	pub fn translate_function<K: DiagnosticSpanOrigin>(&self, func_hash: u64, origin: &K) -> DiagnosticResult<usize> {
 		return match self.functions.get_index(func_hash) {
 			Some(v) => Ok(v),
-			None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+			None => return Err(make_cannot_find_func(origin, &func_hash).into())
 		}
 	}
 }
 
-pub fn get_variable(context: &HIRContext, curr_ctx: &HIRBranchedContext, hash: u64) -> BaseResult<(VariableKind, Type, usize)> {
+pub fn get_variable<K: DiagnosticSpanOrigin>(context: &HIRContext, curr_ctx: &HIRBranchedContext, hash: u64, origin: &K) -> DiagnosticResult<(VariableKind, Type, usize)> {
 	if curr_ctx.hash_to_ind.contains_key(&SelfHash { hash }) {
-		match curr_ctx.obtain(hash) {
-			Ok(v) => {
-				return Ok((VariableKind::LOCAL, curr_ctx.variables[v].variable_type.clone(), v))
-			},
-			
-			Err(e) => return Err(e)
-		}
+		let ind = curr_ctx.obtain(hash, origin)?;
+
+		return Ok((VariableKind::LOCAL, curr_ctx.variables[ind].variable_type.clone(), ind));
 	}
 
 	match context.static_variables.get_index(hash) {
@@ -247,6 +243,6 @@ pub fn get_variable(context: &HIRContext, curr_ctx: &HIRBranchedContext, hash: u
 			return Ok((VariableKind::STATIC, context.static_variables.vals[v].clone(), v))
 		},
 
-		None => return Err(BaseError::err(IR_FIND_ELEMENT!().to_string()))
+		None => return Err(make_cannot_find_var(origin, &hash).into())
 	};
 } 

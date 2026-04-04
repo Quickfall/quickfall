@@ -1,6 +1,5 @@
 use std::{collections::HashMap, mem::transmute, num::NonZero, rc::Rc};
 
-use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_typing::{raw::RawType, tree::Type};
 use inkwell::{AddressSpace, context::Context, types::{BasicType, BasicTypeEnum}};
 
@@ -17,25 +16,25 @@ impl LLVMTypeStorage {
 		LLVMTypeStorage { map: HashMap::new(), ctxref: ctx.clone() }
 	}
 
-	pub fn convert(&mut self, base: Type) -> BaseResult<LLVMTypeEnum> {
+	pub fn convert(&mut self, base: Type) -> LLVMTypeEnum {
 		match base {
 			Type::GenericLowered(raw) => return self.convert_raw(raw),
-			Type::Generic(_, _, _) => return Err(BaseError::err("Cannot lower non lowered generics!".to_string())),
+			Type::Generic(_, _, _) => panic!("cannot convert unlowered generics"),
 
 			Type::Reference(_) => return self.convert_raw(RawType::Pointer),
 			Type::Pointer(_, _) => return self.convert_raw(RawType::Pointer),
 
 			Type::Array(size, inner) => {
-				let inner_type = self.convert(*inner)?;
+				let inner_type = self.convert(*inner);
 
-				Ok(LLVMTypeEnum::new(inner_type.array_type(size as u32).into()))
+				LLVMTypeEnum::new(inner_type.array_type(size as u32).into())
 			}
 		}
 	}
 
-	pub fn convert_raw(&mut self, base: RawType) -> BaseResult<LLVMTypeEnum> {
+	pub fn convert_raw(&mut self, base: RawType) -> LLVMTypeEnum {
 		if self.map.contains_key(&base) {
-			return Ok(LLVMTypeEnum::clone(&self.map[&base]));
+			return LLVMTypeEnum::clone(&self.map[&base])
 		}
 
 		let conv: BasicTypeEnum = match &base {
@@ -51,7 +50,7 @@ impl LLVMTypeStorage {
 					80 => self.ctxref.x86_f80_type().into(),
 					128 => self.ctxref.f128_type().into(),
 
-					_ => return Err(BaseError::err("Cannot convert to LLVM type".to_string()))
+					_ => panic!("cannot convert float to LLVM type")
 				}
 			},
 			
@@ -59,7 +58,7 @@ impl LLVMTypeStorage {
 				let mut fields = vec![];
 
 				for field in &b.fields.vals {
-					fields.push(self.convert(field.clone())?.inner);
+					fields.push(self.convert(field.clone()).inner);
 				}
 
 				self.ctxref.struct_type(&fields, !*layout).into()
@@ -77,13 +76,13 @@ impl LLVMTypeStorage {
 				self.ctxref.ptr_type(AddressSpace::from(0u16)).into()
 			},
 
-			_ => return Err(BaseError::err(format!("Cannot convert to LLVM type {:#?}", base.clone()).to_string()))
+			_ => panic!("cannot convert to LLVM type!")
 		};
 
 		let l = LLVMTypeEnum::new(unsafe { transmute::<BasicTypeEnum, BasicTypeEnum<'static>>(conv) });
 
 		self.map.insert(base, l.clone());
 
-		return Ok(l);
+		return l
 	}
 }

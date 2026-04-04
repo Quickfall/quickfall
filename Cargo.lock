@@ -14,6 +14,7 @@ version = "0.1.0"
 dependencies = [
  "compiler_typing",
  "compiler_utils",
+ "diagnostics",
  "lexer",
 ]
 
@@ -22,9 +23,9 @@ name = "ast_parser"
 version = "0.1.0"
 dependencies = [
  "ast",
- "compiler_errors",
  "compiler_typing",
  "compiler_utils",
+ "diagnostics",
  "lexer",
 ]
 
@@ -37,16 +38,16 @@ dependencies = [
  "astoir_hir_lowering",
  "astoir_mir",
  "astoir_mir_lowering",
- "compiler_errors",
+ "diagnostics",
 ]
 
 [[package]]
 name = "astoir_hir"
 version = "0.1.0"
 dependencies = [
- "compiler_errors",
  "compiler_typing",
  "compiler_utils",
+ "diagnostics",
  "lexer",
 ]
 
@@ -56,18 +57,18 @@ version = "0.1.0"
 dependencies = [
  "ast",
  "astoir_hir",
- "compiler_errors",
  "compiler_typing",
  "compiler_utils",
+ "diagnostics",
 ]
 
 [[package]]
 name = "astoir_mir"
 version = "0.1.0"
 dependencies = [
- "compiler_errors",
  "compiler_typing",
  "compiler_utils",
+ "diagnostics",
 ]
 
 [[package]]
@@ -76,9 +77,9 @@ version = "0.1.0"
 dependencies = [
  "astoir_hir",
  "astoir_mir",
- "compiler_errors",
  "compiler_typing",
  "compiler_utils",
+ "diagnostics",
  "lexer",
 ]
 
@@ -114,21 +115,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "compiler_errors"
-version = "0.1.0"
-dependencies = [
- "colored",
- "compiler_utils",
-]
-
-[[package]]
 name = "compiler_main"
 version = "0.1.0"
 dependencies = [
  "ast",
  "ast_parser",
  "astoir",
- "compiler_errors",
+ "compiler_utils",
+ "diagnostics",
  "lexer",
  "llvm_ir_bridge",
 ]
@@ -137,13 +131,21 @@ dependencies = [
 name = "compiler_typing"
 version = "0.1.0"
 dependencies = [
- "compiler_errors",
  "compiler_utils",
+ "diagnostics",
 ]
 
 [[package]]
 name = "compiler_utils"
 version = "0.1.0"
+
+[[package]]
+name = "diagnostics"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "compiler_utils",
+]
 
 [[package]]
 name = "find-msvc-tools"
@@ -194,8 +196,8 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 name = "lexer"
 version = "0.1.0"
 dependencies = [
- "compiler_errors",
  "compiler_utils",
+ "diagnostics",
 ]
 
 [[package]]
@@ -223,7 +225,6 @@ name = "llvm_ir_bridge"
 version = "0.1.0"
 dependencies = [
  "astoir_mir",
- "compiler_errors",
  "compiler_typing",
  "inkwell",
  "rand",
@@ -313,17 +314,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "testing"
-version = "0.1.0"
-dependencies = [
- "ast",
- "ast_parser",
- "astoir",
- "compiler_errors",
- "lexer",
 ]
 
 [[package]]

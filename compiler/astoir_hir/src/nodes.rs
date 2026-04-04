@@ -1,13 +1,47 @@
 //! The nodes inside of the AstoIR HIR. 
 
-use compiler_errors::{IR_TRANSMUTATION, errs::{BaseResult, base::BaseError}};
 use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
+use compiler_utils::Position;
+use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}, unsure_panic};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
 
 #[derive(Debug, Clone)]
-pub enum HIRNode {
+pub struct HIRNode {	
+	pub kind: HIRNodeKind, 
+	pub start: Position,
+	pub end: Position
+}
+
+impl HIRNode {
+	pub fn new(kind: HIRNodeKind, start: &Position, end: &Position) -> Self {
+		HIRNode { kind, start: start.clone(), end: end.clone() }
+	}
+	
+	pub fn with(&self, kind: HIRNodeKind) -> Self {
+		HIRNode { kind, start: self.start.clone(), end: self.end.clone() }
+	}
+}
+
+impl DiagnosticSpanOrigin for HIRNode {
+	fn make_simple_diagnostic(&self, code: usize, level: diagnostics::diagnostic::Level, message: String, primary_span_msg: Option<String>, spans: Vec<Span>, notes: Vec<String>, help: Vec<String>) -> Diagnostic {
+		let span = self.make_span(SpanKind::Primary, primary_span_msg);
+
+		Diagnostic::new_base(level, code, message, span, spans, notes, help)
+	}
+
+	fn get_pos(&self) -> SpanPosition {
+		SpanPosition::from_pos2(self.start.clone(), self.end.clone())
+	}
+
+	fn make_span(&self, kind: SpanKind, msg: Option<String>) -> Span {
+		Span { start: SpanPosition::from_pos2(self.start.clone(), self.end.clone()), label: msg, kind }		
+	}
+}
+
+#[derive(Debug, Clone)]
+pub enum HIRNodeKind {
 	CastValue { intentional: bool, value: Box<HIRNode>, old_type: Type, new_type: Type }, 
 
 	VarDeclaration { variable: usize, var_type: Type, default_val: Option<Box<HIRNode>> },
@@ -58,46 +92,46 @@ pub enum HIRNode {
 
 impl HIRNode {
 	pub fn is_variable_reference(&self) -> bool {
-		if let HIRNode::VariableReference { .. } = self {
+		if let HIRNodeKind::VariableReference { .. } = self.kind {
 			return true;
 		}
 
 		return false;
 	}
 
-	pub fn get_variable_represent(&self) -> BaseResult<(usize, bool)> {
-		match self {
-			HIRNode::VariableReference { index, is_static} => return Ok((*index, *is_static)),
-			HIRNode::ArrayIndexAccess { val, index: _ } => return val.get_variable_represent(),
+	pub fn get_variable_represent(&self) -> (usize, bool) {
+		match &self.kind {
+			HIRNodeKind::VariableReference { index, is_static} => return (*index, *is_static),
+			HIRNodeKind::ArrayIndexAccess { val, index: _ } => return val.get_variable_represent(),
 
-			_ => return Err(BaseError::err("Used get_variable_represent on a non representing var".to_string()))
-		}
+			_ => unsure_panic!("Used get_variable_represent on a non representing val")
+		};
 	}
 
 	pub fn is_variable_representative(&self) -> bool {
-		if let HIRNode::ArrayIndexAccess { .. } = self {
+		if let HIRNodeKind::ArrayIndexAccess { .. } = self.kind {
 			return true;
 		}
 
-		if let HIRNode::VariableReference { .. } = self {
+		if let HIRNodeKind::VariableReference { .. } = self.kind {
 			return true;
 		}
 
 		return false;
 	}
 
-	pub fn as_variable_reference(&self) -> BaseResult<(usize, bool)> {
-		if let HIRNode::VariableReference { index, is_static } = self {
-			return Ok((*index, *is_static))
+	pub fn as_variable_reference(&self) -> (usize, bool) {
+		if let HIRNodeKind::VariableReference { index, is_static } = &self.kind {
+			return (*index, *is_static)
 		}
 
-		return Err(BaseError::err("Tried using as_variable_reference on a non var ref".to_string()))
+		panic!("Tried using as_variable_reference on a non var ref")
 	}
 	
-	pub fn use_as(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type) -> BaseResult<HIRNode> {
+	pub fn use_as<K: DiagnosticSpanOrigin>(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type, origin: &K, var_origin: Option<&K>) -> Result<HIRNode, ()> {
 		let self_type = match self.get_node_type(context, curr_ctx) {
 			Some(v) => v,
-			None => return Err(BaseError::err("This needs to be a value".to_string()))
+			_ => panic!("Tried using a typeless node in use_as: {:#?}", self)
 		};
 
 		if self_type == t {
@@ -105,44 +139,48 @@ impl HIRNode {
 		}
 
 		if self_type.can_transmute(&t, &context.type_storage) {
-			match &self {
-				HIRNode::IntegerLiteral { value, int_type: _ } => {
-					return Ok(HIRNode::IntegerLiteral { value: *value, int_type: t });
+			match &self.kind {
+				HIRNodeKind::IntegerLiteral { value, int_type: _ } => {
+					return Ok(self.with(HIRNodeKind::IntegerLiteral { value: *value, int_type: t }));
 				},
 
-				HIRNode::ArrayVariableInitializerValue { vals } => {
+				HIRNodeKind::ArrayVariableInitializerValue { vals } => {
 					if can_transmute_inner(&self_type, &t, &context.type_storage) {
 						let mut new_vals = vec![];
 						let inner = t.get_inner_type();
 
 						for val in vals {
-							new_vals.push(Box::new(val.use_as(context, curr_ctx, *inner.clone())?));
+							new_vals.push(Box::new(val.use_as(context, curr_ctx, *inner.clone(), origin, var_origin)?));
 						}
 
-						return Ok(HIRNode::ArrayVariableInitializerValue { vals: new_vals })
+						return Ok(self.with(HIRNodeKind::ArrayVariableInitializerValue { vals: new_vals }))
 					}
 				},
 
-				HIRNode::ArrayVariableInitializerValueSameValue { size, val } => {
+				HIRNodeKind::ArrayVariableInitializerValueSameValue { size, val } => {
 					if can_transmute_inner(&self_type, &t, &context.type_storage) {
-						let new_val = Box::new(val.use_as(context, curr_ctx, *t.get_inner_type())?);
+						let new_val = Box::new(val.use_as(context, curr_ctx, *t.get_inner_type(), origin, var_origin)?);
 
-						return Ok(HIRNode::ArrayVariableInitializerValueSameValue { size: *size, val: new_val })					
+						return Ok(self.with(HIRNodeKind::ArrayVariableInitializerValueSameValue { size: *size, val: new_val }))		
 					}
 				},
 
 				_ => {
-					return Ok(HIRNode::CastValue { intentional: false, old_type: self_type.clone(), value: Box::new(self.clone()), new_type: t });
+					return Ok(self.with(HIRNodeKind::CastValue { intentional: false, old_type: self_type.clone(), value: Box::new(self.clone()), new_type: t }));
 				}
 			}
 		}
 
-		return Err(BaseError::err(format!("{} {:#?} {:#?}", IR_TRANSMUTATION!(), self_type, t)))
+		if let Some(v) = var_origin {
+			return Err(make_diff_type(origin, &"unnamed".to_string(), &t, &self.get_node_type(context, curr_ctx).unwrap(), v).into())
+		}
+
+		return Err(make_diff_type_val(origin, &t, &self.get_node_type(context, curr_ctx).unwrap()).into())
 	}	
 
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<Type> {
-		match self {
-			HIRNode::VariableReference { index, is_static } => {
+		match &self.kind {
+			HIRNodeKind::VariableReference { index, is_static } => {
 				if *is_static {
 					return Some(context.static_variables.vals[*index].clone());
 				}
@@ -150,25 +188,25 @@ impl HIRNode {
 				return Some(curr_ctx.variables[*index].variable_type.clone());
 			},
 
-			HIRNode::PointerGrab { val } => {
+			HIRNodeKind::PointerGrab { val } => {
 				return Some(Type::Pointer(false, Box::new(val.get_node_type(context, curr_ctx).unwrap())));
 			},
 
-			HIRNode::ReferenceGrab { val } => {
+			HIRNodeKind::ReferenceGrab { val } => {
 				return Some(Type::Reference(Box::new(val.get_node_type(context, curr_ctx).unwrap())))
 			}
 
-			HIRNode::ArrayIndexAccess { val, index: _ } => {
+			HIRNodeKind::ArrayIndexAccess { val, index: _ } => {
 				let t = val.get_node_type(context, curr_ctx).unwrap();
 
 				return Some(*t.get_inner_type())
 			}
 
-			HIRNode::IntegerLiteral { value: _, int_type } => {
+			HIRNodeKind::IntegerLiteral { value: _, int_type } => {
 				return Some(int_type.clone());
 			},
 
-			HIRNode::StringLiteral { value: _ } => {
+			HIRNodeKind::StringLiteral { value: _ } => {
 				let ind = match context.type_storage.types.get_index(STATIC_STR) {
 					Some(v) => v,
 					None => return None
@@ -177,18 +215,18 @@ impl HIRNode {
 				return Some(Type::Generic(ind, vec![], vec![]))
 			},
 
-			HIRNode::ArrayVariableInitializerValue { vals } => return Some(Type::Array(vals.len(), Box::new(vals[0].get_node_type(context, curr_ctx).unwrap()))),
-			HIRNode::ArrayVariableInitializerValueSameValue { size, val } => return Some(Type::Array(*size, Box::new(val.get_node_type(context, curr_ctx).unwrap()))),
+			HIRNodeKind::ArrayVariableInitializerValue { vals } => return Some(Type::Array(vals.len(), Box::new(vals[0].get_node_type(context, curr_ctx).unwrap()))),
+			HIRNodeKind::ArrayVariableInitializerValueSameValue { size, val } => return Some(Type::Array(*size, Box::new(val.get_node_type(context, curr_ctx).unwrap()))),
 
-			HIRNode::StructLRU { steps: _, last } => {
+			HIRNodeKind::StructLRU { steps: _, last } => {
 				return Some(last.clone())
 			},
 
-			HIRNode::MathOperation { left, right: _, operation: _, assignment: _ } => {
+			HIRNodeKind::MathOperation { left, right: _, operation: _, assignment: _ } => {
 				return left.get_node_type(context, curr_ctx)
 			},
 
-			HIRNode::BooleanOperator { .. } | HIRNode::BooleanCondition { .. } => {
+			HIRNodeKind::BooleanOperator { .. } | HIRNodeKind::BooleanCondition { .. } => {
 				let t = match context.type_storage.types.get_index(BOOLEAN_TYPE) {
 					Some(v) => v,
 					None => return None
@@ -197,11 +235,11 @@ impl HIRNode {
 				return Some(Type::Generic(t, vec![], vec![]))
 			},
 
-			HIRNode::StructVariableInitializerValue { t, fields: _ } => {
+			HIRNodeKind::StructVariableInitializerValue { t, fields: _ } => {
 				return Some(t.clone())
 			}
 
-			HIRNode::FunctionCall { func_name, arguments: _ } => {
+			HIRNodeKind::FunctionCall { func_name, arguments: _ } => {
 				let f = context.functions.vals[*func_name].0.clone();
 
 				return f;

@@ -1,12 +1,12 @@
 //! Parser module for return statements
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
-use compiler_errors::errs::CompilerResult;
+use diagnostics::DiagnosticResult;
 use lexer::token::LexerToken;
 
 use crate::value::parse_ast_value;
 
-pub fn parse_function_return_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_function_return_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;

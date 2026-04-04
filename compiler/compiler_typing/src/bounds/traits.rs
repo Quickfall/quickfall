@@ -14,13 +14,15 @@
 //! 
 //! # Examples
 //! ```
-//! struct test<A: !numeric ~:!cpusupported> {
+//! struct test<A: !numeric ~!cpusupported> {
 //! 	// A can now only be a numeric type and not supported by the CPU
 //! }
 //! ```
 
-use compiler_errors::{TYPE_TRAIT_MISSING, errs::{BaseResult, base::BaseError}};
+use std::fmt::Display;
+
 use compiler_utils::hash;
+use diagnostics::{MaybeDiagnostic, builders::make_bound_trait};
 
 use crate::{storage::TypeStorage, tree::Type};
 
@@ -47,6 +49,24 @@ pub enum Trait {
 	Static
 }
 
+impl Display for Trait {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let s = match self {
+			Trait::Numeric => "numeric",
+			Trait::Signed => "signed",
+			Trait::Integer => "integer",
+			Trait::Floating => "floating",
+			Trait::Fixed => "fixed",
+			Trait::NonInteger => "noninteger",
+			Trait::CpuSupported => "cpusupported",
+			Trait::String => "stringlike",
+			Trait::Static => "static"
+		};
+
+		write!(f, "!{}", s)
+	}
+}
+
 pub enum TraitBoundMember {
 	/// Selects a trait to require it
 	Select(Trait),
@@ -61,18 +81,18 @@ pub struct TraitBound {
 }
 
 impl TraitBound {
-	pub fn check(&self, t: &Type, storage: &TypeStorage) -> BaseResult<()> {
+	pub fn check(&self, t: &Type, storage: &TypeStorage) -> MaybeDiagnostic {
 		for member in &self.members {
 			match member {
 				TraitBoundMember::Select(tt) => {
-					if !t.as_generic(storage)?.has_trait(tt.clone(), t) {
-						return Err(BaseError::err(TYPE_TRAIT_MISSING!().to_string()));
+					if !t.as_generic(storage).has_trait(tt.clone(), t) {
+						return Err(make_bound_trait(tt, t).into())
 					}
 				},
 
 				TraitBoundMember::Exclude(tt) => {
-					if t.as_generic(storage)?.has_trait(tt.clone(), t) {
-						return Err(BaseError::err(TYPE_TRAIT_MISSING!().to_string()));
+					if t.as_generic(storage).has_trait(tt.clone(), t) {
+						return Err(make_bound_trait(&format!("~{}", tt), t).into())
 					}
 				}
 			}

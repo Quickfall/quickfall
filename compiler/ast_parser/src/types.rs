@@ -1,10 +1,10 @@
 //! Parsing for type related features
 
-use ast::types::ASTType;
-use compiler_errors::{UNEXPECTED_TOKEN, errs::{CompilerResult, ErrorKind}};
+use ast::{types::ASTType};
 use compiler_typing::TypeParameterContainer;
 use compiler_utils::hash::HashedString;
-use lexer::{token::{LexerToken, LexerTokenType}, toks::math::MathOperator};
+use diagnostics::{DiagnosticResult, builders::{make_expected_single_simple_error, make_unexpected_simple_error}};
+use lexer::{token::{LexerToken, LexerTokenType}};
 
 #[derive(Clone, Debug)]
 pub enum ParsingASTTypeMember {
@@ -15,7 +15,7 @@ pub enum ParsingASTTypeMember {
 }
 
 /// Parses the type size specifiers
-pub fn parse_type_size_specifiers(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Vec<usize>> {
+pub fn parse_type_size_specifiers(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Vec<usize>> {
 	if tokens[*ind].tok_type != LexerTokenType::Dot {
 		return Ok(vec![]);
 	}
@@ -33,7 +33,7 @@ pub fn parse_type_size_specifiers(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 	return Ok(sizes);
 }
 
-pub fn parse_type_type_parameters(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Vec<Box<ASTType>>> {
+pub fn parse_type_type_parameters(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Vec<Box<ASTType>>> {
 	if tokens[*ind].tok_type != LexerTokenType::AngelBracketOpen {
 		return Ok(vec![]);
 	}
@@ -60,7 +60,7 @@ pub fn parse_type_type_parameters(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 	return Ok(types)
 }
  
-pub fn parse_type_generic(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<ParsingASTTypeMember> {
+pub fn parse_type_generic(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<ParsingASTTypeMember> {
 	let type_name = tokens[*ind].expects_keyword()?;
 
 	*ind += 1;
@@ -71,7 +71,7 @@ pub fn parse_type_generic(tokens: &Vec<LexerToken>, ind: &mut usize) -> Compiler
 	return Ok(ParsingASTTypeMember::Generic(type_name.0, types, sizes))
 }
 
-pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic: bool) -> CompilerResult<Option<ParsingASTTypeMember>> {
+pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic: bool) -> DiagnosticResult<Option<ParsingASTTypeMember>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Keyword(_, _) => {
 			if took_generic {
@@ -134,13 +134,12 @@ pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic
 				return Ok(None);
 			}
 
-			return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), tokens[*ind]), ErrorKind::Error))
+			return Err(make_unexpected_simple_error(&tokens[*ind], &tokens[*ind].tok_type).into())
 		}
-		//_ => return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), tokens[*ind]), ErrorKind::Error))
 	}
 }
 
-pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<ASTType> {
+pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<ASTType> {
 	let mut members = vec![];
 	let mut took_generic = false;
 
@@ -173,11 +172,11 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<A
 
 	return match child {
 		Some(v) => Ok(*v),
-		None => return Err(tokens[*ind].make_err("Error while parsing type! Latest child member was None!".to_string(), ErrorKind::Critical))
+		None => return Err(make_expected_single_simple_error(&tokens[*ind], &"type".to_string()).into())
 	};
 }
 
-pub fn parse_type_parameters_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<TypeParameterContainer> {
+pub fn parse_type_parameters_declaration(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<TypeParameterContainer> {
 	if tokens[*ind].tok_type != LexerTokenType::AngelBracketOpen {
 		return Ok(TypeParameterContainer::new());
 	}

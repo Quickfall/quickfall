@@ -1,6 +1,6 @@
 //! The raw type declarations
 
-use std::{hash::Hash};
+use std::{fmt::Display, hash::Hash};
 
 use crate::{SizedType, bounds::traits::Trait, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, structs::{LoweredStructTypeContainer, RawStructTypeContainer}, tree::Type, utils::get_pointer_size};
 
@@ -173,6 +173,72 @@ impl SizedType for RawType {
 
 			_ => return 0
 		}
+	}
+}
+
+impl Display for RawType {
+	// TODO: add display names for structs and enums
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let s = match self {
+			Self::Integer(size, signed) => {
+				if *signed {
+					format!("s{}", size)
+				} else {
+					format!("u{}", size)
+				}
+			}, 
+
+			Self::Floating(size, signed) => {
+				if *signed {
+					format!("f{}", size)
+				} else {
+					format!("uf{}", size)
+				}
+			},
+
+			Self::FixedPoint(a, b, signed) => {
+				if *signed {
+					format!("x{}", a + b)
+				} else {
+					format!("ux{}", a + b)
+				}
+			},
+
+			Self::Boolean => "bool".to_string(),
+			Self::Pointer => "ptr".to_string(),
+			Self::StaticString => "staticstr".to_string(),
+
+			Self::Struct(_, _) => "__struct__".to_string(),
+			Self::Enum(_) => "__enum__".to_string(),
+			Self::EnumEntry(_) => "__enum__child".to_string(),
+			Self::LoweredStruct(_, _) => "__low__struct__".to_string(),
+
+			Self::SizedInteger(signed) => {
+				if *signed {
+					"s?".to_string()
+				} else {
+					"u?".to_string()
+				}
+			},
+
+			Self::SizedFloating(signed) => {
+				if *signed {
+					"f?".to_string()
+				} else {
+					"uf?".to_string()
+				}
+			},
+
+			Self::SizedFixedPoint(signed) => {
+				if *signed {
+					"x?".to_string()
+				} else {
+					"ux?".to_string()
+				}
+			}
+ 		};
+
+		write!(f, "{}", s)
 	}
 }
 

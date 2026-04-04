@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use compiler_errors::{IR_CASTING_ERROR, errs::{BaseResult, base::BaseError}};
 use compiler_typing::{tree::Type};
+use diagnostics::{DiagnosticResult, builders::make_invalid_var_type_ir};
 
 use crate::vals::base::BaseMIRValue;
 
@@ -11,12 +11,12 @@ pub struct MIRArrayValue {
 }
 
 impl MIRArrayValue {
-	pub fn new(base: BaseMIRValue) -> BaseResult<Self> {
+	pub fn new(base: BaseMIRValue) -> DiagnosticResult<Self> {
 		if let Type::Array(size, _) = base.vtype.clone() {
 			return Ok(MIRArrayValue { base, size });
 		}
 
-		return Err(BaseError::err(IR_CASTING_ERROR!().to_string()))
+		return Err(make_invalid_var_type_ir().into())
 	}
 }
 

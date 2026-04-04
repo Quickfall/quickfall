@@ -1,19 +1,19 @@
 use compiler_utils::{Position, hash::HashedString};
 
 use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
-use compiler_errors::{PARSE_VALUE, UNEXPECTED_TOKEN, errs::{CompilerResult, ErrorKind, normal::CompilerError}, pos::BoundPosition};
+use diagnostics::{DiagnosticResult, builders::{make_expected_simple_error, make_unexpected_simple_error}};
 use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{arrays::parse_array_access, functions::parse_function_call, structs::val::parse_struct_initialize};
 use crate::literals::{parse_integer_literal, parse_string_literal};
 use crate::math::parse_math_operation;
 
-pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, original: CompilerResult<Box<ASTTreeNode>>) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, original: DiagnosticResult<Box<ASTTreeNode>>) -> DiagnosticResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Dot => {
 			let original = original?;
 			if !original.kind.is_function_call() && !original.kind.is_var_access() {
-				return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), original), ErrorKind::Error));
+				return Err(make_unexpected_simple_error(&tokens[*ind], &original).into());
 			}
 
 			*ind += 1;
@@ -30,7 +30,7 @@ pub fn parse_ast_value_dotacess(tokens: &Vec<LexerToken>, ind: &mut usize, origi
 	}
 }
 
-pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut usize, original: CompilerResult<Box<ASTTreeNode>>) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut usize, original: DiagnosticResult<Box<ASTTreeNode>>) -> DiagnosticResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Keyword(s, _) => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
@@ -41,12 +41,7 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 				return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructLRFunction { l: original?, r: r_member }, start, end)))
 			}
 
-			match original {
-				Ok(_) => {},
-				Err(_) => return Err(CompilerError::new(ErrorKind::Error, "original was false".to_string(), BoundPosition::from_size(tokens[*ind].pos.clone(), 1)))
-			}
-
-			let start = original.as_ref().unwrap().start.clone();
+			let start = original.clone()?.start.clone();
 			let end = tokens[*ind].get_end_pos();
 
 			let r_member = Box::new(ASTTreeNode::new(ASTTreeNodeKind::VariableReference(HashedString::new(s.clone())), start.clone(), end));
@@ -81,7 +76,7 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 /// - comparing
 /// - boolean negation
 /// 
-pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: CompilerResult<Box<ASTTreeNode>>, invoked_on_body: bool) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: DiagnosticResult<Box<ASTTreeNode>>, invoked_on_body: bool) -> DiagnosticResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::MathOperator(_, _) => {
 			let o = &original?;
@@ -118,8 +113,6 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			let right_val = parse_ast_value(tokens, ind)?;
 
 			let end = right_val.end.clone();
-
-			
 
 			let kind = ASTTreeNodeKind::VarValueChange { var: original?, value: right_val };
 			return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
@@ -162,7 +155,7 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 /// - Math operation results (both with or without value changing)
 /// - Boolean negation result
 /// - Boolean compare result
-pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 
 		LexerTokenType::ExclamationMark => {
@@ -174,7 +167,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 				return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::BooleanBasedConditionMember { val: ast, negate: true }, Position::clone(&tokens[*ind].pos), end)))
 			}
 
-			return Err(tokens[*ind].make_err(format!(UNEXPECTED_TOKEN!(), ast), ErrorKind::Error));
+			return Err(make_expected_simple_error(&tokens[*ind], &"function call or variable access".to_string(),&ast).into());
 		},
 
 		LexerTokenType::BracketOpen | LexerTokenType::ArrayOpen => {
@@ -213,11 +206,11 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerRes
 			return parse_ast_value_post_l(tokens, ind, chain, false);
 		}
 
-		_ => return Err(tokens[*ind].make_err(PARSE_VALUE!().to_string(), ErrorKind::Error))
+		_=> return Err(make_unexpected_simple_error(&tokens[*ind], &tokens[*ind].tok_type).into())
 	}	
 }
 
-pub fn parse_ast_array_init(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_ast_array_init(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	if tokens[*ind].tok_type == LexerTokenType::BracketOpen {
@@ -261,7 +254,7 @@ pub fn parse_ast_array_init(tokens: &Vec<LexerToken>, ind: &mut usize) -> Compil
 	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ArrayVariableInitializerValue { vals }, start, tokens[*ind].get_end_pos())))
 }
 
-pub fn parse_ast_pointer(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_ast_pointer(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	tokens[*ind].expects(LexerTokenType::Asterisk)?;
@@ -272,7 +265,7 @@ pub fn parse_ast_pointer(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerR
 	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::PointerGrab(value), start, tokens[*ind].get_end_pos())))
 }
 
-pub fn parse_ast_reference(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_ast_reference(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	tokens[*ind].expects(LexerTokenType::Ampersand)?;

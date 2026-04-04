@@ -1,11 +1,11 @@
-use astoir_hir::{nodes::HIRNode};
+use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_argument_grab, build_call}, funcs::MIRFunction, vals::base::BaseMIRValue};
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+use diagnostics::DiagnosticResult;
 
 use crate::{MIRLoweringContext, body::lower_hir_body, lower_hir_type, values::lower_hir_value};
 
-pub fn lower_hir_function_decl(node: Box<HIRNode>, cctx: &mut MIRLoweringContext) -> BaseResult<bool> {
-	if let HIRNode::FunctionDeclaration { func_name, arguments, return_type, body, ctx: _, requires_this } = *node {
+pub fn lower_hir_function_decl(node: Box<HIRNode>, cctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
+	if let HIRNodeKind::FunctionDeclaration { func_name, arguments, return_type, body, ctx: _, requires_this } = node.kind.clone() {
 		let mut args = vec![];
 
 		for argument in arguments {
@@ -23,7 +23,7 @@ pub fn lower_hir_function_decl(node: Box<HIRNode>, cctx: &mut MIRLoweringContext
 		let name = cctx.hir_ctx.functions.vals[func_name].2.clone();
 
 		let mut func = MIRFunction::new(name, args, ret_type, requires_this, &cctx.mir_ctx);
-		let block = func.append_entry_block(&mut cctx.mir_ctx)?;
+		let block = func.append_entry_block(&mut cctx.mir_ctx);
 
 		cctx.mir_ctx.writer.move_end(block);
 
@@ -40,12 +40,12 @@ pub fn lower_hir_function_decl(node: Box<HIRNode>, cctx: &mut MIRLoweringContext
 		return Ok(true)
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node")	
 }
 
 
-pub fn lower_hir_shadow_decl(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
-	if let HIRNode::ShadowFunctionDeclaration { func_name, arguments, return_type } = *node {
+pub fn lower_hir_shadow_decl(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
+	if let HIRNodeKind::ShadowFunctionDeclaration { func_name, arguments, return_type } = node.kind.clone() {
 		let name = ctx.hir_ctx.functions.vals[func_name].2.clone();
 
 		let mut args = vec![];
@@ -68,11 +68,11 @@ pub fn lower_hir_shadow_decl(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -
 		return Ok(true);
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node")	
 }
 
-pub fn lower_hir_function_call(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<Option<BaseMIRValue>> {
-	if let HIRNode::FunctionCall { func_name, arguments } = *node {
+pub fn lower_hir_function_call(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<Option<BaseMIRValue>> {
+	if let HIRNodeKind::FunctionCall { func_name, arguments } = node.kind.clone() {
 		let mut args = vec![];
 
 		for arg in arguments {
@@ -92,5 +92,5 @@ pub fn lower_hir_function_call(block: MIRBlockReference, node: Box<HIRNode>, ctx
 		return Ok(None);
 	}
 
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()))
+	panic!("Invalid node")	
 }

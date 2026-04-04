@@ -1,11 +1,11 @@
-use astoir_hir::{nodes::HIRNode, structs::HIRIfBranch};
+use astoir_hir::{nodes::{HIRNode, HIRNodeKind}, structs::HIRIfBranch};
 use astoir_mir::{blocks::{MIRBlock, refer::MIRBlockReference}, builder::{build_conditional_branch, build_unconditional_branch}};
-use compiler_errors::{IR_INVALID_NODE_TYPE, errs::{BaseResult, base::BaseError}};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos};
 
 use crate::{MIRLoweringContext, body::lower_hir_body, values::lower_hir_value};
 
-pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> BaseResult<bool> {
-	if let HIRNode::IfStatement { branches } = *node {
+pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
+	if let HIRNodeKind::IfStatement { branches } = node.kind.clone() {
 		let merge_ref = MIRBlock::new_merge(block, &mut ctx.mir_ctx, false);
 		let mut branch_blocks = vec![];
 
@@ -51,6 +51,7 @@ pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 				HIRIfBranch::IfBranch { cond, body } => {
 					ctx.mir_ctx.writer.move_end(block);
 
+					move_current_diagnostic_pos(cond.get_pos());
 					let val = lower_hir_value(block, cond, ctx)?.as_int()?;
 
 					build_conditional_branch(&mut ctx.mir_ctx, val, branch_blocks[branch_ind], branch_blocks[branch_ind + 1])?;
@@ -67,6 +68,7 @@ pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 				HIRIfBranch::ElseIfBranch { cond, body } => {
 					ctx.mir_ctx.writer.move_end(branch_blocks[branch_ind]);
 
+					move_current_diagnostic_pos(cond.get_pos());
 					let val = lower_hir_value(branch_blocks[branch_ind], cond, ctx)?.as_int()?;
 
 					build_conditional_branch(&mut ctx.mir_ctx, val, branch_blocks[branch_ind + 1], branch_blocks[branch_ind + 2])?;
@@ -100,6 +102,6 @@ pub fn lower_hir_if_statement(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 		return Ok(true);
 	}
 	
-	return Err(BaseError::err(IR_INVALID_NODE_TYPE!().to_string()));
+	panic!("Invalid node");
 }
 

@@ -2,14 +2,14 @@
 //! Parsing for if and else statements
 //! 
 
-use compiler_errors::errs::CompilerResult;
+use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 
 use crate::{functions::parse_node_body, value::parse_ast_value};
 
-pub fn parse_condition_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_condition_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
 	*ind += 1;
@@ -22,7 +22,7 @@ pub fn parse_condition_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> Comp
 	return Ok(cond);
 }
 
-pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 	*ind += 1;
 
@@ -48,7 +48,7 @@ pub fn parse_if_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Compiler
 	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::IfStatement { cond, body, branches, depth }, start, end)));
 }
 
-pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize, depth: &mut usize, branches: &mut Vec<Box<ASTTreeNode>>) -> CompilerResult<bool> {
+pub fn parse_else_statement(tokens: &Vec<LexerToken>, ind: &mut usize, depth: &mut usize, branches: &mut Vec<Box<ASTTreeNode>>) -> DiagnosticResult<bool> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;

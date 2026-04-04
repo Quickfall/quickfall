@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use compiler_errors::errs::{BaseResult, base::BaseError};
 use compiler_typing::tree::Type;
 use compiler_utils::hash::HashedString;
+use diagnostics::{unsure_panic};
 
 use crate::{blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::{MIRBlockReference}}, ctx::MIRContext, vals::base::BaseMIRValue};
 
@@ -26,9 +26,9 @@ impl MIRFunction {
 		return MIRFunction { blocks: vec![], name: HashedString::new(name), arguments, return_type, is_from_struct, id: ctx.functions.len()}
 	}
 
-	pub fn append_entry_block(&mut self, ctx: &mut MIRContext) -> BaseResult<MIRBlockReference> {
+	pub fn append_entry_block(&mut self, ctx: &mut MIRContext) -> MIRBlockReference {
 		if !self.blocks.is_empty() {
-			return Err(BaseError::err("Tried using append_entry_block on non-empty function blocks!".to_string()))
+			unsure_panic!("tried using append_entry_block on a non-empty function block!");
 		}
 
 		let reference = ctx.create_block_handled(self.id);
@@ -44,17 +44,17 @@ impl MIRFunction {
 
 		self.blocks.push(reference);
 
-		return Ok(reference);
+		return reference;
 	}
 
-	pub fn append_block(&mut self, ctx: &mut MIRContext) -> BaseResult<MIRBlockReference> {
+	pub fn append_block(&mut self, ctx: &mut MIRContext) -> MIRBlockReference {
 		if self.blocks.is_empty() {
-			return Err(BaseError::err("Tried using append_block on empty function blocks!".to_string()))
+			unsure_panic!("tried using append_block on empty function blocks!");
 		}
 
 		let reference = ctx.create_block(self.id);
 
-		return Ok(reference)
+		return reference
 	}
 }
 

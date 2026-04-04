@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use compiler_errors::errs::BaseResult;
+use diagnostics::DiagnosticResult;
 
 use crate::{blocks::{MIRBlock, MIRBlockHeldInstruction, hints::{HintStorage, MIRValueHint}, refer::MIRBlockReference}, builder::build_phi, funcs::MIRFunction, inst_writer::{BlockPosition, InstructionWriterPosition}, insts::{MIRInstruction, val::InstructionValue}, vals::base::BaseMIRValue};
 
@@ -81,7 +81,7 @@ impl MIRContext {
 	}
 
 	/// Resolve the different SSA values for the given merge blocks
-	pub fn resolve_ssa(&mut self, block: MIRBlockReference) -> BaseResult<bool> {
+	pub fn resolve_ssa(&mut self, block: MIRBlockReference) -> DiagnosticResult<bool> {
 		let mut vals = vec![];
 
 		let b = &self.blocks[block]; 

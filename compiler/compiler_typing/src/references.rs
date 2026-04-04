@@ -1,4 +1,4 @@
-use compiler_errors::{TYPE_UNRESOLVABLE, errs::{BaseResult, base::BaseError}};
+use diagnostics::unsure_panic;
 
 use crate::tree::Type;
 
@@ -29,12 +29,12 @@ impl TypeReference {
 	}
 
 	/// Attempts to cast the type reference into a concrete Type. Will not try to resolve the type from the argument params
-	pub fn as_resolved(self) -> BaseResult<Type> {
+	pub fn as_resolved(self) -> Type {
 		if let TypeReference::Resolved(val) = self {
-			return Ok(val);
+			return val;
 		}
 
-		return Err(BaseError::err(TYPE_UNRESOLVABLE!().to_string()))
+		unsure_panic!("used as_resolved on a non resolved type")
 	}
 
 	/// Attempts to resolve the type reference into a concrete `Type`. 

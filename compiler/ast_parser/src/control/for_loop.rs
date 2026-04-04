@@ -1,11 +1,11 @@
-use compiler_errors::errs::CompilerResult;
+use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 
 use crate::{functions::parse_node_body, parser::parse_ast_node_in_body, value::parse_ast_value, variables::decl::parse_variable_declaration};
 
-pub fn parse_for_loop(tokens: &Vec<LexerToken>, ind: &mut usize) -> CompilerResult<Box<ASTTreeNode>> {
+pub fn parse_for_loop(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;

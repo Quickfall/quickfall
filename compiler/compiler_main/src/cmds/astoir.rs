@@ -2,7 +2,7 @@ use std::fs;
 
 use ast_parser::parse_ast_ctx;
 use astoir::{IRLevel, run_astoir_hir, run_astoir_mir};
-use compiler_errors::errs::{BaseResult, base::BaseError, dump_errors};
+use diagnostics::{DiagnosticResult, dump_diagnostics};
 use lexer::lexer::lexer_parse_file;
 use llvm_ir_bridge::bridge_llvm;
 
@@ -21,14 +21,14 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 		let lexer = lexer_parse_file(&arguments[i]).unwrap();
 		let ast = parse_ast_ctx(&lexer);
 
-		dump_errors();
+		dump_diagnostics();
 
 		match level {
 			IRLevel::HIR => {
 				let ctx = run_astoir_hir(ast.unwrap());
 				let res_path = arguments[i].clone() + ".qfhir";
 
-				dump_errors();
+				dump_diagnostics();
 
 				fs::write(res_path, format!("{:#?}", ctx.unwrap())).unwrap()
 			},
@@ -37,7 +37,7 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 				let ctx = run_astoir_mir(ast.unwrap());
 				let res_path = arguments[i].clone() + ".qfmir";
 
-				dump_errors();
+				dump_diagnostics();
 
 				fs::write(res_path, format!("{}", ctx.unwrap()));
 			},
@@ -46,26 +46,29 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 				let ctx = run_astoir_mir(ast.unwrap());
 				let res_path = arguments[i].clone() + ".llvm";
 
-				dump_errors();
+				dump_diagnostics();
 
 				let ctx = bridge_llvm(&ctx.unwrap());
 
-				dump_errors();
+				dump_diagnostics();
 
-				ctx.unwrap().module.print_to_file(res_path);
+				ctx.module.print_to_file(res_path);
 			}
 		}
 	}
 
 }
 
-fn parse_astoir_level(str: &String) -> BaseResult<IRLevel> {
+fn parse_astoir_level(str: &String) -> DiagnosticResult<IRLevel> {
 	match str as &str {
 		"hir" | "HIR" | "h" | "H" => return Ok(IRLevel::HIR),
 		"mir" | "MIR" | "m" | "M" => return Ok(IRLevel::MIR),
 		"llvm" | "LLVM" => return Ok(IRLevel::LLVM),
 
-		_ => return Err(BaseError::critical("Cannot parse AstoIR level".to_string()))
+		_ => {
+			println!("Invalid level");
+			std::process::exit(0);
+		}
 	};
 
 }

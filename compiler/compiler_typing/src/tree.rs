@@ -1,6 +1,9 @@
 //! The typing tree declarations. Allows for types such as an array of pointer arrays.
 
-use compiler_errors::errs::{BaseResult, base::BaseError};
+use std::fmt::Display;
+
+use diagnostics::{DiagnosticResult, unsure_panic};
+
 use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
 
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
@@ -108,21 +111,21 @@ impl Type {
 		}
 	}
 
-	pub fn as_generic_lowered(&self) -> BaseResult<RawType> {
+	pub fn as_generic_lowered(&self) -> RawType {
 		match self {
-			Type::GenericLowered(a) => return Ok(a.clone()),
-			_ => return Err(BaseError::err(format!("Not lowered generic {:#?}", self)))
+			Type::GenericLowered(a) => return a.clone(),
+			_ => panic!("Not a lowered generic {:#?}", self)
 		}
 	}	
  
-	pub fn as_generic(&self, storage: &TypeStorage) -> BaseResult<RawType> {
+	pub fn as_generic(&self, storage: &TypeStorage) -> RawType {
 		match self {
-			Self::GenericLowered(a) => return Ok(a.clone()),
-			Self::Generic(a, b, c) => {
-				return Ok(storage.types.vals[*a].clone());
+			Self::GenericLowered(a) => return a.clone(),
+			Self::Generic(a, _, _) => {
+				return storage.types.vals[*a].clone();
 			},
 
-			_ => return Err(BaseError::err(format!("Cannot obtain generic!")))
+			_ => panic!("Cannot obtain generic {:#?}", self)
 		}
 	}
 
@@ -165,41 +168,74 @@ impl Type {
 		return self.get_inner_type().get_generic(storage);
 	}
 
-	pub fn get_function(&self, storage: &TypeStorage, hash: u64) -> BaseResult<(usize, TypedFunction)> {
+	pub fn get_function(&self, storage: &TypeStorage, hash: u64) -> DiagnosticResult<(usize, TypedFunction)> {
 		return match self.get_generic(storage) {
 			RawType::Struct(_, container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),
 			RawType::Enum(container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),
 			RawType::EnumEntry(container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),
-			_ => Err(BaseError::err("This cannot contain functions!".to_string()))
+			_ => unsure_panic!("Type cannot contain functions")
 		};
 	}
 
-	pub fn get_field(&self, storage: &TypeStorage, hash: u64) -> BaseResult<(usize, TypeReference)> {
+	pub fn get_field(&self, storage: &TypeStorage, hash: u64) -> DiagnosticResult<(usize, TypeReference)> {
 		return match self.get_generic(storage) {
 			RawType::Struct(_, container) => Ok((container.get_field_hash(hash, storage)?, container.get_field(hash, storage)?)),
 			RawType::Enum(container) => Ok((container.get_field_hash(hash, storage)?, container.get_field(hash, storage)?)),
 			RawType::EnumEntry(container) => Ok((container.get_field_hash(hash, storage)?, container.get_field(hash, storage)?)),
-			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
+			_ => unsure_panic!("Type cannot contain fields")
 		}
 	}
 
-	pub fn get_fields(&self, storage: &TypeStorage) -> BaseResult<Vec<u64>> {
+	pub fn get_fields(&self, storage: &TypeStorage) -> Vec<u64> {
 		return match self.get_generic(storage) {
-			RawType::Struct(_, container) => Ok(container.get_fields(storage)),
-			RawType::EnumEntry(container) => Ok(container.get_fields(storage)),
-			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
+			RawType::Struct(_, container) => container.get_fields(storage),
+			RawType::EnumEntry(container) => container.get_fields(storage),
+			_ => unsure_panic!("Type cannot contain fields")
 		}
 	}
 	
-	pub fn get_functions(&self, storage: &TypeStorage) -> BaseResult<Vec<u64>> {
+	pub fn get_functions(&self, storage: &TypeStorage) -> Vec<u64> {
 		return match self.get_generic(storage) {
-			RawType::Struct(_, container) => Ok(container.get_functions(storage)),
-			RawType::EnumEntry(container) => Ok(container.get_functions(storage)),
-			RawType::Enum(container) => Ok(container.get_functions(storage)),
-			_ => Err(BaseError::err("This cannot contain fields!".to_string()))
+			RawType::Struct(_, container) => container.get_functions(storage),
+			RawType::EnumEntry(container) => container.get_functions(storage),
+			RawType::Enum(container) => container.get_functions(storage),
+			_ => unsure_panic!("Type cannot contain functions")
 		}
 	}
+}
 
+impl Display for Type {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let s = match self {
+			Self::Array(size, inner) => {
+				format!("{}[{}]", inner, size)
+			},
+
+			Self::Generic(_, _, _) => unsure_panic!("cannot display unlowered generic"),
+
+			Self::GenericLowered(low ) => {
+				format!("{}", low)
+			},
+
+			Self::Pointer(arr, inner) => {
+				let a;
+
+				if *arr {
+					a = "[]"
+				} else {
+					a = ""
+				}
+
+				format!("{}*{}", inner, a)
+			},
+
+			Self::Reference(inner) => {
+				format!("{}&", inner)
+			}
+		};
+
+		write!(f, "{}", s)
+	}
 }
 
 impl SizedType for Type {
