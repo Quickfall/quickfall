@@ -27,6 +27,8 @@ const FOR_KEYWORD_HASH: u64 = hash!("for");
 const STATIC_KEYWORD_HASH: u64 = hash!("static");
 const THIS_KEYWORD_HASH: u64 = hash!("this");
 const NEW_KEYWORD_HASH: u64 = hash!("new");
+const UNWRAP_KEYWORD_HASH: u64 = hash!("unwrap");
+const UNWRAP_UNSAFE_KEYWORD_HASH: u64 = hash!("unsafe_unwrap");
 
 /// Parses a file into a set of lexer tokens.
 /// 
@@ -368,6 +370,8 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 		STATIC_KEYWORD_HASH => LexerTokenType::Static,
 		THIS_KEYWORD_HASH => LexerTokenType::This,
 		NEW_KEYWORD_HASH => LexerTokenType::New,
+		UNWRAP_KEYWORD_HASH => LexerTokenType::Unwrap,
+		UNWRAP_UNSAFE_KEYWORD_HASH => LexerTokenType::UnwrapUnsafe,
         _ => LexerTokenType::Keyword(slice.to_string(), hash)
     };
 

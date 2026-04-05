@@ -19,6 +19,9 @@ pub enum LexerTokenType {
 	Comment(String),
 	GlobalComment(String),
 
+	Unwrap,
+	UnwrapUnsafe,
+
 	Var,
 	Struct,
 	Layout,
@@ -201,7 +204,9 @@ impl Display for LexerTokenType {
 			Self::Struct => "struct",
 			Self::This => "this",
 			Self::True => "true",
-			Self::While => "while"
+			Self::While => "while",
+			Self::Unwrap => "unwrap",
+			Self::UnwrapUnsafe => "unsafe_unwrap"
 		};
 
 		write!(f, "{}", s)?;

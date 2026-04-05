@@ -31,7 +31,7 @@ pub enum ASTTreeNodeKind {
 
 	ThisStructParam,
 
-	UnwrapCondition { original: Box<ASTTreeNode>, target_type: ASTType, unsafe_unwrap: bool },
+	UnwrapCondition { original: Box<ASTTreeNode>, target_type: ASTType, unsafe_unwrap: bool, target_var: Option<HashedString> },
 	UnwrapValue { original: Box<ASTTreeNode>, target_type: ASTType, unsafe_unwrap: bool },
 
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ComparingOperator },
