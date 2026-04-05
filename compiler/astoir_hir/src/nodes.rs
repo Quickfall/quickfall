@@ -51,8 +51,8 @@ pub enum HIRNodeKind {
 	
 	MathOperation { left:  Box<HIRNode>, right: Box<HIRNode>, operation: MathOperator, assignment: bool },
 
-	UnwrapCondition { original: Box<HIRNode>, new_type: Type, new_var: Option<usize> },
-	UnwrapValue { original: Box<HIRNode>, new_type: Type },
+	UnwrapCondition { original: Box<HIRNode>, new_type: Type, new_var: Option<usize>, unsafe_unwrap: bool },
+	UnwrapValue { original: Box<HIRNode>, new_type: Type, unsafe_unwrap: bool },
 
 	VariableReference { index: usize, is_static: bool },
 	FunctionReference { index: usize },
@@ -198,6 +198,19 @@ impl HIRNode {
 			HIRNodeKind::ReferenceGrab { val } => {
 				return Some(Type::Reference(Box::new(val.get_node_type(context, curr_ctx).unwrap())))
 			}
+
+			HIRNodeKind::UnwrapCondition { .. } => {
+				let t = match context.type_storage.types.get_index(BOOLEAN_TYPE) {
+					Some(v) => v,
+					None => return None
+				};
+
+				return Some(Type::Generic(t, vec![], vec![]))
+			},
+
+			HIRNodeKind::UnwrapValue { original: _, new_type, unsafe_unwrap: _ } => {
+				return Some(new_type.clone())
+			},
 
 			HIRNodeKind::ArrayIndexAccess { val, index: _ } => {
 				let t = val.get_node_type(context, curr_ctx).unwrap();

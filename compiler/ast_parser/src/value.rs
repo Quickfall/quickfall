@@ -137,7 +137,7 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 	}
 }
 
-pub fn parse_ast_condition_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
+pub fn parse_ast_condition_if_statement_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
 		LexerTokenType::Unwrap | LexerTokenType::UnwrapUnsafe => parse_unwrap_condition(tokens, ind),
 		_ => parse_ast_value(tokens, ind)

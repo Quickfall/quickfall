@@ -7,13 +7,13 @@ use lexer::token::{LexerToken, LexerTokenType};
 
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
 
-use crate::{functions::parse_node_body, value::parse_ast_value};
+use crate::{functions::parse_node_body, value::{parse_ast_condition_if_statement_value}};
 
 pub fn parse_condition_member(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
 	*ind += 1;
-	let cond = parse_ast_value(tokens, ind)?;
+	let cond = parse_ast_condition_if_statement_value(tokens, ind)?;
 
 	tokens[*ind].expects(LexerTokenType::ParenClose)?;
 
