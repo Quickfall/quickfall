@@ -14,6 +14,7 @@ pub mod bools;
 pub mod control;
 pub mod structs;
 pub mod arrays;
+pub mod unwraps;
 
 pub fn lower_ast_body_node(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	match node.kind.clone() {
