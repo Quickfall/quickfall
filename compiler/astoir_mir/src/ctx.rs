@@ -10,7 +10,7 @@ pub struct MIRContext {
 	pub blocks: Vec<MIRBlock>,
 
 	pub block_to_func: HashMap<usize, usize>,
-
+	
 	pub writer: InstructionWriterPosition,
 
 	pub ssa_hints: HintStorage,
@@ -35,7 +35,7 @@ impl MIRContext {
 
 	pub fn create_block_handled(&mut self, func: usize) -> MIRBlockReference {
 		let ind = self.blocks.len();
-
+		
 		self.blocks.push(MIRBlock::new(ind));
 
 		self.block_to_func.insert(ind, func);

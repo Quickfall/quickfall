@@ -1,8 +1,11 @@
+use std::clone;
+
+use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_comp_eq, build_field_pointer, build_ir_cast, build_load, build_unsigned_int_const}, vals::{base::BaseMIRValue, int::MIRIntValue}};
 use compiler_typing::{SizedType, raw::RawType, tree::Type};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_req_type_kind, make_type_not_partof}};
 
-use crate::MIRLoweringContext;
+use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
 
 pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<MIRIntValue> {
 	let enum_type = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered_safe(origin)? {
@@ -45,4 +48,40 @@ pub fn cast_to_enum_child<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val
 	}
 
 	return build_ir_cast(&mut ctx.mir_ctx, val, Type::GenericLowered(enum_entry))
+}
+
+pub fn lower_hir_unwrap_cond(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
+	if let HIRNodeKind::UnwrapCondition { original, new_type, new_var, unsafe_unwrap } = node.kind.clone() {
+		let original = lower_hir_value(block, original, ctx)?;
+		let new_type = lower_hir_type(ctx, new_type)?;
+
+		let cond;
+
+		if unsafe_unwrap {
+			cond = build_unsigned_int_const(&mut ctx.mir_ctx, 1, 1)?;
+		} else {
+			cond = is_enum_value_of_kind(block, original, new_type.get_generic(&ctx.hir_ctx.type_storage), ctx, &*node)?
+		}
+
+		if new_var.is_none() {
+			return Ok(cond.into());
+		}
+
+		ctx.block_introduction_var_queue.push(node.clone());
+
+		return Ok(cond.into());
+	}
+
+	panic!("Invalid node!")
+}
+
+pub fn lower_hir_unwrap_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
+	if let HIRNodeKind::UnwrapValue { original, new_type, unsafe_unwrap } = node.kind.clone() {
+		let original = lower_hir_value(block, original, ctx)?;
+		let new_type = lower_hir_type(ctx, new_type)?;
+
+		return cast_to_enum_child(block, original, new_type.get_generic(&ctx.hir_ctx.type_storage), ctx, &*node)
+	}
+
+	panic!("Invalid node!")
 }
