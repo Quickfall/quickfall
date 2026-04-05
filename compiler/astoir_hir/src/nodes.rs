@@ -51,6 +51,9 @@ pub enum HIRNodeKind {
 	
 	MathOperation { left:  Box<HIRNode>, right: Box<HIRNode>, operation: MathOperator, assignment: bool },
 
+	UnwrapCondition { original: Box<HIRNode>, new_type: Type, new_var: Option<usize> },
+	UnwrapValue { original: Box<HIRNode>, new_type: Type },
+
 	VariableReference { index: usize, is_static: bool },
 	FunctionReference { index: usize },
 
