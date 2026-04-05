@@ -86,6 +86,9 @@ pub enum MIRInstruction {
 
 	/// Indicates to the IR processor that this given value's era is finished and thus we drop the value
 	MarkerEraDrop { value: BaseMIRValue },
+
+	/// Indicates a cast that doesn't need any action and is merely here to satisfy the IR strict typing. Must only be used safely
+	IRCast { val: BaseMIRValue, to: Type }, 
 }
 
 impl MIRInstruction {
@@ -191,6 +194,8 @@ impl MIRInstruction {
 			Self::PointerSub { .. } => return Type::GenericLowered(RawType::Pointer), 
 
 			Self::FuncArgumentGrab { ind: _, argtype } => argtype.clone(),
+
+			Self::IRCast { val: _, to } => to.clone(),
 
 			_ => panic!("Tried using get_return_type on non returning type! {}", self)
 		}
@@ -309,7 +314,8 @@ impl Display for MIRInstruction {
 
 			Self::FuncArgumentGrab { ind, argtype: _ } => writeln!(f, "funcarg {}", ind)?,
 
-			Self::MarkerEraDrop { value } => writeln!(f, ".marker_era_drop {}", value)?
+			Self::MarkerEraDrop { value } => writeln!(f, ".marker_era_drop {}", value)?,
+			Self::IRCast { val, to } => writeln!(f, ".ircastzz {} {}", val, to)?,
 		}
 
 		Ok(())

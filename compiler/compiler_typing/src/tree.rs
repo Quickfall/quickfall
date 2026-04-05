@@ -2,7 +2,7 @@
 
 use std::fmt::Display;
 
-use diagnostics::{DiagnosticResult, unsure_panic};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_req_type_kind, unsure_panic};
 
 use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
 
@@ -108,6 +108,13 @@ impl Type {
 			}
 
 			_ => false
+		}
+	}
+	
+	pub fn as_generic_lowered_safe<K: DiagnosticSpanOrigin>(&self, origin: &K) -> DiagnosticResult<RawType> {
+		match self {
+			Type::GenericLowered(a) => return Ok(a.clone()),
+			_ => return Err(make_req_type_kind(origin, &"a generic".to_string()).into())
 		}
 	}
 

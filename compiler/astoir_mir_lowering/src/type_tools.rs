@@ -1,20 +1,23 @@
-use astoir_hir::nodes::HIRNode;
-use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_comp_eq, build_field_pointer, build_load, build_unsigned_int_const}, vals::{base::BaseMIRValue, int::MIRIntValue}};
+use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_comp_eq, build_field_pointer, build_ir_cast, build_load, build_unsigned_int_const}, vals::{base::BaseMIRValue, int::MIRIntValue}};
 use compiler_typing::{SizedType, raw::RawType, tree::Type};
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_req_type_kind};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_req_type_kind, make_type_not_partof}};
 
 use crate::MIRLoweringContext;
 
 pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<MIRIntValue> {
-	let enum_type = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered() {
+	let enum_type = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered_safe(origin)? {
 		RawType::Enum(v) => v,
 		_ => return Err(make_req_type_kind(origin, &"enum parent".to_string()).into())
 	};
 
-	let enum_entry = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered() {
+	let enum_entry = match enum_entry {
 		RawType::EnumEntry(v) => v,
 		_ => return Err(make_req_type_kind(origin, &"enum child".to_string()).into())
 	};
+
+	if enum_entry.parent != enum_type.self_ref {
+		return Err(make_type_not_partof(origin, &enum_entry.child, &enum_type.self_ref).into())
+	}
 
 	let hint_type = enum_type.get_hint_type();
 
@@ -24,4 +27,22 @@ pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(block: MIRBlockReference, 
 	let hint_true = build_unsigned_int_const(&mut ctx.mir_ctx, enum_entry.child as u128, hint_type.get_size(&Type::GenericLowered(hint_type.clone()), false, &ctx.hir_ctx.type_storage))?;
 
 	return build_comp_eq(&mut ctx.mir_ctx, hint_val, hint_true);
+}
+
+pub fn cast_to_enum_child<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<BaseMIRValue> {
+	let enum_type = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered_safe(origin)? {
+		RawType::Enum(v) => v,
+		_ => return Err(make_req_type_kind(origin, &"enum parent".to_string()).into())
+	};
+
+	let enum_entry_container = match &enum_entry {
+		RawType::EnumEntry(v) => v,
+		_ => return Err(make_req_type_kind(origin, &"enum child".to_string()).into())
+	};
+
+	if enum_entry_container.parent != enum_type.self_ref {
+		return Err(make_type_not_partof(origin, &enum_entry_container.child, &enum_type.self_ref).into())
+	}
+
+	return build_ir_cast(&mut ctx.mir_ctx, val, Type::GenericLowered(enum_entry))
 }

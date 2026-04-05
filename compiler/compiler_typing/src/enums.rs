@@ -13,7 +13,7 @@ use crate::{RawTypeReference, SizedType, StructuredType, TypeParameterContainer,
 /// This struct guarantees that every contained entry is of type RawType::EnumEntry
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RawEnumTypeContainer {
-	self_ref: usize,
+	pub self_ref: usize,
 	pub type_params: TypeParameterContainer,
 	pub functions: IndexStorage<TypedFunction>,
 	entries: HashMap<HashedString, RawType>
