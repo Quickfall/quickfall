@@ -1,3 +1,0 @@
-func main() {
-	var result::value<staticstr, s32> haii = "e"
-}
