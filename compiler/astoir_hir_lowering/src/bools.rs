@@ -1,6 +1,6 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}};
-use compiler_typing::{storage::BOOLEAN_TYPE, tree::Type};
+use compiler_typing::{raw::RawType, storage::BOOLEAN_TYPE, tree::Type};
 use diagnostics::{DiagnosticResult};
 
 use crate::values::lower_ast_value;
@@ -30,12 +30,7 @@ pub fn lower_ast_operator_condition(context: &mut HIRContext, curr_ctx: &mut HIR
 pub fn lower_ast_condition(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	let hir_value = lower_ast_value(context, curr_ctx, node.clone())?;
 
-	let bool_type = match context.type_storage.types.get_index(BOOLEAN_TYPE) {
-		Some(v) => v,
-		None => panic!("bool type not found")
-	};
-
-	let val = hir_value.use_as(context, curr_ctx, Type::Generic(bool_type, vec![], vec![]), &*node, None)?;
+	let val = hir_value.use_as(context, curr_ctx, Type::Generic(RawType::Boolean, vec![], vec![]), &*node, None)?;
 
 	return Ok(Box::new(val));
 }
