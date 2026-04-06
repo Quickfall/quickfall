@@ -61,6 +61,30 @@ impl HIRBranchedContext {
 		return self.current_branch;
 	}
 
+	/// Introduces a new variable in the next branch era
+	pub fn introduce_variable_next_era(&mut self, hash: u64, t: Type, has_default: bool) -> Result<usize, ()> {
+		let identity = SelfHash { hash };
+
+		if self.hash_to_ind.contains_key(&identity) {
+			return Err(());
+		}
+
+		let mut var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch + 1, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0 };
+				
+		if has_default {
+			var.mutation_count += 1;
+		}
+
+		self.variables.push(var);
+
+		let ind: usize = self.current_element_index;
+		self.current_element_index += 1;
+
+		self.hash_to_ind.insert(identity, ind);
+
+		return Ok(ind);
+	} 
+
 	/// Introduces a new variable in the current branch era.
 	pub fn introduce_variable(&mut self, hash: u64, t: Type, has_default: bool) -> Result<usize, ()> {
 		let identity = SelfHash { hash };

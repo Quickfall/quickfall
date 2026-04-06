@@ -13,7 +13,7 @@ use crate::{RawTypeReference, SizedType, StructuredType, TypeParameterContainer,
 /// This struct guarantees that every contained entry is of type RawType::EnumEntry
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RawEnumTypeContainer {
-	self_ref: usize,
+	pub self_ref: usize,
 	pub type_params: TypeParameterContainer,
 	pub functions: IndexStorage<TypedFunction>,
 	entries: HashMap<HashedString, RawType>
@@ -25,7 +25,8 @@ impl RawEnumTypeContainer {
 	}
 
 	pub fn append_entry(&mut self, name: HashedString, fields: Vec<(u64, TypeReference)>) {
-		let entry_container = RawEnumEntryContainer::new(self.self_ref, fields);
+		let mut entry_container = RawEnumEntryContainer::new(self.self_ref, fields);
+		entry_container.child = self.entries.len();
 
 		self.entries.insert(name, RawType::EnumEntry(entry_container));
 	}
@@ -37,6 +38,10 @@ impl RawEnumTypeContainer {
 		}
 
 		return Err(make_cannot_find_type_pos(&format!("{}::{}", self.self_ref, name.val)).into())
+	}
+
+	pub fn get_hint_type(&self) -> RawType {
+		RawType::make_hint(self.entries.len())
 	}
 }
 
@@ -67,6 +72,7 @@ impl SizedType for RawEnumTypeContainer {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RawEnumEntryContainer {
 	pub parent: RawTypeReference,
+	pub child: usize,
 	pub fields: IndexStorage<TypeReference>
 }
 
@@ -78,7 +84,7 @@ impl RawEnumEntryContainer {
 			let _ = storage.append(field.0, field.1);
 		}
 
-		RawEnumEntryContainer { parent, fields: storage }
+		RawEnumEntryContainer { parent, fields: storage, child: 0 }
 	}
 }
 

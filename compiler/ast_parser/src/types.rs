@@ -8,7 +8,7 @@ use lexer::{token::{LexerToken, LexerTokenType}};
 
 #[derive(Clone, Debug)]
 pub enum ParsingASTTypeMember {
-	Generic(String, Vec<Box<ASTType>>, Vec<usize>),
+	Generic(String, Vec<Box<ASTType>>, Vec<usize>, Option<String>),
 	Pointer(bool),
 	Reference,
 	Array(usize)	
@@ -47,7 +47,7 @@ pub fn parse_type_type_parameters(tokens: &Vec<LexerToken>, ind: &mut usize) -> 
 
 		types.push(parsed_type);
 
-		if tokens[*ind].tok_type == LexerTokenType::AngelBracketClose {
+		if tokens[*ind].is_angel_bracket_close() {
 			break;
 		}
 
@@ -65,10 +65,26 @@ pub fn parse_type_generic(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagnost
 
 	*ind += 1;
 
+	let specifier;
+
+	if tokens[*ind].tok_type == LexerTokenType::Collon {
+		*ind += 1;
+
+		tokens[*ind].expects(LexerTokenType::Collon)?;
+		*ind += 1;
+		
+		specifier = Some(tokens[*ind].expects_keyword()?.0);
+		*ind += 1;
+	} else {
+		specifier = None;
+	}
+
+	println!("{:#?}", specifier.clone());
+
 	let sizes = parse_type_size_specifiers(tokens, ind)?;
 	let types = parse_type_type_parameters(tokens, ind)?;
 
-	return Ok(ParsingASTTypeMember::Generic(type_name.0, types, sizes))
+	return Ok(ParsingASTTypeMember::Generic(type_name.0, types, sizes, specifier))
 }
 
 pub fn parse_type_member(tokens: &Vec<LexerToken>, ind: &mut usize, took_generic: bool) -> DiagnosticResult<Option<ParsingASTTypeMember>> {
@@ -147,7 +163,7 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult
 		let parsed_member = parse_type_member(tokens, ind, took_generic)?;
 
 		if let Some(value) = parsed_member {
-			if let ParsingASTTypeMember::Generic(_, _, _) = &value {
+			if let ParsingASTTypeMember::Generic(_, _, _, _) = &value {
 				took_generic = true;
 			}
 
@@ -161,7 +177,7 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult
 
 	for i in 0..members.len() {
 		let converted_member = match members[i].clone() {
-			ParsingASTTypeMember::Generic(t, types, sizes) => ASTType::Generic(t, types, sizes),
+			ParsingASTTypeMember::Generic(t, types, sizes, specifier) => ASTType::Generic(t, types, sizes, specifier),
 			ParsingASTTypeMember::Pointer(array) => ASTType::Pointer(array, child.unwrap()),
 			ParsingASTTypeMember::Reference => ASTType::Reference(child.unwrap()),
 			ParsingASTTypeMember::Array(size) => ASTType::Array(size, child.unwrap())

@@ -452,3 +452,9 @@ pub fn build_phi(ctx: &mut MIRContext, choices: Vec<(MIRBlockReference, BaseMIRV
 
 	return Ok(res);
 }
+
+pub fn build_ir_cast(ctx: &mut MIRContext, val: BaseMIRValue, to: Type) -> DiagnosticResult<BaseMIRValue> {
+	let res = ctx.append_inst(MIRInstruction::IRCast { val, to }).get()?;
+
+	return Ok(res);
+}

@@ -2,7 +2,7 @@
 
 use std::fmt::Display;
 
-use diagnostics::{DiagnosticResult, unsure_panic};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_req_type_kind, unsure_panic};
 
 use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
 
@@ -10,10 +10,10 @@ use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::Raw
 /// The node-based typing system of Quickfall. Allows for very specific types.
 pub enum Type {
 	/// A generic type node. Represents a classic type.
-	/// 0: The raw type index
+	/// 0: The raw type
 	/// 1: The type parameters
 	/// 2: The size specifiers
-	Generic(RawTypeReference, Vec<Box<Type>>, Vec<usize>), // Potential lowering to base-sized
+	Generic(RawType, Vec<Box<Type>>, Vec<usize>), // Potential lowering to base-sized
 
 	/// A generic type node but lowered. Represents a concrete type.
 	GenericLowered(RawType),
@@ -110,6 +110,13 @@ impl Type {
 			_ => false
 		}
 	}
+	
+	pub fn as_generic_lowered_safe<K: DiagnosticSpanOrigin>(&self, origin: &K) -> DiagnosticResult<RawType> {
+		match self {
+			Type::GenericLowered(a) => return Ok(a.clone()),
+			_ => return Err(make_req_type_kind(origin, &"a generic".to_string()).into())
+		}
+	}
 
 	pub fn as_generic_lowered(&self) -> RawType {
 		match self {
@@ -122,7 +129,7 @@ impl Type {
 		match self {
 			Self::GenericLowered(a) => return a.clone(),
 			Self::Generic(a, _, _) => {
-				return storage.types.vals[*a].clone();
+				return a.clone();
 			},
 
 			_ => panic!("Cannot obtain generic {:#?}", self)
@@ -158,7 +165,7 @@ impl Type {
 
 	pub fn get_generic(&self, storage: &TypeStorage) -> RawType {
 		if let Type::Generic(raw, _, _) = self {
-			return storage.types.get_ind(*raw).clone();
+			return raw.clone();
 		};
 
 		if let Type::GenericLowered(raw) = self {
@@ -166,6 +173,17 @@ impl Type {
 		}
 
 		return self.get_inner_type().get_generic(storage);
+	}
+
+	/// Cheaply lowers the generic just to avoid a display crash
+	pub fn faulty_lowering_generic(&self, storage: &TypeStorage) -> Type {
+		match self {
+			Type::Array(a, b) => Type::Array(*a, Box::new(b.faulty_lowering_generic(storage))),
+			Type::Pointer(a, b) => Type::Pointer(*a, Box::new(b.faulty_lowering_generic(storage))),
+			Type::Reference(t) => Type::Reference(Box::new(t.faulty_lowering_generic(storage))),
+			Type::Generic(t, _, _) => Type::GenericLowered(t.clone()),
+			Type::GenericLowered(_) => self.clone()
+		}
 	}
 
 	pub fn get_function(&self, storage: &TypeStorage, hash: u64) -> DiagnosticResult<(usize, TypedFunction)> {
@@ -244,7 +262,7 @@ impl SizedType for Type {
 			Self::Array(size, inner) => inner.clone().get_size(t, compacted_size, storage) * *size,
 			Self::Pointer(_, _) => get_pointer_size(),
 			Self::Reference(_) => get_pointer_size(),
-			Self::Generic(e, _, _) => storage.types.vals[*e].get_size(t, compacted_size, storage), 
+			Self::Generic(e, _, _) => e.get_size(t, compacted_size, storage), 
 			Self::GenericLowered(e) => e.get_size(t, compacted_size, storage)
 		}
 	}

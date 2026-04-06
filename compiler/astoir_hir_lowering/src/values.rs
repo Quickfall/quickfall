@@ -3,7 +3,7 @@ use astoir_hir::{ctx::{HIRBranchedContext, HIRContext, get_variable}, nodes::{HI
 use compiler_typing::tree::Type;
 use diagnostics::{DiagnosticResult, builders::{make_cannot_find_func, make_invalid_pointing, make_struct_missing_field, make_struct_missing_func}};
 
-use crate::{arrays::lower_ast_array_index_access, bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, func::lower_ast_function_call, literals::lower_ast_literal, math::lower_ast_math_operation, structs::lower_ast_struct_initializer, var::{lower_ast_variable_reference}};
+use crate::{arrays::lower_ast_array_index_access, bools::{lower_ast_boolean_condition, lower_ast_operator_condition}, func::lower_ast_function_call, literals::lower_ast_literal, math::lower_ast_math_operation, structs::lower_ast_struct_initializer, unwraps::{lower_ast_condition_unwrap, lower_ast_unwrap_value}, var::lower_ast_variable_reference};
 
 pub(crate) fn lower_ast_lru_base(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>, curr_steps: &mut Vec<StructLRUStep>, curr_type: &mut Option<Type>) -> DiagnosticResult<bool> {
 	match node.clone().kind {
@@ -168,6 +168,14 @@ pub fn lower_ast_value(context: &mut HIRContext, curr_ctx: &mut HIRBranchedConte
 
 		ASTTreeNodeKind::ReferenceGrab(_) => {
 			return lower_ast_reference(context, curr_ctx, node)
+		},
+
+		ASTTreeNodeKind::UnwrapCondition { .. } => {
+			return lower_ast_condition_unwrap(context, curr_ctx, node)
+		},
+
+		ASTTreeNodeKind::UnwrapValue { .. } => {
+			return lower_ast_unwrap_value(context, curr_ctx, node)
 		},
 
 		_ => panic!("Invalid AST value node")

@@ -2,17 +2,26 @@ use ast::types::ASTType;
 use astoir_hir::ctx::HIRContext;
 use compiler_typing::{raw::RawType, references::TypeReference, structs::RawStructTypeContainer, tree::Type};
 use compiler_utils::hash::HashedString;
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_cannot_find_type, make_diff_size_specifiers}};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_cannot_find_type, make_diff_size_specifiers, make_req_type_kind}};
 
 pub fn lower_ast_type<K: DiagnosticSpanOrigin>(context: &mut HIRContext, t: ASTType, origin: &K) -> DiagnosticResult<Type> {
 	return match t {
-		ASTType::Generic(type_id, type_params, size_params) => {
+		ASTType::Generic(type_id, type_params, size_params, specifier) => {
 			let hash = HashedString::new(type_id).hash;
 
-			let t = match context.type_storage.get_type(hash) {
+			let mut t = match context.type_storage.get_type(hash) {
 				Ok(v) => v,
 				Err(_) => return Err(make_cannot_find_type(origin, &hash).into())
 			};
+
+			if specifier.is_some() {
+				let container = match t {
+					RawType::Enum(v) => v,
+					_ => return Err(make_req_type_kind(origin, &"enum".to_string()).into())
+				};
+
+				t = container.get_entry(HashedString::new(specifier.unwrap()))?
+			}
 
 			if t.get_type_params_count(&context.type_storage) != type_params.len() {
 				return Err(make_diff_size_specifiers(origin, &type_params.len(), &t.get_type_params_count(&context.type_storage)).into())
@@ -24,20 +33,20 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(context: &mut HIRContext, t: ASTT
 				t_params.push(Box::new(lower_ast_type(context, *type_param, origin)?));
 			}
 
-			let res = Type::Generic(context.type_storage.types.hash_to_ind[&hash], t_params, size_params);
+			let res = Type::Generic(t.clone(), t_params, size_params);
 			
 			if t.is_sized() {
 				let lower = lower_sized_base_type(context, &res, origin)?;
 
 				if context.type_storage.type_to_ind.contains_key(&lower) {
-					return Ok(Type::Generic(context.type_storage.type_to_ind[&lower], vec![], vec![]));
+					return Ok(Type::Generic(t, vec![], vec![]));
 				} else {
 					let ind = match context.type_storage.append_with_hash(hash, lower) {
 						Ok(v) => v,
 						Err(_) => panic!("Generic lowering type cannot be found on type_to_hash")
 					};
 
-					return Ok(Type::Generic(ind, vec![], vec![]))
+					return Ok(Type::Generic(context.type_storage.types.vals[ind].clone(), vec![], vec![]))
 				}
 			}
 
@@ -51,7 +60,7 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(context: &mut HIRContext, t: ASTT
 }
 
 pub fn lower_ast_type_struct<K: DiagnosticSpanOrigin>(context: &mut HIRContext, t: ASTType, struct_container: &RawStructTypeContainer, origin: &K) -> DiagnosticResult<TypeReference> {
-	if let ASTType::Generic(id, _, _) = &t {
+	if let ASTType::Generic(id, _, _, _) = &t {
 		let key = HashedString::new(id.clone());
 
 		if struct_container.type_params.contains_key(&key) {

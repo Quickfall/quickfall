@@ -2,7 +2,7 @@ use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_static_array_const, build_static_array_one_const}, vals::base::BaseMIRValue};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos, unsure_panic};
 
-use crate::{MIRLoweringContext, arrays::lower_hir_aray_index_access, funcs::lower_hir_function_call, math::lower_hir_math_operation, values::{booleans::{lower_hir_boolean_operator, lowering_hir_boolean_condition}, consts::lower_hir_literal, structs::lower_hir_struct_init}, vars::{lower_hir_variable_reference, lower_hir_variable_reference_value}};
+use crate::{MIRLoweringContext, arrays::lower_hir_aray_index_access, funcs::lower_hir_function_call, math::lower_hir_math_operation, type_tools::{lower_hir_unwrap_cond, lower_hir_unwrap_value}, values::{booleans::{lower_hir_boolean_operator, lowering_hir_boolean_condition}, consts::lower_hir_literal, structs::lower_hir_struct_init}, vars::{lower_hir_variable_reference, lower_hir_variable_reference_value}};
 
 pub mod consts;
 pub mod booleans;
@@ -21,6 +21,8 @@ pub fn lower_hir_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut M
 		HIRNodeKind::MathOperation { .. } => return Ok(lower_hir_math_operation(block, node, ctx)?),
 		HIRNodeKind::ArrayIndexAccess { .. } => return Ok(lower_hir_aray_index_access(block, node, ctx)?),
 		HIRNodeKind::StructVariableInitializerValue { .. } => return Ok(lower_hir_struct_init(block, node, ctx)?.into()),
+		HIRNodeKind::UnwrapValue { .. } => lower_hir_unwrap_value(block, node, ctx),
+		HIRNodeKind::UnwrapCondition { .. } => lower_hir_unwrap_cond(block, node, ctx),
 		HIRNodeKind::ArrayVariableInitializerValue { .. } | HIRNodeKind::ArrayVariableInitializerValueSameValue { .. } => lower_array_init(block, node, ctx),
 		HIRNodeKind::FunctionCall { .. } => {
 			let res = lower_hir_function_call(block, node, ctx)?;

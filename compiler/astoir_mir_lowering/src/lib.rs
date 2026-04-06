@@ -13,10 +13,13 @@ pub mod funcs;
 pub mod body;
 pub mod control;
 pub mod arrays;
+pub mod type_tools;
+pub mod introductions;
 
 pub struct MIRLoweringContext {
 	pub hir_ctx: HIRContext,
-	pub mir_ctx: MIRContext
+	pub mir_ctx: MIRContext,
+	pub block_introduction_var_queue: Vec<Box<HIRNode>>
 }
 
 pub fn lower_hir_top_level(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
@@ -34,7 +37,7 @@ pub fn lower_hir_top_level(node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> 
 }
 
 pub fn lower_hir(ctx: HIRContext) -> DiagnosticResult<MIRContext> {	 
-	let mut lowering_ctx = MIRLoweringContext { hir_ctx: ctx, mir_ctx: MIRContext::new() };
+	let mut lowering_ctx = MIRLoweringContext { hir_ctx: ctx, mir_ctx: MIRContext::new(), block_introduction_var_queue: vec![] };
 
 	let declarations = lowering_ctx.hir_ctx.function_declarations.clone();
 
@@ -66,7 +69,7 @@ pub fn lower_hir_generic(ctx: &MIRLoweringContext, t: &Type, generic: &RawType) 
 pub fn lower_hir_type(ctx: &MIRLoweringContext, t: Type) -> DiagnosticResult<Type> {
 	match &t {
 		Type::Generic(a, _, _) => {
-			return lower_hir_generic(ctx, &t, &ctx.hir_ctx.type_storage.types.vals[*a])
+			return lower_hir_generic(ctx, &t, a)
 		},
 
 		Type::Array(a, b) => return Ok(Type::Array(*a, Box::new(lower_hir_type(ctx, *b.clone())?))), 

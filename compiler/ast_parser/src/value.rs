@@ -4,7 +4,7 @@ use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use diagnostics::{DiagnosticResult, builders::{make_expected_simple_error, make_unexpected_simple_error}};
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{arrays::parse_array_access, functions::parse_function_call, structs::val::parse_struct_initialize};
+use crate::{arrays::parse_array_access, functions::parse_function_call, structs::val::parse_struct_initialize, unwraps::{parse_unwrap_condition, parse_unwrap_value}};
 use crate::literals::{parse_integer_literal, parse_string_literal};
 use crate::math::parse_math_operation;
 
@@ -137,6 +137,13 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 	}
 }
 
+pub fn parse_ast_condition_if_statement_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
+	match &tokens[*ind].tok_type {
+		LexerTokenType::Unwrap | LexerTokenType::UnwrapUnsafe => parse_unwrap_condition(tokens, ind),
+		_ => parse_ast_value(tokens, ind)
+	}
+}
+
 /// Parses an AST node that can and WILL be intrepreted as a value
 /// 
 /// # Parsing Layout 
@@ -204,7 +211,9 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticR
 			let chain = parse_ast_value_dotacess(tokens, ind, n);
 
 			return parse_ast_value_post_l(tokens, ind, chain, false);
-		}
+		},
+
+		LexerTokenType::Unwrap | LexerTokenType::UnwrapUnsafe => parse_unwrap_value(tokens, ind),
 
 		_=> return Err(make_unexpected_simple_error(&tokens[*ind], &tokens[*ind].tok_type).into())
 	}	
