@@ -175,6 +175,17 @@ impl Type {
 		return self.get_inner_type().get_generic(storage);
 	}
 
+	/// Cheaply lowers the generic just to avoid a display crash
+	pub fn faulty_lowering_generic(&self, storage: &TypeStorage) -> Type {
+		match self {
+			Type::Array(a, b) => Type::Array(*a, Box::new(b.faulty_lowering_generic(storage))),
+			Type::Pointer(a, b) => Type::Pointer(*a, Box::new(b.faulty_lowering_generic(storage))),
+			Type::Reference(t) => Type::Reference(Box::new(t.faulty_lowering_generic(storage))),
+			Type::Generic(id, _, _) => Type::GenericLowered(storage.types.vals[*id].clone()),
+			Type::GenericLowered(_) => self.clone()
+		}
+	}
+
 	pub fn get_function(&self, storage: &TypeStorage, hash: u64) -> DiagnosticResult<(usize, TypedFunction)> {
 		return match self.get_generic(storage) {
 			RawType::Struct(_, container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),

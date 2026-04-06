@@ -26,7 +26,7 @@ pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout:
 
 	let mut members: Vec<Box<ASTTreeNode>> = Vec::new();	
 
-	let temp_type = ASTType::Generic(type_name.0.clone(), vec![], vec![]);
+	let temp_type = ASTType::Generic(type_name.0.clone(), vec![], vec![], None);
 
 	while tokens[*ind].tok_type != LexerTokenType::BracketClose {
 		if tokens[*ind].tok_type == LexerTokenType::Function {

@@ -137,6 +137,7 @@ pub fn lexer_parse_file(file_path: &String) -> DiagnosticResult<Vec<LexerToken>>
             '<' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketOpen)),
             '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketClose)),
 			'*' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Asterisk)),
+			':' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Collon)),
 			_ => continue
         }
 

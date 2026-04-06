@@ -18,7 +18,8 @@ pub enum ASTType {
 	/// 0: The raw type name
 	/// 1: The type parameters
 	/// 2: The size specifiers
-	Generic(String, Vec<Box<ASTType>>, Vec<usize>), // Potential lowering to base-sized
+	/// 3: enum specifier
+	Generic(String, Vec<Box<ASTType>>, Vec<usize>, Option<String>), // Potential lowering to base-sized
 
 	/// A pointer type node. Represents a pointer version
 	/// 0: Is the pointer a poiner of arrays
@@ -36,7 +37,7 @@ pub enum ASTType {
 impl ASTType {
 	pub fn get_generic_name(&self) -> String {
 		match self {
-			Self::Generic(s, _, _) => s.clone(),
+			Self::Generic(s, _, _, _) => s.clone(),
 			Self::Pointer(_, inner) => inner.get_generic_name(),
 			Self::Reference(inner) => inner.get_generic_name(),
  			Self::Array(_, inner) => inner.get_generic_name()

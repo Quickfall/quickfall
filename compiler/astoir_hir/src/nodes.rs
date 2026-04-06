@@ -175,10 +175,10 @@ impl HIRNode {
 		}
 
 		if let Some(v) = var_origin {
-			return Err(make_diff_type(origin, &"unnamed".to_string(), &t, &self.get_node_type(context, curr_ctx).unwrap(), v).into())
+			return Err(make_diff_type(origin, &"unnamed".to_string(), &t.faulty_lowering_generic(&context.type_storage), &self.get_node_type(context, curr_ctx).unwrap().faulty_lowering_generic(&context.type_storage), v).into())
 		}
 
-		return Err(make_diff_type_val(origin, &t, &self.get_node_type(context, curr_ctx).unwrap()).into())
+		return Err(make_diff_type_val(origin, &t.faulty_lowering_generic(&context.type_storage), &self.get_node_type(context, curr_ctx).unwrap().faulty_lowering_generic(&context.type_storage)).into())
 	}	
 
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<Type> {

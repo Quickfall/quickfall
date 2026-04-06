@@ -59,6 +59,7 @@ pub enum LexerTokenType {
     Comma,
     Dot,
 	Ampersand,
+	Collon,
 
     BracketOpen,
     BracketClose,
@@ -106,6 +107,21 @@ impl LexerToken {
 		}
 
 		return Ok(());
+	}
+
+	pub fn is_angel_bracket_close(&self) -> bool {
+		match &self.tok_type {
+			LexerTokenType::AngelBracketClose => true,
+			LexerTokenType::ComparingOperator(op) => {
+				if op == &ComparingOperator::Higher {
+					return true
+				}
+
+				return false
+			},
+
+			_ => return false
+		}
 	}
 
 	pub fn expects_int_lit(&self) -> DiagnosticResult<(i128, u64)> {
@@ -173,6 +189,7 @@ impl Display for LexerTokenType {
 			Self::ArrayClose => "]",
 			Self::ArrayOpen => "[",
 			Self::Asterisk => "*",
+			Self::Collon => ":",
 			Self::BracketClose => "}",
 			Self::BracketOpen => "{",
 			Self::Comma => ",",
