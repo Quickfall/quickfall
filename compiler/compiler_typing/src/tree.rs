@@ -10,10 +10,10 @@ use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::Raw
 /// The node-based typing system of Quickfall. Allows for very specific types.
 pub enum Type {
 	/// A generic type node. Represents a classic type.
-	/// 0: The raw type index
+	/// 0: The raw type
 	/// 1: The type parameters
 	/// 2: The size specifiers
-	Generic(RawTypeReference, Vec<Box<Type>>, Vec<usize>), // Potential lowering to base-sized
+	Generic(RawType, Vec<Box<Type>>, Vec<usize>), // Potential lowering to base-sized
 
 	/// A generic type node but lowered. Represents a concrete type.
 	GenericLowered(RawType),
@@ -129,7 +129,7 @@ impl Type {
 		match self {
 			Self::GenericLowered(a) => return a.clone(),
 			Self::Generic(a, _, _) => {
-				return storage.types.vals[*a].clone();
+				return a.clone();
 			},
 
 			_ => panic!("Cannot obtain generic {:#?}", self)
@@ -165,7 +165,7 @@ impl Type {
 
 	pub fn get_generic(&self, storage: &TypeStorage) -> RawType {
 		if let Type::Generic(raw, _, _) = self {
-			return storage.types.get_ind(*raw).clone();
+			return raw.clone();
 		};
 
 		if let Type::GenericLowered(raw) = self {
@@ -181,7 +181,7 @@ impl Type {
 			Type::Array(a, b) => Type::Array(*a, Box::new(b.faulty_lowering_generic(storage))),
 			Type::Pointer(a, b) => Type::Pointer(*a, Box::new(b.faulty_lowering_generic(storage))),
 			Type::Reference(t) => Type::Reference(Box::new(t.faulty_lowering_generic(storage))),
-			Type::Generic(id, _, _) => Type::GenericLowered(storage.types.vals[*id].clone()),
+			Type::Generic(t, _, _) => Type::GenericLowered(t.clone()),
 			Type::GenericLowered(_) => self.clone()
 		}
 	}
@@ -262,7 +262,7 @@ impl SizedType for Type {
 			Self::Array(size, inner) => inner.clone().get_size(t, compacted_size, storage) * *size,
 			Self::Pointer(_, _) => get_pointer_size(),
 			Self::Reference(_) => get_pointer_size(),
-			Self::Generic(e, _, _) => storage.types.vals[*e].get_size(t, compacted_size, storage), 
+			Self::Generic(e, _, _) => e.get_size(t, compacted_size, storage), 
 			Self::GenericLowered(e) => e.get_size(t, compacted_size, storage)
 		}
 	}

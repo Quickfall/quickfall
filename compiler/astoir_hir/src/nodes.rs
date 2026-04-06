@@ -1,6 +1,6 @@
 //! The nodes inside of the AstoIR HIR. 
 
-use compiler_typing::{references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
+use compiler_typing::{raw::RawType, references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
 use compiler_utils::Position;
 use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}, unsure_panic};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
@@ -200,12 +200,7 @@ impl HIRNode {
 			}
 
 			HIRNodeKind::UnwrapCondition { .. } => {
-				let t = match context.type_storage.types.get_index(BOOLEAN_TYPE) {
-					Some(v) => v,
-					None => return None
-				};
-
-				return Some(Type::Generic(t, vec![], vec![]))
+				return Some(Type::Generic(RawType::Boolean, vec![], vec![]))
 			},
 
 			HIRNodeKind::UnwrapValue { original: _, new_type, unsafe_unwrap: _ } => {
@@ -228,7 +223,7 @@ impl HIRNode {
 					None => return None
 				};
 
-				return Some(Type::Generic(ind, vec![], vec![]))
+				return Some(Type::Generic(RawType::Boolean, vec![], vec![]))
 			},
 
 			HIRNodeKind::ArrayVariableInitializerValue { vals } => return Some(Type::Array(vals.len(), Box::new(vals[0].get_node_type(context, curr_ctx).unwrap()))),
@@ -243,12 +238,7 @@ impl HIRNode {
 			},
 
 			HIRNodeKind::BooleanOperator { .. } | HIRNodeKind::BooleanCondition { .. } => {
-				let t = match context.type_storage.types.get_index(BOOLEAN_TYPE) {
-					Some(v) => v,
-					None => return None
-				};
-
-				return Some(Type::Generic(t, vec![], vec![]))
+				return Some(Type::Generic(RawType::Boolean, vec![], vec![]))
 			},
 
 			HIRNodeKind::StructVariableInitializerValue { t, fields: _ } => {

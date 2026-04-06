@@ -34,7 +34,7 @@ impl Type {
 					return false;
 				}
 
-				return storage.types.vals[*raw_type].can_transmute(sizes.clone(), &storage.types.vals[*raw_type2], sizes2.clone())
+				return raw_type.can_transmute(sizes.clone(), raw_type2, sizes2.clone())
 			},
 
 			(Self::GenericLowered(base), Self::Generic(rawtype, type_params, sizes)) => {
@@ -42,7 +42,7 @@ impl Type {
 					return false;
 				}
 
-				return base.can_transmute(vec![], &storage.types.vals[*rawtype], sizes.clone())
+				return base.can_transmute(vec![], rawtype, sizes.clone())
 			},
 
 			(Self::Generic(rawtype, type_params, sizes), Self::GenericLowered(base)) => {
@@ -50,7 +50,7 @@ impl Type {
 					return false;
 				}
 
-				return base.can_transmute(vec![], &storage.types.vals[*rawtype], sizes.clone())
+				return base.can_transmute(vec![], rawtype, sizes.clone())
 			}
 
 			(Self::GenericLowered(base), Self::GenericLowered(base2)) => {

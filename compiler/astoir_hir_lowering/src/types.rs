@@ -33,20 +33,20 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(context: &mut HIRContext, t: ASTT
 				t_params.push(Box::new(lower_ast_type(context, *type_param, origin)?));
 			}
 
-			let res = Type::Generic(context.type_storage.types.hash_to_ind[&hash], t_params, size_params);
+			let res = Type::Generic(t.clone(), t_params, size_params);
 			
 			if t.is_sized() {
 				let lower = lower_sized_base_type(context, &res, origin)?;
 
 				if context.type_storage.type_to_ind.contains_key(&lower) {
-					return Ok(Type::Generic(context.type_storage.type_to_ind[&lower], vec![], vec![]));
+					return Ok(Type::Generic(t, vec![], vec![]));
 				} else {
 					let ind = match context.type_storage.append_with_hash(hash, lower) {
 						Ok(v) => v,
 						Err(_) => panic!("Generic lowering type cannot be found on type_to_hash")
 					};
 
-					return Ok(Type::Generic(ind, vec![], vec![]))
+					return Ok(Type::Generic(context.type_storage.types.vals[ind].clone(), vec![], vec![]))
 				}
 			}
 

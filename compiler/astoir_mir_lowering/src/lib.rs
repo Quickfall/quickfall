@@ -69,7 +69,7 @@ pub fn lower_hir_generic(ctx: &MIRLoweringContext, t: &Type, generic: &RawType) 
 pub fn lower_hir_type(ctx: &MIRLoweringContext, t: Type) -> DiagnosticResult<Type> {
 	match &t {
 		Type::Generic(a, _, _) => {
-			return lower_hir_generic(ctx, &t, &ctx.hir_ctx.type_storage.types.vals[*a])
+			return lower_hir_generic(ctx, &t, a)
 		},
 
 		Type::Array(a, b) => return Ok(Type::Array(*a, Box::new(lower_hir_type(ctx, *b.clone())?))), 
