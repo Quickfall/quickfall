@@ -18,7 +18,12 @@ pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> Dia
 		let field_name = tokens[*ind].expects_keyword()?;
 		*ind += 1;
 
+		tokens[*ind].expects(LexerTokenType::Collon)?;
+		*ind += 1;
+
+
 		let value = parse_ast_value(tokens, ind)?;
+
 
 		map.insert(SelfHash { hash: HashedString::new(field_name.0).hash }, value);
 

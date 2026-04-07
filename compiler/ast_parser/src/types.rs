@@ -79,8 +79,6 @@ pub fn parse_type_generic(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagnost
 		specifier = None;
 	}
 
-	println!("{:#?}", specifier.clone());
-
 	let sizes = parse_type_size_specifiers(tokens, ind)?;
 	let types = parse_type_type_parameters(tokens, ind)?;
 

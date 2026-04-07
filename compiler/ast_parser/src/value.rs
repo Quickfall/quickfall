@@ -177,7 +177,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticR
 			return Err(make_expected_simple_error(&tokens[*ind], &"function call or variable access".to_string(),&ast).into());
 		},
 
-		LexerTokenType::BracketOpen | LexerTokenType::ArrayOpen => {
+		LexerTokenType::ArrayOpen => {
 			return parse_ast_array_init(tokens, ind);
 		}
 

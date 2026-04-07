@@ -10,7 +10,7 @@ use crate::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}
 pub fn resolve_to_type<K: DiagnosticSpanOrigin>(node: Box<HIRNode>, destination: Type, context: &HIRContext, curr_ctx: &HIRBranchedContext, origin: &K) -> DiagnosticResult<Box<HIRNode>> {
 	match node.kind {
 		HIRNodeKind::StructInitializer { fields } => {
-			let generic = destination.as_generic_lowered_safe(origin)?;
+			let generic = destination.as_generic_safe(origin)?;
 			let mut new_fields = vec![];
 
 			if !generic.is_field_based() {
