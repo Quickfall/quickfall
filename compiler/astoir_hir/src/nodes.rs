@@ -71,7 +71,9 @@ pub enum HIRNodeKind {
 	ArrayIndexAccess { val: Box<HIRNode>, index: Box<HIRNode> },
 	ArrayIndexModify { array: Box<HIRNode>, index: Box<HIRNode>, new_val : Box<HIRNode> },
 
-	StructVariableInitializerValue { t: Type, fields: Vec<Box<HIRNode>> },
+	/// Before transmutation
+	StructInitializer { fields: Vec<Box<HIRNode>> },
+	StructInitializerTyped { t: Type, fields: Vec<Box<HIRNode>> },
 
 	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
 	
@@ -181,6 +183,14 @@ impl HIRNode {
 		return Err(make_diff_type_val(origin, &t.faulty_lowering_generic(&context.type_storage), &self.get_node_type(context, curr_ctx).unwrap().faulty_lowering_generic(&context.type_storage)).into())
 	}	
 
+	pub fn is_intederminately_typed(&self) -> bool {
+		match self.kind {
+			HIRNodeKind::StructInitializer { .. } => true,
+
+			_ => false
+		}
+	}
+
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<Type> {
 		match &self.kind {
 			HIRNodeKind::VariableReference { index, is_static } => {
@@ -241,9 +251,7 @@ impl HIRNode {
 				return Some(Type::Generic(RawType::Boolean, vec![], vec![]))
 			},
 
-			HIRNodeKind::StructVariableInitializerValue { t, fields: _ } => {
-				return Some(t.clone())
-			}
+			HIRNodeKind::StructInitializerTyped { t, fields: _ } => Some(t.clone()),
 
 			HIRNodeKind::FunctionCall { func_name, arguments: _ } => {
 				let f = context.functions.vals[*func_name].0.clone();

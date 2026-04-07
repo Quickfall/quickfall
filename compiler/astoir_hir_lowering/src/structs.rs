@@ -89,7 +89,7 @@ pub fn lower_ast_struct_declaration(context: &mut HIRContext, node: Box<ASTTreeN
 }
 
 pub fn lower_ast_struct_initializer(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
-	if let ASTTreeNodeKind::StructVariableInitializerValue { struct_type, map } = node.kind.clone() {
+	if let ASTTreeNodeKind::StructInitializer { map } = node.kind.clone() {
 		let raw = match context.type_storage.get_type(HashedString::new(struct_type.get_generic_name()).hash) {
 			Ok(v) => Type::GenericLowered(v),
 			Err(_) => return Err(make_cannot_find_type(&*node, &struct_type.get_generic_name()).into())
