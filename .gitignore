@@ -3,3 +3,7 @@ target/
 
 out
 out.*
+
+*.qf
+
+!examples/**.qf

@@ -1,7 +1,9 @@
 //! The nodes inside of the AstoIR HIR. 
 
+use std::collections::HashMap;
+
 use compiler_typing::{raw::RawType, references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
-use compiler_utils::Position;
+use compiler_utils::{Position, hash::SelfHash};
 use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}, unsure_panic};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
@@ -72,7 +74,7 @@ pub enum HIRNodeKind {
 	ArrayIndexModify { array: Box<HIRNode>, index: Box<HIRNode>, new_val : Box<HIRNode> },
 
 	/// Before transmutation
-	StructInitializer { fields: Vec<Box<HIRNode>> },
+	StructInitializer { fields: HashMap<SelfHash, Box<HIRNode>> },
 	StructInitializerTyped { t: Type, fields: Vec<Box<HIRNode>> },
 
 	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
@@ -134,6 +136,16 @@ impl HIRNode {
 	}
 	
 	pub fn use_as<K: DiagnosticSpanOrigin>(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type, origin: &K, var_origin: Option<&K>) -> Result<HIRNode, ()> {
+		if self.is_intederminately_typed() {
+			match &self.kind {
+				HIRNodeKind::StructInitializer { fields } => {
+					
+				},	
+
+				_ => unsure_panic!("is_intederminately_typed returned true but conversion implementation isn't implemented for said HIRNode")
+			}
+		}
+
 		let self_type = match self.get_node_type(context, curr_ctx) {
 			Some(v) => v,
 			_ => panic!("Tried using a typeless node in use_as: {:#?}", self)
