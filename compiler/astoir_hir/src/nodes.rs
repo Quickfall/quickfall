@@ -7,7 +7,7 @@ use compiler_utils::{Position, hash::SelfHash};
 use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}, unsure_panic};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
-use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
+use crate::{ctx::{HIRBranchedContext, HIRContext}, resolve::resolve_to_type, structs::{HIRIfBranch, StructLRUStep}};
 
 #[derive(Debug, Clone)]
 pub struct HIRNode {	
@@ -137,13 +137,7 @@ impl HIRNode {
 	
 	pub fn use_as<K: DiagnosticSpanOrigin>(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type, origin: &K, var_origin: Option<&K>) -> Result<HIRNode, ()> {
 		if self.is_intederminately_typed() {
-			match &self.kind {
-				HIRNodeKind::StructInitializer { fields } => {
-					
-				},	
-
-				_ => unsure_panic!("is_intederminately_typed returned true but conversion implementation isn't implemented for said HIRNode")
-			}
+			return Ok(*resolve_to_type(Box::new(self.clone()), t, context, curr_ctx, origin)?);
 		}
 
 		let self_type = match self.get_node_type(context, curr_ctx) {
