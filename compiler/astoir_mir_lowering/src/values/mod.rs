@@ -20,7 +20,7 @@ pub fn lower_hir_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut M
 		HIRNodeKind::BooleanOperator { .. } => return Ok(lower_hir_boolean_operator(block, node, ctx)?.into()),
 		HIRNodeKind::MathOperation { .. } => return Ok(lower_hir_math_operation(block, node, ctx)?),
 		HIRNodeKind::ArrayIndexAccess { .. } => return Ok(lower_hir_aray_index_access(block, node, ctx)?),
-		HIRNodeKind::StructVariableInitializerValue { .. } => return Ok(lower_hir_struct_init(block, node, ctx)?.into()),
+		HIRNodeKind::StructInitializer { .. } => return Ok(lower_hir_struct_init(block, node, ctx)?.into()),
 		HIRNodeKind::UnwrapValue { .. } => lower_hir_unwrap_value(block, node, ctx),
 		HIRNodeKind::UnwrapCondition { .. } => lower_hir_unwrap_cond(block, node, ctx),
 		HIRNodeKind::ArrayVariableInitializerValue { .. } | HIRNodeKind::ArrayVariableInitializerValueSameValue { .. } => lower_array_init(block, node, ctx),

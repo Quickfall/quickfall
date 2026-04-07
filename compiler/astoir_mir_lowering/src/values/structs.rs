@@ -5,7 +5,7 @@ use diagnostics::DiagnosticResult;
 use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
 
 pub fn lower_hir_struct_init(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<MIRStructValue> {
-	if let HIRNodeKind::StructVariableInitializerValue { t, fields } = node.kind {
+	if let HIRNodeKind::StructInitializerTyped { t, fields } = node.kind {
 		let mut values = vec![];
 	
 		for field in fields {
