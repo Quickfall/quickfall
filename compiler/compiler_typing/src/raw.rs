@@ -46,6 +46,15 @@ impl RawType {
 		}
 	}
 	
+	pub fn is_field_based(&self) -> bool {
+		match self {
+			RawType::Struct(_, _) => true,
+			RawType::EnumEntry(_) => true,
+
+			_ => false
+		}
+	}
+
 	pub fn is_signed(&self) -> bool {
 		match self {
 			Self::Integer(_, signed) => *signed,
