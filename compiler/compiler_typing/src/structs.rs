@@ -79,11 +79,11 @@ impl StructuredType for RawStructTypeContainer {
 	}
 
 	fn get_fields(&self, _storage: &TypeStorage) -> Vec<u64> {
-		return self.fields.hash_to_ind.keys().cloned().collect();
+		return self.fields.entry_keys.clone();
 	}
 
 	fn get_functions(&self, _storage: &TypeStorage) -> Vec<u64> {
-		return self.functions.hash_to_ind.keys().cloned().collect();
+		return self.functions.entry_keys.clone();
 	}
 
 	fn get_function_hash(&self, hash: u64, _storage: &TypeStorage) -> DiagnosticResult<usize> {

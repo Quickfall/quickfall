@@ -308,7 +308,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let t = bridge.types.convert_raw(struct_type).into_struct_type();
 
 			let mut vals = vec![];
-
+			
 			for value in values {
 				vals.push(bridge.values[&value.get_ssa_index()].clone().inner);
 			}

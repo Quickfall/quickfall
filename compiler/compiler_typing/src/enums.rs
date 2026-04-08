@@ -1,6 +1,6 @@
 //! Declarations for enum-kind types.
 
-use std::{collections::HashMap};
+use std::{collections::HashMap, f32::consts::E};
 
 use compiler_utils::{hash::{HashedString}, utils::indexed::IndexStorage};
 use diagnostics::{DiagnosticResult, builders::{make_cannot_find_type_field, make_cannot_find_type_function, make_cannot_find_type_pos, make_enum_parent_fields}};
@@ -114,7 +114,7 @@ impl StructuredType for RawEnumTypeContainer {
 	}
 
 	fn get_functions(&self, _storage: &TypeStorage) -> Vec<u64> {
-		return self.functions.hash_to_ind.keys().cloned().collect();
+		return self.functions.entry_keys.clone();
 	}
 
 	fn get_function(&self, hash: u64, _storage: &TypeStorage) -> DiagnosticResult<TypedFunction> {
@@ -156,7 +156,7 @@ impl StructuredType for RawEnumEntryContainer {
 	}
 
 	fn get_fields(&self, _storage: &TypeStorage) -> Vec<u64> {
-		return self.fields.hash_to_ind.keys().cloned().collect();
+		return self.fields.entry_keys.clone();
 	}
 
 	fn get_functions(&self, storage: &TypeStorage) -> Vec<u64> {
