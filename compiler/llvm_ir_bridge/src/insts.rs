@@ -578,6 +578,21 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let func = bridge.functions[func].clone().inner;
 
 			func.get_nth_param(ind as u32)
+		},
+
+		MIRInstruction::MemoryCopy { src, dest, sz } => {
+			let src: BaseMIRValue = src.into();
+			let dest: BaseMIRValue = dest.into();
+
+			let llvm_src = bridge.values[&src.get_ssa_index()].clone();
+			let llvm_dest = bridge.values[&dest.get_ssa_index()].clone();
+
+			let sz_type = bridge.types.convert_raw(RawType::Integer(32, false)).into_int_type();
+			let sz = sz_type.const_int(sz as u64, false);
+
+			llvm_to_base_returnless!(bridge.builder.build_memcpy(llvm_dest.inner.into_pointer_value(), 1, llvm_src.into_pointer_value(), 1, sz));
+
+			None
 		}
 
 		_ => None
