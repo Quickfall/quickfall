@@ -21,9 +21,10 @@ pub fn handle_var_introduction_queue(block: MIRBlockReference, node: Box<HIRNode
 			let ptr = build_stack_alloc(&mut ctx.mir_ctx, new_type.get_size(&new_type, false, &ctx .hir_ctx.type_storage), new_type)?;
 		
 			ctx.mir_ctx.blocks[block].variables.insert(new_var, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::Pointer, hint: Some(ptr.clone().into()) });
-			build_store(&mut ctx.mir_ctx, ptr.clone(), casted)?;
+			build_store(&mut ctx.mir_ctx, &ctx.hir_ctx.type_storage, ptr.clone(), casted)?;
 		}
 
+		return Ok(())
 	}
 
 	panic!("Invalid node")

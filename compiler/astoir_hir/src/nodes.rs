@@ -1,11 +1,13 @@
 //! The nodes inside of the AstoIR HIR. 
 
+use std::collections::HashMap;
+
 use compiler_typing::{raw::RawType, references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
-use compiler_utils::Position;
+use compiler_utils::{Position, hash::SelfHash};
 use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}, unsure_panic};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
-use crate::{ctx::{HIRBranchedContext, HIRContext}, structs::{HIRIfBranch, StructLRUStep}};
+use crate::{ctx::{HIRBranchedContext, HIRContext}, resolve::resolve_to_type, structs::{HIRIfBranch, StructLRUStep}};
 
 #[derive(Debug, Clone)]
 pub struct HIRNode {	
@@ -62,6 +64,8 @@ pub enum HIRNodeKind {
 
 	StructLRU { steps: Vec<StructLRUStep>, last: Type },
 
+	EnumParentCast { val: Box<HIRNode>, parent: Type },
+
 	StructDeclaration { type_name: usize, container: RawStructTypeContainer, layout: bool },
 	StructFunctionDeclaration { func_name: usize, arguments: Vec<(u64, TypeReference)>, return_type: Option<TypeReference>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
 	
@@ -71,7 +75,9 @@ pub enum HIRNodeKind {
 	ArrayIndexAccess { val: Box<HIRNode>, index: Box<HIRNode> },
 	ArrayIndexModify { array: Box<HIRNode>, index: Box<HIRNode>, new_val : Box<HIRNode> },
 
-	StructVariableInitializerValue { t: Type, fields: Vec<Box<HIRNode>> },
+	/// Before transmutation
+	StructInitializer { fields: HashMap<SelfHash, Box<HIRNode>> },
+	StructInitializerTyped { t: Type, fields: Vec<Box<HIRNode>> },
 
 	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
 	
@@ -132,6 +138,10 @@ impl HIRNode {
 	}
 	
 	pub fn use_as<K: DiagnosticSpanOrigin>(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type, origin: &K, var_origin: Option<&K>) -> Result<HIRNode, ()> {
+		if self.is_intederminately_typed() {
+			return Ok(resolve_to_type(Box::new(self.clone()), t.clone(), context, curr_ctx, origin)?.use_as(context, curr_ctx, t, origin, var_origin)?);
+		}
+
 		let self_type = match self.get_node_type(context, curr_ctx) {
 			Some(v) => v,
 			_ => panic!("Tried using a typeless node in use_as: {:#?}", self)
@@ -146,7 +156,7 @@ impl HIRNode {
 				HIRNodeKind::IntegerLiteral { value, int_type: _ } => {
 					return Ok(self.with(HIRNodeKind::IntegerLiteral { value: *value, int_type: t }));
 				},
-
+				
 				HIRNodeKind::ArrayVariableInitializerValue { vals } => {
 					if can_transmute_inner(&self_type, &t, &context.type_storage) {
 						let mut new_vals = vec![];
@@ -180,6 +190,14 @@ impl HIRNode {
 
 		return Err(make_diff_type_val(origin, &t.faulty_lowering_generic(&context.type_storage), &self.get_node_type(context, curr_ctx).unwrap().faulty_lowering_generic(&context.type_storage)).into())
 	}	
+
+	pub fn is_intederminately_typed(&self) -> bool {
+		match self.kind {
+			HIRNodeKind::StructInitializer { .. } => true,
+
+			_ => false
+		}
+	}
 
 	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<Type> {
 		match &self.kind {
@@ -218,12 +236,7 @@ impl HIRNode {
 			},
 
 			HIRNodeKind::StringLiteral { value: _ } => {
-				let ind = match context.type_storage.types.get_index(STATIC_STR) {
-					Some(v) => v,
-					None => return None
-				};
-
-				return Some(Type::Generic(RawType::Boolean, vec![], vec![]))
+				return Some(Type::Generic(RawType::StaticString, vec![], vec![]))
 			},
 
 			HIRNodeKind::ArrayVariableInitializerValue { vals } => return Some(Type::Array(vals.len(), Box::new(vals[0].get_node_type(context, curr_ctx).unwrap()))),
@@ -241,9 +254,7 @@ impl HIRNode {
 				return Some(Type::Generic(RawType::Boolean, vec![], vec![]))
 			},
 
-			HIRNodeKind::StructVariableInitializerValue { t, fields: _ } => {
-				return Some(t.clone())
-			}
+			HIRNodeKind::StructInitializerTyped { t, fields: _ } => Some(t.clone()),
 
 			HIRNodeKind::FunctionCall { func_name, arguments: _ } => {
 				let f = context.functions.vals[*func_name].0.clone();

@@ -45,7 +45,32 @@ impl RawType {
 			_ => 0
 		}
 	}
+
+	pub fn is_enum_parent(&self) -> bool {
+		match self {
+			Self::Enum(_) => true,
+			Self::LoweredStruct(_, b) => b.is_lowered_enum_parent,
+			_ => false
+		}
+	}
 	
+	pub fn is_enum_child(&self) -> bool {
+		match self {
+			Self::EnumEntry(_) => true,
+			Self::LoweredStruct(_, b) => b.is_lowered_enum_child,
+			_ => false
+		}
+	}
+
+	pub fn is_field_based(&self) -> bool {
+		match self {
+			RawType::Struct(_, _) => true,
+			RawType::EnumEntry(_) => true,
+
+			_ => false
+		}
+	}
+
 	pub fn is_signed(&self) -> bool {
 		match self {
 			Self::Integer(_, signed) => *signed,
@@ -143,6 +168,10 @@ impl RawType {
 			(Self::SizedInteger(_), Self::Floating(_, _)) => true,
 
 			(Self::StaticString, Self::Pointer) => true,
+
+			(Self::EnumEntry(container), Self::Enum(c2)) => {
+				return container.parent == c2.self_ref;
+			}
 
 			_ => false
 		}

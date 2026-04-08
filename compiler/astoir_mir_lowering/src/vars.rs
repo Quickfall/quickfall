@@ -30,7 +30,7 @@ pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIR
 			if default_val.is_some() {
 				let val = lower_hir_value(block_id, default_val.unwrap(), ctx)?;
 			
-				build_store(&mut ctx.mir_ctx, ptr.clone(), val)?;
+				build_store(&mut ctx.mir_ctx, &ctx.hir_ctx.type_storage, ptr.clone(), val)?;
 			}
 		}
 
@@ -64,7 +64,7 @@ pub fn lower_hir_variable_assignment(block: MIRBlockReference, node: Box<HIRNode
  
 		let val = lower_hir_value(block, val, ctx)?;
 
-		variable_ref.write(block, &mut ctx.mir_ctx, val)?;
+		variable_ref.write(block, &mut ctx.mir_ctx, val, &ctx.hir_ctx.type_storage)?;
 		return Ok(true);
 	}
 

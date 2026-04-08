@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}, structs::HIRStructContainer};
 use compiler_typing::{raw::RawType, structs::RawStructTypeContainer, tree::Type};
@@ -89,40 +91,14 @@ pub fn lower_ast_struct_declaration(context: &mut HIRContext, node: Box<ASTTreeN
 }
 
 pub fn lower_ast_struct_initializer(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
-	if let ASTTreeNodeKind::StructVariableInitializerValue { struct_type, map } = node.kind.clone() {
-		let raw = match context.type_storage.get_type(HashedString::new(struct_type.get_generic_name()).hash) {
-			Ok(v) => Type::GenericLowered(v),
-			Err(_) => return Err(make_cannot_find_type(&*node, &struct_type.get_generic_name()).into())
-		};
+	if let ASTTreeNodeKind::StructInitializer { map } = node.kind.clone() {
+		let mut new_map = HashMap::new();
 
-		let hir_type = lower_ast_type(context, struct_type, &*node)?;
-
-		let fields = raw.get_fields(&context.type_storage);
-
-		let mut vals = vec![];
-
-		for field in fields {
-			let id = SelfHash { hash: field };
-
-			if !map.contains_key(&id) {
-				return Err(make_struct_init_missing_field(&*node, &hir_type, &field).into())
-			}
-
-			let field = match raw.get_field(&context.type_storage, field) {
-				Ok(v) => v,
-				Err(_) => return Err(make_struct_missing_field(&*node, &hir_type, &id.hash).into())
-			};
-
-			let tt = field.1.resolve(&hir_type);
-
-			let val = lower_ast_value(context, curr_ctx, map[&id].clone())?;
-
-			let val = Box::new(val.use_as(context, curr_ctx, tt.clone(), &*node, None)?);
-
-			vals.push(val)
+		for (k, v) in map {
+			new_map.insert(k, lower_ast_value(context, curr_ctx, v)?);
 		}
 
-		return Ok(Box::new(HIRNode::new(HIRNodeKind::StructVariableInitializerValue { t: hir_type, fields: vals }, &node.start, &node.end)))
+		return Ok(Box::new(HIRNode::new(HIRNodeKind::StructInitializer { fields: new_map }, &node.start, &node.end)))
 	}
 
 	panic!("Invalid node type")

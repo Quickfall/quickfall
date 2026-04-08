@@ -5,15 +5,9 @@ use compiler_utils::hash::{HashedString, SelfHash};
 use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{types::parse_type, value::parse_ast_value};
+use crate::{value::parse_ast_value};
 
 pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
-	*ind += 1;
-
-	let t = parse_type(tokens, ind)?;
-
-	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
-
 	let start = tokens[*ind].pos.clone();
 
 	*ind += 1;
@@ -24,7 +18,12 @@ pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> Dia
 		let field_name = tokens[*ind].expects_keyword()?;
 		*ind += 1;
 
+		tokens[*ind].expects(LexerTokenType::Collon)?;
+		*ind += 1;
+
+
 		let value = parse_ast_value(tokens, ind)?;
+
 
 		map.insert(SelfHash { hash: HashedString::new(field_name.0).hash }, value);
 
@@ -40,5 +39,5 @@ pub fn parse_struct_initialize(tokens: &Vec<LexerToken>, ind: &mut usize) -> Dia
 
 	*ind += 1;
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructVariableInitializerValue { struct_type: t, map }, start, tokens[*ind].get_end_pos())))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::StructInitializer { map }, start, tokens[*ind].get_end_pos())))
 }

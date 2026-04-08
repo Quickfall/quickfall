@@ -114,9 +114,17 @@ impl Type {
 	pub fn as_generic_lowered_safe<K: DiagnosticSpanOrigin>(&self, origin: &K) -> DiagnosticResult<RawType> {
 		match self {
 			Type::GenericLowered(a) => return Ok(a.clone()),
-			_ => return Err(make_req_type_kind(origin, &"a generic".to_string()).into())
+			_ => return Err(make_req_type_kind(origin, &"generic".to_string()).into())
 		}
 	}
+
+	pub fn as_generic_safe<K: DiagnosticSpanOrigin>(&self, origin: &K) -> DiagnosticResult<RawType> {
+		match self {
+			Type::Generic(a, _, _) => return Ok(a.clone()),
+			_ => return Err(make_req_type_kind(origin, &"generic".to_string()).into())
+		}
+	}
+
 
 	pub fn as_generic_lowered(&self) -> RawType {
 		match self {
@@ -159,6 +167,8 @@ impl Type {
 		if let Type::Generic(_, types, sizes) = self {
 			return (types.clone(), sizes.clone())
 		}
+
+		println!("{:#?}", self);
 
 		return self.get_inner_type().get_generic_info();
 	}
@@ -229,7 +239,9 @@ impl Display for Type {
 				format!("{}[{}]", inner, size)
 			},
 
-			Self::Generic(_, _, _) => unsure_panic!("cannot display unlowered generic"),
+			Self::Generic(low, _, _) => {
+				format!("{}", low)
+			}
 
 			Self::GenericLowered(low ) => {
 				format!("{}", low)

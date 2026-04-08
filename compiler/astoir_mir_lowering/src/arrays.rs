@@ -30,7 +30,7 @@ pub fn lower_hir_array_modify(block: MIRBlockReference, node: Box<HIRNode>, ctx:
 
 		let index_pointer = build_index_pointer(&mut ctx.mir_ctx, array, index)?;
 
-		build_store(&mut ctx.mir_ctx, index_pointer, val)?;
+		build_store(&mut ctx.mir_ctx,  &ctx.hir_ctx.type_storage, index_pointer, val)?;
 
 		return Ok(true);
 	}

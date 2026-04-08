@@ -44,7 +44,7 @@ pub enum ASTTreeNodeKind {
 	PointerGrab(Box<ASTTreeNode>),
 	ReferenceGrab(Box<ASTTreeNode>),
 
-	StructVariableInitializerValue { struct_type: ASTType, map: HashMap<SelfHash, Box<ASTTreeNode>> },
+	StructInitializer { map: HashMap<SelfHash, Box<ASTTreeNode>> },
 	ArrayVariableInitializerValueSameValue { size: usize, v: Box<ASTTreeNode> },
 	ArrayVariableInitializerValue { vals: Vec<Box<ASTTreeNode>> },
 
@@ -169,7 +169,7 @@ impl Display for ASTTreeNodeKind {
 			Self::VariableReference(_) => "variable reference",
 			Self::PointerGrab(_) => "pointer grabbing",
 			Self::ReferenceGrab(_) => "reference",
-			Self::StructVariableInitializerValue { .. } => "struct value initializer",
+			Self::StructInitializer { .. } => "struct value initializer",
 			Self::ArrayVariableInitializerValue { .. } | Self::ArrayVariableInitializerValueSameValue { .. } => "array value initializer",
 			Self::ArrayIndexAccess { .. } | Self::ArrayIndexModifiy { .. } => "index access",
 			Self::VarDeclaration { .. } => "variable declaration",

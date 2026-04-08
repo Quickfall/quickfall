@@ -1,6 +1,6 @@
 //! The core of diagnostics
 
-use std::{fmt::Display, fs, io::Error};
+use std::{backtrace::Backtrace, fmt::Display, fs, io::Error};
 
 use colored::{ColoredString, Colorize};
 use compiler_utils::Position;
@@ -57,7 +57,6 @@ impl Display for Level {
 	}
 }
 
-#[derive(Clone)]
 pub struct Diagnostic {
 	pub level: Level,
 	pub code: usize,
@@ -67,12 +66,35 @@ pub struct Diagnostic {
 	pub spans: Vec<Span>,
 
 	pub note: Vec<String>,
-	pub help: Vec<String>
+	pub help: Vec<String>,
+
+	pub backtrace: Option<Backtrace>
+}
+
+impl Clone for Diagnostic {
+	fn clone(&self) -> Self {
+		Diagnostic { level: self.level.clone(), code: self.code, message: self.message.clone(), primary_span: self.primary_span.clone(), spans: self.spans.clone(), note: self.note.clone(), help: self.help.clone(), backtrace: Diagnostic::capture_backtrace() }
+	}
 }
 
 impl Diagnostic {
+	pub fn capture_backtrace() -> Option<Backtrace> {
+		if cfg!(debug_assertions) {
+            Some(Backtrace::capture())
+        } else {
+            None
+        }
+	}
+
+	pub fn maybe_display_backtrace(&self, fmt: &mut std::fmt::Formatter<'_>) {
+		if cfg!(debug_assertions) {
+			writeln!(fmt, "Internally captured in:");
+			writeln!(fmt, "{}", self.backtrace.as_ref().unwrap());
+		}
+	}
+
 	pub fn new(level: Level, decl: (usize, &str), primary_span: Span, spans: Vec<Span>, note: Vec<String>, help: Vec<String>) -> Self {
-		let d = Diagnostic { level, code: decl.0, message: decl.1.to_string(), primary_span, spans, note, help};
+		let d = Diagnostic { level, code: decl.0, message: decl.1.to_string(), primary_span, spans, note, help, backtrace: Diagnostic::capture_backtrace() };
 		
 		d.push_to_storage();
 
@@ -80,7 +102,7 @@ impl Diagnostic {
  	}
 
 	pub fn new_base(level: Level, code: usize, message: String, primary_span: Span, spans: Vec<Span>, note: Vec<String>, help: Vec<String>) -> Self {
-		let d = Diagnostic { level, code, message, primary_span, spans, note, help};
+		let d = Diagnostic { level, code, message, primary_span, spans, note, help, backtrace: Diagnostic::capture_backtrace() };
 
 		d.push_to_storage();
 
@@ -224,6 +246,8 @@ impl Display for Diagnostic {
 
 			ind += 1;
 		}
+
+		self.maybe_display_backtrace(f);
 		
 		Ok(())
 	}

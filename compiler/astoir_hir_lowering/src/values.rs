@@ -146,7 +146,7 @@ pub fn lower_ast_value(context: &mut HIRContext, curr_ctx: &mut HIRBranchedConte
 			return lower_ast_array_init(context, curr_ctx, node)
 		}
 
-		ASTTreeNodeKind::StructVariableInitializerValue { .. } => {
+		ASTTreeNodeKind::StructInitializer { .. } => {
 			return lower_ast_struct_initializer(context, curr_ctx, node)
 		}
 

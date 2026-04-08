@@ -177,7 +177,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticR
 			return Err(make_expected_simple_error(&tokens[*ind], &"function call or variable access".to_string(),&ast).into());
 		},
 
-		LexerTokenType::BracketOpen | LexerTokenType::ArrayOpen => {
+		LexerTokenType::ArrayOpen => {
 			return parse_ast_array_init(tokens, ind);
 		}
 
@@ -194,7 +194,7 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticR
 			return parse_ast_value_post_l(tokens, ind, str, false);
 		},
 
-		LexerTokenType::New => {
+		LexerTokenType::BracketOpen => {
 			return parse_struct_initialize(tokens, ind);
 		}
 
@@ -221,34 +221,23 @@ pub fn parse_ast_value(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticR
 
 pub fn parse_ast_array_init(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();
+	*ind += 1;
 
-	if tokens[*ind].tok_type == LexerTokenType::BracketOpen {
-		*ind += 1;
-
-		let int_lit = tokens[*ind].expects_int_lit()?;
-
-		*ind += 1;
-
-		tokens[*ind].expects(LexerTokenType::Dot)?;
-
-		*ind += 1;
-
+	if tokens[*ind + 1].tok_type == LexerTokenType::Comma {
 		let val = parse_ast_value(tokens, ind)?;
 
-		tokens[*ind].expects(LexerTokenType::BracketClose)?;
-
+		tokens[*ind].expects(LexerTokenType::Comma)?;
 		*ind += 1;
 
-		return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ArrayVariableInitializerValueSameValue { size: int_lit.0 as usize, v: val }, start, tokens[*ind].get_end_pos())));
-	}
+		let count = tokens[*ind].expects_int_lit()?;
 
-	tokens[*ind].expects(LexerTokenType::ArrayOpen)?;
-	*ind += 1;
+		return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ArrayVariableInitializerValueSameValue { size: count.0 as usize, v: val }, start, tokens[*ind].get_end_pos())))
+	}
 
 	let mut vals = vec![];
 
 	loop {
-		vals.push(parse_ast_value(tokens, ind)?);
+		let val = parse_ast_value(tokens, ind)?;
 
 		if tokens[*ind].tok_type == LexerTokenType::ArrayClose {
 			break;
@@ -256,11 +245,12 @@ pub fn parse_ast_array_init(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagno
 
 		tokens[*ind].expects(LexerTokenType::Comma)?;
 		*ind += 1;
+
+		vals.push(val);
 	}
 
-	*ind += 1;
-
 	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ArrayVariableInitializerValue { vals }, start, tokens[*ind].get_end_pos())))
+
 }
 
 pub fn parse_ast_pointer(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
