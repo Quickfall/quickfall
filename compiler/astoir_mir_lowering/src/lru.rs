@@ -1,6 +1,7 @@
 use astoir_hir::{nodes::{HIRNode, HIRNodeKind}, structs::StructLRUStep};
 use astoir_mir::{blocks::refer::MIRBlockReference, builder::build_field_pointer, vals::{base::BaseMIRValue, refer::MIRVariableReference}};
-use diagnostics::DiagnosticResult;
+use compiler_typing::raw::RawType;
+use diagnostics::{DiagnosticResult, unsure_panic};
 
 use crate::MIRLoweringContext;
 
@@ -10,9 +11,15 @@ pub fn lower_hir_lru_step(block: MIRBlockReference, step: StructLRUStep, ctx: &m
 			return Ok(ctx.mir_ctx.blocks[block].get_variable_ref(variable)?.as_pointer_ref()?.into());
 		}
 
-		let ptr = curr.unwrap().as_ptr()?;
+		let curr = curr.unwrap();
+		let ptr = curr.as_ptr()?;
 
-		return Ok(build_field_pointer(&mut ctx.mir_ctx, ptr, variable)?.into())
+		let struct_type = match ctx.mir_ctx.ssa_hints.get_hint(curr.get_ssa_index()).get_type().get_generic(&ctx.hir_ctx.type_storage) {
+			RawType::LoweredStruct(_, container) => container,
+			_ => unsure_panic!("lower_hir_lru_step curr was not an actual thing")
+		};
+
+		return Ok(build_field_pointer(&mut ctx.mir_ctx, ptr, struct_type.resolve_hir_index(variable))?.into())
 	}
 
 	panic!("Invalid step!")
