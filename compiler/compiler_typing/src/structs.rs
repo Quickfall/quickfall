@@ -24,6 +24,19 @@ pub struct LoweredStructTypeContainer {
 	pub functions: IndexStorage<usize>
 }
 
+impl LoweredStructTypeContainer {
+
+	/// Resolves the given `HIR` field index into the corresponding `MIR` field index if said one has changed.
+	pub fn resolve_hir_index(&self, ind: usize) -> usize {
+		if self.hir_mir_indexes.contains_key(&ind) {
+			return self.hir_mir_indexes[&ind];
+		}
+
+		return ind;
+	}
+	
+}
+
 impl SizedType for RawStructTypeContainer {
 	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize {
 		let mut size = 0;
