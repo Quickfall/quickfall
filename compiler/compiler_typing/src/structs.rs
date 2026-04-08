@@ -34,7 +34,11 @@ impl LoweredStructTypeContainer {
 
 		return ind;
 	}
-	
+
+	pub fn append_hir_index_conv(&mut self, hir: usize, mir: usize) {
+		self.hir_mir_indexes.insert(hir, mir);
+	}
+
 }
 
 impl SizedType for RawStructTypeContainer {
