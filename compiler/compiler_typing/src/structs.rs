@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use compiler_utils::utils::indexed::IndexStorage;
 use diagnostics::{DiagnosticResult, builders::{make_cannot_find_type_field, make_cannot_find_type_function}};
 
@@ -18,6 +20,7 @@ pub struct LoweredStructTypeContainer {
 	pub is_lowered_enum_parent: bool,
 	pub lowered_enum_parent: Option<RawEnumTypeContainer>, 
 	pub lowered_enum_child: Option<RawEnumEntryContainer>,
+	pub hir_mir_indexes: HashMap<usize, usize>,
 	pub functions: IndexStorage<usize>
 }
 
