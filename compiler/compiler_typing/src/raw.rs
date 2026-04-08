@@ -199,6 +199,7 @@ impl SizedType for RawType {
 			RawType::Struct(_, container) => return container.get_size(t, compacted_size, storage),
 			RawType::Enum(container) => return container.get_size(t, compacted_size, storage),
 			RawType::EnumEntry(container) => return container.get_size(t, compacted_size, storage),
+			RawType::LoweredStruct(_, container) => return container.get_size(t, compacted_size, storage),
 
 			_ => return 0
 		}

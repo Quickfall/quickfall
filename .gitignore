@@ -6,5 +6,6 @@ out.*
 
 *.qf
 *.qfmir
+*.llvm
 
 !examples/**.qf

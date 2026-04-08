@@ -24,6 +24,7 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 		MIRInstruction::Store { variable, value } => {
 			let base = BaseMIRValue::from(variable.into());
 			let ptr = bridge.values[&base.get_ssa_index()].into_pointer_value();
+
 			let val = bridge.values[&value.get_ssa_index()].inner;
 
 			llvm_to_base_returnless!(bridge.builder.build_store(ptr, val));
@@ -593,6 +594,10 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			llvm_to_base_returnless!(bridge.builder.build_memcpy(llvm_dest.inner.into_pointer_value(), 1, llvm_src.into_pointer_value(), 1, sz));
 
 			None
+		},
+
+		MIRInstruction::IRCast { val, to: _ } => {
+			Some(bridge.values[&val.get_ssa_index()].inner.clone())
 		}
 
 		_ => None

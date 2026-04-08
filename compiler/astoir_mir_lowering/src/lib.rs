@@ -94,7 +94,7 @@ pub fn lower_hir_generic(ctx: &MIRLoweringContext, t: &Type, generic: &RawType) 
 			let mut entry_size = 0;
 
 			let info = t.get_generic_info();
-
+			
 			for entry in &container.entries {
 				let lowered = lower_hir_type(ctx, Type::Generic(entry.1.clone(), info.0.clone(), info.1.clone()))?;
 

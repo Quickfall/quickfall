@@ -41,6 +41,18 @@ impl LoweredStructTypeContainer {
 
 }
 
+impl SizedType for LoweredStructTypeContainer {
+	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize {
+		let mut size = 0;
+
+		for field in &self.fields.vals {
+			size += field.get_size(t, compacted_size, storage)
+		}
+
+		return size;
+	}
+}
+
 impl SizedType for RawStructTypeContainer {
 	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize {
 		let mut size = 0;
