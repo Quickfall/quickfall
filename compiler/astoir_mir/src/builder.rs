@@ -1,7 +1,7 @@
 //! Utility functions to build instructions and more
 
-use compiler_typing::{raw::RawType, tree::Type};
-use diagnostics::{DiagnosticResult, diagnostic::Diagnostic, unsure_panic};
+use compiler_typing::{SizedType, raw::RawType, storage::TypeStorage, tree::Type};
+use diagnostics::{DiagnosticResult, MaybeDiagnostic, diagnostic::Diagnostic, unsure_panic};
 
 use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::MIRInstruction, vals::{arrays::MIRArrayValue, base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue}};
 
@@ -23,18 +23,22 @@ pub fn build_load(ctx: &mut MIRContext, ptr: MIRPointerValue) -> DiagnosticResul
 	return Ok(res);
 }
 
-pub fn build_store(ctx: &mut MIRContext, ptr: MIRPointerValue, val: BaseMIRValue) -> DiagnosticResult<bool> {
+pub fn build_store(ctx: &mut MIRContext, storage: &TypeStorage, ptr: MIRPointerValue, val: BaseMIRValue) -> DiagnosticResult<()> {
 	let base: BaseMIRValue = ptr.clone().into();
 
 	let hint = ctx.ssa_hints.get_hint(base.get_ssa_index()).get_type();
 
 	if !hint.get_maybe_containing_type().is_truly_eq(&val.vtype) && !hint.is_ptr() {
+		if hint.get_maybe_containing_type().get_generic(storage).is_enum_parent() && val.vtype.get_generic(storage).is_enum_child() {
+			return build_store_fallback(ctx, ptr, val.clone(), storage)
+		}
+
 		unsure_panic!("cannot put this value onto this pointer since it's not the type");
 	}
 
 	ctx.append_inst(MIRInstruction::Store { variable: ptr, value: val });
 
-	return Ok(true) 
+	return Ok(()) 
 }
 
 pub fn build_downcast_int(ctx: &mut MIRContext, val: MIRIntValue, size: usize) -> DiagnosticResult<MIRIntValue> {
@@ -462,3 +466,26 @@ pub fn build_ir_cast(ctx: &mut MIRContext, val: BaseMIRValue, to: Type) -> Diagn
 pub fn build_memory_copy_unsafe(ctx: &mut MIRContext, src: MIRPointerValue, dest: MIRPointerValue, size: usize) {
 	ctx.append_inst(MIRInstruction::MemoryCopy { src, dest, sz: size });
 }
+
+/// Fallback to whenever store fails since the type isn't valid. Allows to use unsafe memory copy for enums
+/// # Behvior
+/// If `src` is actually a pointer, simply uses the `unsmemcopy` instruction to copy the memory from `src` to `dest`. 
+/// If not, it first creates a pointer for `src`, storing the value inside and then using the `unsmemcopy` instruction.
+pub fn build_store_fallback(ctx: &mut MIRContext, dest: MIRPointerValue, src: BaseMIRValue, storage: &TypeStorage) -> MaybeDiagnostic {
+	let sz = src.vtype.get_size(&src.vtype, false, storage);
+
+	if src.can_be_pointer() {
+		let src = src.as_ptr()?;
+	
+		ctx.append_inst(MIRInstruction::MemoryCopy { src, dest, sz: sz});
+		return Ok(())
+	}	
+
+	let ptr = build_stack_alloc(ctx, sz, src.vtype.clone())?;
+
+	build_store(ctx, storage, ptr.clone(), src)?;
+
+	ctx.append_inst(MIRInstruction::MemoryCopy { src: ptr, dest, sz });
+
+	Ok(())
+}	

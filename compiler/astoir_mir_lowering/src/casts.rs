@@ -15,8 +15,6 @@ pub fn lower_cast(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLow
 		println!("New: {:#?}", new_type);
 
 		if old_type.get_generic(&ctx.hir_ctx.type_storage).is_enum_child() && new_type.get_generic(&ctx.hir_ctx.type_storage).is_enum_parent() {
-			// Hacky way to make it a parent enum
-
 			match ctx.mir_ctx.ssa_hints.vec[value.get_ssa_index()] {
 				MIRValueHint::Pointer(_) => ctx.mir_ctx.ssa_hints.vec[value.get_ssa_index()] = MIRValueHint::Pointer(new_type),
 				MIRValueHint::Value(_) => ctx.mir_ctx.ssa_hints.vec[value.get_ssa_index()] = MIRValueHint::Value(new_type),

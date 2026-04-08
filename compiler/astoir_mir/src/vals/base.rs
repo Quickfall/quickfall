@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use compiler_typing::tree::Type;
+use compiler_typing::{raw::RawType, tree::Type};
 use diagnostics::DiagnosticResult;
 
 use crate::vals::{arrays::MIRArrayValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue};
@@ -35,6 +35,10 @@ impl BaseMIRValue {
 
 	pub fn as_array(&self) -> DiagnosticResult<MIRArrayValue> {
 		return Ok(MIRArrayValue::new(self.clone())?);
+	}
+
+	pub fn can_be_pointer(&self) -> bool {
+		return self.vtype.is_technically_pointer() || self.vtype.is_array() || self.vtype.as_generic_lowered() == RawType::Pointer
 	}
 
 	pub fn get_ssa_index(&self) -> usize {
