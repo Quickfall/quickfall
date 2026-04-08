@@ -152,8 +152,6 @@ impl HIRNode {
 		}
 
 		if self_type.can_transmute(&t, &context.type_storage) {
-			println!("Can transmute {:#?} -> {:#?}", t, self);
-
 			match &self.kind {
 				HIRNodeKind::IntegerLiteral { value, int_type: _ } => {
 					return Ok(self.with(HIRNodeKind::IntegerLiteral { value: *value, int_type: t }));

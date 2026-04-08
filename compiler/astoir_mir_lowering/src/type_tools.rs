@@ -5,7 +5,7 @@ use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_comp_eq, buil
 use compiler_typing::{SizedType, raw::RawType, tree::Type};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_req_type_kind, make_type_not_partof}};
 
-use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
+use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value, vars::lower_hir_variable_reference};
 
 pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<MIRIntValue> {
 	let enum_type = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered_safe(origin)? {
@@ -51,11 +51,26 @@ pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(block: MIRBlockReference, 
 pub fn cast_to_enum_child<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<BaseMIRValue> {
 	let enum_type = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered_safe(origin)? {
 		RawType::Enum(v) => v,
+		RawType::LoweredStruct(_, container) => {
+			if !container.is_lowered_enum_parent {
+				return Err(make_req_type_kind(origin, &"enum parent".to_string()).into())
+			}
+
+			container.lowered_enum_parent.unwrap()
+		},
+		
 		_ => return Err(make_req_type_kind(origin, &"enum parent".to_string()).into())
 	};
 
 	let enum_entry_container = match &enum_entry {
 		RawType::EnumEntry(v) => v,
+		RawType::LoweredStruct(_, container) => {
+			if !container.is_lowered_enum_child {
+				return Err(make_req_type_kind(origin, &"enum parent".to_string()).into())
+			}
+
+			container.lowered_enum_child.as_ref().unwrap()
+		},
 		_ => return Err(make_req_type_kind(origin, &"enum child".to_string()).into())
 	};
 
@@ -68,7 +83,7 @@ pub fn cast_to_enum_child<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val
 
 pub fn lower_hir_unwrap_cond(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
 	if let HIRNodeKind::UnwrapCondition { original, new_type, new_var, unsafe_unwrap } = node.kind.clone() {
-		let original = lower_hir_value(block, original, ctx)?;
+		let original = lower_hir_variable_reference(block, &original, ctx)?.as_pointer_ref()?.into();
 		let new_type = lower_hir_type(ctx, new_type)?;
 
 		let cond;

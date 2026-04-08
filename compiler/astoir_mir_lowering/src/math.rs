@@ -34,7 +34,7 @@ pub fn lower_hir_math_operation(block: MIRBlockReference, node: Box<HIRNode>, ct
 		if assignment {
 			let v = ptr.unwrap();
 
-			v.write(block, &mut ctx.mir_ctx, val.clone())?;
+			v.write(block, &mut ctx.mir_ctx, val.clone(), &ctx.hir_ctx.type_storage)?;
 		}
 
 		return Ok(val)

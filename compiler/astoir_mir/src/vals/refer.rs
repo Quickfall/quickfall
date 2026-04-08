@@ -1,3 +1,4 @@
+use compiler_typing::storage::TypeStorage;
 use diagnostics::{DiagnosticResult, builders::make_invalid_assign_diff_type_ir, unsure_panic};
 
 use crate::{blocks::refer::MIRBlockReference, builder::{build_load, build_store}, ctx::MIRContext, vals::{base::BaseMIRValue, ptr::{MIRPointerValue}}};
@@ -39,7 +40,7 @@ impl MIRVariableReference {
 		}
 	}
 
-	pub fn write(&self, block: MIRBlockReference, ctx: &mut MIRContext, val: BaseMIRValue) -> DiagnosticResult<bool> {
+	pub fn write(&self, block: MIRBlockReference, ctx: &mut MIRContext, val: BaseMIRValue, storage: &TypeStorage) -> DiagnosticResult<bool> {
 		if self.is_pointer_ref() {
 			let mut ptr_ref = self.as_pointer_ref()?;	
 			let hint = ctx.ssa_hints.get_hint(BaseMIRValue::from(ptr_ref.clone().into()).get_ssa_index());
@@ -48,7 +49,7 @@ impl MIRVariableReference {
 				ptr_ref = build_load(ctx, ptr_ref)?.as_ptr()?;
 			}
 
-			build_store(ctx, ptr_ref, val)?;
+			build_store(ctx, storage, ptr_ref, val)?;
 
 			return Ok(true);
 		}

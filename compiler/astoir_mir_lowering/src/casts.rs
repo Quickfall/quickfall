@@ -9,10 +9,7 @@ pub fn lower_cast(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLow
 		let value = lower_hir_value(block, value, ctx)?;
 		let old_type = lower_hir_type(ctx, old_type)?;
 
-		println!("Old: {:#?}", old_type);
-
 		let new_type = lower_hir_type(ctx, new_type)?;
-		println!("New: {:#?}", new_type);
 
 		if old_type.get_generic(&ctx.hir_ctx.type_storage).is_enum_child() && new_type.get_generic(&ctx.hir_ctx.type_storage).is_enum_parent() {
 			match ctx.mir_ctx.ssa_hints.vec[value.get_ssa_index()] {
