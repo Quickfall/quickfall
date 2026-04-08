@@ -434,6 +434,7 @@ pub fn build_call(ctx: &mut MIRContext, func: usize, ind: usize, args: Vec<BaseM
 
 	for(arg, t) in args.iter().zip(func.arguments.iter()) {
 		if !arg.vtype.is_truly_eq(t) {
+			println!("{:#?} -> {:#?}", arg.vtype, t);
 			unsure_panic!("invalid function argument types!");
 		}
 	}

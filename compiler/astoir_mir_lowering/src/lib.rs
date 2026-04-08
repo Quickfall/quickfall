@@ -16,6 +16,7 @@ pub mod arrays;
 pub mod type_tools;
 pub mod introductions;
 pub mod casts;
+pub mod lru;
 
 pub struct MIRLoweringContext {
 	pub hir_ctx: HIRContext,
