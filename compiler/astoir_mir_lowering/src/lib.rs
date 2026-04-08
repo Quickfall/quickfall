@@ -1,3 +1,5 @@
+use std::{collections::HashMap, hash::Hash};
+
 use astoir_hir::{ctx::HIRContext, nodes::{HIRNode, HIRNodeKind}};
 use astoir_mir::ctx::MIRContext;
 use compiler_typing::{SizedType, raw::RawType, structs::LoweredStructTypeContainer, tree::Type};
@@ -55,7 +57,7 @@ pub fn lower_hir(ctx: HIRContext) -> DiagnosticResult<MIRContext> {
 pub fn lower_hir_generic(ctx: &MIRLoweringContext, t: &Type, generic: &RawType) -> DiagnosticResult<Type> {
 	match generic {
 		RawType::Struct(a, b) => {
-			let mut lowered_container = LoweredStructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new(), is_lowered_enum_child: false, is_lowered_enum_parent: false, lowered_enum_child: None, lowered_enum_parent: None };
+			let mut lowered_container = LoweredStructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new(), is_lowered_enum_child: false, is_lowered_enum_parent: false, lowered_enum_child: None, lowered_enum_parent: None, hir_mir_indexes: HashMap::new() };
 
 			for field in &b.fields.vals {
 				lowered_container.fields.vals.push(lower_hir_type(ctx, field.clone().resolve(t))?);
@@ -65,7 +67,7 @@ pub fn lower_hir_generic(ctx: &MIRLoweringContext, t: &Type, generic: &RawType) 
 		},
 
 		RawType::EnumEntry(container) => {
-			let mut lowered_container = LoweredStructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new(), is_lowered_enum_child: true, is_lowered_enum_parent: false, lowered_enum_child: Some(container.clone()), lowered_enum_parent: None };
+			let mut lowered_container = LoweredStructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new(), is_lowered_enum_child: true, is_lowered_enum_parent: false, lowered_enum_child: Some(container.clone()), lowered_enum_parent: None, hir_mir_indexes: HashMap::new() };
 
 			let parent = match &ctx.hir_ctx.type_storage.types.vals[container.parent] {
 				RawType::Enum(container) => container.clone(),
@@ -74,15 +76,20 @@ pub fn lower_hir_generic(ctx: &MIRLoweringContext, t: &Type, generic: &RawType) 
 
 			lowered_container.fields.vals.push(Type::GenericLowered(parent.get_hint_type())); // Enum entry hint
 
+			let mut ind = 0;
 			for field in &container.fields.vals {
+				lowered_container.append_hir_index_conv(ind, lowered_container.fields.vals.len()); // Allow for LRU to work correctly
+
 				lowered_container.fields.vals.push(lower_hir_type(ctx, field.clone().resolve(t))?);
+
+				ind += 1;
 			}
 
 			return Ok(Type::GenericLowered(RawType::LoweredStruct(false, lowered_container))); 
 		},
 
 		RawType::Enum(container) => {
-			let mut lowered_container = LoweredStructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new(), is_lowered_enum_child: false, is_lowered_enum_parent: true, lowered_enum_parent: Some(container.clone()), lowered_enum_child: None };
+			let mut lowered_container = LoweredStructTypeContainer { fields: IndexStorage::new(), functions: IndexStorage::new(), is_lowered_enum_child: false, is_lowered_enum_parent: true, lowered_enum_parent: Some(container.clone()), lowered_enum_child: None, hir_mir_indexes: HashMap::new() };
 
 			let mut entry_size = 0;
 
