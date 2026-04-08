@@ -1,7 +1,7 @@
 //! Utility functions to build instructions and more
 
 use compiler_typing::{raw::RawType, tree::Type};
-use diagnostics::{DiagnosticResult, unsure_panic};
+use diagnostics::{DiagnosticResult, diagnostic::Diagnostic, unsure_panic};
 
 use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::MIRInstruction, vals::{arrays::MIRArrayValue, base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue}};
 
@@ -457,4 +457,8 @@ pub fn build_ir_cast(ctx: &mut MIRContext, val: BaseMIRValue, to: Type) -> Diagn
 	let res = ctx.append_inst(MIRInstruction::IRCast { val, to }).get()?;
 
 	return Ok(res);
+}
+
+pub fn build_memory_copy_unsafe(ctx: &mut MIRContext, src: MIRPointerValue, dest: MIRPointerValue, size: usize) {
+	ctx.append_inst(MIRInstruction::MemoryCopy { src, dest, sz: size });
 }

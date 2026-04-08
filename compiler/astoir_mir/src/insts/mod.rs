@@ -84,6 +84,9 @@ pub enum MIRInstruction {
 
 	FuncArgumentGrab { ind: usize, argtype: Type },
 
+	// Memory utils
+	MemoryCopy { src: MIRPointerValue, dest: MIRPointerValue, sz: usize },
+
 	/// Indicates to the IR processor that this given value's era is finished and thus we drop the value
 	MarkerEraDrop { value: BaseMIRValue },
 
@@ -94,7 +97,7 @@ pub enum MIRInstruction {
 impl MIRInstruction {
 	pub fn has_return(&self, ctx: &MIRContext) -> bool {
 		match self {
-			Self::MarkerEraDrop { .. } | Self::UnconditionalBranch { .. } | Self::ConditionalBranch { .. } | Self::Return { .. } | Self::Store { .. } => {
+			Self::MarkerEraDrop { .. } | Self::UnconditionalBranch { .. } | Self::ConditionalBranch { .. } | Self::Return { .. } | Self::Store { .. } | Self::MemoryCopy {.. } => {
 				return false;
 			},
 
@@ -209,6 +212,8 @@ impl Display for MIRInstruction {
 			Self::Load { value } => writeln!(f, "load {}", value)?,
 			Self::Store { variable, value } => writeln!(f, "store d{} s{}", variable, value)?,
 
+			Self::MemoryCopy { src, dest, sz } => writeln!(f, "unsmemcopy s{} d{} {}b", src, dest, sz)?,
+
 			Self::DowncastInteger { val, size } => writeln!(f, "dintcast {} {}", val, size)?,
 			Self::DowncastFloat { val, size } => writeln!(f, "dfcast {} {}", val, size)?,
 			Self::UpcastInteger { val, size } => writeln!(f, "uintcast {} {}", val, size)?,
@@ -254,18 +259,18 @@ impl Display for MIRInstruction {
 			Self::StaticStringConstant { raw } => writeln!(f, "conststr {}", raw)?,
 
 			Self::StructInitializerConstant { struct_type: _, values } => {
-				writeln!(f, "conststructinitrz ")?;
+				writeln!(f, "conststructinitrz")?;
 			
 				for v in values {
-					write!(f, "{}", v)?;
+					write!(f, " {}", v)?;
 				}
 			},
 
 			Self::ArrayInitializerConstant { values } => {
-				writeln!(f, "constarrinitrz ")?;
+				writeln!(f, "constarrinitrz")?;
 
 				for v in values {
-					write!(f, "{}", v)?;
+					write!(f, " {}", v)?;
 				}
 			},
 

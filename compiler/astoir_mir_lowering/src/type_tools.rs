@@ -10,11 +10,27 @@ use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
 pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<MIRIntValue> {
 	let enum_type = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered_safe(origin)? {
 		RawType::Enum(v) => v,
-		_ => return Err(make_req_type_kind(origin, &"enum parent".to_string()).into())
+		RawType::LoweredStruct(_, container) => {
+			if !container.is_lowered_enum_parent {
+				return Err(make_req_type_kind(origin, &"enum parent".to_string()).into())
+			}
+
+			container.lowered_enum_parent.unwrap()
+		}
+		_ => {
+			return Err(make_req_type_kind(origin, &"enum parent".to_string()).into())
+		}
 	};
 
 	let enum_entry = match enum_entry {
 		RawType::EnumEntry(v) => v,
+		RawType::LoweredStruct(_, container) => {
+			if !container.is_lowered_enum_child {
+				return Err(make_req_type_kind(origin, &"enum child".to_string()).into())
+			}
+
+			container.lowered_enum_child.unwrap()
+		}
 		_ => return Err(make_req_type_kind(origin, &"enum child".to_string()).into())
 	};
 

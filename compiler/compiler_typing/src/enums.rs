@@ -16,7 +16,7 @@ pub struct RawEnumTypeContainer {
 	pub self_ref: usize,
 	pub type_params: TypeParameterContainer,
 	pub functions: IndexStorage<TypedFunction>,
-	entries: HashMap<HashedString, RawType>
+	pub entries: HashMap<HashedString, RawType>
 }
 
 impl RawEnumTypeContainer {

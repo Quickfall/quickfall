@@ -1,7 +1,7 @@
 use compiler_utils::utils::indexed::IndexStorage;
 use diagnostics::{DiagnosticResult, builders::{make_cannot_find_type_field, make_cannot_find_type_function}};
 
-use crate::{SizedType, StructuredType, TypeParameterContainer, TypeReference, TypedFunction, storage::TypeStorage, tree::Type};
+use crate::{SizedType, StructuredType, TypeParameterContainer, TypeReference, TypedFunction, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, tree::Type};
 
 /// Container for structure types
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -14,6 +14,10 @@ pub struct RawStructTypeContainer {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LoweredStructTypeContainer {
 	pub fields: IndexStorage<Type>,
+	pub is_lowered_enum_child: bool,
+	pub is_lowered_enum_parent: bool,
+	pub lowered_enum_parent: Option<RawEnumTypeContainer>, 
+	pub lowered_enum_child: Option<RawEnumEntryContainer>,
 	pub functions: IndexStorage<usize>
 }
 

@@ -64,6 +64,8 @@ pub enum HIRNodeKind {
 
 	StructLRU { steps: Vec<StructLRUStep>, last: Type },
 
+	EnumParentCast { val: Box<HIRNode>, parent: Type },
+
 	StructDeclaration { type_name: usize, container: RawStructTypeContainer, layout: bool },
 	StructFunctionDeclaration { func_name: usize, arguments: Vec<(u64, TypeReference)>, return_type: Option<TypeReference>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
 	
@@ -137,7 +139,7 @@ impl HIRNode {
 	
 	pub fn use_as<K: DiagnosticSpanOrigin>(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type, origin: &K, var_origin: Option<&K>) -> Result<HIRNode, ()> {
 		if self.is_intederminately_typed() {
-			return Ok(*resolve_to_type(Box::new(self.clone()), t, context, curr_ctx, origin)?);
+			return Ok(resolve_to_type(Box::new(self.clone()), t.clone(), context, curr_ctx, origin)?.use_as(context, curr_ctx, t, origin, var_origin)?);
 		}
 
 		let self_type = match self.get_node_type(context, curr_ctx) {
@@ -150,11 +152,13 @@ impl HIRNode {
 		}
 
 		if self_type.can_transmute(&t, &context.type_storage) {
+			println!("Can transmute {:#?} -> {:#?}", t, self);
+
 			match &self.kind {
 				HIRNodeKind::IntegerLiteral { value, int_type: _ } => {
 					return Ok(self.with(HIRNodeKind::IntegerLiteral { value: *value, int_type: t }));
 				},
-
+				
 				HIRNodeKind::ArrayVariableInitializerValue { vals } => {
 					if can_transmute_inner(&self_type, &t, &context.type_storage) {
 						let mut new_vals = vec![];
@@ -234,12 +238,7 @@ impl HIRNode {
 			},
 
 			HIRNodeKind::StringLiteral { value: _ } => {
-				let ind = match context.type_storage.types.get_index(STATIC_STR) {
-					Some(v) => v,
-					None => return None
-				};
-
-				return Some(Type::Generic(RawType::Boolean, vec![], vec![]))
+				return Some(Type::Generic(RawType::StaticString, vec![], vec![]))
 			},
 
 			HIRNodeKind::ArrayVariableInitializerValue { vals } => return Some(Type::Array(vals.len(), Box::new(vals[0].get_node_type(context, curr_ctx).unwrap()))),

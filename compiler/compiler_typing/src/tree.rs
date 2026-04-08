@@ -168,6 +168,8 @@ impl Type {
 			return (types.clone(), sizes.clone())
 		}
 
+		println!("{:#?}", self);
+
 		return self.get_inner_type().get_generic_info();
 	}
 
