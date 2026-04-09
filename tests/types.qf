@@ -1,0 +1,11 @@
+func main() {
+	var s8 normal = 1;
+	var s16 normal16 = 1;
+	var s32 normal32 = 1;
+	var s64 normal64 = 1;
+	var s128 normal128 = 1;
+
+	var f16 float = normal;
+
+	var s.37 normal37 = normal;	
+}

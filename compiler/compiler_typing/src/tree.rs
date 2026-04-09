@@ -1,0 +1,279 @@
+//! The typing tree declarations. Allows for types such as an array of pointer arrays.
+
+use std::fmt::Display;
+
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_req_type_kind, unsure_panic};
+
+use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
+
+#[derive(Clone, PartialEq, Debug, Eq, Hash)]
+/// The node-based typing system of Quickfall. Allows for very specific types.
+pub enum Type {
+	/// A generic type node. Represents a classic type.
+	/// 0: The raw type
+	/// 1: The type parameters
+	/// 2: The size specifiers
+	Generic(RawType, Vec<Box<Type>>, Vec<usize>), // Potential lowering to base-sized
+
+	/// A generic type node but lowered. Represents a concrete type.
+	GenericLowered(RawType),
+
+	/// A pointer type node. Represents a pointer version
+	/// 0: Is the pointer a poiner of arrays
+	/// 1: Inner type
+	Pointer(bool, Box<Type>),
+
+	/// A reference to a variable.
+	/// 0: Inner type
+	Reference(Box<Type>),
+
+	/// An array type node. Represents an array version
+	/// 0: The size of the array
+	/// 1: Inner type
+	Array(usize, Box<Type>)
+}
+
+impl Type {
+	pub fn is_pointer(&self) -> bool {
+		match self {
+			Self::Pointer(_, _) => true,
+			_ => false
+		}
+	}
+
+	pub fn is_technically_pointer(&self) -> bool {
+		match self {
+			Self::Pointer(_, _) => true,
+			Self::Reference(_) => true,
+			_ => false
+		}
+	}
+
+	pub fn is_ptr(&self) -> bool {
+		match self {
+			Self::Pointer(_, _) => true,
+			Self::Reference(_) => true,
+			Self::GenericLowered(inner) => inner == &RawType::Pointer,
+			_ => false
+		}
+	}
+
+	pub fn get_maybe_containing_type(&self) -> Type {
+		match self {
+			Self::Pointer(_, inner) => *inner.clone(),
+			Self::Reference(inner) => *inner.clone(),
+			_ => self.clone()
+		}
+	}
+
+	pub fn is_array(&self) -> bool {
+		match self {
+			Self::Array(_, _) => true,
+			_ => false
+		}
+	}
+
+	pub fn is_truly_eq(&self, other: &Type) -> bool {
+		match (self, other) {
+			(Self::Pointer(is_array, _), Self::Pointer(is_array_2, _)) => {
+				return *is_array == *is_array_2;
+			},
+
+			(Self::Reference(_), Self::GenericLowered(lowered)) => {
+				return lowered == &RawType::Pointer
+			},
+
+			(Self::Reference(inner), Self::Reference(inner2)) => {
+				return inner.is_truly_eq(inner2);
+			},
+
+			(Self::Array(size, base), Self::Array(size2, base2)) => {
+				if size != size2 {
+					return false;
+				}
+
+				return base.is_truly_eq(base2);
+			},
+
+			(Self::Generic(raw_type, type_params, sizes), Self::Generic(raw_type2, type_params2, sizes2)) => {
+				return raw_type == raw_type2 && type_params == type_params2 && sizes == sizes2;
+			},
+
+			(Self::GenericLowered(base), Self::GenericLowered(base2)) => {
+				if *base == RawType::Pointer && *base2 == RawType::StaticString {
+					return true;
+				}
+
+				return base == base2;
+			}
+
+			_ => false
+		}
+	}
+	
+	pub fn as_generic_lowered_safe<K: DiagnosticSpanOrigin>(&self, origin: &K) -> DiagnosticResult<RawType> {
+		match self {
+			Type::GenericLowered(a) => return Ok(a.clone()),
+			_ => return Err(make_req_type_kind(origin, &"generic".to_string()).into())
+		}
+	}
+
+	pub fn as_generic_safe<K: DiagnosticSpanOrigin>(&self, origin: &K) -> DiagnosticResult<RawType> {
+		match self {
+			Type::Generic(a, _, _) => return Ok(a.clone()),
+			_ => return Err(make_req_type_kind(origin, &"generic".to_string()).into())
+		}
+	}
+
+
+	pub fn as_generic_lowered(&self) -> RawType {
+		match self {
+			Type::GenericLowered(a) => return a.clone(),
+			_ => panic!("Not a lowered generic {:#?}", self)
+		}
+	}	
+ 
+	pub fn as_generic(&self, storage: &TypeStorage) -> RawType {
+		match self {
+			Self::GenericLowered(a) => return a.clone(),
+			Self::Generic(a, _, _) => {
+				return a.clone();
+			},
+
+			_ => panic!("Cannot obtain generic {:#?}", self)
+		}
+	}
+
+	pub fn get_inner_type(&self) -> Box<Type> {
+		match self {
+			Type::Array(_, inner) => inner.clone(),
+			Type::Pointer(_, inner) => inner.clone(),
+			Type::Reference(inner) => inner.clone(),
+
+			_ => {
+				panic!("Error! Compiler tried using get_inner_type on bottom type! Returning bottom type incase!");
+			}
+		}
+	}
+
+	pub fn can_use_index_access(&self) -> bool {
+		match self {
+			Type::Array(_, _) => true,
+			_ => false
+		}
+	}
+
+	pub fn get_generic_info(&self) -> (Vec<Box<Type>>, Vec<usize>) {
+		if let Type::Generic(_, types, sizes) = self {
+			return (types.clone(), sizes.clone())
+		}
+
+		return self.get_inner_type().get_generic_info();
+	}
+
+	pub fn get_generic(&self, storage: &TypeStorage) -> RawType {
+		if let Type::Generic(raw, _, _) = self {
+			return raw.clone();
+		};
+
+		if let Type::GenericLowered(raw) = self {
+			return raw.clone();
+		}
+
+		return self.get_inner_type().get_generic(storage);
+	}
+
+	/// Cheaply lowers the generic just to avoid a display crash
+	pub fn faulty_lowering_generic(&self, storage: &TypeStorage) -> Type {
+		match self {
+			Type::Array(a, b) => Type::Array(*a, Box::new(b.faulty_lowering_generic(storage))),
+			Type::Pointer(a, b) => Type::Pointer(*a, Box::new(b.faulty_lowering_generic(storage))),
+			Type::Reference(t) => Type::Reference(Box::new(t.faulty_lowering_generic(storage))),
+			Type::Generic(t, _, _) => Type::GenericLowered(t.clone()),
+			Type::GenericLowered(_) => self.clone()
+		}
+	}
+
+	pub fn get_function(&self, storage: &TypeStorage, hash: u64) -> DiagnosticResult<(usize, TypedFunction)> {
+		return match self.get_generic(storage) {
+			RawType::Struct(_, container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),
+			RawType::Enum(container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),
+			RawType::EnumEntry(container) => Ok((container.get_function_hash(hash, storage)?, container.get_function(hash, storage)?)),
+			_ => unsure_panic!("Type cannot contain functions")
+		};
+	}
+
+	pub fn get_field(&self, storage: &TypeStorage, hash: u64) -> DiagnosticResult<(usize, TypeReference)> {
+		return match self.get_generic(storage) {
+			RawType::Struct(_, container) => Ok((container.get_field_hash(hash, storage)?, container.get_field(hash, storage)?)),
+			RawType::Enum(container) => Ok((container.get_field_hash(hash, storage)?, container.get_field(hash, storage)?)),
+			RawType::EnumEntry(container) => Ok((container.get_field_hash(hash, storage)?, container.get_field(hash, storage)?)),
+			_ => unsure_panic!("Type cannot contain fields")
+		}
+	}
+
+	pub fn get_fields(&self, storage: &TypeStorage) -> Vec<u64> {
+		return match self.get_generic(storage) {
+			RawType::Struct(_, container) => container.get_fields(storage),
+			RawType::EnumEntry(container) => container.get_fields(storage),
+			_ => unsure_panic!("Type cannot contain fields")
+		}
+	}
+	
+	pub fn get_functions(&self, storage: &TypeStorage) -> Vec<u64> {
+		return match self.get_generic(storage) {
+			RawType::Struct(_, container) => container.get_functions(storage),
+			RawType::EnumEntry(container) => container.get_functions(storage),
+			RawType::Enum(container) => container.get_functions(storage),
+			_ => unsure_panic!("Type cannot contain functions")
+		}
+	}
+}
+
+impl Display for Type {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let s = match self {
+			Self::Array(size, inner) => {
+				format!("{}[{}]", inner, size)
+			},
+
+			Self::Generic(low, _, _) => {
+				format!("{}", low)
+			}
+
+			Self::GenericLowered(low ) => {
+				format!("{}", low)
+			},
+
+			Self::Pointer(arr, inner) => {
+				let a;
+
+				if *arr {
+					a = "[]"
+				} else {
+					a = ""
+				}
+
+				format!("{}*{}", inner, a)
+			},
+
+			Self::Reference(inner) => {
+				format!("{}&", inner)
+			}
+		};
+
+		write!(f, "{}", s)
+	}
+}
+
+impl SizedType for Type {
+	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize {
+		return match self {
+			Self::Array(size, inner) => inner.clone().get_size(t, compacted_size, storage) * *size,
+			Self::Pointer(_, _) => get_pointer_size(),
+			Self::Reference(_) => get_pointer_size(),
+			Self::Generic(e, _, _) => e.get_size(t, compacted_size, storage), 
+			Self::GenericLowered(e) => e.get_size(t, compacted_size, storage)
+		}
+	}
+}

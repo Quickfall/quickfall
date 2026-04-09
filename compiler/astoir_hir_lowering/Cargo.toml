@@ -1,0 +1,11 @@
+[package]
+name = "astoir_hir_lowering"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+astoir_hir = { path = "../astoir_hir" }
+compiler_typing = { path = "../compiler_typing" }
+ast = { path = "../ast" }
+diagnostics = { path = "../diagnostics" }
+compiler_utils = { path = "../compiler_utils" }
