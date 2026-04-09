@@ -29,6 +29,8 @@ pub enum ASTTreeNodeKind {
     IntegerLit { val: i128, hash: u64 },
     StringLit(String),
 
+	UseStatement { shards: Vec<String>, use_clauses: Vec<String> }, 
+
 	ThisStructParam,
 
 	UnwrapCondition { original: Box<ASTTreeNode>, target_type: ASTType, unsafe_unwrap: bool, target_var: Option<HashedString> },
@@ -166,6 +168,7 @@ impl Display for ASTTreeNode {
 impl Display for ASTTreeNodeKind {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		let s = match self {
+			Self::UseStatement { .. } => "use statement",
 			Self::UnwrapCondition { .. } | Self::UnwrapValue { .. } => "unwrap",
 			Self::IntegerLit { .. } => "integer literal",
 			Self::StringLit(_) => "string literal",
