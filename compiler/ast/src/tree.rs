@@ -29,7 +29,7 @@ pub enum ASTTreeNodeKind {
     IntegerLit { val: i128, hash: u64 },
     StringLit(String),
 
-	UseStatement { shards: Vec<String>, use_clauses: Vec<String> }, 
+	UseStatement { shards: Vec<HashedString>, use_clauses: Vec<HashedString> }, 
 
 	ThisStructParam,
 
