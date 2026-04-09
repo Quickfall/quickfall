@@ -309,6 +309,11 @@ impl Hash for RawType {
 				for function in &b.functions.vals {
 					hasher.write_usize(*function);
 				}
+			},
+
+			RawType::Enum(container) => {
+				hasher.write_usize(7);
+				hasher.write_usize(container.self_ref);
 			}
 			
 			_ => panic!("Unhashable type {:#?}", self)

@@ -16,5 +16,7 @@ pub fn run_astoir_hir(ctx: ParserCtx) -> DiagnosticResult<HIRContext> {
 }
 
 pub fn run_astoir_mir(ctx: ParserCtx) -> DiagnosticResult<MIRContext> {
-	return lower_hir(run_astoir_hir(ctx)?);
+	let hir = run_astoir_hir(ctx)?;
+
+	return lower_hir(hir);
 }

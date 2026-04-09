@@ -206,13 +206,15 @@ pub fn parse_type_parameters_declaration(tokens: &Vec<LexerToken>, ind: &mut usi
 
 		*ind += 1;
 		
-		if tokens[*ind].tok_type == LexerTokenType::AngelBracketClose {
+		if tokens[*ind].is_angel_bracket_close() {
 			break;
 		}
 
 		tokens[*ind].expects(LexerTokenType::Comma)?;
 		*ind += 1;
 	}
+
+	*ind += 1;
 
 	return Ok(container);
 }

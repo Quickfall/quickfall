@@ -91,7 +91,7 @@ impl ASTTreeNodeKind {
 	}
 
 	pub fn is_tree_permissible(&self) -> bool {
-		return matches!(self, ASTTreeNodeKind::FunctionDeclaration { .. } | ASTTreeNodeKind::StaticVariableDeclaration { .. } | ASTTreeNodeKind::ShadowFunctionDeclaration { .. }| ASTTreeNodeKind::StructLayoutDeclaration { .. })
+		return matches!(self, ASTTreeNodeKind::FunctionDeclaration { .. } | ASTTreeNodeKind::EnumDeclaration { .. } | ASTTreeNodeKind::StaticVariableDeclaration { .. } | ASTTreeNodeKind::ShadowFunctionDeclaration { .. }| ASTTreeNodeKind::StructLayoutDeclaration { .. })
 	}
 
 	pub fn get_tree_name(&self) -> Option<HashedString> {
@@ -115,6 +115,10 @@ impl ASTTreeNodeKind {
 			ASTTreeNodeKind::VarDeclaration { var_name, var_type: _, value: _ } => {
 				return Some(HashedString::new(var_name.val.to_string()));
 			},
+
+			ASTTreeNodeKind::EnumDeclaration { name, entries: _, functions: _, type_params: _ } => {
+				return Some(name.clone())
+			}
 
 			_ => return None
 		}
