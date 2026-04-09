@@ -22,6 +22,7 @@ pub fn parse_use_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagnos
 	}
 
 	tokens[*ind].expects(LexerTokenType::ArrayOpen)?;
+	*ind += 1;
 
 	while tokens[*ind].is_keyword() {
 		let kwd = tokens[*ind].expects_keyword()?;

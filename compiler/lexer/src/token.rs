@@ -22,6 +22,8 @@ pub enum LexerTokenType {
 	Unwrap,
 	UnwrapUnsafe,
 
+	Use,
+
 	Var,
 	Struct,
 	Layout,
@@ -226,6 +228,7 @@ impl Display for LexerTokenType {
 			Self::True => "true",
 			Self::While => "while",
 			Self::Unwrap => "unwrap",
+			Self::Use => "use",
 			Self::UnwrapUnsafe => "unsafe_unwrap"
 		};
 

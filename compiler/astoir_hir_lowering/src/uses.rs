@@ -3,7 +3,7 @@ use std::path::{MAIN_SEPARATOR_STR};
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use ast_parser::parse_ast_ctx;
 use astoir_hir::{ctx::HIRContext};
-use diagnostics::{MaybeDiagnostic};
+use diagnostics::{MaybeDiagnostic, builders::make_use_not_found};
 use lexer::lexer::lexer_parse_file;
 
 use crate::{lower_ast_toplevel};
@@ -23,11 +23,14 @@ pub fn handle_ast_use_statement(context: &mut HIRContext, node: Box<ASTTreeNode>
 		let ast = parse_ast_ctx(&lexer)?;
 
 		for clause in use_clauses {
-			if ast.map.contains_key(&clause.val) {
-				lower_ast_toplevel(context, ast.map[&clause.val].clone())?;
+			if !ast.map.contains_key(&clause.val) {
+				return Err(make_use_not_found(&*node, &clause.val, &path).into())
 			}
+
+			lower_ast_toplevel(context, ast.map[&clause.val].clone())?;
 		}
 
+		return Ok(())
 	}
 
 	panic!("Invalid node")
