@@ -56,10 +56,12 @@ name = "astoir_hir_lowering"
 version = "0.1.0"
 dependencies = [
  "ast",
+ "ast_parser",
  "astoir_hir",
  "compiler_typing",
  "compiler_utils",
  "diagnostics",
+ "lexer",
 ]
 
 [[package]]
