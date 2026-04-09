@@ -51,6 +51,9 @@ pub enum ASTTreeNodeKind {
 	ArrayIndexAccess { val: Box<ASTTreeNode>, index: Box<ASTTreeNode> },
 	ArrayIndexModifiy { array: Box<ASTTreeNode>, index: Box<ASTTreeNode>, val: Box<ASTTreeNode> },
 
+	EnumDeclaration { name: HashedString, entries: Vec<Box<ASTTreeNode>>, functions: Vec<Box<ASTTreeNode>> },
+	EnumEntryDeclaration { name: HashedString, fields: Vec<Box<ASTTreeNode>> },
+
 	StructLayoutDeclaration { name: HashedString, layout: bool, members: Vec<Box<ASTTreeNode>>, type_params: TypeParameterContainer },
 	StructFieldMember { name: HashedString, member_type: ASTType },
 
@@ -188,7 +191,9 @@ impl Display for ASTTreeNodeKind {
 			Self::StructLRFunction { .. } => "struct LRU function usage",
 			Self::StructLRVariable { .. } => "struct LRU variable usage",
 			Self::StructLayoutDeclaration { .. } => "struct / layout declaration",
-			Self::StructFieldMember { .. } => "struct field"
+			Self::StructFieldMember { .. } => "struct field",
+			Self::EnumDeclaration { .. } => "enum declaration",
+			Self::EnumEntryDeclaration { .. } => "enum entry declaration",
 		};
 
 		write!(f, "{}", s)?;
