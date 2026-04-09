@@ -2,7 +2,7 @@ use ast::{ctx::ParserCtx, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos};
 
-use crate::{arrays::lower_ast_array_modify, control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block}, func::{lower_ast_function_call, lower_ast_function_declaration, lower_ast_shadow_function_declaration}, math::lower_ast_math_operation, structs::lower_ast_struct_declaration, values::lower_ast_value, var::{lower_ast_variable_assign, lower_ast_variable_declaration}};
+use crate::{arrays::lower_ast_array_modify, control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block}, enums::lower_ast_enum, func::{lower_ast_function_call, lower_ast_function_declaration, lower_ast_shadow_function_declaration}, math::lower_ast_math_operation, structs::lower_ast_struct_declaration, values::lower_ast_value, var::{lower_ast_variable_assign, lower_ast_variable_declaration}};
 
 pub mod literals;
 pub mod var;
@@ -15,6 +15,7 @@ pub mod control;
 pub mod structs;
 pub mod arrays;
 pub mod unwraps;
+pub mod enums;
 
 pub fn lower_ast_body_node(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	move_current_diagnostic_pos(node.get_pos());
@@ -91,6 +92,12 @@ pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> D
 
 			return Ok(true)
 		},
+
+		ASTTreeNodeKind::EnumDeclaration { .. } => {
+			lower_ast_enum(context, node)?;
+
+			return Ok(true)
+		}
 
 		_ => panic!("Invalid node type")
 	}

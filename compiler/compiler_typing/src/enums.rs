@@ -5,7 +5,7 @@ use std::{collections::HashMap, f32::consts::E};
 use compiler_utils::{hash::{HashedString}, utils::indexed::IndexStorage};
 use diagnostics::{DiagnosticResult, builders::{make_cannot_find_type_field, make_cannot_find_type_function, make_cannot_find_type_pos, make_enum_parent_fields}};
 
-use crate::{RawTypeReference, SizedType, StructuredType, TypeParameterContainer, TypedFunction, raw::RawType, references::TypeReference, storage::TypeStorage, tree::Type};
+use crate::{RawTypeReference, SizedType, StructuredType, TypeParamType, TypeParameterContainer, TypedFunction, raw::RawType, references::TypeReference, storage::TypeStorage, tree::Type};
 
 /// The container for the parent type of enum.
 /// 
@@ -25,7 +25,7 @@ impl RawEnumTypeContainer {
 	}
 
 	pub fn append_entry(&mut self, name: HashedString, fields: Vec<(u64, TypeReference)>) {
-		let mut entry_container = RawEnumEntryContainer::new(self.self_ref, fields);
+		let mut entry_container = RawEnumEntryContainer::new(self.self_ref, fields, self.type_params.clone());
 		entry_container.child = self.entries.len();
 
 		self.entries.insert(name, RawType::EnumEntry(entry_container));
@@ -72,19 +72,20 @@ impl SizedType for RawEnumTypeContainer {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RawEnumEntryContainer {
 	pub parent: RawTypeReference,
+	pub type_params: TypeParameterContainer,
 	pub child: usize,
 	pub fields: IndexStorage<TypeReference>
 }
 
 impl RawEnumEntryContainer {
-	pub fn new(parent: RawTypeReference, fields: Vec<(u64, TypeReference)>) -> Self {
+	pub fn new(parent: RawTypeReference, fields: Vec<(u64, TypeReference)>, type_params: TypeParameterContainer) -> Self {
 		let mut storage = IndexStorage::new();
 
 		for field in fields {
 			let _ = storage.append(field.0, field.1);
 		}
 
-		RawEnumEntryContainer { parent, fields: storage, child: 0 }
+		RawEnumEntryContainer { parent, fields: storage, child: 0, type_params }
 	}
 }
 
@@ -136,6 +137,16 @@ impl StructuredType for RawEnumTypeContainer {
 	}
 }
 
+impl TypeParamType for RawEnumTypeContainer {
+	fn has_type_param(&self, param: &HashedString) -> bool {
+		self.type_params.contains_key(param)
+	}
+
+	fn get_type_param_ind(&self, param: &HashedString) -> usize {
+		self.type_params[param]
+	}
+}
+
 impl StructuredType for RawEnumEntryContainer {
 	fn get_field(&self, hash: u64, _storage: &TypeStorage) -> DiagnosticResult<TypeReference> {
 		let k = match self.fields.get_index(hash) {
@@ -181,5 +192,15 @@ impl StructuredType for RawEnumEntryContainer {
 		}
 
 		panic!("Parent type of enum entry was not an enum!");
+	}
+}
+
+impl TypeParamType for RawEnumEntryContainer {
+	fn has_type_param(&self, param: &HashedString) -> bool {
+		self.type_params.contains_key(param)
+	}
+
+	fn get_type_param_ind(&self, param: &HashedString) -> usize {
+		self.type_params[param]
 	}
 }

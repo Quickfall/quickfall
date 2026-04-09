@@ -1,6 +1,6 @@
 use std::{fmt::Display};
 
-use crate::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Level, Span, SpanKind, SpanPosition}, errors::{ALREADY_IN_SCOPE, ASSIGN_DIFF_TYPE_IR, BOUND_MISSING, DIFF_SIZE_SPECIFIERS, ENUM_PARENT_FIELDS, ERA_NOT_EXIST, EXPECTED_FREE, EXPECTED_TOKEN, EXPECTED_TYPE, FIELD_MISSING, FIELD_STRUCT_INIT, FIND_TYPE, FIND_TYPE_FIELD, FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING, INDEX_USAGE, INVALID_POINTING, INVALID_TYPE_REQ, IR_CAST, IR_INSTRUCTION_HELD_VAL, MATH_OPERATION_ASSIGNS, TRAIT_MISSING, TYPE_NOT_PART, UNEXPECTED_TOKEN, VARIABLE_UNINIT}, get_current_diagnostic_pos, warnings::UNUSED_VAR};
+use crate::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Level, Span, SpanKind, SpanPosition}, errors::{ALREADY_IN_SCOPE, ASSIGN_DIFF_TYPE_IR, BOUND_MISSING, DIFF_SIZE_SPECIFIERS, DIFF_TYPE_SPECIFIERS, ENUM_PARENT_FIELDS, ERA_NOT_EXIST, EXPECTED_FREE, EXPECTED_TOKEN, EXPECTED_TYPE, FIELD_MISSING, FIELD_STRUCT_INIT, FIND_TYPE, FIND_TYPE_FIELD, FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING, INDEX_USAGE, INVALID_POINTING, INVALID_TYPE_REQ, IR_CAST, IR_INSTRUCTION_HELD_VAL, MATH_OPERATION_ASSIGNS, TRAIT_MISSING, TYPE_NOT_PART, UNEXPECTED_TOKEN, VARIABLE_UNINIT}, get_current_diagnostic_pos, warnings::UNUSED_VAR};
 
 pub fn make_expected_simple_error<K: DiagnosticSpanOrigin, E: Display, G: Display>(origin: &K, expected: &E, got: &G) -> Diagnostic {
 	origin.make_simple_diagnostic(EXPECTED_TOKEN.0, Level::Error, format!("expected {} but got {}", expected, got), None, vec![], vec![], vec![])
@@ -61,7 +61,11 @@ pub fn make_cannot_find_type_field<F: Display, T: Display>(field: &F, t: &T) -> 
 }
 
 pub fn make_diff_size_specifiers<K: DiagnosticSpanOrigin, A: Display, B: Display>(origin: &K, a: &A, b: &B) -> Diagnostic {
-	origin.make_simple_diagnostic(DIFF_SIZE_SPECIFIERS.0, Level::Error, format!("expected {} size specifiers on this type, got {}", a, b), None, vec![], vec![], vec![])
+	origin.make_simple_diagnostic(DIFF_SIZE_SPECIFIERS.0, Level::Error, format!("expected {} size specifiers on this type, got {}", b, a), None, vec![], vec![], vec![])
+}
+
+pub fn make_diff_type_specifiers<K: DiagnosticSpanOrigin, A: Display, B: Display>(origin: &K, a: &A, b: &B) -> Diagnostic {
+	origin.make_simple_diagnostic(DIFF_TYPE_SPECIFIERS.0, Level::Error, format!("expected {} type specifiers on this type, got {}", b, a), None, vec![], vec![], vec![])
 }
 
 pub fn make_diff_type<K: DiagnosticSpanOrigin, V: Display, T: Display, A: Display>(origin: &K, var_name: &V, req_type: &T, got: &A, var_origin: &K) -> Diagnostic {

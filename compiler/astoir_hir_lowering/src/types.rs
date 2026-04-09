@@ -1,8 +1,8 @@
 use ast::types::ASTType;
 use astoir_hir::ctx::HIRContext;
-use compiler_typing::{raw::RawType, references::TypeReference, structs::RawStructTypeContainer, tree::Type};
+use compiler_typing::{TypeParamType, raw::RawType, references::TypeReference, structs::RawStructTypeContainer, tree::Type};
 use compiler_utils::hash::HashedString;
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_cannot_find_type, make_diff_size_specifiers, make_req_type_kind}};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_cannot_find_type, make_diff_size_specifiers, make_diff_type_specifiers, make_req_type_kind}};
 
 pub fn lower_ast_type<K: DiagnosticSpanOrigin>(context: &mut HIRContext, t: ASTType, origin: &K) -> DiagnosticResult<Type> {
 	return match t {
@@ -24,7 +24,7 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(context: &mut HIRContext, t: ASTT
 			}
 
 			if t.get_type_params_count(&context.type_storage) != type_params.len() {
-				return Err(make_diff_size_specifiers(origin, &type_params.len(), &t.get_type_params_count(&context.type_storage)).into())
+				return Err(make_diff_type_specifiers(origin, &type_params.len(), &t.get_type_params_count(&context.type_storage)).into())
 			}
 
 			let mut t_params = vec![];
@@ -59,12 +59,12 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(context: &mut HIRContext, t: ASTT
 	};
 }
 
-pub fn lower_ast_type_struct<K: DiagnosticSpanOrigin>(context: &mut HIRContext, t: ASTType, struct_container: &RawStructTypeContainer, origin: &K) -> DiagnosticResult<TypeReference> {
+pub fn lower_ast_type_struct<K: DiagnosticSpanOrigin, T: TypeParamType>(context: &mut HIRContext, t: ASTType, container: &T, origin: &K) -> DiagnosticResult<TypeReference> {
 	if let ASTType::Generic(id, _, _, _) = &t {
 		let key = HashedString::new(id.clone());
 
-		if struct_container.type_params.contains_key(&key) {
-			return Ok(TypeReference::Unresolved(struct_container.type_params[&key]));
+		if container.has_type_param(&key) {
+			return Ok(TypeReference::Unresolved(container.get_type_param_ind(&key)));
 		}
 	}
 

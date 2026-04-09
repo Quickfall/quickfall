@@ -8,6 +8,7 @@ use crate::{functions::parse_function_declaraction, structs::members::parse_type
 
 pub mod members;
 pub mod val;
+pub mod enums;
 
 pub fn parse_type_declaration(tokens: &Vec<LexerToken>, ind: &mut usize, layout: bool) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();

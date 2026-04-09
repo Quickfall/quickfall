@@ -27,6 +27,8 @@ pub enum LexerTokenType {
 	Layout,
 	Lay,
 
+	Enum,
+
 	This,
 
 	Static,
@@ -183,6 +185,7 @@ impl LexerToken {
 impl Display for LexerTokenType {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		let s = match self {
+			Self::Enum => "enum",
 			Self::Ampersand => "&",
 			Self::AngelBracketClose => ">",
 			Self::AngelBracketOpen => "<",

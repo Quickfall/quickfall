@@ -51,6 +51,9 @@ pub enum ASTTreeNodeKind {
 	ArrayIndexAccess { val: Box<ASTTreeNode>, index: Box<ASTTreeNode> },
 	ArrayIndexModifiy { array: Box<ASTTreeNode>, index: Box<ASTTreeNode>, val: Box<ASTTreeNode> },
 
+	EnumDeclaration { name: HashedString, entries: Vec<Box<ASTTreeNode>>, functions: Vec<Box<ASTTreeNode>>, type_params: TypeParameterContainer },
+	EnumEntryDeclaration { name: HashedString, fields: Vec<Box<ASTTreeNode>> },
+
 	StructLayoutDeclaration { name: HashedString, layout: bool, members: Vec<Box<ASTTreeNode>>, type_params: TypeParameterContainer },
 	StructFieldMember { name: HashedString, member_type: ASTType },
 
@@ -88,7 +91,7 @@ impl ASTTreeNodeKind {
 	}
 
 	pub fn is_tree_permissible(&self) -> bool {
-		return matches!(self, ASTTreeNodeKind::FunctionDeclaration { .. } | ASTTreeNodeKind::StaticVariableDeclaration { .. } | ASTTreeNodeKind::ShadowFunctionDeclaration { .. }| ASTTreeNodeKind::StructLayoutDeclaration { .. })
+		return matches!(self, ASTTreeNodeKind::FunctionDeclaration { .. } | ASTTreeNodeKind::EnumDeclaration { .. } | ASTTreeNodeKind::StaticVariableDeclaration { .. } | ASTTreeNodeKind::ShadowFunctionDeclaration { .. }| ASTTreeNodeKind::StructLayoutDeclaration { .. })
 	}
 
 	pub fn get_tree_name(&self) -> Option<HashedString> {
@@ -112,6 +115,10 @@ impl ASTTreeNodeKind {
 			ASTTreeNodeKind::VarDeclaration { var_name, var_type: _, value: _ } => {
 				return Some(HashedString::new(var_name.val.to_string()));
 			},
+
+			ASTTreeNodeKind::EnumDeclaration { name, entries: _, functions: _, type_params: _ } => {
+				return Some(name.clone())
+			}
 
 			_ => return None
 		}
@@ -188,7 +195,9 @@ impl Display for ASTTreeNodeKind {
 			Self::StructLRFunction { .. } => "struct LRU function usage",
 			Self::StructLRVariable { .. } => "struct LRU variable usage",
 			Self::StructLayoutDeclaration { .. } => "struct / layout declaration",
-			Self::StructFieldMember { .. } => "struct field"
+			Self::StructFieldMember { .. } => "struct field",
+			Self::EnumDeclaration { .. } => "enum declaration",
+			Self::EnumEntryDeclaration { .. } => "enum entry declaration",
 		};
 
 		write!(f, "{}", s)?;

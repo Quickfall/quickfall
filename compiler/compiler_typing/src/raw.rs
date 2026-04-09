@@ -41,6 +41,7 @@ impl RawType {
 		match self {
 			RawType::Enum(container) => container.type_params.len(),
 			RawType::EnumEntry(container) => storage.types.vals[container.parent].get_type_params_count(storage),
+			RawType::Struct(_, container) => container.type_params.len(),
 
 			_ => 0
 		}
@@ -309,6 +310,11 @@ impl Hash for RawType {
 				for function in &b.functions.vals {
 					hasher.write_usize(*function);
 				}
+			},
+
+			RawType::Enum(container) => {
+				hasher.write_usize(7);
+				hasher.write_usize(container.self_ref);
 			}
 			
 			_ => panic!("Unhashable type {:#?}", self)
