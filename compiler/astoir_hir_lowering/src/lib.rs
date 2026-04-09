@@ -15,6 +15,7 @@ pub mod control;
 pub mod structs;
 pub mod arrays;
 pub mod unwraps;
+pub mod enums;
 
 pub fn lower_ast_body_node(context: &mut HIRContext, curr_ctx: &mut HIRBranchedContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
 	move_current_diagnostic_pos(node.get_pos());

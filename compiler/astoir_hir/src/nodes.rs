@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use compiler_typing::{raw::RawType, references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
+use compiler_typing::{enums::{RawEnumEntryContainer, RawEnumTypeContainer}, raw::RawType, references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
 use compiler_utils::{Position, hash::SelfHash};
 use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}, unsure_panic};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};
@@ -66,6 +66,8 @@ pub enum HIRNodeKind {
 
 	EnumParentCast { val: Box<HIRNode>, parent: Type },
 
+	EnumDeclaration { type_name: usize, container: RawEnumTypeContainer },
+ 
 	StructDeclaration { type_name: usize, container: RawStructTypeContainer, layout: bool },
 	StructFunctionDeclaration { func_name: usize, arguments: Vec<(u64, TypeReference)>, return_type: Option<TypeReference>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
 	
