@@ -14,7 +14,7 @@ git clone https://github.com/Quickfall/quickfall
 ```
 
 You will need the following installed in order to compile & use Quickfall:
-- Rust 1.91.1
-- LLVM 21.1
+- Rust 1.94.1
+- LLVM 22.1
 
 You can then build the project by using the `cargo` Rust tool.
