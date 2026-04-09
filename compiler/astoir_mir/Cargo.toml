@@ -1,9 +1,0 @@
-[package]
-name = "astoir_mir"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-diagnostics = { path = "../diagnostics" }
-compiler_utils = { path = "../compiler_utils" }
-compiler_typing = { path = "../compiler_typing" }

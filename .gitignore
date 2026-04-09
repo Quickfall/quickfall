@@ -3,9 +3,3 @@ target/
 
 out
 out.*
-
-*.qf
-*.qfmir
-*.llvm
-
-!examples/**.qf

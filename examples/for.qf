@@ -1,0 +1,5 @@
+func test() {
+	for(si128 test = 0, test <= 10, test += 1) {
+		
+	}
+}
