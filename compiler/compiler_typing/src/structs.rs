@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use compiler_utils::utils::indexed::IndexStorage;
 use diagnostics::{DiagnosticResult, builders::{make_cannot_find_type_field, make_cannot_find_type_function}};
 
-use crate::{SizedType, StructuredType, TypeParameterContainer, TypeReference, TypedFunction, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, tree::Type};
+use crate::{SizedType, StructuredType, TypeParamType, TypeParameterContainer, TypeReference, TypedFunction, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, tree::Type};
 
 /// Container for structure types
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -111,5 +111,15 @@ impl StructuredType for RawStructTypeContainer {
 		};
 
 		return Ok(k);
+	}
+}
+
+impl TypeParamType for RawStructTypeContainer {
+	fn has_type_param(&self, param: &compiler_utils::hash::HashedString) -> bool {
+		self.type_params.contains_key(param)
+	}
+
+	fn get_type_param_ind(&self, param: &compiler_utils::hash::HashedString) -> usize {
+		self.type_params[param]
 	}
 }

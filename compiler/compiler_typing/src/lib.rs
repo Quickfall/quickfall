@@ -34,10 +34,10 @@ pub trait SizedType {
 /// Represents a type that contains type parameters
 pub trait TypeParamType {
 	/// Checks if the type contains the given type parameter
-	fn has_type_param(param: &HashedString) -> bool;
+	fn has_type_param(&self, param: &HashedString) -> bool;
 	
 	/// Gets the raw index for the given type parameter
-	fn get_type_param_ind(param: &HashedString) -> usize;
+	fn get_type_param_ind(&self, param: &HashedString) -> usize;
 }
 
 /// Represents types that can contain functions and more
