@@ -41,6 +41,7 @@ impl RawType {
 		match self {
 			RawType::Enum(container) => container.type_params.len(),
 			RawType::EnumEntry(container) => storage.types.vals[container.parent].get_type_params_count(storage),
+			RawType::Struct(_, container) => container.type_params.len(),
 
 			_ => 0
 		}
