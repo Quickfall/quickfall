@@ -51,7 +51,7 @@ pub enum ASTTreeNodeKind {
 	ArrayIndexAccess { val: Box<ASTTreeNode>, index: Box<ASTTreeNode> },
 	ArrayIndexModifiy { array: Box<ASTTreeNode>, index: Box<ASTTreeNode>, val: Box<ASTTreeNode> },
 
-	EnumDeclaration { name: HashedString, entries: Vec<Box<ASTTreeNode>>, functions: Vec<Box<ASTTreeNode>> },
+	EnumDeclaration { name: HashedString, entries: Vec<Box<ASTTreeNode>>, functions: Vec<Box<ASTTreeNode>>, type_params: TypeParameterContainer },
 	EnumEntryDeclaration { name: HashedString, fields: Vec<Box<ASTTreeNode>> },
 
 	StructLayoutDeclaration { name: HashedString, layout: bool, members: Vec<Box<ASTTreeNode>>, type_params: TypeParameterContainer },
