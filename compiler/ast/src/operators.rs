@@ -8,8 +8,24 @@ pub fn parse_math_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagnos
 	let op = match tokens[*ind].tok_type {
 		LexerTokenType::Plus => MathOperatorType::Add,
 		LexerTokenType::Minus => MathOperatorType::Subtract,
-		LexerTokenType::Asterisk => MathOperatorType::Multiply, 
-		LexerTokenType::Divide => MathOperatorType::Divide,
+		LexerTokenType::Asterisk => {
+			if tokens[*ind + 1].tok_type == LexerTokenType::Asterisk {
+				*ind += 1;
+
+				MathOperatorType::ShiftLeft
+			} else {
+				MathOperatorType::Multiply
+			}
+		}
+		LexerTokenType::Divide => {
+			if tokens[*ind + 1].tok_type == LexerTokenType::Divide {
+				*ind += 1;
+
+				MathOperatorType::ShiftRight
+			} else {
+				MathOperatorType::Divide
+			}
+		}
 
 		_ => return Err(make_unexpected_simple_error(&tokens[*ind], &tokens[*ind].tok_type).into())
 	};

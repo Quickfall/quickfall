@@ -53,7 +53,7 @@ pub fn lower_hir_math_operation_int(left: BaseMIRValue, right: BaseMIRValue, ope
 		MathOperatorType::Add => build_int_add(&mut ctx.mir_ctx, left, right, signed)?,
 		MathOperatorType::Subtract => build_int_sub(&mut ctx.mir_ctx, left, right, signed)?,
 		MathOperatorType::Multiply => build_int_mul(&mut ctx.mir_ctx, left, right, signed)?,
-		MathOperatorType::Divide => build_int_div(&mut ctx.mir_ctx, left, right, signed)?
+		MathOperatorType::Divide => build_int_div(&mut ctx.mir_ctx, left, right, signed)?,
 	};
 
 	return Ok(res.into());

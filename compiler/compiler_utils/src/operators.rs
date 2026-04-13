@@ -6,7 +6,9 @@ pub enum MathOperatorType {
 	Add,
 	Subtract,
 	Multiply,
-	Divide
+	Divide,
+	ShiftLeft,
+	ShiftRight
 }
 
 /// Represents an actual math operator
