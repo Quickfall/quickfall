@@ -14,3 +14,4 @@ compiler_utils = { path = "../compiler_utils" }
 
 [features]
 llvm = ["llvm_ir_bridge"]
+diagbacktraces = ["diagnostics/compiler_diagbacktraces"]

@@ -77,8 +77,12 @@ pub struct Diagnostic {
 
 impl Clone for Diagnostic {
 	fn clone(&self) -> Self {
-		#[cfg(feature = "compiler_diagbacktraces")]
-		return Diagnostic { level: self.level.clone(), code: self.code, message: self.message.clone(), primary_span: self.primary_span.clone(), spans: self.spans.clone(), note: self.note.clone(), help: self.help.clone(), backtrace: Diagnostic::capture_backtrace() };
+		#[cfg(feature = "compiler_diagbacktraces")] 
+		unsafe { std::env::set_var("RUST_BACKTRACE", "1"); }
+
+		#[cfg(feature = "compiler_diagbacktraces")] 
+		return Diagnostic { level: self.level.clone(), code: self.code, message: self.message.clone(), primary_span: self.primary_span.clone(), spans: self.spans.clone(), note: self.note.clone(), help: self.help.clone(), backtrace: Backtrace::capture() };
+
 		
 		#[cfg(not(feature = "compiler_diagbacktraces"))]
 		return Diagnostic { level: self.level.clone(), code: self.code, message: self.message.clone(), primary_span: self.primary_span.clone(), spans: self.spans.clone(), note: self.note.clone(), help: self.help.clone() };
@@ -87,8 +91,12 @@ impl Clone for Diagnostic {
 
 impl Diagnostic {
 	pub fn new(level: Level, decl: (usize, &str), primary_span: Span, spans: Vec<Span>, note: Vec<String>, help: Vec<String>) -> Self {
-		#[cfg(feature = "compiler_diagbacktraces")]
+		#[cfg(feature = "compiler_diagbacktraces")] 
+		unsafe { std::env::set_var("RUST_BACKTRACE", "1"); }
+
+		#[cfg(feature = "compiler_diagbacktraces")] 
 		let d = Diagnostic { level, code: decl.0, message: decl.1.to_string(), primary_span, spans, note, help, backtrace: Backtrace::capture() };
+		
 		
 		#[cfg(not(feature = "compiler_diagbacktraces"))]
 		let d = Diagnostic { level, code: decl.0, message: decl.1.to_string(), primary_span, spans, note, help };
@@ -99,8 +107,12 @@ impl Diagnostic {
  	}
 
 	pub fn new_base(level: Level, code: usize, message: String, primary_span: Span, spans: Vec<Span>, note: Vec<String>, help: Vec<String>) -> Self {
-		#[cfg(feature = "compiler_diagbacktraces")]
+		#[cfg(feature = "compiler_diagbacktraces")] 
+		unsafe { std::env::set_var("RUST_BACKTRACE", "1"); }
+
+		#[cfg(feature = "compiler_diagbacktraces")] 	
 		let d = Diagnostic { level, code, message, primary_span, spans, note, help, backtrace: Backtrace::capture() };
+	
 
 		#[cfg(not(feature = "compiler_diagbacktraces"))] 
 		let d = Diagnostic { level, code, message, primary_span, spans, note, help };
