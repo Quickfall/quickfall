@@ -1,5 +1,8 @@
 //! Operator related utils
 
+use diagnostics::{DiagnosticResult, builders::make_unexpected_simple_error};
+use lexer::token::{LexerToken, LexerTokenType};
+
 /// The different math operators
 #[derive(Debug, PartialEq, Clone)]
 pub enum MathOperator {
@@ -18,4 +21,69 @@ pub enum ComparingOperator {
 	HigherEqual, // A >= B
 	Lower, // A < B
 	LowerEqual // A <= B
+}
+
+pub fn parse_math_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<(MathOperator, bool)> {
+	let op = match tokens[*ind].tok_type {
+		LexerTokenType::Plus => MathOperator::ADD,
+		LexerTokenType::Minus => MathOperator::SUBSTRACT,
+		LexerTokenType::Asterisk => MathOperator::MULTIPLY, 
+		LexerTokenType::Divide => MathOperator::DIVIDE,
+
+		_ => return Err(make_unexpected_simple_error(&tokens[*ind], &tokens[*ind].tok_type).into())
+	};
+
+	*ind += 1;
+
+	let assigns = match tokens[*ind].tok_type {
+		LexerTokenType::EqualSign => true,
+		_ => false
+	};
+
+	*ind += 1;
+
+	return Ok((op, assigns))
+}
+
+pub fn parse_compare_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<ComparingOperator> {
+	let eq = match tokens[*ind + 1].tok_type {
+		LexerTokenType::EqualSign => true,
+		_ => false
+	};
+
+	let op = match tokens[*ind].tok_type {
+		LexerTokenType::EqualSign => {
+			tokens[*ind + 1].expects(LexerTokenType::EqualSign)?;
+
+			ComparingOperator::Equal
+		},
+
+		LexerTokenType::ExclamationMark => {
+			tokens[*ind + 1].expects(LexerTokenType::EqualSign)?;
+
+			ComparingOperator::NotEqual
+		},
+
+		LexerTokenType::AngelBracketOpen => {
+			if eq {
+				ComparingOperator::LowerEqual
+			} else {
+				ComparingOperator::Lower
+			}
+		},
+
+		LexerTokenType::AngelBracketClose => {
+			if eq {
+				ComparingOperator::HigherEqual
+			} else {
+				ComparingOperator::Higher
+			}
+		},
+
+		_ => {
+			return Err(make_unexpected_simple_error(&tokens[*ind], &tokens[*ind].tok_type).into())
+		}
+	};
+
+	return Ok(op);
 }

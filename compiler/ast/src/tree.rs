@@ -7,9 +7,8 @@ use std::{collections::HashMap, fmt::Display};
 use compiler_typing::TypeParameterContainer;
 use compiler_utils::{Position, hash::{HashedString, SelfHash}};
 use diagnostics::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}};
-use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
 
-use crate::types::ASTType;
+use crate::{operators::{ComparingOperator, MathOperator}, types::ASTType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
