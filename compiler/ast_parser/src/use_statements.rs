@@ -35,6 +35,7 @@ pub fn parse_use_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagnos
 		}
 
 		tokens[*ind].expects(LexerTokenType::Comma)?;
+		*ind += 1;
 	}
 
 	*ind += 1;

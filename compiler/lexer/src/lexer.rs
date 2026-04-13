@@ -208,7 +208,7 @@ fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) 
 	*ind += 1;
 
 	if contents.chars().nth(*ind).unwrap() != '=' {
-		return Ok(LexerToken::make_single_sized(start_pos, LexerTokenType::Asterisk));
+		return Ok(LexerToken::make_single_sized(start_pos, LexerTokenType::EqualSign));
 	}
 
 	let assigns = match contents.chars().nth(*ind) {

@@ -10,6 +10,15 @@ use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
 pub fn lower_hir_variable_declaration(block_id: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<bool> {
 	if let HIRNodeKind::VarDeclaration { variable, var_type, default_val } = node.clone().kind {
 		let func = ctx.mir_ctx.block_to_func[&block_id];
+
+		println!("Func {}", func);
+		
+		for i in 0..ctx.hir_ctx.function_contexts.len() {
+			println!("Func {}: {:#?}", i, ctx.hir_ctx.function_contexts[i])
+		}
+
+		
+
 		let local_ctx = ctx.hir_ctx.function_contexts[func].as_ref().unwrap();
 
 		if local_ctx.is_eligible_for_ssa(variable) {

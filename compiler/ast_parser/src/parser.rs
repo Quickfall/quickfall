@@ -47,7 +47,7 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticRe
 }
 
 /// Parses an AST node inside of another compatible node (functions, control bodies)
-pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
+pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {	
 	match &tokens[*ind].tok_type {
 
 		LexerTokenType::Var => {
