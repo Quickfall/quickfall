@@ -1,8 +1,8 @@
 use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::{refer::MIRBlockReference}, builder::{build_float_add, build_float_div, build_float_mul, build_float_sub, build_int_add, build_int_div, build_int_mul, build_int_sub}, vals::base::BaseMIRValue};
 use compiler_typing::raw::RawType;
+use compiler_utils::operators::MathOperator;
 use diagnostics::{DiagnosticResult, builders::make_math_operation_req_assign, unsure_panic};
-use lexer::toks::math::MathOperator;
 
 use crate::{MIRLoweringContext, values::lower_hir_value, vars::lower_hir_variable_reference};
  

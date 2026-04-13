@@ -1,27 +1,8 @@
 //! Operator related utils
 
+use compiler_utils::operators::{ComparingOperator, MathOperator};
 use diagnostics::{DiagnosticResult, builders::make_unexpected_simple_error};
 use lexer::token::{LexerToken, LexerTokenType};
-
-/// The different math operators
-#[derive(Debug, PartialEq, Clone)]
-pub enum MathOperator {
-	ADD,
-	SUBSTRACT,
-	MULTIPLY,
-	DIVIDE
-}
-
-/// The different comparing operators
-#[derive(Debug, PartialEq, Clone)]
-pub enum ComparingOperator {
-	Equal, // A == B
-	NotEqual, // A != B
-	Higher, // A > B
-	HigherEqual, // A >= B
-	Lower, // A < B
-	LowerEqual // A <= B
-}
 
 pub fn parse_math_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<(MathOperator, bool)> {
 	let op = match tokens[*ind].tok_type {

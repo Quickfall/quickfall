@@ -1,10 +1,10 @@
 use compiler_utils::{Position, hash::HashedString};
 
-use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
+use ast::{make_node, operators::parse_compare_operator, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use diagnostics::{DiagnosticResult, builders::{make_expected_simple_error, make_unexpected_simple_error}};
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{arrays::parse_array_access, functions::parse_function_call, structs::val::parse_struct_initialize, unwraps::{parse_unwrap_condition, parse_unwrap_value}};
+use crate::{arrays::parse_array_access, comp::parse_ast_compare, functions::parse_function_call, structs::val::parse_struct_initialize, unwraps::{parse_unwrap_condition, parse_unwrap_value}};
 use crate::literals::{parse_integer_literal, parse_string_literal};
 use crate::math::parse_math_operation;
 
@@ -78,7 +78,7 @@ pub fn parse_ast_value_dotacess_chain_member(tokens: &Vec<LexerToken>, ind: &mut
 /// 
 pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, original: DiagnosticResult<Box<ASTTreeNode>>, invoked_on_body: bool) -> DiagnosticResult<Box<ASTTreeNode>> {
 	match &tokens[*ind].tok_type {
-		LexerTokenType::MathOperator(_, _) => {
+		LexerTokenType::Plus | LexerTokenType::Minus | LexerTokenType::Asterisk | LexerTokenType::Divide => {
 			let o = &original?;
 			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
 
@@ -92,6 +92,10 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 		},
 
 		LexerTokenType::EqualSign => {
+			if tokens[*ind + 1].tok_type == LexerTokenType::EqualSign {
+				return parse_ast_compare(tokens, ind, original.clone()?);
+			}
+
 			*ind += 1;
 
 			if let Ok(v) = original.as_ref() {
@@ -118,20 +122,7 @@ pub fn parse_ast_value_post_l(tokens: &Vec<LexerToken>, ind: &mut usize, origina
 			return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
 		},
 
-		LexerTokenType::ComparingOperator(op) => {
-			let operator = op.clone();
-
-			let o = &original?;
-			let k = Box::new(ASTTreeNode::clone(o.as_ref()));
-
-			*ind += 1;
-			let right_val = parse_ast_value(tokens, ind)?;
-
-			let start_pos = k.start.clone();
-			let end_pos = right_val.end.clone();
-
-			return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::OperatorBasedConditionMember { lval: k, rval: right_val, operator }, start_pos, end_pos)));
-		},
+		LexerTokenType::ExclamationMark | LexerTokenType::AngelBracketOpen | LexerTokenType::AngelBracketClose => return parse_ast_compare(tokens, ind, original.clone()?),
 
 		_ => return original
 	}

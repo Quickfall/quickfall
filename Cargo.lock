@@ -82,7 +82,6 @@ dependencies = [
  "compiler_typing",
  "compiler_utils",
  "diagnostics",
- "lexer",
 ]
 
 [[package]]

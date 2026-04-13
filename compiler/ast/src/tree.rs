@@ -5,10 +5,10 @@
 use std::{collections::HashMap, fmt::Display};
 
 use compiler_typing::TypeParameterContainer;
-use compiler_utils::{Position, hash::{HashedString, SelfHash}};
+use compiler_utils::{Position, hash::{HashedString, SelfHash}, operators::{ComparingOperator, MathOperator}};
 use diagnostics::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}};
 
-use crate::{operators::{ComparingOperator, MathOperator}, types::ASTType};
+use crate::types::ASTType;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
