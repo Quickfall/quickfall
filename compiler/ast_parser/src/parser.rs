@@ -3,7 +3,7 @@ use compiler_utils::hash::HashedString;
 use diagnostics::{DiagnosticResult, builders::{make_unexpected_simple_error, make_unused_variable}};
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{control::{for_loop::parse_for_loop, if_else::parse_if_statement, while_block::parse_while_block}, functions::{parse_function_call, parse_function_declaraction, returns::parse_function_return_statement, shadow::parse_shadow_function_declaration}, structs::{enums::parse_enum_declaration, parse_type_declaration}, value::parse_ast_value_post_l, variables::{decl::parse_variable_declaration, static_decl::parse_static_variable_declaration}};
+use crate::{control::{for_loop::parse_for_loop, if_else::parse_if_statement, while_block::parse_while_block}, functions::{parse_function_call, parse_function_declaraction, returns::parse_function_return_statement, shadow::parse_shadow_function_declaration}, structs::{enums::parse_enum_declaration, parse_type_declaration}, use_statements::parse_use_statement, value::parse_ast_value_post_l, variables::{decl::parse_variable_declaration, static_decl::parse_static_variable_declaration}};
 
 /// Parses an AST node outside of any other node.
 /// 
@@ -38,12 +38,16 @@ pub fn parse_ast_node(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticRe
 			return parse_enum_declaration(tokens, ind);
 		},
 
+		LexerTokenType::Use => {
+			return parse_use_statement(tokens, ind);
+		}
+
 		_ => return Err(make_unexpected_simple_error(&tokens[*ind], &tokens[*ind].tok_type).into())
 	}	
 }
 
 /// Parses an AST node inside of another compatible node (functions, control bodies)
-pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
+pub fn parse_ast_node_in_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {	
 	match &tokens[*ind].tok_type {
 
 		LexerTokenType::Var => {

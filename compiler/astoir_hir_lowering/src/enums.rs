@@ -29,7 +29,7 @@ pub fn lower_ast_enum_entry(context: &mut HIRContext, node: Box<ASTTreeNode>, co
 }
 
 pub fn lower_ast_enum(context: &mut HIRContext, node: Box<ASTTreeNode>) -> DiagnosticResult<Box<HIRNode>> {
-	if let ASTTreeNodeKind::EnumDeclaration { name, entries, functions, type_params } = node.kind.clone() {
+	if let ASTTreeNodeKind::EnumDeclaration { name, entries, functions: _, type_params } = node.kind.clone() {
 		let mut container = RawEnumTypeContainer::new(context.type_storage.types.vals.len(), type_params);
 
 		for entry in entries {

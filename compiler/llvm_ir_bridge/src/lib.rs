@@ -30,7 +30,7 @@ macro_rules! llvm_to_base  {
 	($exp:expr) => {
 		match $exp {
 			Ok(v) => v,
-			Err(e) => panic!("inkwell function failed")
+			Err(_) => panic!("inkwell function failed")
 		}
 	};
 }
@@ -40,7 +40,7 @@ macro_rules! llvm_to_base_returnless  {
 	($exp:expr) => {
 		match $exp {
 			Ok(_) => {},
-			Err(e) => panic!("inkwell function failed")
+			Err(_) => panic!("inkwell function failed")
 		}
 	};
 }

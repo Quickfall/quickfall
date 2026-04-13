@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use compiler_typing::{enums::{RawEnumEntryContainer, RawEnumTypeContainer}, raw::RawType, references::TypeReference, storage::{BOOLEAN_TYPE, STATIC_STR}, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
+use compiler_typing::{enums::{RawEnumTypeContainer}, raw::RawType, references::TypeReference, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
 use compiler_utils::{Position, hash::SelfHash};
 use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}, unsure_panic};
 use lexer::toks::{comp::ComparingOperator, math::MathOperator};

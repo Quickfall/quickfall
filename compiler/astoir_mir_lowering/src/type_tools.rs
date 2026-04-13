@@ -1,5 +1,3 @@
-use std::clone;
-
 use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::refer::MIRBlockReference, builder::{build_comp_eq, build_field_pointer, build_ir_cast, build_load, build_unsigned_int_const}, vals::{base::BaseMIRValue, int::MIRIntValue}};
 use compiler_typing::{SizedType, raw::RawType, tree::Type};
@@ -7,7 +5,7 @@ use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_req_ty
 
 use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value, vars::lower_hir_variable_reference};
 
-pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<MIRIntValue> {
+pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(_block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<MIRIntValue> {
 	let enum_type = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered_safe(origin)? {
 		RawType::Enum(v) => v,
 		RawType::LoweredStruct(_, container) => {
@@ -48,7 +46,7 @@ pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(block: MIRBlockReference, 
 	return build_comp_eq(&mut ctx.mir_ctx, hint_val, hint_true);
 }
 
-pub fn cast_to_enum_child<K: DiagnosticSpanOrigin>(block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<BaseMIRValue> {
+pub fn cast_to_enum_child<K: DiagnosticSpanOrigin>(_block: MIRBlockReference, val: BaseMIRValue, enum_entry: RawType, ctx: &mut MIRLoweringContext, origin: &K) -> DiagnosticResult<BaseMIRValue> {
 	let enum_type = match ctx.mir_ctx.ssa_hints.get_hint(val.get_ssa_index()).get_type().as_generic_lowered_safe(origin)? {
 		RawType::Enum(v) => v,
 		RawType::LoweredStruct(_, container) => {
@@ -107,7 +105,7 @@ pub fn lower_hir_unwrap_cond(block: MIRBlockReference, node: Box<HIRNode>, ctx: 
 }
 
 pub fn lower_hir_unwrap_value(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
-	if let HIRNodeKind::UnwrapValue { original, new_type, unsafe_unwrap } = node.kind.clone() {
+	if let HIRNodeKind::UnwrapValue { original, new_type, unsafe_unwrap: _ } = node.kind.clone() {
 		let original = lower_hir_value(block, original, ctx)?;
 		let new_type = lower_hir_type(ctx, new_type)?;
 

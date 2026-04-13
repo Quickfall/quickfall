@@ -2,7 +2,7 @@
 //! The parser for the Quickfall AST
 //!
 
-use ast::ctx::ParserCtx;
+use ast::{ctx::ParserCtx, tree::ASTTreeNodeKind};
 use diagnostics::{DiagnosticResult, builders::make_unexpected_simple_error};
 use lexer::token::{LexerToken, LexerTokenType};
 
@@ -19,6 +19,7 @@ pub mod variables;
 pub mod types;
 pub mod arrays;
 pub mod unwraps;
+pub mod use_statements;
 
 pub fn parse_ast_ctx(tokens: &Vec<LexerToken>) -> DiagnosticResult<ParserCtx> {
 	let mut ind = 0;
@@ -27,6 +28,11 @@ pub fn parse_ast_ctx(tokens: &Vec<LexerToken>) -> DiagnosticResult<ParserCtx> {
 
 	while tokens[ind].tok_type != LexerTokenType::EndOfFile {
 		let node = parse_ast_node(tokens, &mut ind)?;
+
+		if let ASTTreeNodeKind::UseStatement { .. } = node.kind {
+			ctx.uses.push(node);
+			continue;
+		}
 
 		if !node.kind.is_tree_permissible() {
 			return Err(make_unexpected_simple_error(&*node, &node).into())

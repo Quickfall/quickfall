@@ -86,11 +86,13 @@ impl Diagnostic {
         }
 	}
 
-	pub fn maybe_display_backtrace(&self, fmt: &mut std::fmt::Formatter<'_>) {
+	pub fn maybe_display_backtrace(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		if cfg!(debug_assertions) {
-			writeln!(fmt, "Internally captured in:");
-			writeln!(fmt, "{}", self.backtrace.as_ref().unwrap());
+			writeln!(fmt, "Internally captured in:")?;
+			writeln!(fmt, "{}", self.backtrace.as_ref().unwrap())?;
 		}
+
+		Ok(())
 	}
 
 	pub fn new(level: Level, decl: (usize, &str), primary_span: Span, spans: Vec<Span>, note: Vec<String>, help: Vec<String>) -> Self {
@@ -247,7 +249,7 @@ impl Display for Diagnostic {
 			ind += 1;
 		}
 
-		self.maybe_display_backtrace(f);
+		self.maybe_display_backtrace(f)?;
 		
 		Ok(())
 	}

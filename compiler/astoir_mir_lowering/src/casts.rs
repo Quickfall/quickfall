@@ -5,7 +5,7 @@ use diagnostics::DiagnosticResult;
 use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
 
 pub fn lower_cast(block: MIRBlockReference, node: Box<HIRNode>, ctx: &mut MIRLoweringContext) -> DiagnosticResult<BaseMIRValue> {
-	if let HIRNodeKind::CastValue { intentional, value, old_type, new_type } = node.kind.clone() {
+	if let HIRNodeKind::CastValue { intentional: _, value, old_type, new_type } = node.kind.clone() {
 		let value = lower_hir_value(block, value, ctx)?;
 		let old_type = lower_hir_type(ctx, old_type)?;
 

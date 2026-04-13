@@ -24,7 +24,7 @@ thread_local! {
 #[macro_export]
 macro_rules! unsure_panic {
 	($msg: expr) => { {
-		diagnostics::builders::make_unsure_panic(&$msg.to_string());
+		_ = diagnostics::builders::make_unsure_panic(&$msg.to_string());
 		diagnostics::dump_diagnostics();
 		panic!($msg);
 	}

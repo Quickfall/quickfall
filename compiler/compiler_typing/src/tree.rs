@@ -4,7 +4,7 @@ use std::fmt::Display;
 
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_req_type_kind, unsure_panic};
 
-use crate::{RawTypeReference, SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
+use crate::{SizedType, StructuredType, TypedFunction, raw::RawType, references::TypeReference, storage::{TypeStorage}, utils::get_pointer_size};
 
 #[derive(Clone, PartialEq, Debug, Eq, Hash)]
 /// The node-based typing system of Quickfall. Allows for very specific types.
@@ -133,7 +133,7 @@ impl Type {
 		}
 	}	
  
-	pub fn as_generic(&self, storage: &TypeStorage) -> RawType {
+	pub fn as_generic(&self) -> RawType {
 		match self {
 			Self::GenericLowered(a) => return a.clone(),
 			Self::Generic(a, _, _) => {
