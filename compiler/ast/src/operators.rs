@@ -1,15 +1,15 @@
 //! Operator related utils
 
-use compiler_utils::operators::{ComparingOperator, MathOperator};
+use compiler_utils::operators::{ComparingOperator, MathOperator, MathOperatorType};
 use diagnostics::{DiagnosticResult, builders::make_unexpected_simple_error};
 use lexer::token::{LexerToken, LexerTokenType};
 
-pub fn parse_math_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<(MathOperator, bool)> {
+pub fn parse_math_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<MathOperator> {
 	let op = match tokens[*ind].tok_type {
-		LexerTokenType::Plus => MathOperator::ADD,
-		LexerTokenType::Minus => MathOperator::SUBSTRACT,
-		LexerTokenType::Asterisk => MathOperator::MULTIPLY, 
-		LexerTokenType::Divide => MathOperator::DIVIDE,
+		LexerTokenType::Plus => MathOperatorType::Add,
+		LexerTokenType::Minus => MathOperatorType::Subtract,
+		LexerTokenType::Asterisk => MathOperatorType::Multiply, 
+		LexerTokenType::Divide => MathOperatorType::Divide,
 
 		_ => return Err(make_unexpected_simple_error(&tokens[*ind], &tokens[*ind].tok_type).into())
 	};
@@ -23,7 +23,7 @@ pub fn parse_math_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagnos
 
 	*ind += 1;
 
-	return Ok((op, assigns))
+	return Ok(MathOperator { operator: op, assigns, fast: false });
 }
 
 pub fn parse_compare_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<ComparingOperator> {

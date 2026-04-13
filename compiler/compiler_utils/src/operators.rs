@@ -1,12 +1,20 @@
 //! Operator utilities
 
-/// The different math operators
+/// The different math operator types
 #[derive(Debug, PartialEq, Clone)]
-pub enum MathOperator {
-	ADD,
-	SUBSTRACT,
-	MULTIPLY,
-	DIVIDE
+pub enum MathOperatorType {
+	Add,
+	Subtract,
+	Multiply,
+	Divide
+}
+
+/// Represents an actual math operator
+#[derive(Debug, PartialEq, Clone)]
+pub struct MathOperator {
+	pub operator: MathOperatorType,
+	pub assigns: bool,
+	pub fast: bool
 }
 
 /// The different comparing operators

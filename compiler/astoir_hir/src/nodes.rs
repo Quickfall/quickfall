@@ -50,7 +50,7 @@ pub enum HIRNodeKind {
 
 	VarAssigment { variable: usize, val: Box<HIRNode> },
 	
-	MathOperation { left:  Box<HIRNode>, right: Box<HIRNode>, operation: MathOperator, assignment: bool },
+	MathOperation { left:  Box<HIRNode>, right: Box<HIRNode>, operation: MathOperator },
 
 	UnwrapCondition { original: Box<HIRNode>, new_type: Type, new_var: Option<usize>, unsafe_unwrap: bool },
 	UnwrapValue { original: Box<HIRNode>, new_type: Type, unsafe_unwrap: bool },
@@ -247,7 +247,7 @@ impl HIRNode {
 				return Some(last.clone())
 			},
 
-			HIRNodeKind::MathOperation { left, right: _, operation: _, assignment: _ } => {
+			HIRNodeKind::MathOperation { left, right: _, operation: _ } => {
 				return left.get_node_type(context, curr_ctx)
 			},
 

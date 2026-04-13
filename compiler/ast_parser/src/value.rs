@@ -1,6 +1,6 @@
 use compiler_utils::{Position, hash::HashedString};
 
-use ast::{make_node, operators::parse_compare_operator, tree::{ASTTreeNode, ASTTreeNodeKind}};
+use ast::{make_node, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use diagnostics::{DiagnosticResult, builders::{make_expected_simple_error, make_unexpected_simple_error}};
 use lexer::token::{LexerToken, LexerTokenType};
 

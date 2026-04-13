@@ -38,7 +38,7 @@ pub enum ASTTreeNodeKind {
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ComparingOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
 
-	MathResult { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: MathOperator, assigns: bool },
+	MathResult { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: MathOperator },
 
 	VariableReference(HashedString),
 
