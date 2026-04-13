@@ -121,6 +121,16 @@ pub fn build_int_div(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue
 	return res.as_int();
 }
 
+pub fn build_int_mod(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool) -> DiagnosticResult<MIRIntValue> {
+	if left.size != right.size {
+		unsure_panic!("Tried using imod on different sized integers");
+	}
+
+	let res = ctx.append_inst(MIRInstruction::IntegerMod { signed, left, right }).get()?;
+
+	return res.as_int();
+}
+
 pub fn build_int_shift_left(ctx: &mut MIRContext, left: MIRIntValue, shift: MIRIntValue) -> DiagnosticResult<MIRIntValue> {
 	let res = ctx.append_inst(MIRInstruction::ShiftLeft { a: left, shift }).get()?;
 
@@ -181,6 +191,15 @@ pub fn build_float_div(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloa
 	return res.as_float();
 }
 
+pub fn build_float_mod(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> DiagnosticResult<MIRFloatValue> {
+	if left.size != right.size {
+		unsure_panic!("Tried using fmod on different sized integers");
+	}
+
+	let res = ctx.append_inst(MIRInstruction::FloatMod { signed, left, right }).get()?;
+
+	return res.as_float();
+}
 
 pub fn build_float_neg(ctx: &mut MIRContext, val: MIRFloatValue) -> DiagnosticResult<MIRFloatValue> {
 	let res = ctx.append_inst(MIRInstruction::FloatNeg { val }).get()?;

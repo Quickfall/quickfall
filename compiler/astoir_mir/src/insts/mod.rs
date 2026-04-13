@@ -34,6 +34,7 @@ pub enum MIRInstruction {
 	FloatSub { signed: bool, left: MIRFloatValue, right: MIRFloatValue }, 
 	FloatMul { signed: bool, left: MIRFloatValue, right: MIRFloatValue }, 
 	FloatDiv { signed: bool, left: MIRFloatValue, right: MIRFloatValue },
+	FloatMod { signed: bool, left: MIRFloatValue, right: MIRFloatValue },
 	FloatNeg { val: MIRFloatValue }, 
 
 	// Bitwise (int typed)
@@ -230,6 +231,7 @@ impl Display for MIRInstruction {
 			Self::FloatSub { signed, left, right } => writeln!(f, "fsub s{} {} {}", signed, left, right)?,
 			Self::FloatMul { signed, left, right } => writeln!(f, "fmul s{} {} {}", signed, left, right)?,
 			Self::FloatDiv { signed, left, right } => writeln!(f, "fdiv s{} {} {}", signed, left, right)?,
+			Self::FloatMod { signed, left, right } => writeln!(f, "fmod s{} {} {}", signed, left, right)?,
 			Self::FloatNeg { val } => writeln!(f, "fneg {}", val)?,
 
 			Self::BitwiseAnd { a, b } => writeln!(f, "and {} {}", a, b)?,
