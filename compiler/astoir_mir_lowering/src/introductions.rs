@@ -13,7 +13,7 @@ pub fn handle_var_introduction_queue(block: MIRBlockReference, node: Box<HIRNode
 		let new_var = new_var.unwrap();
 		let eligible = ctx.hir_ctx.function_contexts[func].as_ref().unwrap().is_eligible_for_ssa(new_var);
 
-		let casted = cast_to_enum_child(block, original, new_type.as_generic(&ctx.hir_ctx.type_storage), ctx, &*node)?;
+		let casted = cast_to_enum_child(block, original, new_type.as_generic(), ctx, &*node)?;
 
 		if eligible {
 			ctx.mir_ctx.blocks[block].variables.insert(new_var, MIRBlockVariableSSAHint { kind: MIRBlockVariableType::SSA, hint: Some(casted) });

@@ -24,7 +24,7 @@ use std::fmt::Display;
 use compiler_utils::hash;
 use diagnostics::{MaybeDiagnostic, builders::make_bound_trait};
 
-use crate::{storage::TypeStorage, tree::Type};
+use crate::{tree::Type};
 
 pub const TRAIT_NUMERIC: u64 = hash!("numeric");
 pub const TRAIT_SIGNED: u64 = hash!("signed");
@@ -81,17 +81,17 @@ pub struct TraitBound {
 }
 
 impl TraitBound {
-	pub fn check(&self, t: &Type, storage: &TypeStorage) -> MaybeDiagnostic {
+	pub fn check(&self, t: &Type) -> MaybeDiagnostic {
 		for member in &self.members {
 			match member {
 				TraitBoundMember::Select(tt) => {
-					if !t.as_generic(storage).has_trait(tt.clone(), t) {
+					if !t.as_generic().has_trait(tt.clone(), t) {
 						return Err(make_bound_trait(tt, t).into())
 					}
 				},
 
 				TraitBoundMember::Exclude(tt) => {
-					if t.as_generic(storage).has_trait(tt.clone(), t) {
+					if t.as_generic().has_trait(tt.clone(), t) {
 						return Err(make_bound_trait(&format!("~{}", tt), t).into())
 					}
 				}

@@ -43,7 +43,7 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 
 				dump_diagnostics();
 
-				fs::write(res_path, format!("{}", ctx.unwrap()));
+				let _ = fs::write(res_path, format!("{}", ctx.unwrap()));
 			},
 
 			IRLevel::LLVM => {
@@ -57,7 +57,7 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 	
 					dump_diagnostics();
 	
-					ctx.module.print_to_file(res_path);
+					let _ = ctx.module.print_to_file(res_path);
 				}
 
 				#[cfg(not(feature = "llvm_ir_bridge"))] {
@@ -79,7 +79,7 @@ fn parse_astoir_level(str: &String) -> DiagnosticResult<IRLevel> {
 
 		_ => {
 			println!("Invalid level");
-			std::process::exit(0);
+			exit(0);
 		}
 	};
 

@@ -1,7 +1,7 @@
 //! Utility functions to build instructions and more
 
 use compiler_typing::{SizedType, raw::RawType, storage::TypeStorage, tree::Type};
-use diagnostics::{DiagnosticResult, MaybeDiagnostic, diagnostic::Diagnostic, unsure_panic};
+use diagnostics::{DiagnosticResult, MaybeDiagnostic, unsure_panic};
 
 use crate::{blocks::{hints::MIRValueHint, refer::MIRBlockReference}, ctx::MIRContext, insts::MIRInstruction, vals::{arrays::MIRArrayValue, base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue, structs::MIRStructValue}};
 

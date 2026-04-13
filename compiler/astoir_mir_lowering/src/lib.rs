@@ -1,4 +1,4 @@
-use std::{collections::HashMap, hash::Hash};
+use std::{collections::HashMap};
 
 use astoir_hir::{ctx::HIRContext, nodes::{HIRNode, HIRNodeKind}};
 use astoir_mir::ctx::MIRContext;

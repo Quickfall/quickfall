@@ -1,9 +1,9 @@
 use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::ASTType};
 use compiler_utils::hash::HashedString;
-use diagnostics::{DiagnosticResult, diagnostic::Diagnostic};
+use diagnostics::{DiagnosticResult};
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{functions::parse_function_declaraction, structs::members::parse_types_field_member, types::{parse_type_generic, parse_type_parameters_declaration}};
+use crate::{functions::parse_function_declaraction, structs::members::parse_types_field_member, types::{parse_type_parameters_declaration}};
 
 pub fn parse_enum_entry(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
 	let start = tokens[*ind].pos.clone();

@@ -40,5 +40,5 @@ pub fn parse_use_statement(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagnos
 
 	*ind += 1;
 
-	return Ok((Box::new(ASTTreeNode::new(ASTTreeNodeKind::UseStatement { shards: steps, use_clauses: uses }, start, tokens[*ind].get_end_pos()))))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::UseStatement { shards: steps, use_clauses: uses }, start, tokens[*ind].get_end_pos())))
 }
