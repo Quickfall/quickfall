@@ -2,7 +2,7 @@ use std::path::{MAIN_SEPARATOR_STR};
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use ast_parser::parse_ast_ctx;
-use astoir_hir::{ctx::HIRContext};
+use astoir_hir::{ctx::HIRContext, nodes::{HIRNode, HIRNodeKind}};
 use diagnostics::{MaybeDiagnostic, builders::make_use_not_found};
 use lexer::lexer::lexer_parse_file;
 
@@ -30,8 +30,13 @@ pub fn handle_ast_use_statement_function_decl(context: &mut HIRContext, node: Bo
 			arguments.push((arg.name.hash, t));
 		}
 
-		context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone(), func_name.val.clone()));
+		let func_name = context.functions.append(func_name.hash, (ret_type.clone(), arguments.clone(), func_name.val.clone()));
 		context.function_contexts.push(None);
+
+		// Fabricate shadow func statement to satisfy functions_declarations
+
+		let node = HIRNode::new(HIRNodeKind::ShadowFunctionDeclaration { func_name, arguments, return_type: ret_type }, &node.start, &node.end);
+		context.function_declarations.push(Some(Box::new(node)));
 
 		return Ok(())
 	}
@@ -65,7 +70,6 @@ pub fn handle_ast_use_statement(context: &mut HIRContext, node: Box<ASTTreeNode>
 					handle_ast_use_statement_function_decl(context, n.clone())?;
 				} 
 				_ => {
-					println!(" --> {:#?}", n);
 					lower_ast_toplevel(context, n.clone())?;
 				}
 			};
