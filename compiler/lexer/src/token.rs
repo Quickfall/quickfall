@@ -7,8 +7,6 @@ use std::fmt::Display;
 use compiler_utils::{Position};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_expected_simple_error, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}};
 
-use crate::{toks::{comp::ComparingOperator, math::MathOperator}};
-
 /// The token type for the lexer
 #[derive(PartialEq, Debug)]
 pub enum LexerTokenType {
@@ -37,13 +35,6 @@ pub enum LexerTokenType {
 
 	New,
 
-	/// 0: the operator
-	/// 1: does the operator affect the original variable!
-	MathOperator(MathOperator, bool),
-
-	ComparingOperator(ComparingOperator),
-	
-
     /// Represent the ret keyword
     Return,
 
@@ -64,6 +55,10 @@ pub enum LexerTokenType {
     Dot,
 	Ampersand,
 	Collon,
+
+	Plus,
+	Minus,
+	Divide,
 
     BracketOpen,
     BracketClose,
@@ -113,39 +108,10 @@ impl LexerToken {
 		return Ok(());
 	}
 
-	pub fn is_angel_bracket_close(&self) -> bool {
-		match &self.tok_type {
-			LexerTokenType::AngelBracketClose => true,
-			LexerTokenType::ComparingOperator(op) => {
-				if op == &ComparingOperator::Higher {
-					return true
-				}
-
-				return false
-			},
-
-			_ => return false
-		}
-	}
-
 	pub fn expects_int_lit(&self) -> DiagnosticResult<(i128, u64)> {
 		match &self.tok_type {
 			LexerTokenType::IntLit(v, h) => return Ok((*v, *h)),
 			_ => return Err(make_expected_simple_error(self, &"integer literal".to_string(), &self.tok_type).into())
-		};
-	}
-
-	pub fn expects_comp_operator(&self) -> DiagnosticResult<ComparingOperator> {
-		match &self.tok_type {
-			LexerTokenType::ComparingOperator(op) => return Ok(op.clone()),
-			_ => return Err(make_expected_simple_error(self, &"comparing operator".to_string(), &self.tok_type).into())
-		};
-	}
-
-	pub fn expects_math_operator(&self) -> DiagnosticResult<(MathOperator, bool)> {
-		match &self.tok_type {
-			LexerTokenType::MathOperator(a, b) => return Ok((a.clone(), *b)),
-			_ => return Err(make_expected_simple_error(self, &"math operator".to_string(), &self.tok_type).into())
 		};
 	}
 
@@ -199,7 +165,6 @@ impl Display for LexerTokenType {
 			Self::BracketOpen => "{",
 			Self::Comma => ",",
 			Self::Comment(_) => "comment",
-			Self::ComparingOperator(_) => "comparing operator",
 			Self::Dot => ".", 
 			Self::Else => "else",
 			Self::EndOfFile => "end of file",
@@ -214,7 +179,6 @@ impl Display for LexerTokenType {
 			Self::Keyword(_, _) => "keyword",
 			Self::Lay => "lay",
 			Self::Layout => "layout",
-			Self::MathOperator(_, _) => "math operator",
 			Self::New => "new",
 			Self::ParenClose => ")",
 			Self::ParenOpen => "(",
@@ -229,7 +193,10 @@ impl Display for LexerTokenType {
 			Self::While => "while",
 			Self::Unwrap => "unwrap",
 			Self::Use => "use",
-			Self::UnwrapUnsafe => "unsafe_unwrap"
+			Self::UnwrapUnsafe => "unsafe_unwrap",
+			Self::Plus => "+",
+			Self::Minus => "-",
+			Self::Divide => "/"
 		};
 
 		write!(f, "{}", s)?;

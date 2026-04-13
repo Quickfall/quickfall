@@ -9,7 +9,7 @@ use diagnostics::DiagnosticResult;
 use diagnostics::builders::{make_unexpected_simple_error_outside};
 use diagnostics::diagnostic::SpanPosition;
 
-use crate::{token::{LexerToken, LexerTokenType}, toks::{comp::ComparingOperator, math::MathOperator}};
+use crate::{token::{LexerToken, LexerTokenType}};
 
 const SHADOWFUNC_KEYWORD_HASH: u64 = hash!("shadowfunc");
 const FUNC_KEYWORD_HASH: u64 = hash!("func");
@@ -81,27 +81,6 @@ pub fn lexer_parse_file(file_path: &String) -> DiagnosticResult<Vec<LexerToken>>
             continue;
         }
 
-		if c == '+' || c == '-' || c == '*' || c == '/' {
-			let col = i - last_line_break;
-
-			tokens.push(parse_math_operator(&contents, &mut i, Position::new(file_path.to_string(), line, col))?);
-
-			continue;
-		}
-
-		if c == '=' || c == '>' || c == '<' {
-			let col = i - last_line_break;
-
-			let parse = parse_comp_operator(&contents, &mut i, Position::new(file_path.to_string(), line, col));
-
-			if parse.is_some() {
-				tokens.push(parse.unwrap());
-				continue;
-			}
-
-			i -= 2; // Try parsing operator as normal token.
-		}
-
 		if c == '/' {
 			let cc = contents.chars().nth(i + 1).unwrap();
 			if cc == '/' {
@@ -140,6 +119,9 @@ pub fn lexer_parse_file(file_path: &String) -> DiagnosticResult<Vec<LexerToken>>
             '>' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::AngelBracketClose)),
 			'*' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Asterisk)),
 			':' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Collon)),
+			'+' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Plus)),
+			'-' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Minus)),
+			'/' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Divide)),
 			_ => continue
         }
 
@@ -192,91 +174,6 @@ fn parse_global_comment(contents: &String, ind: &mut usize, start_pos: Position)
 	*ind = end;
 
 	return Ok(LexerToken::new(start_pos, end - start, LexerTokenType::GlobalComment(slice.to_string())))
-}
-
-fn parse_math_operator(contents: &String, ind: &mut usize, start_pos: Position) -> DiagnosticResult<LexerToken> {
-	let operator_char = contents.chars().nth(*ind).unwrap();
-
-	let operator = match operator_char {
-		'+' => MathOperator::ADD,
-		'-' => MathOperator::SUBSTRACT,
-		'*' => MathOperator::MULTIPLY,
-		'/' => MathOperator::DIVIDE,
-		_ => return Err(make_unexpected_simple_error_outside(&operator_char, SpanPosition::from_pos(start_pos.clone(), start_pos.col + 1)).into())
-	};
-
-	*ind += 1;
-
-	if contents.chars().nth(*ind).unwrap() != '=' {
-		return Ok(LexerToken::make_single_sized(start_pos, LexerTokenType::EqualSign));
-	}
-
-	let assigns = match contents.chars().nth(*ind) {
-		Some(v) => {
-			if v != ' ' && v != '=' {
-				return Err(make_unexpected_simple_error_outside(&v, SpanPosition::from_pos(start_pos.clone(), start_pos.col + 2).into()).into())
-			}
-
-			v == '='
-		}
-		None => false
-	};
-
-	if assigns {
-		*ind += 1;
-	}
-
-	let mut increment_count = 1;
-
-	if assigns {
-		increment_count += 1;
-	}
-
-	return Ok(LexerToken::new(start_pos, increment_count, LexerTokenType::MathOperator(operator, assigns)));
-
-}
-
-fn parse_comp_operator(contents: &String, ind: &mut usize, start_pos: Position) -> Option<LexerToken> {
-	let first_char = contents.chars().nth(*ind).unwrap();
-	*ind += 1;
-	let second_char = contents.chars().nth(*ind).unwrap();
-
-	*ind += 1;
-
-	if second_char != '=' && second_char != ' ' {
-		return None;
-	}
-
-	match first_char {
-		'=' => {
-			if second_char != '=' {
-				return None;
-			}
-
-			return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::Equal)));
-		},
-
-		'>' => {
-			if second_char == '=' {
-				return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::HigherEqual)));
-			}
-
-			return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::Higher)));
-		},
-		
-		'<' => {
-			if second_char == '=' {
-				return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::LowerEqual)));
-			}
-
-			return Some(LexerToken::new(start_pos, 2, LexerTokenType::ComparingOperator(ComparingOperator::Lower)));
-		},
-
-		_ => {
-			return None;
-		}
-	}
-
 }
 
 fn parse_number_token(str: &String, ind: &mut usize, start_pos: Position) -> DiagnosticResult<LexerToken> {
