@@ -1,4 +1,4 @@
-name: Rust
+name: Compile (No bridges)
 
 on:
   pull_request:
@@ -12,12 +12,7 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    steps: 
-    - uses: actions/checkout@v4
-    - name: Install LLVM
-      run: sudo apt install llvm
-
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: cargo build --verbose
+      run: cargo build -p compiler_main
