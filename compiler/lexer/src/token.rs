@@ -59,6 +59,7 @@ pub enum LexerTokenType {
 	Plus,
 	Minus,
 	Divide,
+	Tidle,
 
     BracketOpen,
     BracketClose,
@@ -196,7 +197,8 @@ impl Display for LexerTokenType {
 			Self::UnwrapUnsafe => "unsafe_unwrap",
 			Self::Plus => "+",
 			Self::Minus => "-",
-			Self::Divide => "/"
+			Self::Divide => "/",
+			Self::Tidle => "~"
 		};
 
 		write!(f, "{}", s)?;

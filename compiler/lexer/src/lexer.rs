@@ -122,6 +122,7 @@ pub fn lexer_parse_file(file_path: &String) -> DiagnosticResult<Vec<LexerToken>>
 			'+' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Plus)),
 			'-' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Minus)),
 			'/' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Divide)),
+			'~' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Tidle)),
 			_ => continue
         }
 
