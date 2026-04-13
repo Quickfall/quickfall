@@ -8,7 +8,7 @@ use compiler_utils::hash::HashedString;
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, MaybeDiagnostic, builders::{make_cannot_find_type, make_diff_type_specifiers, make_req_type_kind, make_use_not_found}};
 use lexer::lexer::lexer_parse_file;
 
-use crate::{lower_ast_toplevel, structs::lower_ast_struct_declaration, types::{lower_ast_type, lower_ast_type_struct, lower_sized_base_type}, values::lower_ast_value};
+use crate::{lower_ast_toplevel, structs::lower_ast_struct_declaration, types::{lower_ast_type, lower_sized_base_type}};
 
 pub fn handle_ast_use_statement_function_decl(context: &mut HIRContext, node: Box<ASTTreeNode>, ctx: &ParserCtx) -> MaybeDiagnostic {
 	if let ASTTreeNodeKind::FunctionDeclaration { func_name, args, body: _, return_type, requires_this: _ } = node.kind.clone() {

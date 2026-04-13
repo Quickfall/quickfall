@@ -2,11 +2,11 @@ use std::collections::HashMap;
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}, structs::HIRStructContainer};
-use compiler_typing::{raw::RawType, structs::RawStructTypeContainer, tree::Type};
-use compiler_utils::{hash::{HashedString, SelfHash}, utils::indexed::IndexStorage};
-use diagnostics::{DiagnosticResult, builders::{make_already_in_scope, make_cannot_find_type, make_struct_init_missing_field, make_struct_missing_field}};
+use compiler_typing::{raw::RawType, structs::RawStructTypeContainer};
+use compiler_utils::utils::indexed::IndexStorage;
+use diagnostics::{DiagnosticResult, builders::make_already_in_scope};
 
-use crate::{lower_ast_body, types::{lower_ast_type, lower_ast_type_struct}, values::lower_ast_value};
+use crate::{lower_ast_body, types::lower_ast_type_struct, values::lower_ast_value};
 
 fn lower_ast_struct_member(context: &mut HIRContext, node: Box<ASTTreeNode>, container: &mut RawStructTypeContainer) -> DiagnosticResult<bool> {
 	if let ASTTreeNodeKind::StructFieldMember { name, member_type } = node.kind.clone() {

@@ -12,6 +12,11 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    steps: 
+    - uses: actions/checkout@v4
+    - name: Install LLVM
+      run: sudo apt install llvm
+
     steps:
     - uses: actions/checkout@v4
     - name: Build

@@ -1,6 +1,6 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}};
-use compiler_typing::{raw::RawType, storage::BOOLEAN_TYPE, tree::Type};
+use compiler_typing::{raw::RawType, tree::Type};
 use diagnostics::{DiagnosticResult};
 
 use crate::values::lower_ast_value;
