@@ -8,6 +8,9 @@ astoir = { path = "../astoir" }
 ast = { path = "../ast" }
 ast_parser = { path = "../ast_parser" }
 lexer = { path = "../lexer" }
-llvm_ir_bridge = { path = "../llvm_ir_bridge" }
+llvm_ir_bridge = { path = "../llvm_ir_bridge", optional = true }
 diagnostics = { path = "../diagnostics" }
-compiler_utils = { path = "../compiler_utils"}
+compiler_utils = { path = "../compiler_utils" }
+
+[features]
+llvm = ["llvm_ir_bridge"]

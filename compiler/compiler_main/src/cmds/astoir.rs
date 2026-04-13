@@ -4,6 +4,10 @@ use ast_parser::parse_ast_ctx;
 use astoir::{IRLevel, run_astoir_hir, run_astoir_mir};
 use diagnostics::{DiagnosticResult, dump_diagnostics};
 use lexer::lexer::lexer_parse_file;
+
+use std::process::exit;
+
+#[cfg(feature = "llvm_ir_bridge")]
 use llvm_ir_bridge::bridge_llvm;
 
 pub fn parse_astoir_command(arguments: Vec<String>) {
@@ -43,16 +47,24 @@ pub fn parse_astoir_command(arguments: Vec<String>) {
 			},
 
 			IRLevel::LLVM => {
-				let ctx = run_astoir_mir(ast.unwrap());
-				let res_path = arguments[i].clone() + ".llvm";
+				#[cfg(feature = "llvm_ir_bridge")] {
+					let ctx = run_astoir_mir(ast.unwrap());
+					let res_path = arguments[i].clone() + ".llvm";
+	
+					dump_diagnostics();
+	
+					let ctx = bridge_llvm(&ctx.unwrap());
+	
+					dump_diagnostics();
+	
+					ctx.module.print_to_file(res_path);
+				}
 
-				dump_diagnostics();
+				#[cfg(not(feature = "llvm_ir_bridge"))] {
+					println!("LLVM target is not bundled!");
 
-				let ctx = bridge_llvm(&ctx.unwrap());
-
-				dump_diagnostics();
-
-				ctx.module.print_to_file(res_path);
+					exit(0);
+				}
 			}
 		}
 	}
