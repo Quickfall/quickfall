@@ -7,6 +7,7 @@ use lexer::token::{LexerToken, LexerTokenType};
 pub fn parse_math_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<MathOperator> {
 	let op = match tokens[*ind].tok_type {
 		LexerTokenType::Plus => MathOperatorType::Add,
+		LexerTokenType::PercentSign => MathOperatorType::Modulo,
 		LexerTokenType::Minus => MathOperatorType::Subtract,
 		LexerTokenType::Asterisk => {
 			if tokens[*ind + 1].tok_type == LexerTokenType::Asterisk {

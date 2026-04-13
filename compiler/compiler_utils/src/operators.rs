@@ -8,7 +8,8 @@ pub enum MathOperatorType {
 	Multiply,
 	Divide,
 	ShiftLeft,
-	ShiftRight
+	ShiftRight,
+	Modulo
 }
 
 /// Represents an actual math operator

@@ -60,6 +60,7 @@ pub enum LexerTokenType {
 	Minus,
 	Divide,
 	Tidle,
+	PercentSign,
 
     BracketOpen,
     BracketClose,
@@ -198,7 +199,8 @@ impl Display for LexerTokenType {
 			Self::Plus => "+",
 			Self::Minus => "-",
 			Self::Divide => "/",
-			Self::Tidle => "~"
+			Self::Tidle => "~",
+			Self::PercentSign => "%"
 		};
 
 		write!(f, "{}", s)?;
