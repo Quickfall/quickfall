@@ -121,6 +121,18 @@ pub fn build_int_div(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue
 	return res.as_int();
 }
 
+pub fn build_int_shift_left(ctx: &mut MIRContext, left: MIRIntValue, shift: MIRIntValue) -> DiagnosticResult<MIRIntValue> {
+	let res = ctx.append_inst(MIRInstruction::ShiftLeft { a: left, shift }).get()?;
+
+	return res.as_int();
+}
+
+pub fn build_int_shift_right(ctx: &mut MIRContext, left: MIRIntValue, shift: MIRIntValue) -> DiagnosticResult<MIRIntValue> {
+	let res = ctx.append_inst(MIRInstruction::ShiftRight { a: left, shift }).get()?;
+
+	return res.as_int();
+}
+
 pub fn build_int_neg(ctx: &mut MIRContext, val: MIRIntValue) -> DiagnosticResult<MIRIntValue> {
 	let res = ctx.append_inst(MIRInstruction::IntegerNeg { val }).get()?;
 
