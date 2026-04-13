@@ -23,7 +23,14 @@ pub fn parse_math_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagnos
 
 	*ind += 1;
 
-	return Ok(MathOperator { operator: op, assigns, fast: false });
+	let fast = match tokens[*ind].tok_type {
+		LexerTokenType::Tidle => true,
+		_ => false
+	};
+
+	*ind += 1;
+
+	return Ok(MathOperator { operator: op, assigns, fast });
 }
 
 pub fn parse_compare_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<ComparingOperator> {
