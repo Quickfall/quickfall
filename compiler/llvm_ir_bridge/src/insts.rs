@@ -86,6 +86,24 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			Some(res.into())
 		},
 
+		MIRInstruction::IntegerMod { signed, left, right } => {
+			let left: BaseMIRValue = MIRIntValue::into(left);
+			let right: BaseMIRValue = MIRIntValue::into(right);
+			
+			let l = bridge.values[&left.get_ssa_index()].clone();
+			let r = bridge.values[&right.get_ssa_index()].clone();
+
+			let res: IntValue<'static>;
+
+			if signed {
+				res = llvm_to_base!(bridge.builder.build_int_signed_rem(l.into_int_value(), r.into_int_value(), ""))
+			} else {
+				res = llvm_to_base!(bridge.builder.build_int_unsigned_rem(l.into_int_value(), r.into_int_value(), ""))
+			}
+
+			Some(res.into())
+		}
+
 		MIRInstruction::FloatAdd { signed: _, left, right } => {
 			let left: BaseMIRValue = MIRFloatValue::into(left);
 			let right: BaseMIRValue = MIRFloatValue::into(right);
@@ -133,6 +151,18 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 
 			Some(res.into())
 		},
+
+		MIRInstruction::FloatMod { signed: _, left, right } => {
+			let left: BaseMIRValue = MIRFloatValue::into(left);
+			let right: BaseMIRValue = MIRFloatValue::into(right);
+			
+			let l = bridge.values[&left.get_ssa_index()].clone();
+			let r = bridge.values[&right.get_ssa_index()].clone();
+
+			let res: FloatValue<'static> = llvm_to_base!(bridge.builder.build_float_rem(l.into_float_value(), r.into_float_value(), ""));
+
+			Some(res.into())
+		}
 
 		MIRInstruction::BitwiseAnd { a, b } => {
 			let left: BaseMIRValue = MIRIntValue::into(a);
