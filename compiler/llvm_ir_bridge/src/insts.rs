@@ -42,7 +42,10 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let res = llvm_to_base!(bridge.builder.build_int_add(l.into_int_value(), r.into_int_value(), ""));
 
 			if fast {
-				llvm_to_base_returnless!(res.as_instruction_value().unwrap().set_fast_math_flags(FastMathFlags::all()))
+				let res2 = res.as_instruction_value().unwrap();
+
+				llvm_to_base_returnless!(res2.set_no_signed_wrap_flag(true));
+				llvm_to_base_returnless!(res2.set_no_unsigned_wrap_flag(true));
 			}
 
 			Some(res.into())
@@ -58,7 +61,10 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_int_sub(l.into_int_value(), r.into_int_value(), ""));
 
 			if fast {
-				llvm_to_base_returnless!(res.as_instruction_value().unwrap().set_fast_math_flags(FastMathFlags::all()))
+				let res2 = res.as_instruction_value().unwrap();
+
+				llvm_to_base_returnless!(res2.set_no_signed_wrap_flag(true));
+				llvm_to_base_returnless!(res2.set_no_unsigned_wrap_flag(true));
 			}
 
 			Some(res.into())
@@ -74,7 +80,10 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			let res: IntValue<'static> = llvm_to_base!(bridge.builder.build_int_mul(l.into_int_value(), r.into_int_value(), ""));
 
 			if fast {
-				llvm_to_base_returnless!(res.as_instruction_value().unwrap().set_fast_math_flags(FastMathFlags::all()))
+				let res2 = res.as_instruction_value().unwrap();
+
+				llvm_to_base_returnless!(res2.set_no_signed_wrap_flag(true));
+				llvm_to_base_returnless!(res2.set_no_unsigned_wrap_flag(true));
 			}
 
 			Some(res.into())
@@ -96,9 +105,12 @@ pub fn bridge_llvm_instruction(instruction: MIRBlockHeldInstruction, func: usize
 			}
 
 			if fast {
-				llvm_to_base_returnless!(res.as_instruction_value().unwrap().set_fast_math_flags(FastMathFlags::all()))
-			}
+				let res2 = res.as_instruction_value().unwrap();
 
+				llvm_to_base_returnless!(res2.set_no_signed_wrap_flag(true));
+				llvm_to_base_returnless!(res2.set_no_unsigned_wrap_flag(true));
+				llvm_to_base_returnless!(res2.set_exact_flag(true));
+			}
 			Some(res.into())
 		},
 
