@@ -81,52 +81,52 @@ pub fn build_upcast_float(ctx: &mut MIRContext, val: MIRFloatValue, size: usize)
 	return res.as_float();
 }
 
-pub fn build_int_add(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool) -> DiagnosticResult<MIRIntValue> {
+pub fn build_int_add(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool, fast: bool) -> DiagnosticResult<MIRIntValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using iadd on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::IntegerAdd { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::IntegerAdd { signed, fast, left, right }).get()?;
 
 	return res.as_int();
 }
 
-pub fn build_int_sub(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool) -> DiagnosticResult<MIRIntValue> {
+pub fn build_int_sub(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool, fast: bool) -> DiagnosticResult<MIRIntValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using isub on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::IntegerSub { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::IntegerSub { signed, fast, left, right }).get()?;
 
 	return res.as_int();
 }
 
-pub fn build_int_mul(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool) -> DiagnosticResult<MIRIntValue> {
+pub fn build_int_mul(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool, fast: bool) -> DiagnosticResult<MIRIntValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using imul on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::IntegerMul { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::IntegerMul { signed, fast, left, right }).get()?;
 
 	return res.as_int();
 }
 
-pub fn build_int_div(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool) -> DiagnosticResult<MIRIntValue> {
+pub fn build_int_div(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool, fast: bool) -> DiagnosticResult<MIRIntValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using idiv on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::IntegerDiv { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::IntegerDiv { signed, fast, left, right }).get()?;
 
 	return res.as_int();
 }
 
-pub fn build_int_mod(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool) -> DiagnosticResult<MIRIntValue> {
+pub fn build_int_mod(ctx: &mut MIRContext, left: MIRIntValue, right: MIRIntValue, signed: bool, fast: bool) -> DiagnosticResult<MIRIntValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using imod on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::IntegerMod { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::IntegerMod { signed, fast, left, right }).get()?;
 
 	return res.as_int();
 }
@@ -149,54 +149,54 @@ pub fn build_int_neg(ctx: &mut MIRContext, val: MIRIntValue) -> DiagnosticResult
 	return res.as_int();
 }
 
-pub fn build_float_add(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> DiagnosticResult<MIRFloatValue> {
+pub fn build_float_add(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool, fast: bool) -> DiagnosticResult<MIRFloatValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using fadd on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::FloatAdd { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::FloatAdd { signed, fast, left, right }).get()?;
 
 	return res.as_float();
 }
 
-pub fn build_float_sub(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> DiagnosticResult<MIRFloatValue> {
+pub fn build_float_sub(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool, fast: bool) -> DiagnosticResult<MIRFloatValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using fsub on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::FloatSub { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::FloatSub { signed, fast, left, right }).get()?;
 
 	return res.as_float();
 }
 
 
-pub fn build_float_mul(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> DiagnosticResult<MIRFloatValue> {
+pub fn build_float_mul(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool, fast: bool) -> DiagnosticResult<MIRFloatValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using fmul on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::FloatMul { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::FloatMul { signed, fast, left, right }).get()?;
 
 	return res.as_float();
 }
 
 
-pub fn build_float_div(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> DiagnosticResult<MIRFloatValue> {
+pub fn build_float_div(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool, fast: bool) -> DiagnosticResult<MIRFloatValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using fdiv on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::FloatDiv { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::FloatDiv { signed, fast, left, right }).get()?;
 
 	return res.as_float();
 }
 
-pub fn build_float_mod(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool) -> DiagnosticResult<MIRFloatValue> {
+pub fn build_float_mod(ctx: &mut MIRContext, left: MIRFloatValue, right: MIRFloatValue, signed: bool, fast: bool) -> DiagnosticResult<MIRFloatValue> {
 	if left.size != right.size {
 		unsure_panic!("Tried using fmod on different sized integers");
 	}
 
-	let res = ctx.append_inst(MIRInstruction::FloatMod { signed, left, right }).get()?;
+	let res = ctx.append_inst(MIRInstruction::FloatMod { signed, fast, left, right }).get()?;
 
 	return res.as_float();
 }

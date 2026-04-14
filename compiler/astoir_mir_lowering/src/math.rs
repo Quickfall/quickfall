@@ -50,13 +50,13 @@ pub fn lower_hir_math_operation_int(left: BaseMIRValue, right: BaseMIRValue, ope
 	let signed = left.signed;
 
 	let res = match operator.operator {
-		MathOperatorType::Add => build_int_add(&mut ctx.mir_ctx, left, right, signed)?,
-		MathOperatorType::Subtract => build_int_sub(&mut ctx.mir_ctx, left, right, signed)?,
-		MathOperatorType::Multiply => build_int_mul(&mut ctx.mir_ctx, left, right, signed)?,
-		MathOperatorType::Divide => build_int_div(&mut ctx.mir_ctx, left, right, signed)?,
+		MathOperatorType::Add => build_int_add(&mut ctx.mir_ctx, left, right, signed, operator.fast)?,
+		MathOperatorType::Subtract => build_int_sub(&mut ctx.mir_ctx, left, right, signed, operator.fast)?,
+		MathOperatorType::Multiply => build_int_mul(&mut ctx.mir_ctx, left, right, signed, operator.fast)?,
+		MathOperatorType::Divide => build_int_div(&mut ctx.mir_ctx, left, right, signed, operator.fast)?,
 		MathOperatorType::ShiftLeft => build_shift_left(&mut ctx.mir_ctx, left, right)?,
 		MathOperatorType::ShiftRight => build_shift_right(&mut ctx.mir_ctx, left, right)?,
-		MathOperatorType::Modulo => build_int_mod(&mut ctx.mir_ctx, left, right, signed)?
+		MathOperatorType::Modulo => build_int_mod(&mut ctx.mir_ctx, left, right, signed, operator.fast)?
 	};
 
 	return Ok(res.into());
@@ -69,11 +69,11 @@ pub fn lower_hir_math_operation_float(left: BaseMIRValue, right: BaseMIRValue, o
 	let signed = left.signed;
 
 	let res = match operator.operator {
-		MathOperatorType::Add => build_float_add(&mut ctx.mir_ctx, left, right, signed)?,
-		MathOperatorType::Subtract => build_float_sub(&mut ctx.mir_ctx, left, right, signed)?,
-		MathOperatorType::Multiply => build_float_mul(&mut ctx.mir_ctx, left, right, signed)?,
-		MathOperatorType::Divide => build_float_div(&mut ctx.mir_ctx, left, right, signed)?,
-		MathOperatorType::Modulo => build_float_mod(&mut ctx.mir_ctx, left, right, signed)?,
+		MathOperatorType::Add => build_float_add(&mut ctx.mir_ctx, left, right, signed, operator.fast)?,
+		MathOperatorType::Subtract => build_float_sub(&mut ctx.mir_ctx, left, right, signed, operator.fast)?,
+		MathOperatorType::Multiply => build_float_mul(&mut ctx.mir_ctx, left, right, signed, operator.fast)?,
+		MathOperatorType::Divide => build_float_div(&mut ctx.mir_ctx, left, right, signed, operator.fast)?,
+		MathOperatorType::Modulo => build_float_mod(&mut ctx.mir_ctx, left, right, signed, operator.fast)?,
 
 		_ => return Err(make_req_type_kind(node, &"integer".to_string()).into())
 	};
