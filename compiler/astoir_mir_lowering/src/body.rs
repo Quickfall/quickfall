@@ -15,8 +15,8 @@ pub fn lower_hir_body_member(block: MIRBlockReference, node: Box<HIRNode>, ctx: 
 	return match node.kind.clone() {
 		HIRNodeKind::VarAssigment { .. } => lower_hir_variable_assignment(block, node, ctx),
 		HIRNodeKind::VarDeclaration { .. } => lower_hir_variable_declaration(block, node, ctx),
-		HIRNodeKind::MathOperation { left: _, right: _, operation: _, assignment } => {
-			if !assignment {
+		HIRNodeKind::MathOperation { left: _, right: _, operation } => {
+			if !operation.assigns {
 				return Err(make_math_operation_req_assign(&*node).into())
 			}
 

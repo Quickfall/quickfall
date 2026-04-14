@@ -1,7 +1,7 @@
 use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{blocks::{refer::MIRBlockReference}, builder::{build_bitwise_not, build_comp_eq, build_comp_ge, build_comp_gt, build_comp_le, build_comp_lt, build_comp_neg}, vals::int::MIRIntValue};
+use compiler_utils::operators::ComparingOperator;
 use diagnostics::DiagnosticResult;
-use lexer::toks::comp::ComparingOperator;
 
 use crate::{MIRLoweringContext, values::lower_hir_value};
 

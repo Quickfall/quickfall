@@ -1,13 +1,13 @@
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, diagnostic::Level, errors::MATH_OPERATION_ASSIGNS};
 use lexer::token::LexerToken;
 
-use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
+use ast::{operators::parse_math_operator, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use crate::value::parse_ast_value;
 
 pub fn parse_math_operation(tokens: &Vec<LexerToken>, ind: &mut usize, original: Box<ASTTreeNode>, restricts_to_assigns: bool) -> DiagnosticResult<Box<ASTTreeNode>> {
-	let oper = tokens[*ind].expects_math_operator()?;
+	let oper = parse_math_operator(tokens, ind)?;
 
-	if !oper.1 && restricts_to_assigns {
+	if !oper.assigns && restricts_to_assigns {
 		return Err(tokens[*ind].make_simple_diagnostic(MATH_OPERATION_ASSIGNS.0, Level::Error, MATH_OPERATION_ASSIGNS.1.to_string(), None, vec![], vec!["consider assigning this to variable".to_string()], vec!["add = at the end of the operator".to_string()]).into())
 	}
 
@@ -18,5 +18,5 @@ pub fn parse_math_operation(tokens: &Vec<LexerToken>, ind: &mut usize, original:
 	let start = original.start.clone();
 	let end = right_member.end.clone();
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::MathResult { lval: original, rval: right_member, operator: oper.0, assigns: oper.1 }, start, end)))
+	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::MathResult { lval: original, rval: right_member, operator: oper }, start, end)))
 }

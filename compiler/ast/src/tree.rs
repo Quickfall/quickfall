@@ -5,9 +5,8 @@
 use std::{collections::HashMap, fmt::Display};
 
 use compiler_typing::TypeParameterContainer;
-use compiler_utils::{Position, hash::{HashedString, SelfHash}};
+use compiler_utils::{Position, hash::{HashedString, SelfHash}, operators::{ComparingOperator, MathOperator}};
 use diagnostics::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}};
-use lexer::{toks::{comp::ComparingOperator, math::MathOperator}};
 
 use crate::types::ASTType;
 
@@ -39,7 +38,7 @@ pub enum ASTTreeNodeKind {
 	OperatorBasedConditionMember { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: ComparingOperator },
 	BooleanBasedConditionMember { val: Box<ASTTreeNode>, negate: bool },
 
-	MathResult { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: MathOperator, assigns: bool },
+	MathResult { lval: Box<ASTTreeNode>, rval: Box<ASTTreeNode>, operator: MathOperator },
 
 	VariableReference(HashedString),
 

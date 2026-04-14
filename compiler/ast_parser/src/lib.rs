@@ -20,6 +20,7 @@ pub mod types;
 pub mod arrays;
 pub mod unwraps;
 pub mod use_statements;
+pub mod comp;
 
 pub fn parse_ast_ctx(tokens: &Vec<LexerToken>) -> DiagnosticResult<ParserCtx> {
 	let mut ind = 0;

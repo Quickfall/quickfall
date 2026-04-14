@@ -3,9 +3,8 @@
 use std::collections::HashMap;
 
 use compiler_typing::{enums::{RawEnumTypeContainer}, raw::RawType, references::TypeReference, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
-use compiler_utils::{Position, hash::SelfHash};
+use compiler_utils::{Position, hash::SelfHash, operators::{ComparingOperator, MathOperator}};
 use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}, unsure_panic};
-use lexer::toks::{comp::ComparingOperator, math::MathOperator};
 
 use crate::{ctx::{HIRBranchedContext, HIRContext}, resolve::resolve_to_type, structs::{HIRIfBranch, StructLRUStep}};
 
@@ -51,7 +50,7 @@ pub enum HIRNodeKind {
 
 	VarAssigment { variable: usize, val: Box<HIRNode> },
 	
-	MathOperation { left:  Box<HIRNode>, right: Box<HIRNode>, operation: MathOperator, assignment: bool },
+	MathOperation { left:  Box<HIRNode>, right: Box<HIRNode>, operation: MathOperator },
 
 	UnwrapCondition { original: Box<HIRNode>, new_type: Type, new_var: Option<usize>, unsafe_unwrap: bool },
 	UnwrapValue { original: Box<HIRNode>, new_type: Type, unsafe_unwrap: bool },
@@ -248,7 +247,7 @@ impl HIRNode {
 				return Some(last.clone())
 			},
 
-			HIRNodeKind::MathOperation { left, right: _, operation: _, assignment: _ } => {
+			HIRNodeKind::MathOperation { left, right: _, operation: _ } => {
 				return left.get_node_type(context, curr_ctx)
 			},
 
