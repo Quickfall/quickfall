@@ -10,8 +10,8 @@ pub fn parse_math_operation(tokens: &Vec<LexerToken>, ind: &mut usize, original:
 	if !oper.assigns && restricts_to_assigns {
 		return Err(tokens[*ind].make_simple_diagnostic(MATH_OPERATION_ASSIGNS.0, Level::Error, MATH_OPERATION_ASSIGNS.1.to_string(), None, vec![], vec!["consider assigning this to variable".to_string()], vec!["add = at the end of the operator".to_string()]).into())
 	}
-
-	*ind += 1;
+	
+	println!("{:#?}", tokens[*ind].tok_type);
 
 	let right_member = parse_ast_value(tokens, ind)?;
 

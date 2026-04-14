@@ -38,14 +38,18 @@ pub fn parse_math_operator(tokens: &Vec<LexerToken>, ind: &mut usize) -> Diagnos
 		_ => false
 	};
 
-	*ind += 1;
+	if assigns {
+		*ind += 1;
+	}
 
 	let fast = match tokens[*ind].tok_type {
 		LexerTokenType::Tidle => true,
 		_ => false
 	};
 
-	*ind += 1;
+	if fast {
+		*ind += 1;
+	}
 
 	return Ok(MathOperator { operator: op, assigns, fast });
 }
