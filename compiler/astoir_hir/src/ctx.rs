@@ -69,7 +69,7 @@ impl HIRBranchedContext {
 			return Err(());
 		}
 
-		let mut var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch + 1, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0 };
+		let mut var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch + 1, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0, usage_count: 0 };
 				
 		if has_default {
 			var.mutation_count += 1;
@@ -93,7 +93,7 @@ impl HIRBranchedContext {
 			return Err(());
 		}
 
-		let mut var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0 };
+		let mut var: HIRBranchedVariable = HIRBranchedVariable { introduced_in_era: self.current_branch, variable_type: t, has_default, introduced_values: HashSet::new(), requires_address: false, mutation_count: 0, usage_count: 0};
 				
 		if has_default {
 			var.mutation_count += 1;
@@ -183,7 +183,7 @@ impl HIRBranchedContext {
 	}
 
 	/// Obtains the variable index from the hash if it's available, otherwise returns an error explaining why it failed
-	pub fn obtain<K: DiagnosticSpanOrigin>(&self, hash: u64, origin: &K) -> DiagnosticResult<usize> {
+	pub fn obtain<K: DiagnosticSpanOrigin>(&mut self, hash: u64, origin: &K) -> DiagnosticResult<usize> {
 		let identity = SelfHash { hash };
 
 		match self.hash_to_ind.get(&identity) {
@@ -198,6 +198,8 @@ impl HIRBranchedContext {
 
 					panic!("Dropped unalived variable")
 				}
+
+				self.variables[ind].usage_count += 1;
 
 				return Ok(ind)
 			}
@@ -216,7 +218,9 @@ impl HIRBranchedContext {
 pub struct HIRBranchedVariable {
 	pub introduced_in_era: usize,
 	pub variable_type: Type,
-	
+
+	pub usage_count: usize,
+
 	pub requires_address: bool,
 
 	/// The amount of times the variable has been changed
@@ -255,7 +259,7 @@ impl HIRContext {
 	}
 }
 
-pub fn get_variable<K: DiagnosticSpanOrigin>(context: &HIRContext, curr_ctx: &HIRBranchedContext, hash: u64, origin: &K) -> DiagnosticResult<(VariableKind, Type, usize)> {
+pub fn get_variable<K: DiagnosticSpanOrigin>(context: &HIRContext, curr_ctx: &mut HIRBranchedContext, hash: u64, origin: &K) -> DiagnosticResult<(VariableKind, Type, usize)> {
 	if curr_ctx.hash_to_ind.contains_key(&SelfHash { hash }) {
 		let ind = curr_ctx.obtain(hash, origin)?;
 
