@@ -42,3 +42,4 @@ declare_error!(IR_INSTRUCTION_HELD_VAL, 29, "cannot extract held value from inst
 declare_error!(INVALID_TYPE_REQ, 30, "this operation requires a {} type");
 declare_error!(TYPE_NOT_PART, 31, "type {} is not part of type {}");
 declare_error!(NOT_FOUND_USE, 32, "element {} was not found in {}");
+declare_error!(CANNOT_FIND, 33, "cannot find {} in the current scope");

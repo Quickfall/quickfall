@@ -1,6 +1,6 @@
 use std::{fmt::Display};
 
-use crate::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Level, Span, SpanKind, SpanPosition}, errors::{ALREADY_IN_SCOPE, ASSIGN_DIFF_TYPE_IR, BOUND_MISSING, DIFF_SIZE_SPECIFIERS, DIFF_TYPE_SPECIFIERS, ENUM_PARENT_FIELDS, ERA_NOT_EXIST, EXPECTED_FREE, EXPECTED_TOKEN, EXPECTED_TYPE, FIELD_MISSING, FIELD_STRUCT_INIT, FIND_TYPE, FIND_TYPE_FIELD, FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING, INDEX_USAGE, INVALID_POINTING, INVALID_TYPE_REQ, IR_CAST, IR_INSTRUCTION_HELD_VAL, MATH_OPERATION_ASSIGNS, NOT_FOUND_USE, TRAIT_MISSING, TYPE_NOT_PART, UNEXPECTED_TOKEN, VARIABLE_UNINIT}, get_current_diagnostic_pos, warnings::UNUSED_VAR};
+use crate::{DiagnosticSpanOrigin, diagnostic::{Diagnostic, Level, Span, SpanKind, SpanPosition}, errors::{ALREADY_IN_SCOPE, ASSIGN_DIFF_TYPE_IR, BOUND_MISSING, CANNOT_FIND, DIFF_SIZE_SPECIFIERS, DIFF_TYPE_SPECIFIERS, ENUM_PARENT_FIELDS, ERA_NOT_EXIST, EXPECTED_FREE, EXPECTED_TOKEN, EXPECTED_TYPE, FIELD_MISSING, FIELD_STRUCT_INIT, FIND_TYPE, FIND_TYPE_FIELD, FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING, INDEX_USAGE, INVALID_POINTING, INVALID_TYPE_REQ, IR_CAST, IR_INSTRUCTION_HELD_VAL, MATH_OPERATION_ASSIGNS, NOT_FOUND_USE, TRAIT_MISSING, TYPE_NOT_PART, UNEXPECTED_TOKEN, VARIABLE_UNINIT}, get_current_diagnostic_pos, warnings::UNUSED_VAR};
 
 pub fn make_expected_simple_error<K: DiagnosticSpanOrigin, E: Display, G: Display>(origin: &K, expected: &E, got: &G) -> Diagnostic {
 	origin.make_simple_diagnostic(EXPECTED_TOKEN.0, Level::Error, format!("expected {} but got {}", expected, got), None, vec![], vec![], vec![])
@@ -188,4 +188,8 @@ pub fn make_type_not_partof<K: DiagnosticSpanOrigin, A: Display, B: Display>(ori
 
 pub fn make_use_not_found<K: DiagnosticSpanOrigin, E: Display, P: Display>(origin: &K, element: &E, path: &P) -> Diagnostic {
 	origin.make_simple_diagnostic(NOT_FOUND_USE.0, Level::Error, format!("element {} was not found in {}", element, path), None, vec![], vec![], vec![])
+}
+
+pub fn make_cannot_find<K: DiagnosticSpanOrigin, P: Display>(origin: &K, element: &P) -> Diagnostic {
+	origin.make_simple_diagnostic(CANNOT_FIND.0, Level::Error, format!("cannot find {} in the current scope", element), None, vec![], vec![], vec![])
 }
