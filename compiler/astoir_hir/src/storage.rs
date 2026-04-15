@@ -1,9 +1,8 @@
 //! The global HIR storage, basically stores types, functions, and more
 
-use std::{collections::{HashMap, btree_map::Entry}, hash::Hash};
+use std::{collections::HashMap, fmt::Display, hash::Hash};
 
 use compiler_typing::tree::Type;
-use compiler_utils::{hash::SelfHash};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, MaybeDiagnostic, builders::{make_already_in_scope, make_cannot_find}};
 
 use crate::{ctx::HIRFunction, nodes::HIRNode};
@@ -87,4 +86,20 @@ impl GlobalScopeStorage {
 
 		return Ok(self.entries[self.entry_to_ind[&name]].entry_type.clone())
 	}
+}
+
+impl Display for GlobalStorageEntryType {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let s = match self {
+			Self::Function(_, _) => "function",
+			Self::ImplLessFunction(_) => "function",
+			Self::StructFunction(_, _, _) => "function",
+			Self::StaticVariable(_) => "static variable",
+			Self::Type(_) => "type"
+ 		};
+
+		write!(f, "{}", s)?;
+
+		Ok(())
+	}	
 }
