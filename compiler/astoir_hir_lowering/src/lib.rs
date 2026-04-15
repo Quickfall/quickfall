@@ -1,6 +1,7 @@
 use ast::{ctx::ParserCtx, tree::{ASTTreeNode, ASTTreeNodeKind}};
 use astoir_hir::{ctx::{HIRBranchedContext, HIRContext}, nodes::{HIRNode, HIRNodeKind}};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos};
+use prelude::apply_prelude;
 
 use crate::{arrays::lower_ast_array_modify, control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block}, enums::lower_ast_enum, func::{lower_ast_function_call, lower_ast_function_declaration, lower_ast_shadow_function_declaration}, math::lower_ast_math_operation, structs::lower_ast_struct_declaration, uses::handle_ast_use_statement, values::lower_ast_value, var::{lower_ast_variable_assign, lower_ast_variable_declaration}};
 
@@ -106,6 +107,7 @@ pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> D
 
 pub fn lower_ast(ctx: ParserCtx) -> DiagnosticResult<HIRContext> {
 	let mut hir_ctx = HIRContext::new();
+	apply_prelude(&mut hir_ctx)?;
 
 	for u in ctx.uses {
 		handle_ast_use_statement(&mut hir_ctx, u)?;

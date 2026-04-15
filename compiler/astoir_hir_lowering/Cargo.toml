@@ -11,3 +11,4 @@ diagnostics = { path = "../diagnostics" }
 compiler_utils = { path = "../compiler_utils" }
 lexer = { path = "../lexer" }
 ast_parser = { path = "../ast_parser" }
+prelude = { path = "../prelude" }

@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+compiler_typing = { path = "../compiler_typing" }
+diagnostics = { path = "../diagnostics" }
+astoir_hir = { path = "../astoir_hir" }

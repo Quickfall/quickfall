@@ -62,6 +62,7 @@ dependencies = [
  "compiler_utils",
  "diagnostics",
  "lexer",
+ "prelude",
 ]
 
 [[package]]
@@ -243,6 +244,11 @@ dependencies = [
 [[package]]
 name = "prelude"
 version = "0.1.0"
+dependencies = [
+ "astoir_hir",
+ "compiler_typing",
+ "diagnostics",
+]
 
 [[package]]
 name = "proc-macro2"
