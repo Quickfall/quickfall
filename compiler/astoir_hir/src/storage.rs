@@ -3,7 +3,7 @@
 use std::{collections::HashMap, fmt::Display, hash::Hash};
 
 use compiler_typing::tree::Type;
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, MaybeDiagnostic, builders::{make_already_in_scope, make_cannot_find}};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, MaybeDiagnostic, builders::{make_already_in_scope, make_cannot_find, make_expected_simple_error}};
 
 use crate::{ctx::HIRFunction, nodes::HIRNode};
 
@@ -79,12 +79,89 @@ impl GlobalScopeStorage {
 		Ok(())
 	}
 
-	pub fn get_base<K: DiagnosticSpanOrigin>(&mut self, name: EntryKey, origin: &K) -> DiagnosticResult<GlobalStorageEntryType> {
+	pub fn get_base<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<GlobalStorageEntryType> {
 		if !self.entry_to_ind.contains_key(&name) {
 			return Err(make_cannot_find(origin, &name.name_hash).into());
 		}
 
 		return Ok(self.entries[self.entry_to_ind[&name]].entry_type.clone())
+	}
+
+	pub fn get_type<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<Type> {
+		let base = self.get_base(name, origin)?;
+
+		return match base {
+			GlobalStorageEntryType::Type(t) => Ok(t.clone()),
+			_ => Err(make_expected_simple_error(origin, &"type".to_string(), &base).into())
+		};
+	}
+
+	pub fn get_static_variable<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<Type> {
+		let base = self.get_base(name, origin)?;
+
+		return match base {
+			GlobalStorageEntryType::StaticVariable(t) => Ok(t.clone()),
+			_ => Err(make_expected_simple_error(origin, &"static variable".to_string(), &base).into())
+		};
+	}
+
+	pub fn get_function_base<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<HIRFunction> {
+		let base = self.get_base(name, origin)?;
+
+		return match base {
+			GlobalStorageEntryType::Function(hir, _) => Ok(hir.clone()),
+			GlobalStorageEntryType::ImplLessFunction(hir) => Ok(hir.clone()),
+			GlobalStorageEntryType::StructFunction(hir, _, _) => Ok(hir.clone()),
+
+			_ => Err(make_expected_simple_error(origin, &"function".to_string(), &base).into())
+		};
+	}
+
+	pub fn get_function_impl<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<Box<HIRNode>> {
+		let base = self.get_base(name, origin)?;
+
+		return match base {
+			GlobalStorageEntryType::Function(_, i) => Ok(i.clone()),
+			GlobalStorageEntryType::StructFunction(_, i, _) => Ok(i.clone()),
+			
+			_ => Err(make_expected_simple_error(origin, &"function with implementation", &base).into())
+		};
+	}
+
+	pub fn get_implless_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<HIRFunction> {
+		let base = self.get_base(name, origin)?;
+
+		return match base {
+			GlobalStorageEntryType::ImplLessFunction(hir) => Ok(hir.clone()),
+			
+			_ => Err(make_expected_simple_error(origin, &"function without implementation", &base).into())
+		}
+	}
+
+	pub fn get_exact_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<(HIRFunction, Box<HIRNode>)> {
+		let base = self.get_base(name, origin)?;
+
+		return match base {
+			GlobalStorageEntryType::Function(hir, i) => Ok((hir.clone(), i.clone())),
+			
+			_ => Err(make_expected_simple_error(origin, &"function", &base).into())
+		}
+	}
+
+	pub fn get_exact_struct_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<(HIRFunction, Box<HIRNode>, Type)> {
+		let base = self.get_base(name, origin)?;
+
+		return match base {
+			GlobalStorageEntryType::StructFunction(hir, i, o) => {
+				if let GlobalStorageEntryType::Type(t) = self.entries[o].entry_type.clone() {
+					Ok((hir, i, t))
+				} else {
+					Err(make_expected_simple_error(origin, &"type", &self.entries[0].entry_type).into())
+				}
+			},
+
+			_ => Err(make_expected_simple_error(origin, &"struct function", &base).into())
+		}
 	}
 }
 
