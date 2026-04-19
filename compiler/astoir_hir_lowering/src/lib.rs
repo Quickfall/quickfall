@@ -107,7 +107,7 @@ pub fn lower_ast_toplevel(context: &mut HIRContext, node: Box<ASTTreeNode>) -> D
 
 pub fn lower_ast(ctx: ParserCtx) -> DiagnosticResult<HIRContext> {
 	let mut hir_ctx = HIRContext::new();
-	apply_prelude(&mut hir_ctx)?;
+	apply_prelude(&mut hir_ctx, &*ctx.map[&ctx.iter_order[0]])?;
 
 	for u in ctx.uses {
 		handle_ast_use_statement(&mut hir_ctx, u)?;
