@@ -6,7 +6,7 @@ use compiler_typing::{storage::TypeStorage, tree::Type};
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::{make_cannot_find_func, make_cannot_find_var, make_doesnt_exist_in_era}};
 
-use crate::{nodes::HIRNode, structs::HIRStructContainer};
+use crate::{nodes::HIRNode, storage::GlobalScopeStorage, structs::HIRStructContainer};
 
 pub type HIRFunction = (Option<Type>, Vec<(u64, Type)>, String);
 
@@ -237,7 +237,8 @@ pub struct HIRContext {
 	pub function_contexts: Vec<Option<HIRBranchedContext>>,
 	pub static_variables: IndexStorage<Type>,
 	pub struct_func_impls: HashMap<usize, HIRStructContainer>,
-	pub type_storage: TypeStorage
+	pub type_storage: TypeStorage,
+	pub global_scope: GlobalScopeStorage
 }
 
 #[derive(PartialEq)]
@@ -248,7 +249,7 @@ pub enum VariableKind {
 
 impl HIRContext {
 	pub fn new() -> Self {
-		return HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new().unwrap(), function_contexts: vec![], function_declarations: vec![], struct_func_impls: HashMap::new() }
+		return HIRContext { functions: IndexStorage::new(), static_variables: IndexStorage::new(), type_storage: TypeStorage::new().unwrap(), function_contexts: vec![], function_declarations: vec![], struct_func_impls: HashMap::new(), global_scope: GlobalScopeStorage::new() }
 	}
 
 	pub fn translate_function<K: DiagnosticSpanOrigin>(&self, func_hash: u64, origin: &K) -> DiagnosticResult<usize> {

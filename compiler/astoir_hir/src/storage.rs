@@ -2,14 +2,14 @@
 
 use std::{collections::HashMap, fmt::Display, hash::Hash};
 
-use compiler_typing::tree::Type;
+use compiler_typing::{raw::RawType, tree::Type};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, MaybeDiagnostic, builders::{make_already_in_scope, make_cannot_find, make_expected_simple_error}};
 
 use crate::{ctx::HIRFunction, nodes::HIRNode};
 
 pub type GlobalStorageIdentifier = usize;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GlobalStorageEntryType {
 	Function(HIRFunction, Box<HIRNode>),
 	ImplLessFunction(HIRFunction),
@@ -17,10 +17,11 @@ pub enum GlobalStorageEntryType {
 
 	StructFunction(HIRFunction, Box<HIRNode>, GlobalStorageIdentifier),
 	
-	Type(Type)
+	Type(RawType)
 }
 
 /// Represents a key to a global storage entry. Potentially allows for namespaces later on
+#[derive(Debug)]
 pub struct EntryKey {
 	pub name_hash: u64
 }
@@ -39,11 +40,13 @@ impl PartialEq for EntryKey {
 
 impl Eq for EntryKey {}
 
+#[derive(Debug)]
 pub struct GlobalStorageEntry {
 	pub entry_type: GlobalStorageEntryType,
 	pub parent_index: usize
 }
 
+#[derive(Debug)]
 pub struct GlobalScopeStorage {
 	pub entry_to_ind: HashMap<EntryKey, usize>,
 	pub entries: Vec<GlobalStorageEntry>,
@@ -87,7 +90,7 @@ impl GlobalScopeStorage {
 		return Ok(self.entries[self.entry_to_ind[&name]].entry_type.clone())
 	}
 
-	pub fn get_type<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<Type> {
+	pub fn get_type<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<RawType> {
 		let base = self.get_base(name, origin)?;
 
 		return match base {
@@ -148,7 +151,7 @@ impl GlobalScopeStorage {
 		}
 	}
 
-	pub fn get_exact_struct_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<(HIRFunction, Box<HIRNode>, Type)> {
+	pub fn get_exact_struct_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<(HIRFunction, Box<HIRNode>, RawType)> {
 		let base = self.get_base(name, origin)?;
 
 		return match base {
