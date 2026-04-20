@@ -1,4 +1,4 @@
-use compiler_typing::storage::TypeStorage;
+use compiler_typing::TypedGlobalScope;
 use diagnostics::{DiagnosticResult, builders::make_invalid_assign_diff_type_ir, unsure_panic};
 
 use crate::{
@@ -56,7 +56,7 @@ impl MIRVariableReference {
         block: MIRBlockReference,
         ctx: &mut MIRContext,
         val: BaseMIRValue,
-        storage: &TypeStorage,
+        storage: &TypedGlobalScope,
     ) -> DiagnosticResult<bool> {
         if self.is_pointer_ref() {
             let mut ptr_ref = self.as_pointer_ref()?;

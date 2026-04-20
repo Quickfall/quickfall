@@ -1,6 +1,6 @@
 //! Utility functions to build instructions and more
 
-use compiler_typing::{SizedType, raw::RawType, storage::TypeStorage, tree::Type};
+use compiler_typing::{SizedType, TypedGlobalScope, raw::RawType, tree::Type};
 use diagnostics::{DiagnosticResult, MaybeDiagnostic, unsure_panic};
 
 use crate::{
@@ -42,7 +42,7 @@ pub fn build_load(ctx: &mut MIRContext, ptr: MIRPointerValue) -> DiagnosticResul
 
 pub fn build_store(
     ctx: &mut MIRContext,
-    storage: &TypeStorage,
+    storage: &TypedGlobalScope,
     ptr: MIRPointerValue,
     val: BaseMIRValue,
 ) -> DiagnosticResult<()> {
@@ -53,9 +53,9 @@ pub fn build_store(
     if !hint.get_maybe_containing_type().is_truly_eq(&val.vtype) && !hint.is_ptr() {
         if hint
             .get_maybe_containing_type()
-            .get_generic(storage)
+            .get_generic()
             .is_enum_parent()
-            && val.vtype.get_generic(storage).is_enum_child()
+            && val.vtype.get_generic().is_enum_child()
         {
             return build_store_fallback(ctx, ptr, val.clone(), storage);
         }
@@ -905,7 +905,7 @@ pub fn build_store_fallback(
     ctx: &mut MIRContext,
     dest: MIRPointerValue,
     src: BaseMIRValue,
-    storage: &TypeStorage,
+    storage: &TypedGlobalScope,
 ) -> MaybeDiagnostic {
     let sz = src.vtype.get_size(&src.vtype, false, storage);
 

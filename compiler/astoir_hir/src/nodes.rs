@@ -316,7 +316,7 @@ impl HIRNode {
             return Ok(self.clone());
         }
 
-        if self_type.can_transmute(&t, &context.type_storage) {
+        if self_type.can_transmute(&t, &context.global_scope) {
             match &self.kind {
                 HIRNodeKind::IntegerLiteral { value, int_type: _ } => {
                     return Ok(self.with(HIRNodeKind::IntegerLiteral {
@@ -326,7 +326,7 @@ impl HIRNode {
                 }
 
                 HIRNodeKind::ArrayVariableInitializerValue { vals } => {
-                    if can_transmute_inner(&self_type, &t, &context.type_storage) {
+                    if can_transmute_inner(&self_type, &t, &context.global_scope) {
                         let mut new_vals = vec![];
                         let inner = t.get_inner_type();
 
@@ -346,7 +346,7 @@ impl HIRNode {
                 }
 
                 HIRNodeKind::ArrayVariableInitializerValueSameValue { size, val } => {
-                    if can_transmute_inner(&self_type, &t, &context.type_storage) {
+                    if can_transmute_inner(&self_type, &t, &context.global_scope) {
                         let new_val = Box::new(val.use_as(
                             context,
                             curr_ctx,
@@ -355,12 +355,12 @@ impl HIRNode {
                             var_origin,
                         )?);
 
-                        return Ok(
-                            self.with(HIRNodeKind::ArrayVariableInitializerValueSameValue {
+                        return Ok(self.with(
+                            HIRNodeKind::ArrayVariableInitializerValueSameValue {
                                 size: *size,
                                 val: new_val,
-                            }),
-                        );
+                            },
+                        ));
                     }
                 }
 
@@ -379,11 +379,11 @@ impl HIRNode {
             return Err(make_diff_type(
                 origin,
                 &"unnamed".to_string(),
-                &t.faulty_lowering_generic(&context.type_storage),
+                &t.faulty_lowering_generic(&context.global_scope),
                 &self
                     .get_node_type(context, curr_ctx)
                     .unwrap()
-                    .faulty_lowering_generic(&context.type_storage),
+                    .faulty_lowering_generic(&context.global_scope),
                 v,
             )
             .into());
@@ -391,11 +391,11 @@ impl HIRNode {
 
         return Err(make_diff_type_val(
             origin,
-            &t.faulty_lowering_generic(&context.type_storage),
+            &t.faulty_lowering_generic(&context.global_scope),
             &self
                 .get_node_type(context, curr_ctx)
                 .unwrap()
-                .faulty_lowering_generic(&context.type_storage),
+                .faulty_lowering_generic(&context.global_scope),
         )
         .into());
     }
