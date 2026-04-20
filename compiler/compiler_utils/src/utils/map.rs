@@ -9,36 +9,41 @@ const MAP_LOAD_FACTOR: f64 = 0.85;
 
 #[derive(Debug)]
 pub struct HashedMap<V> {
-	meta: Vec<u8>,
-	buckets: Vec<MaybeUninit<(u64, V)>>,
-	capacity: usize,
-	load: usize
+    meta: Vec<u8>,
+    buckets: Vec<MaybeUninit<(u64, V)>>,
+    capacity: usize,
+    load: usize,
 }
 
 impl<V> HashedMap<V> {
-	pub fn new(capacity: usize) -> Self {
-		let mut cap: usize = capacity;
+    pub fn new(capacity: usize) -> Self {
+        let mut cap: usize = capacity;
 
-		if !cap.is_power_of_two() {
-			cap = cap.next_power_of_two();
-		}
+        if !cap.is_power_of_two() {
+            cap = cap.next_power_of_two();
+        }
 
-		let mut buckets: Vec<MaybeUninit<(u64, V)>> = Vec::with_capacity(cap);
+        let mut buckets: Vec<MaybeUninit<(u64, V)>> = Vec::with_capacity(cap);
 
-		let meta: Vec<u8> = vec![BUCKET_EMPTY; cap];
+        let meta: Vec<u8> = vec![BUCKET_EMPTY; cap];
 
-		unsafe {
+        unsafe {
             buckets.set_len(cap);
         }
 
-        return HashedMap { meta , buckets, capacity: cap, load: 0 }
-	}
+        return HashedMap {
+            meta,
+            buckets,
+            capacity: cap,
+            load: 0,
+        };
+    }
 
-	pub fn put(&mut self, key: u64, val: V) {
-		let index = self.index_from_hash(key);
-		let fingerprint = self.fingerprint_from_hash(key);
+    pub fn put(&mut self, key: u64, val: V) {
+        let index = self.index_from_hash(key);
+        let fingerprint = self.fingerprint_from_hash(key);
 
-		let mut insertion: Option<usize> = None;
+        let mut insertion: Option<usize> = None;
 
         for i in index..self.capacity {
             let meta: u8 = self.meta[i];
@@ -50,7 +55,7 @@ impl<V> HashedMap<V> {
 
                     insertion = Some(i);
                     break;
-                },
+                }
 
                 _ => {
                     if meta != fingerprint {
@@ -65,7 +70,7 @@ impl<V> HashedMap<V> {
                     }
                 }
             }
-        }        
+        }
 
         if insertion.is_some() {
             let target: usize = insertion.unwrap();
@@ -86,23 +91,23 @@ impl<V> HashedMap<V> {
         if self.check_for_map_load() {
             self.change_capacity((self.capacity + 1).next_power_of_two());
 
-            // We didn't find a bucket yet. We increment the capacity. 
-            
+            // We didn't find a bucket yet. We increment the capacity.
+
             // Since new capacity > old capacity. We can simply claim the old capacity + 1 bucket as ours
-        
+
             self.put(key, val);
         }
-	}
+    }
 
-	pub fn get(&self, key: u64) -> Option<&V> {
-		let index = self.index_from_hash(key);
+    pub fn get(&self, key: u64) -> Option<&V> {
+        let index = self.index_from_hash(key);
         let fingerprint = self.fingerprint_from_hash(key);
 
         for i in index..self.capacity {
             if self.meta[i] == fingerprint {
                 unsafe {
                     let bucket: &(u64, V) = self.buckets[i].assume_init_ref();
-                    
+
                     if bucket.0 == key {
                         return Some(&bucket.1);
                     }
@@ -111,24 +116,25 @@ impl<V> HashedMap<V> {
         }
 
         return None;
-	}
+    }
 
-	pub fn entries(&self) -> Vec<&(u64, V)> {
-		let mut vec = Vec::new();
+    pub fn entries(&self) -> Vec<&(u64, V)> {
+        let mut vec = Vec::new();
 
-		for i in 0..self.capacity {
-			if self.meta[i] == BUCKET_EMPTY || self.meta[i] == BUCKET_TOMBSTONE {
-				continue;
-			}
+        for i in 0..self.capacity {
+            if self.meta[i] == BUCKET_EMPTY || self.meta[i] == BUCKET_TOMBSTONE {
+                continue;
+            }
 
-			unsafe { vec.push(self.buckets[i].assume_init_ref()); }
-		}
-		
-		return vec;
-	}
+            unsafe {
+                vec.push(self.buckets[i].assume_init_ref());
+            }
+        }
 
+        return vec;
+    }
 
-	pub fn erase(&mut self, key: u64) {
+    pub fn erase(&mut self, key: u64) {
         let index = self.index_from_hash(key);
         let fingerprint = self.fingerprint_from_hash(key);
 
@@ -147,7 +153,7 @@ impl<V> HashedMap<V> {
         }
     }
 
-	fn check_for_map_load(&self) -> bool {
+    fn check_for_map_load(&self) -> bool {
         let curr_load = (self.load / self.capacity) as f64;
 
         return curr_load >= MAP_LOAD_FACTOR;
@@ -159,7 +165,7 @@ impl<V> HashedMap<V> {
         }
 
         let mut temp: HashedMap<V> = HashedMap::new(new_capacity);
-        
+
         for i in 0..self.capacity {
             if self.meta[i] != BUCKET_EMPTY && self.meta[i] != BUCKET_TOMBSTONE {
                 unsafe {
@@ -171,7 +177,7 @@ impl<V> HashedMap<V> {
                     temp.put(key, val);
                 }
             }
-            
+
             // Append bucket to temp
         }
 
@@ -179,8 +185,6 @@ impl<V> HashedMap<V> {
         self.meta = temp.meta;
         self.capacity = temp.capacity;
     }
-
-
 }
 
 impl<V> HashedMap<V> {

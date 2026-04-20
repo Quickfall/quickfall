@@ -1,37 +1,52 @@
 use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}};
+use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 
-use crate::{functions::parse_node_body, parser::parse_ast_node_in_body, value::parse_ast_value, variables::decl::parse_variable_declaration};
+use crate::{
+    functions::parse_node_body, parser::parse_ast_node_in_body, value::parse_ast_value,
+    variables::decl::parse_variable_declaration,
+};
 
-pub fn parse_for_loop(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
-	let start = tokens[*ind].pos.clone();
+pub fn parse_for_loop(
+    tokens: &Vec<LexerToken>,
+    ind: &mut usize,
+) -> DiagnosticResult<Box<ASTTreeNode>> {
+    let start = tokens[*ind].pos.clone();
 
-	*ind += 1;
+    *ind += 1;
 
-	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
+    tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
-	let initial = parse_variable_declaration(tokens, ind)?;
+    let initial = parse_variable_declaration(tokens, ind)?;
 
-	tokens[*ind].expects(LexerTokenType::Comma)?;
+    tokens[*ind].expects(LexerTokenType::Comma)?;
 
-	*ind += 1;
-	let cond = parse_ast_value(tokens, ind)?;
+    *ind += 1;
+    let cond = parse_ast_value(tokens, ind)?;
 
-	tokens[*ind].expects(LexerTokenType::Comma)?;
-	*ind += 1;
+    tokens[*ind].expects(LexerTokenType::Comma)?;
+    *ind += 1;
 
-	let increment = parse_ast_node_in_body(tokens, ind)?;
+    let increment = parse_ast_node_in_body(tokens, ind)?;
 
-	tokens[*ind].expects(LexerTokenType::ParenClose)?;
-	*ind += 1;
+    tokens[*ind].expects(LexerTokenType::ParenClose)?;
+    *ind += 1;
 
-	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
+    tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
-	let body = parse_node_body(tokens, ind)?;
+    let body = parse_node_body(tokens, ind)?;
 
-	let end = tokens[*ind - 1].get_end_pos();
+    let end = tokens[*ind - 1].get_end_pos();
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::ForBlock { initial_state: initial, cond, increment, body }, start, end)));
+    return Ok(Box::new(ASTTreeNode::new(
+        ASTTreeNodeKind::ForBlock {
+            initial_state: initial,
+            cond,
+            increment,
+            body,
+        },
+        start,
+        end,
+    )));
 }

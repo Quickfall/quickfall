@@ -8,5 +8,5 @@ use crate::types::apply_prelude_types;
 pub mod types;
 
 pub fn apply_prelude<K: DiagnosticSpanOrigin>(hir: &mut HIRContext, origin: &K) -> MaybeDiagnostic {
-	apply_prelude_types(hir, origin)
+    apply_prelude_types(hir, origin)
 }

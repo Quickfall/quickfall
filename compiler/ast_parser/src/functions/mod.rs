@@ -1,97 +1,128 @@
 //! Parser module for functions
 
-use ast::{tree::{ASTTreeNode, ASTTreeNodeKind}, types::{ASTType}};
+use ast::{
+    tree::{ASTTreeNode, ASTTreeNodeKind},
+    types::ASTType,
+};
 use compiler_utils::hash::HashedString;
 use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{functions::arguments::parse_function_arguments, parser::parse_ast_node_in_body, types::parse_type, value::parse_ast_value};
+use crate::{
+    functions::arguments::parse_function_arguments, parser::parse_ast_node_in_body,
+    types::parse_type, value::parse_ast_value,
+};
 
-pub mod shadow;
 pub mod arguments;
 pub mod returns;
+pub mod shadow;
 
-pub fn parse_function_declaraction(tokens: &Vec<LexerToken>, ind: &mut usize, struct_type: Option<ASTType>) -> DiagnosticResult<Box<ASTTreeNode>> {
-	let start = tokens[*ind].pos.clone();
+pub fn parse_function_declaraction(
+    tokens: &Vec<LexerToken>,
+    ind: &mut usize,
+    struct_type: Option<ASTType>,
+) -> DiagnosticResult<Box<ASTTreeNode>> {
+    let start = tokens[*ind].pos.clone();
 
-	*ind += 1;
-	let function_name = tokens[*ind].expects_keyword()?;
+    *ind += 1;
+    let function_name = tokens[*ind].expects_keyword()?;
 
-	*ind += 1;
-	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
+    *ind += 1;
+    tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
-	let args = parse_function_arguments(tokens, ind, struct_type)?;
+    let args = parse_function_arguments(tokens, ind, struct_type)?;
 
-	*ind += 1;
+    *ind += 1;
 
-	let mut ret_type = None;
+    let mut ret_type = None;
 
-	if tokens[*ind].is_keyword() {
-		ret_type = Some(parse_type(tokens, ind)?);
-		//*ind += 1;
-	}
+    if tokens[*ind].is_keyword() {
+        ret_type = Some(parse_type(tokens, ind)?);
+        //*ind += 1;
+    }
 
-	tokens[*ind].expects(LexerTokenType::BracketOpen)?;
+    tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
-	let body = parse_node_body(tokens, ind)?;
+    let body = parse_node_body(tokens, ind)?;
 
-	let end = tokens[*ind - 1].get_end_pos();
+    let end = tokens[*ind - 1].get_end_pos();
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionDeclaration { func_name: HashedString::new(function_name.0), args: args.0, body, return_type: ret_type, requires_this: args.1 }, start, end)));
+    return Ok(Box::new(ASTTreeNode::new(
+        ASTTreeNodeKind::FunctionDeclaration {
+            func_name: HashedString::new(function_name.0),
+            args: args.0,
+            body,
+            return_type: ret_type,
+            requires_this: args.1,
+        },
+        start,
+        end,
+    )));
 }
 
-pub fn parse_function_call(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Box<ASTTreeNode>> {
-	let start = tokens[*ind].pos.clone();
+pub fn parse_function_call(
+    tokens: &Vec<LexerToken>,
+    ind: &mut usize,
+) -> DiagnosticResult<Box<ASTTreeNode>> {
+    let start = tokens[*ind].pos.clone();
 
-	let func = HashedString::new(tokens[*ind].expects_keyword()?.0);
+    let func = HashedString::new(tokens[*ind].expects_keyword()?.0);
 
-	*ind += 1;
+    *ind += 1;
 
-	tokens[*ind].expects(LexerTokenType::ParenOpen)?;
+    tokens[*ind].expects(LexerTokenType::ParenOpen)?;
 
-	*ind += 1;
+    *ind += 1;
 
-	let mut vals: Vec<Box<ASTTreeNode>> = Vec::new();
-	
-	while tokens[*ind].tok_type != LexerTokenType::ParenClose {
-		vals.push(parse_ast_value(tokens, ind)?);
+    let mut vals: Vec<Box<ASTTreeNode>> = Vec::new();
 
-		if tokens[*ind].tok_type == LexerTokenType::ParenClose {
-			break;
-		}
+    while tokens[*ind].tok_type != LexerTokenType::ParenClose {
+        vals.push(parse_ast_value(tokens, ind)?);
 
-		tokens[*ind].expects(LexerTokenType::Comma)?;
+        if tokens[*ind].tok_type == LexerTokenType::ParenClose {
+            break;
+        }
 
-		*ind += 1;
-	}
+        tokens[*ind].expects(LexerTokenType::Comma)?;
 
-	let end = tokens[*ind].get_end_pos().clone();
+        *ind += 1;
+    }
 
-	*ind += 1;
+    let end = tokens[*ind].get_end_pos().clone();
 
-	return Ok(Box::new(ASTTreeNode::new(ASTTreeNodeKind::FunctionCall { func , args: vals }, start, end)))
+    *ind += 1;
+
+    return Ok(Box::new(ASTTreeNode::new(
+        ASTTreeNodeKind::FunctionCall { func, args: vals },
+        start,
+        end,
+    )));
 }
 
-pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult<Vec<Box<ASTTreeNode>>> {
+pub fn parse_node_body(
+    tokens: &Vec<LexerToken>,
+    ind: &mut usize,
+) -> DiagnosticResult<Vec<Box<ASTTreeNode>>> {
     *ind += 1;
 
     let mut tok: &LexerToken = &tokens[*ind];
     let mut body: Vec<Box<ASTTreeNode>> = Vec::new();
 
-	let mut stock = 1;
+    let mut stock = 1;
 
-    while tok.tok_type != LexerTokenType::EndOfFile && tok.tok_type != LexerTokenType::BracketClose {
-		if tok.tok_type == LexerTokenType::BracketClose {
-			stock -= 1;
-		}
+    while tok.tok_type != LexerTokenType::EndOfFile && tok.tok_type != LexerTokenType::BracketClose
+    {
+        if tok.tok_type == LexerTokenType::BracketClose {
+            stock -= 1;
+        }
 
-		if stock == 0 {
-			break;
-		}
+        if stock == 0 {
+            break;
+        }
 
-		if tok.tok_type == LexerTokenType::BracketOpen {
-			stock += 1;
-		}
+        if tok.tok_type == LexerTokenType::BracketOpen {
+            stock += 1;
+        }
 
         let n = parse_ast_node_in_body(tokens, ind)?;
 
@@ -100,7 +131,7 @@ pub fn parse_node_body(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticR
         tok = &tokens[*ind];
     }
 
-	*ind += 1;
+    *ind += 1;
 
     return Ok(body);
 }
