@@ -34,7 +34,7 @@ pub fn lower_hir_lru_step(
             .ssa_hints
             .get_hint(curr.get_ssa_index())
             .get_type()
-            .get_generic(&ctx.hir_ctx.type_storage)
+            .get_generic()
         {
             RawType::LoweredStruct(_, container) => container,
             _ => unsure_panic!("lower_hir_lru_step curr was not an actual thing"),

@@ -68,7 +68,7 @@ pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(
         hint_type.get_size(
             &Type::GenericLowered(hint_type.clone()),
             false,
-            &ctx.hir_ctx.type_storage,
+            &ctx.hir_ctx.global_scope,
         ),
     )?;
 
@@ -144,13 +144,7 @@ pub fn lower_hir_unwrap_cond(
         if unsafe_unwrap {
             cond = build_unsigned_int_const(&mut ctx.mir_ctx, 1, 1)?;
         } else {
-            cond = is_enum_value_of_kind(
-                block,
-                original,
-                new_type.get_generic(&ctx.hir_ctx.type_storage),
-                ctx,
-                &*node,
-            )?
+            cond = is_enum_value_of_kind(block, original, new_type.get_generic(), ctx, &*node)?
         }
 
         if new_var.is_none() {
@@ -179,13 +173,7 @@ pub fn lower_hir_unwrap_value(
         let original = lower_hir_value(block, original, ctx)?;
         let new_type = lower_hir_type(ctx, new_type)?;
 
-        return cast_to_enum_child(
-            block,
-            original,
-            new_type.get_generic(&ctx.hir_ctx.type_storage),
-            ctx,
-            &*node,
-        );
+        return cast_to_enum_child(block, original, new_type.get_generic(), ctx, &*node);
     }
 
     panic!("Invalid node!")

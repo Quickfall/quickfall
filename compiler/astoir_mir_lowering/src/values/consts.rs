@@ -14,11 +14,11 @@ pub fn lower_hir_literal(
 ) -> DiagnosticResult<BaseMIRValue> {
     match node.kind {
         HIRNodeKind::IntegerLiteral { value, int_type } => {
-            if int_type.get_generic(&ctx.hir_ctx.type_storage).is_signed() {
+            if int_type.get_generic().is_signed() {
                 let val = build_signed_int_const(
                     &mut ctx.mir_ctx,
                     value,
-                    int_type.get_size(&int_type, true, &ctx.hir_ctx.type_storage),
+                    int_type.get_size(&int_type, true, &ctx.hir_ctx.global_scope),
                 )?;
 
                 return Ok(val.into());
@@ -27,7 +27,7 @@ pub fn lower_hir_literal(
             let val = build_unsigned_int_const(
                 &mut ctx.mir_ctx,
                 value as u128,
-                int_type.get_size(&int_type, true, &ctx.hir_ctx.type_storage),
+                int_type.get_size(&int_type, true, &ctx.hir_ctx.global_scope),
             )?;
 
             return Ok(val.into());

@@ -24,13 +24,7 @@ pub fn lower_cast(
 
         let new_type = lower_hir_type(ctx, new_type)?;
 
-        if old_type
-            .get_generic(&ctx.hir_ctx.type_storage)
-            .is_enum_child()
-            && new_type
-                .get_generic(&ctx.hir_ctx.type_storage)
-                .is_enum_parent()
-        {
+        if old_type.get_generic().is_enum_child() && new_type.get_generic().is_enum_parent() {
             match ctx.mir_ctx.ssa_hints.vec[value.get_ssa_index()] {
                 MIRValueHint::Pointer(_) => {
                     ctx.mir_ctx.ssa_hints.vec[value.get_ssa_index()] =

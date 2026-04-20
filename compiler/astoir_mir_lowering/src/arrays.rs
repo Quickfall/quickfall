@@ -54,7 +54,7 @@ pub fn lower_hir_array_modify(
 
         build_store(
             &mut ctx.mir_ctx,
-            &ctx.hir_ctx.type_storage,
+            &ctx.hir_ctx.global_scope,
             index_pointer,
             val,
         )?;

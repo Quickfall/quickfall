@@ -44,7 +44,7 @@ pub fn lower_hir_math_operation(
         let left_val = lower_hir_value(block, left, ctx)?;
         let right_val = lower_hir_value(block, right, ctx)?;
 
-        let val = match left_val.vtype.get_generic(&ctx.hir_ctx.type_storage) {
+        let val = match left_val.vtype.get_generic() {
             RawType::Integer(_, _) | RawType::FixedPoint(_, _, _) => {
                 lower_hir_math_operation_int(left_val, right_val, operation.clone(), ctx)?
             }
@@ -62,7 +62,7 @@ pub fn lower_hir_math_operation(
                 block,
                 &mut ctx.mir_ctx,
                 val.clone(),
-                &ctx.hir_ctx.type_storage,
+                &ctx.hir_ctx.global_scope,
             )?;
         }
 
