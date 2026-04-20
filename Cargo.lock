@@ -119,6 +119,9 @@ dependencies = [
 [[package]]
 name = "compiler_global_scope"
 version = "0.1.0"
+dependencies = [
+ "diagnostics",
+]
 
 [[package]]
 name = "compiler_main"
