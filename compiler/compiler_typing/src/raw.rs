@@ -2,7 +2,7 @@
 
 use std::{fmt::Display, hash::Hash};
 
-use crate::{SizedType, bounds::traits::Trait, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, structs::{LoweredStructTypeContainer, RawStructTypeContainer}, tree::Type, utils::get_pointer_size};
+use crate::{SizedType, TypedGlobalScope, bounds::traits::Trait, enums::{RawEnumEntryContainer, RawEnumTypeContainer}, storage::TypeStorage, structs::{LoweredStructTypeContainer, RawStructTypeContainer}, tree::Type, utils::get_pointer_size};
 
 /// The raw types. Are also named generics
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -37,10 +37,10 @@ impl RawType {
 		return RawType::Integer(bits, false)
 	}
 
-	pub fn get_type_params_count(&self, storage: &TypeStorage) -> usize {
+	pub fn get_type_params_count(&self, storage: &TypedGlobalScope) -> usize {
 		match self {
 			RawType::Enum(container) => container.type_params.len(),
-			RawType::EnumEntry(container) => storage.types.vals[container.parent].get_type_params_count(storage),
+			RawType::EnumEntry(container),
 			RawType::Struct(_, container) => container.type_params.len(),
 
 			_ => 0
@@ -180,7 +180,7 @@ impl RawType {
 }
 
 impl SizedType for RawType {
-	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize {
+	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypedGlobalScope) -> usize {
 		match self {
 			RawType::Integer(size, _) => *size,
 			RawType::Floating(size, _) => *size,

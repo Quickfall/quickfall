@@ -18,7 +18,7 @@ pub mod storage;
 pub mod transmutation;
 pub mod bounds;
 
-pub type TypedGlobalScope<F, I> = GlobalScopeStorage<Type, RawType, F, I>;
+pub type TypedGlobalScope = GlobalScopeStorage<Type, RawType>;
 
 /// A function contained within a type.
 pub type TypedFunction = (Vec<(u64, TypeReference)>, Option<TypeReference>);
@@ -31,7 +31,7 @@ pub type RawTypeReference = usize;
 /// Represents a basic type that has a size. 
 pub trait SizedType {
 	/// Obtains the size of the type. The `compacted_size` parameter determines if the compacted size should be returned or not
-	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypeStorage) -> usize;
+	fn get_size(&self, t: &Type, compacted_size: bool, storage: &TypedGlobalScope) -> usize;
 }
 
 /// Represents a type that contains type parameters
@@ -46,20 +46,20 @@ pub trait TypeParamType {
 /// Represents types that can contain functions and more
 pub trait StructuredType {
 	#[must_use = "Must set the diagnostic position beforehand"]
-	fn get_function(&self, hash: u64, storage: &TypeStorage) -> DiagnosticResult<TypedFunction>;
+	fn get_function(&self, hash: u64, storage: &TypedGlobalScope) -> DiagnosticResult<TypedFunction>;
 
 	#[must_use = "Must set the diagnostic position beforehand"]
-	fn get_function_hash(&self, hash: u64, storage: &TypeStorage) -> DiagnosticResult<usize>;
+	fn get_function_hash(&self, hash: u64, storage: &TypedGlobalScope) -> DiagnosticResult<usize>;
 
 	#[must_use = "Must set the diagnostic position beforehand"]
-	fn get_field(&self, hash: u64, storage: &TypeStorage) -> DiagnosticResult<TypeReference>;
+	fn get_field(&self, hash: u64, storage: &TypedGlobalScope) -> DiagnosticResult<TypeReference>;
 
 	#[must_use = "Must set the diagnostic position beforehand"]
-	fn get_field_hash(&self, hash: u64, storage: &TypeStorage) -> DiagnosticResult<usize>;
+	fn get_field_hash(&self, hash: u64, storage: &TypedGlobalScope) -> DiagnosticResult<usize>;
 
 	#[must_use = "Must set the diagnostic position beforehand"]
-	fn get_fields(&self, storage: &TypeStorage) -> Vec<u64>;
+	fn get_fields(&self, storage: &TypedGlobalScope) -> Vec<u64>;
 
 	#[must_use = "Must set the diagnostic position beforehand"]
-	fn get_functions(&self, storage: &TypeStorage) -> Vec<u64>;
+	fn get_functions(&self, storage: &TypedGlobalScope) -> Vec<u64>;
 }

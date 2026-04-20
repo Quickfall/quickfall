@@ -58,6 +58,7 @@ pub const BOOLEAN_TYPE: u64 = hash!("bool");
 pub const RESULT_TYPE: u64 = hash!("result");
 
 #[derive(Debug)]
+#[deprecated = "Deprecated to use global scope"]
 pub struct TypeStorage {
 	pub types: IndexStorage<RawType>,
 	pub type_to_ind: HashMap<RawType, usize>
