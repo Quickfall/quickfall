@@ -11,9 +11,12 @@ pub type GlobalStorageIdentifier = usize;
 
 
 #[derive(Debug)]
-pub struct GlobalScopeStorage<T, R, F, I> {
+pub struct GlobalScopeStorage<T, R> {
 	pub entry_to_ind: HashMap<EntryKey, usize>,
-	pub entries: Vec<GlobalStorageEntry<T, R, F, I>>,
+	pub entries: Vec<GlobalStorageEntry<T, R>>,
+
+	pub descriptor_counter: usize,
+	pub impl_counter: usize
 }
 
 
@@ -27,12 +30,12 @@ pub struct GlobalScopeStorage<T, R, F, I> {
 /// 
 /// # Safety
 /// The `GlobalScopeStorage` enforces correctness for global scope types and strictly allows only one entry per name. globally.
-impl<T: Clone, R: Clone, F: Clone, I: Clone> GlobalScopeStorage<T, R, F, I> {
+impl<T: Clone, R: Clone> GlobalScopeStorage<T, R> {
 	pub fn new() -> Self {
-		GlobalScopeStorage { entry_to_ind: HashMap::new(), entries: vec![] }
+		GlobalScopeStorage { entry_to_ind: HashMap::new(), entries: vec![], descriptor_counter: 0, impl_counter: 0 }
 	}
 
-	pub fn append<K: DiagnosticSpanOrigin>(&mut self, name: EntryKey, entry: GlobalStorageEntryType<T, R, F, I>, origin: &K) -> MaybeDiagnostic {
+	pub fn append<K: DiagnosticSpanOrigin>(&mut self, name: EntryKey, entry: GlobalStorageEntryType<T, R>, origin: &K) -> MaybeDiagnostic {
 		if self.entry_to_ind.contains_key(&name) {
 			return Err(make_already_in_scope(origin, &name.name_hash).into())
 		}
@@ -47,7 +50,7 @@ impl<T: Clone, R: Clone, F: Clone, I: Clone> GlobalScopeStorage<T, R, F, I> {
 		Ok(())
 	}
 
-	pub fn get_base<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<GlobalStorageEntryType<T, R, F, I>> {
+	pub fn get_base<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<GlobalStorageEntryType<T, R>> {
 		if !self.entry_to_ind.contains_key(&name) {
 			return Err(make_cannot_find(origin, &name.name_hash).into());
 		}
@@ -73,56 +76,56 @@ impl<T: Clone, R: Clone, F: Clone, I: Clone> GlobalScopeStorage<T, R, F, I> {
 		};
 	}
 
-	pub fn get_function_base<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<F> {
+	pub fn get_function_base<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<usize> {
 		let base = self.get_base(name, origin)?;
 
 		return match base {
-			GlobalStorageEntryType::Function(hir, _) => Ok(hir.clone()),
-			GlobalStorageEntryType::ImplLessFunction(hir) => Ok(hir.clone()),
-			GlobalStorageEntryType::StructFunction(hir, _, _) => Ok(hir.clone()),
+			GlobalStorageEntryType::Function { descriptor_ind, impl_ind: _ } => Ok(descriptor_ind),
+			GlobalStorageEntryType::ImplLessFunction(descriptor_ind) => Ok(descriptor_ind),
+			GlobalStorageEntryType::StructFunction { descriptor_ind, impl_ind: _, struct_type: _} => Ok(descriptor_ind),
 
 			_ => Err(make_expected_simple_error(origin, &"function".to_string(), &base).into())
 		};
 	}
 
-	pub fn get_function_impl<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<I> {
+	pub fn get_function_impl<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<usize> {
 		let base = self.get_base(name, origin)?;
 
 		return match base {
-			GlobalStorageEntryType::Function(_, i) => Ok(i.clone()),
-			GlobalStorageEntryType::StructFunction(_, i, _) => Ok(i.clone()),
+			GlobalStorageEntryType::Function { descriptor_ind: _, impl_ind } => Ok(impl_ind),
+			GlobalStorageEntryType::StructFunction { descriptor_ind: _, impl_ind, struct_type: _ } => Ok(impl_ind),
 			
 			_ => Err(make_expected_simple_error(origin, &"function with implementation", &base).into())
 		};
 	}
 
-	pub fn get_implless_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<F> {
+	pub fn get_implless_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<usize> {
 		let base = self.get_base(name, origin)?;
 
 		return match base {
-			GlobalStorageEntryType::ImplLessFunction(hir) => Ok(hir.clone()),
+			GlobalStorageEntryType::ImplLessFunction(descriptor_ind) => Ok(descriptor_ind),
 			
 			_ => Err(make_expected_simple_error(origin, &"function without implementation", &base).into())
 		}
 	}
 
-	pub fn get_exact_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<(F, I)> {
+	pub fn get_exact_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<(usize, usize)> {
 		let base = self.get_base(name, origin)?;
 
 		return match base {
-			GlobalStorageEntryType::Function(hir, i) => Ok((hir.clone(), i.clone())),
+			GlobalStorageEntryType::Function { descriptor_ind, impl_ind} => Ok((descriptor_ind, impl_ind)),
 			
 			_ => Err(make_expected_simple_error(origin, &"function", &base).into())
 		}
 	}
 
-	pub fn get_exact_struct_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<(F, I, R)> {
+	pub fn get_exact_struct_function<K: DiagnosticSpanOrigin>(&self, name: EntryKey, origin: &K) -> DiagnosticResult<(usize, usize, R)> {
 		let base = self.get_base(name, origin)?;
 
 		return match base {
-			GlobalStorageEntryType::StructFunction(hir, i, o) => {
-				if let GlobalStorageEntryType::Type(t) = self.entries[o].entry_type.clone() {
-					Ok((hir, i, t))
+			GlobalStorageEntryType::StructFunction { descriptor_ind, impl_ind, struct_type } => {
+				if let GlobalStorageEntryType::Type(t) = self.entries[struct_type].entry_type.clone() {
+					Ok((descriptor_ind, impl_ind, t))
 				} else {
 					Err(make_expected_simple_error(origin, &"type", &self.entries[0].entry_type).into())
 				}

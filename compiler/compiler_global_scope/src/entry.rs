@@ -2,33 +2,35 @@
 
 use std::fmt::Display;
 
-use crate::{GlobalStorageIdentifier};
+use crate::GlobalStorageIdentifier;
 
 #[derive(Clone, Debug)]
-pub enum GlobalStorageEntryType<T, R, F, I> {
-	Function(F, I),
-	ImplLessFunction(F),
+pub enum GlobalStorageEntryType<T, R> {
+	Function { descriptor_ind: usize, impl_ind: usize }, 
+	ImplLessFunction(usize),
+	StructFunction { descriptor_ind: usize, impl_ind: usize, struct_type: GlobalStorageIdentifier },
+
 	StaticVariable(T),
 
-	StructFunction(F, I, GlobalStorageIdentifier),
-	
+	TypeAlias(T), 
 	Type(R)
 }
 
 #[derive(Debug)]
-pub struct GlobalStorageEntry<T, R, F, I> {
-	pub entry_type: GlobalStorageEntryType<T, R, F, I>,
+pub struct GlobalStorageEntry<T, R> {
+	pub entry_type: GlobalStorageEntryType<T, R>,
 	pub parent_index: usize
 }
 
-impl<T, R, F, I>  Display for GlobalStorageEntryType<T, R, F, I>  {
+impl<T, R>  Display for GlobalStorageEntryType<T, R>  {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		let s = match self {
-			Self::Function(_, _) => "function",
+			Self::Function { .. } => "function",
 			Self::ImplLessFunction(_) => "function",
-			Self::StructFunction(_, _, _) => "function",
+			Self::StructFunction { .. } => "function",
 			Self::StaticVariable(_) => "static variable",
-			Self::Type(_) => "type"
+			Self::Type(_) => "type",
+			Self::TypeAlias(_) => "type (alias)"
  		};
 
 		write!(f, "{}", s)?;
