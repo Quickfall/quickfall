@@ -2,10 +2,11 @@
 
 use std::collections::HashMap;
 
+use compiler_global_scope::GlobalScopeStorage;
 use compiler_utils::{hash::HashedString};
 use diagnostics::DiagnosticResult;
 
-use crate::{references::TypeReference, storage::TypeStorage, tree::Type};
+use crate::{raw::RawType, references::TypeReference, storage::TypeStorage, tree::Type};
 
 pub mod tree;
 pub mod raw;
@@ -16,6 +17,8 @@ pub mod utils;
 pub mod storage;
 pub mod transmutation;
 pub mod bounds;
+
+pub type TypedGlobalScope<F, I> = GlobalScopeStorage<Type, RawType, F, I>;
 
 /// A function contained within a type.
 pub type TypedFunction = (Vec<(u64, TypeReference)>, Option<TypeReference>);

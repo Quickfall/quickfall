@@ -140,6 +140,7 @@ dependencies = [
 name = "compiler_typing"
 version = "0.1.0"
 dependencies = [
+ "compiler_global_scope",
  "compiler_utils",
  "diagnostics",
 ]
