@@ -18,6 +18,17 @@ pub enum IRLayer {
     MIR,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, ValueEnum, Debug)]
+pub enum OutputFormat {
+    #[value(alias = "exec")]
+    Executable,
+
+    #[value(alias = "o")]
+    Object,
+
+    IR,
+}
+
 #[derive(Subcommand)]
 pub enum CLICommand {
     #[command(visible_alias = "b", about = "Builds the given file(s)")]
@@ -27,6 +38,9 @@ pub enum CLICommand {
 
         #[arg(long, value_enum, default_value = "llvm")]
         platform: Platform,
+
+        #[arg(short = 't', value_enum, long, default_value = "o")]
+        format: OutputFormat,
 
         #[arg(short = 'l', default_value = "ld")]
         linker: String,
