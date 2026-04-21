@@ -82,6 +82,7 @@ version = "0.1.0"
 dependencies = [
  "astoir_hir",
  "astoir_mir",
+ "compiler_global_scope",
  "compiler_typing",
  "compiler_utils",
  "diagnostics",

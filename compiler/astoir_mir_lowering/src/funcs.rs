@@ -5,7 +5,8 @@ use astoir_mir::{
     funcs::MIRFunction,
     vals::base::BaseMIRValue,
 };
-use diagnostics::DiagnosticResult;
+use compiler_typing::TypedGlobalScopeEntry;
+use diagnostics::{DiagnosticResult, builders::make_expected_simple_error_originless};
 
 use crate::{MIRLoweringContext, body::lower_hir_body, lower_hir_type, values::lower_hir_value};
 
@@ -36,7 +37,30 @@ pub fn lower_hir_function_decl(
             ret_type = None
         }
 
-        let name = cctx.hir_ctx.functions.vals[func_name].2.clone();
+        let fns_ind = match &cctx.hir_ctx.global_scope.scope.entries[func_name].entry_type {
+            TypedGlobalScopeEntry::Function {
+                descriptor_ind,
+                impl_ind: _,
+            } => descriptor_ind,
+            TypedGlobalScopeEntry::ImplLessFunction(ind) => ind,
+            TypedGlobalScopeEntry::StructFunction {
+                descriptor_ind,
+                impl_ind: _,
+                struct_type: _,
+            } => descriptor_ind,
+
+            _ => {
+                return Err(make_expected_simple_error_originless(
+                    &"function".to_string(),
+                    &cctx.hir_ctx.global_scope.scope.entries[func_name].entry_type,
+                )
+                .into());
+            }
+        };
+
+        let fns = cctx.hir_ctx.global_scope.descriptors[*fns_ind].clone();
+
+        let name = fns.2.clone();
 
         let mut func = MIRFunction::new(name, args, ret_type, requires_this, &cctx.mir_ctx);
         let block = func.append_entry_block(&mut cctx.mir_ctx);
@@ -69,7 +93,30 @@ pub fn lower_hir_shadow_decl(
         return_type,
     } = node.kind.clone()
     {
-        let name = ctx.hir_ctx.functions.vals[func_name].2.clone();
+        let fns_ind = match &ctx.hir_ctx.global_scope.scope.entries[func_name].entry_type {
+            TypedGlobalScopeEntry::Function {
+                descriptor_ind,
+                impl_ind: _,
+            } => descriptor_ind,
+            TypedGlobalScopeEntry::ImplLessFunction(ind) => ind,
+            TypedGlobalScopeEntry::StructFunction {
+                descriptor_ind,
+                impl_ind: _,
+                struct_type: _,
+            } => descriptor_ind,
+
+            _ => {
+                return Err(make_expected_simple_error_originless(
+                    &"function".to_string(),
+                    &ctx.hir_ctx.global_scope.scope.entries[func_name].entry_type,
+                )
+                .into());
+            }
+        };
+
+        let fns = ctx.hir_ctx.global_scope.descriptors[*fns_ind].clone();
+
+        let name = fns.2.clone();
 
         let mut args = vec![];
 

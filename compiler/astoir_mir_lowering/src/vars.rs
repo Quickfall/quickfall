@@ -6,8 +6,8 @@ use astoir_mir::{
     builder::{build_stack_alloc, build_store},
     vals::{base::BaseMIRValue, refer::MIRVariableReference},
 };
-use compiler_typing::SizedType;
-use diagnostics::DiagnosticResult;
+use compiler_typing::{SizedType, TypedGlobalScopeEntry};
+use diagnostics::{DiagnosticResult, builders::make_expected_simple_error_originless};
 
 use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
 
@@ -24,7 +24,29 @@ pub fn lower_hir_variable_declaration(
     {
         let func = ctx.mir_ctx.block_to_func[&block_id];
 
-        let local_ctx = ctx.hir_ctx.function_contexts[func].as_ref().unwrap();
+        //let local_ctx = ctx.hir_ctx.function_contexts[func].as_ref().unwrap();
+
+        let fns_ind = match &ctx.hir_ctx.global_scope.scope.entries[func].entry_type {
+            TypedGlobalScopeEntry::Function {
+                descriptor_ind,
+                impl_ind,
+            } => impl_ind,
+            TypedGlobalScopeEntry::StructFunction {
+                descriptor_ind,
+                impl_ind,
+                struct_type,
+            } => impl_ind,
+
+            _ => {
+                return Err(make_expected_simple_error_originless(
+                    &"function".to_string(),
+                    &ctx.hir_ctx.global_scope.scope.entries[func].entry_type,
+                )
+                .into());
+            }
+        };
+
+        let local_ctx = ctx.hir_ctx.global_scope.implementations[*fns_ind].0.clone();
 
         if local_ctx.is_eligible_for_ssa(variable) {
             if default_val.is_some() {

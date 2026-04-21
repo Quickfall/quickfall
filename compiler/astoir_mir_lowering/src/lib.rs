@@ -4,8 +4,10 @@ use astoir_hir::{
     ctx::HIRContext,
     nodes::{HIRNode, HIRNodeKind},
 };
-use astoir_mir::ctx::MIRContext;
-use compiler_typing::{SizedType, raw::RawType, structs::LoweredStructTypeContainer, tree::Type};
+use astoir_mir::{ctx::MIRContext, funcs::MIRFunction};
+use compiler_typing::{
+    SizedType, TypedGlobalScopeEntry, raw::RawType, structs::LoweredStructTypeContainer, tree::Type,
+};
 use compiler_utils::utils::indexed::IndexStorage;
 use diagnostics::{DiagnosticResult, unsure_panic};
 
@@ -53,12 +55,49 @@ pub fn lower_hir(ctx: HIRContext) -> DiagnosticResult<MIRContext> {
         block_introduction_var_queue: vec![],
     };
 
-    let declarations = lowering_ctx.hir_ctx.function_declarations.clone();
+    for entry in lowering_ctx.hir_ctx.global_scope.scope.entries.clone() {
+        match entry.entry_type {
+            TypedGlobalScopeEntry::Function {
+                descriptor_ind: _,
+                impl_ind,
+            } => {
+                let node = lowering_ctx.hir_ctx.global_scope.implementations[impl_ind]
+                    .1
+                    .clone();
 
-    for decl in declarations {
-        if let Some(node) = decl {
-            lower_hir_top_level(node, &mut lowering_ctx)?;
-        }
+                lower_hir_top_level(node, &mut lowering_ctx)?;
+            }
+
+            TypedGlobalScopeEntry::ImplLessFunction(descriptor_ind) => {
+                let descriptor =
+                    lowering_ctx.hir_ctx.global_scope.descriptors[descriptor_ind].clone();
+
+                let name = descriptor.2.clone();
+
+                let mut args = vec![];
+
+                for argument in descriptor.1 {
+                    args.push(lower_hir_type(&mut lowering_ctx, argument.1)?);
+                }
+
+                let ret_type;
+
+                if descriptor.0.is_some() {
+                    ret_type = Some(lower_hir_type(
+                        &mut lowering_ctx,
+                        descriptor.0.clone().unwrap(),
+                    )?)
+                } else {
+                    ret_type = None
+                }
+
+                let func = MIRFunction::new(name, args, ret_type, false, &mut lowering_ctx.mir_ctx);
+
+                lowering_ctx.mir_ctx.append_function(func);
+            }
+
+            _ => todo!("Add support for remaining nodes"),
+        };
     }
 
     return Ok(lowering_ctx.mir_ctx);
