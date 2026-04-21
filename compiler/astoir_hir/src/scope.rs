@@ -61,6 +61,25 @@ impl HIRGlobalScopeStorage {
         )
     }
 
+    pub fn append_half_function<K: DiagnosticSpanOrigin>(
+        &mut self,
+        name: EntryKey,
+        descriptor: HIRFunction,
+        brctx: HIRBranchedContext,
+    ) -> DiagnosticResult<usize> {
+        self.descriptors.push(descriptor);
+        self.contexts.push(brctx);
+
+        self.scope.append(
+            name,
+            TypedGlobalScopeEntry::HalfImplFunction {
+                descriptor_ind: self.scope.descriptor_counter,
+                branch_ctx: self.scope.ctx_counter,
+            },
+            origin,
+        )
+    }
+
     pub fn append_implless_function<K: DiagnosticSpanOrigin>(
         &mut self,
         name: EntryKey,

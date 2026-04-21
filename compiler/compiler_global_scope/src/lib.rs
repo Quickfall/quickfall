@@ -24,6 +24,7 @@ pub struct GlobalScopeStorage<T: Hash, R: Hash> {
 
     pub descriptor_counter: usize,
     pub impl_counter: usize,
+    pub ctx_counter: usize,
 }
 
 /// The global storage for every element inside of the scope.
@@ -44,6 +45,7 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
             entries: vec![],
             descriptor_counter: 0,
             impl_counter: 0,
+            ctx_counter: 0,
         }
     }
 
@@ -59,6 +61,7 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
 
         if let GlobalStorageEntryType::Function { .. } = entry {
             self.descriptor_counter += 1;
+            self.ctx_counter += 1;
             self.impl_counter += 1;
         }
 
@@ -68,7 +71,13 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
 
         if let GlobalStorageEntryType::StructFunction { .. } = entry {
             self.descriptor_counter += 1;
+            self.ctx_counter += 1;
             self.impl_counter += 1;
+        }
+
+        if let GlobalStorageEntryType::HalfImplFunction { .. } = entry {
+            self.descriptor_counter += 1;
+            self.ctx_counter += 1;
         }
 
         let parent_index = self.entries.len();
