@@ -28,13 +28,13 @@ pub fn lower_hir_variable_declaration(
 
         let fns_ind = match &ctx.hir_ctx.global_scope.scope.entries[func].entry_type {
             TypedGlobalScopeEntry::Function {
-                descriptor_ind,
+                descriptor_ind: _,
                 impl_ind,
             } => impl_ind,
             TypedGlobalScopeEntry::StructFunction {
-                descriptor_ind,
+                descriptor_ind: _,
                 impl_ind,
-                struct_type,
+                struct_type: _,
             } => impl_ind,
 
             _ => {

@@ -3,6 +3,7 @@ use astoir_hir::{
     ctx::{HIRBranchedContext, HIRContext, VariableKind, get_variable},
     nodes::{HIRNode, HIRNodeKind},
 };
+use compiler_global_scope::key::EntryKey;
 use diagnostics::{DiagnosticResult, builders::make_variable_uninit};
 
 use crate::{arrays::lower_ast_array_index_access, types::lower_ast_type, values::lower_ast_value};
@@ -18,6 +19,13 @@ pub fn lower_ast_variable_declaration(
         value,
     } = node.kind.clone()
     {
+        context.global_scope.enforce_not_here(
+            EntryKey {
+                name_hash: var_name.hash,
+            },
+            &*node,
+        )?;
+
         let lowered = lower_ast_type(context, var_type, &*node)?;
 
         let name_ind =

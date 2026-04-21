@@ -88,6 +88,10 @@ pub fn lower_ast_function_declaration(
         let branch = curr_ctx.start_branch();
 
         for arg in &arguments {
+            context
+                .global_scope
+                .enforce_not_here(EntryKey { name_hash: arg.0 }, &*node)?;
+
             match curr_ctx.introduce_variable(arg.0, arg.1.clone(), true) {
                 Ok(_) => {}
                 Err(_) => return Err(make_already_in_scope(&*node, &arg.0).into()),

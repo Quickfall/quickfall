@@ -2,7 +2,10 @@
 
 use compiler_global_scope::key::EntryKey;
 use compiler_typing::{TypedGlobalScope, TypedGlobalScopeEntry, raw::RawType, tree::Type};
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_cannot_find};
+use diagnostics::{
+    DiagnosticResult, DiagnosticSpanOrigin, MaybeDiagnostic,
+    builders::{make_already_in_scope, make_cannot_find},
+};
 
 use crate::{
     ctx::{HIRBranchedContext, HIRFunction, HIRFunctionImpl},
@@ -27,6 +30,18 @@ impl HIRGlobalScopeStorage {
             implementations: vec![],
             contexts: vec![],
         }
+    }
+
+    pub fn enforce_not_here<K: DiagnosticSpanOrigin>(
+        &mut self,
+        name: EntryKey,
+        origin: &K,
+    ) -> MaybeDiagnostic {
+        if self.scope.entry_to_ind.contains_key(&name) {
+            return Err(make_already_in_scope(origin, &name.name_hash).into());
+        }
+
+        Ok(())
     }
 
     /// This doesn't automatically handle descriptors and implementations
