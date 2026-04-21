@@ -62,4 +62,10 @@ pub enum CLICommand {
         #[arg(long, value_enum, default_value = "mir")]
         layer: IRLayer,
     },
+
+    #[command(about = "Runs language server analysis", visible_alias = "lscheck")]
+    LanguageServerCheck {
+        #[arg(required = true)]
+        input: PathBuf,
+    },
 }
