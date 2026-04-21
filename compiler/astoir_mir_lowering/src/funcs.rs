@@ -62,7 +62,7 @@ pub fn lower_hir_function_decl(
 
         let name = fns.2.clone();
 
-        let mut func = MIRFunction::new(name, args, ret_type, requires_this, &cctx.mir_ctx);
+        let mut func = MIRFunction::new(name, args, ret_type, requires_this, func_name);
         let block = func.append_entry_block(&mut cctx.mir_ctx);
 
         cctx.mir_ctx.writer.move_end(block);
@@ -132,7 +132,7 @@ pub fn lower_hir_shadow_decl(
             ret_type = None
         }
 
-        let func = MIRFunction::new(name, args, ret_type, false, &ctx.mir_ctx);
+        let func = MIRFunction::new(name, args, ret_type, false, func_name);
 
         ctx.mir_ctx.append_function(func);
         return Ok(true);

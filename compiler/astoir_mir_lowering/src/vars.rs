@@ -38,6 +38,13 @@ pub fn lower_hir_variable_declaration(
             } => impl_ind,
 
             _ => {
+                println!("Curr entry: {}", func);
+                println!("Entry dump: ");
+
+                for entry in ctx.hir_ctx.global_scope.scope.entries.clone() {
+                    println!("- {:#?}", entry);
+                }
+
                 return Err(make_expected_simple_error_originless(
                     &"function".to_string(),
                     &ctx.hir_ctx.global_scope.scope.entries[func].entry_type,
@@ -46,7 +53,7 @@ pub fn lower_hir_variable_declaration(
             }
         };
 
-        let local_ctx = ctx.hir_ctx.global_scope.contexts[*fns_ind].0.clone();
+        let local_ctx = ctx.hir_ctx.global_scope.contexts[*fns_ind].clone();
 
         if local_ctx.is_eligible_for_ssa(variable) {
             if default_val.is_some() {

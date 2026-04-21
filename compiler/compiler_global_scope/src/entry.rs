@@ -13,7 +13,10 @@ pub enum GlobalStorageEntryType<T: Hash, R: Hash> {
         impl_ind: usize,
     },
     ImplLessFunction(usize),
-	HalfImplFunction { descriptor_ind: usize, branch_ctx: usize }
+    HalfImplFunction {
+        descriptor_ind: usize,
+        branch_ctx: usize,
+    },
     StructFunction {
         descriptor_ind: usize,
         impl_ind: usize,
@@ -181,6 +184,7 @@ pub struct GlobalStorageEntry<T: Hash, R: Hash> {
 impl<T: Hash, R: Hash> Display for GlobalStorageEntryType<T, R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
+            Self::HalfImplFunction { .. } => "function",
             Self::Function { .. } => "function",
             Self::ImplLessFunction(_) => "function",
             Self::StructFunction { .. } => "function",

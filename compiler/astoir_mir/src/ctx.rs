@@ -16,7 +16,7 @@ use crate::{
 };
 
 pub struct MIRContext {
-    pub functions: Vec<MIRFunction>,
+    pub functions: HashMap<usize, MIRFunction>,
     pub blocks: Vec<MIRBlock>,
 
     pub block_to_func: HashMap<usize, usize>,
@@ -29,7 +29,7 @@ pub struct MIRContext {
 impl MIRContext {
     pub fn new() -> Self {
         MIRContext {
-            functions: vec![],
+            functions: HashMap::new(),
             ssa_hints: HintStorage::new(),
             blocks: vec![],
             writer: InstructionWriterPosition {
@@ -45,7 +45,7 @@ impl MIRContext {
 
         self.blocks.push(MIRBlock::new(ind));
 
-        self.functions[func].blocks.push(ind);
+        self.functions.get_mut(&func).unwrap().blocks.push(ind);
 
         self.block_to_func.insert(ind, func);
 
@@ -67,11 +67,10 @@ impl MIRContext {
     }
 
     pub fn append_function(&mut self, func: MIRFunction) -> usize {
-        let ind = self.functions.len();
+        let id = func.id;
+        self.functions.insert(id, func);
 
-        self.functions.push(func);
-
-        return ind;
+        return id;
     }
 
     pub fn append_inst(&mut self, inst: MIRInstruction) -> InstructionValue {
@@ -156,7 +155,7 @@ impl MIRContext {
 impl Display for MIRContext {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for func in &self.functions {
-            writeln!(f, "{}", func)?;
+            writeln!(f, "{}", func.1)?;
         }
 
         for block in &self.blocks {

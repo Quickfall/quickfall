@@ -66,6 +66,7 @@ impl HIRGlobalScopeStorage {
         name: EntryKey,
         descriptor: HIRFunction,
         brctx: HIRBranchedContext,
+        origin: &K,
     ) -> DiagnosticResult<usize> {
         self.descriptors.push(descriptor);
         self.contexts.push(brctx);

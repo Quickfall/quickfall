@@ -47,7 +47,7 @@ pub fn handle_var_introduction_queue(
             }
         };
 
-        let fns = &ctx.hir_ctx.global_scope.implementations[*fns_ind].0;
+        let fns = &ctx.hir_ctx.global_scope.contexts[*fns_ind];
 
         let eligible = fns.is_eligible_for_ssa(new_var);
 

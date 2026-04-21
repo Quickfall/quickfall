@@ -838,7 +838,7 @@ pub fn build_call(
     ind: usize,
     args: Vec<BaseMIRValue>,
 ) -> DiagnosticResult<Option<BaseMIRValue>> {
-    let func = &ctx.functions[func];
+    let func = &ctx.functions[&func];
 
     for (arg, t) in args.iter().zip(func.arguments.iter()) {
         if !arg.vtype.is_truly_eq(t) {

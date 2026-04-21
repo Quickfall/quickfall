@@ -135,7 +135,9 @@ pub fn lower_ast_function_declaration(
         context.global_scope.scope.entry_to_ind.remove(&key);
         context.global_scope.scope.value_to_ind.remove(&entry);
         context.global_scope.descriptors.pop();
+        //context.global_scope.contexts.pop();
         context.global_scope.scope.descriptor_counter -= 1;
+        //context.global_scope.scope.ctx_counter -= 1;
 
         // Append the new verison as a impl-containing function
 

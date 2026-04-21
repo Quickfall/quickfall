@@ -294,7 +294,7 @@ impl MIRInstruction {
                 function,
                 arguments: _,
             } => {
-                let func = &ctx.functions[*function];
+                let func = &ctx.functions[function];
 
                 return func.return_type.is_some();
             }
@@ -476,7 +476,7 @@ impl MIRInstruction {
                 function,
                 arguments: _,
             } => {
-                let func = &ctx.functions[*function];
+                let func = &ctx.functions[function];
 
                 return func.return_type.clone().unwrap();
             }

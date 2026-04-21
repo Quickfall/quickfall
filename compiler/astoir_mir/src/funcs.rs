@@ -31,7 +31,7 @@ impl MIRFunction {
         arguments: Vec<Type>,
         return_type: Option<Type>,
         is_from_struct: bool,
-        ctx: &MIRContext,
+        id: usize,
     ) -> Self {
         return MIRFunction {
             blocks: vec![],
@@ -39,7 +39,7 @@ impl MIRFunction {
             arguments,
             return_type,
             is_from_struct,
-            id: ctx.functions.len(),
+            id,
         };
     }
 

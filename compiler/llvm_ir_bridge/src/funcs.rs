@@ -11,6 +11,7 @@ use crate::{
 pub fn bridge_llvm_functions(mir: &MIRContext, bridge: &mut LLVMBridgeContext) {
     for func in &mir.functions {
         let mut args = vec![];
+        let func = func.1;
 
         if !func.blocks.is_empty() {
             for arg in &func.arguments {
