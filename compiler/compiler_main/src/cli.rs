@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Parser)]
@@ -34,7 +36,7 @@ pub enum CLICommand {
     #[command(visible_alias = "b", about = "Builds the given file(s)")]
     Build {
         #[arg(short = 'o')]
-        out: String,
+        out: PathBuf,
 
         #[arg(long, value_enum, default_value = "llvm")]
         platform: Platform,
@@ -46,7 +48,7 @@ pub enum CLICommand {
         linker: String,
 
         #[arg(required = true)]
-        input: Vec<String>,
+        input: Vec<PathBuf>,
     },
 
     #[command(visible_alias = "ver", about = "Displays the version")]
