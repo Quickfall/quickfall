@@ -57,6 +57,20 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
             return Err(make_already_in_scope(origin, &name.name_hash).into());
         }
 
+        if let GlobalStorageEntryType::Function { .. } = entry {
+            self.descriptor_counter += 1;
+            self.impl_counter += 1;
+        }
+
+        if let GlobalStorageEntryType::ImplLessFunction(_) = entry {
+            self.descriptor_counter += 1;
+        }
+
+        if let GlobalStorageEntryType::StructFunction { .. } = entry {
+            self.descriptor_counter += 1;
+            self.impl_counter += 1;
+        }
+
         let parent_index = self.entries.len();
 
         self.value_to_ind.insert(entry.clone(), parent_index);
@@ -125,6 +139,10 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
                 impl_ind: _,
             } => Ok(descriptor_ind),
             GlobalStorageEntryType::ImplLessFunction(descriptor_ind) => Ok(descriptor_ind),
+            GlobalStorageEntryType::HalfImplFunction {
+                descriptor_ind,
+                branch_ctx: _,
+            } => Ok(descriptor_ind),
             GlobalStorageEntryType::StructFunction {
                 descriptor_ind,
                 impl_ind: _,
@@ -132,6 +150,36 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
             } => Ok(descriptor_ind),
 
             _ => Err(make_expected_simple_error(origin, &"function".to_string(), &base).into()),
+        };
+    }
+
+    pub fn get_function_ctx<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<usize> {
+        let base = self.get_base(name, origin)?;
+
+        return match base {
+            GlobalStorageEntryType::Function {
+                descriptor_ind: _,
+                impl_ind,
+            } => Ok(impl_ind),
+
+            GlobalStorageEntryType::StructFunction {
+                descriptor_ind: _,
+                impl_ind,
+                struct_type: _,
+            } => Ok(impl_ind),
+
+            GlobalStorageEntryType::HalfImplFunction {
+                descriptor_ind: _,
+                branch_ctx,
+            } => Ok(branch_ctx),
+
+            _ => Err(
+                make_expected_simple_error(origin, &"function with implementation", &base).into(),
+            ),
         };
     }
 

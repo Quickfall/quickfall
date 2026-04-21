@@ -46,7 +46,7 @@ pub fn lower_hir_variable_declaration(
             }
         };
 
-        let local_ctx = ctx.hir_ctx.global_scope.implementations[*fns_ind].0.clone();
+        let local_ctx = ctx.hir_ctx.global_scope.contexts[*fns_ind].0.clone();
 
         if local_ctx.is_eligible_for_ssa(variable) {
             if default_val.is_some() {

@@ -13,6 +13,7 @@ pub enum GlobalStorageEntryType<T: Hash, R: Hash> {
         impl_ind: usize,
     },
     ImplLessFunction(usize),
+	HalfImplFunction { descriptor_ind: usize, branch_ctx: usize }
     StructFunction {
         descriptor_ind: usize,
         impl_ind: usize,

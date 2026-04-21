@@ -6,7 +6,8 @@ use astoir_hir::{
 };
 use astoir_mir::{ctx::MIRContext, funcs::MIRFunction};
 use compiler_typing::{
-    SizedType, TypedGlobalScopeEntry, raw::RawType, structs::LoweredStructTypeContainer, tree::Type,
+    SizedType, TypedGlobalScope, TypedGlobalScopeEntry, raw::RawType,
+    structs::LoweredStructTypeContainer, tree::Type,
 };
 use compiler_utils::utils::indexed::IndexStorage;
 use diagnostics::{DiagnosticResult, unsure_panic};
@@ -68,6 +69,9 @@ pub fn lower_hir(ctx: HIRContext) -> DiagnosticResult<MIRContext> {
                 lower_hir_top_level(node, &mut lowering_ctx)?;
             }
 
+            TypedGlobalScopeEntry::TypeAlias(_) => continue,
+            TypedGlobalScopeEntry::Type(_) => continue,
+
             TypedGlobalScopeEntry::ImplLessFunction(descriptor_ind) => {
                 let descriptor =
                     lowering_ctx.hir_ctx.global_scope.descriptors[descriptor_ind].clone();
@@ -96,7 +100,7 @@ pub fn lower_hir(ctx: HIRContext) -> DiagnosticResult<MIRContext> {
                 lowering_ctx.mir_ctx.append_function(func);
             }
 
-            _ => todo!("Add support for remaining nodes"),
+            _ => todo!("Add support for remaining nodes {:#?}", entry),
         };
     }
 

@@ -16,6 +16,7 @@ pub struct HIRGlobalScopeStorage {
     pub scope: TypedGlobalScope,
     pub descriptors: Vec<HIRFunction>,
     pub implementations: Vec<HIRFunctionImpl>,
+    pub contexts: Vec<HIRBranchedContext>,
 }
 
 impl HIRGlobalScopeStorage {
@@ -24,6 +25,7 @@ impl HIRGlobalScopeStorage {
             scope: TypedGlobalScope::new(),
             descriptors: vec![],
             implementations: vec![],
+            contexts: vec![],
         }
     }
 
@@ -46,7 +48,8 @@ impl HIRGlobalScopeStorage {
         origin: &K,
     ) -> DiagnosticResult<usize> {
         self.descriptors.push(descriptor);
-        self.implementations.push((brctx, implementation));
+        self.implementations.push(implementation);
+        self.contexts.push(brctx);
 
         self.scope.append(
             name,
@@ -83,7 +86,8 @@ impl HIRGlobalScopeStorage {
         origin: &K,
     ) -> DiagnosticResult<usize> {
         self.descriptors.push(descriptor);
-        self.implementations.push((brctx, implementation));
+        self.implementations.push(implementation);
+        self.contexts.push(brctx);
 
         let ind = self.scope.value_to_ind[&TypedGlobalScopeEntry::Type(struct_type)];
 
@@ -164,14 +168,27 @@ impl HIRGlobalScopeStorage {
         return Ok(self.descriptors[ind].clone());
     }
 
+    pub fn get_function_ctx<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<HIRBranchedContext> {
+        let ind = self.scope.get_function_ctx(name, origin)?;
+
+        return Ok(self.contexts[ind].clone());
+    }
+
     pub fn get_function_impl<K: DiagnosticSpanOrigin>(
         &self,
         name: EntryKey,
         origin: &K,
-    ) -> DiagnosticResult<HIRFunctionImpl> {
+    ) -> DiagnosticResult<(HIRFunctionImpl, HIRBranchedContext)> {
         let ind = self.scope.get_function_impl(name, origin)?;
 
-        return Ok(self.implementations[ind].clone());
+        return Ok((
+            self.implementations[ind].clone(),
+            self.contexts[ind].clone(),
+        ));
     }
 
     pub fn get_implless_function<K: DiagnosticSpanOrigin>(
@@ -201,12 +218,13 @@ impl HIRGlobalScopeStorage {
         &self,
         name: EntryKey,
         origin: &K,
-    ) -> DiagnosticResult<(HIRFunction, HIRFunctionImpl, RawType)> {
+    ) -> DiagnosticResult<(HIRFunction, HIRFunctionImpl, HIRBranchedContext, RawType)> {
         let res = self.scope.get_exact_struct_function(name, origin)?;
 
         return Ok((
             self.descriptors[res.0].clone(),
             self.implementations[res.1].clone(),
+            self.contexts[res.1].clone(),
             res.2,
         ));
     }
