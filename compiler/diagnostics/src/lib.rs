@@ -70,6 +70,10 @@ pub fn dump_diagnostics() {
     })
 }
 
+pub fn clear_diagnostics() {
+    DIAGNOSTIC_CONTAINER.with_borrow_mut(|f| f.diagnostics.clear())
+}
+
 pub fn has_diagnostics() -> bool {
     DIAGNOSTIC_CONTAINER.with_borrow(|f| return !f.diagnostics.is_empty())
 }

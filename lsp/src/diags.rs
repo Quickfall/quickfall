@@ -3,8 +3,6 @@ use tower_lsp::lsp_types::{
     Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, Location, Position, Range, Url,
 };
 
-use crate::main;
-
 pub fn to_tower_diag(diagnostic: diagnostics::diagnostic::Diagnostic) -> Diagnostic {
     let severity = match diagnostic.level {
         Level::Error => DiagnosticSeverity::ERROR,

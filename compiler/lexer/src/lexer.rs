@@ -39,12 +39,16 @@ const USE_KEYWORD_HASH: u64 = hash!("use");
 /// ```
 /// let result: LexerParseResult<Vec<LexerToken>> = lexer_parse_file("test_file.qf").expect("Lexer didn't work");
 /// ```
-pub fn lexer_parse_file(file_path: &String) -> DiagnosticResult<Vec<LexerToken>> {
-    let contents: String = match fs::read_to_string(file_path) {
+pub fn lexer_parse_file(path: &String) -> DiagnosticResult<Vec<LexerToken>> {
+    let contents: String = match fs::read_to_string(path) {
         Ok(v) => v,
-        Err(_) => panic!("Couldn't read the file {}", file_path),
+        Err(_) => panic!("Couldn't read the file {}", path),
     };
 
+    lexer_parse(contents, path)
+}
+
+pub fn lexer_parse(contents: String, file_path: &String) -> DiagnosticResult<Vec<LexerToken>> {
     let mut tokens: Vec<LexerToken> = Vec::new();
 
     let mut i: usize = 0;

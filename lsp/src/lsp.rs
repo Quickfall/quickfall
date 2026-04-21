@@ -1,14 +1,14 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     sync::{Arc, Mutex},
 };
 
 use tower_lsp::{
     Client, LanguageServer,
     lsp_types::{
-        CompletionOptions, DidOpenTextDocumentParams, HoverProviderCapability, InitializeParams,
-        InitializeResult, InitializedParams, MessageType, ServerCapabilities, ServerInfo,
-        TextDocumentSyncCapability, TextDocumentSyncKind,
+        DidChangeTextDocumentParams, DidOpenTextDocumentParams, InitializeParams, InitializeResult,
+        MessageType, ServerCapabilities, ServerInfo, TextDocumentSyncCapability,
+        TextDocumentSyncKind,
     },
 };
 
@@ -28,8 +28,8 @@ impl LanguageServer for LSPBackend {
     ) -> tower_lsp::jsonrpc::Result<InitializeResult> {
         Ok(InitializeResult {
             capabilities: ServerCapabilities {
-                hover_provider: Some(HoverProviderCapability::Simple(true)),
-                completion_provider: Some(CompletionOptions::default()),
+                hover_provider: None,
+                completion_provider: None,
                 text_document_sync: Some(TextDocumentSyncCapability::Kind(
                     TextDocumentSyncKind::FULL,
                 )),
@@ -50,13 +50,30 @@ impl LanguageServer for LSPBackend {
 
         let mut diags = vec![];
 
-        self.lsp_client
-            .log_message(MessageType::ERROR, format!("Path: {}", uri))
-            .await;
-
-        for diag in check_for_file(uri.clone().replace("file://", "")) {
+        for diag in check_for_file(uri.clone().replace("file://", ""), text.clone()) {
             diags.push(to_tower_diag(diag))
         }
+
+        self.lsp_client.log_message(MessageType::ERROR, text).await;
+
+        self.lsp_client
+            .publish_diagnostics(uri.parse().unwrap(), diags, None)
+            .await;
+    }
+
+    async fn did_change(&self, params: DidChangeTextDocumentParams) {
+        let uri = params.text_document.uri.to_string();
+        let text = params.content_changes[0].text.clone();
+
+        self.documents.lock().unwrap().insert(uri.clone());
+
+        let mut diags = vec![];
+
+        for diag in check_for_file(uri.clone().replace("file://", ""), text.clone()) {
+            diags.push(to_tower_diag(diag))
+        }
+
+        self.lsp_client.log_message(MessageType::ERROR, text).await;
 
         self.lsp_client
             .publish_diagnostics(uri.parse().unwrap(), diags, None)
