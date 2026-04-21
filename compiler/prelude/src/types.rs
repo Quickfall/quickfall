@@ -272,7 +272,7 @@ pub fn apply_prelude_types<K: DiagnosticSpanOrigin>(
         type_params.insert(HashedString::new("E".to_string()), 1);
 
         let mut result_enum =
-            RawEnumTypeContainer::new(hir.global_scope.entries.len(), type_params);
+            RawEnumTypeContainer::new(hir.global_scope.scope.entries.len(), type_params);
 
         result_enum.append_entry(
             HashedString::new("value".to_string()),

@@ -2,14 +2,14 @@
 
 use std::collections::{HashMap, HashSet};
 
-use compiler_typing::{TypedGlobalScope, tree::Type};
+use compiler_typing::tree::Type;
 use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
 use diagnostics::{
     DiagnosticResult, DiagnosticSpanOrigin,
     builders::{make_cannot_find_func, make_cannot_find_var, make_doesnt_exist_in_era},
 };
 
-use crate::{nodes::HIRNode, structs::HIRStructContainer};
+use crate::{nodes::HIRNode, scope::HIRGlobalScopeStorage, structs::HIRStructContainer};
 
 pub type HIRFunction = (Option<Type>, Vec<(u64, Type)>, String);
 
@@ -278,7 +278,7 @@ pub struct HIRContext {
     pub function_contexts: Vec<Option<HIRBranchedContext>>,
     pub static_variables: IndexStorage<Type>,
     pub struct_func_impls: HashMap<usize, HIRStructContainer>,
-    pub global_scope: TypedGlobalScope,
+    pub global_scope: HIRGlobalScopeStorage,
 }
 
 #[derive(PartialEq)]
@@ -295,7 +295,7 @@ impl HIRContext {
             function_contexts: vec![],
             function_declarations: vec![],
             struct_func_impls: HashMap::new(),
-            global_scope: TypedGlobalScope::new(),
+            global_scope: HIRGlobalScopeStorage::new(),
         };
     }
 

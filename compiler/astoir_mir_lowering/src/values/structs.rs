@@ -25,11 +25,12 @@ pub fn lower_hir_struct_init(
             }
 
             RawType::EnumEntry(container) => {
-                let parent =
-                    match &ctx.hir_ctx.global_scope.entries[container.parent].as_type_unsafe() {
-                        RawType::Enum(container) => container.clone(),
-                        _ => panic!("Enum parent not enum"),
-                    };
+                let parent = match &ctx.hir_ctx.global_scope.scope.entries[container.parent]
+                    .as_type_unsafe()
+                {
+                    RawType::Enum(container) => container.clone(),
+                    _ => panic!("Enum parent not enum"),
+                };
 
                 let hint = build_unsigned_int_const(
                     &mut ctx.mir_ctx,
@@ -37,7 +38,7 @@ pub fn lower_hir_struct_init(
                     parent.get_hint_type().get_size(
                         &Type::GenericLowered(parent.get_hint_type()),
                         false,
-                        &ctx.hir_ctx.global_scope,
+                        &ctx.hir_ctx.global_scope.scope,
                     ),
                 )?;
 

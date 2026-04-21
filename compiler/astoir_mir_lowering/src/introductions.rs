@@ -44,7 +44,7 @@ pub fn handle_var_introduction_queue(
         } else {
             let ptr = build_stack_alloc(
                 &mut ctx.mir_ctx,
-                new_type.get_size(&new_type, false, &ctx.hir_ctx.global_scope),
+                new_type.get_size(&new_type, false, &ctx.hir_ctx.global_scope.scope),
                 new_type,
             )?;
 
@@ -57,7 +57,7 @@ pub fn handle_var_introduction_queue(
             );
             build_store(
                 &mut ctx.mir_ctx,
-                &ctx.hir_ctx.global_scope,
+                &ctx.hir_ctx.global_scope.scope,
                 ptr.clone(),
                 casted,
             )?;

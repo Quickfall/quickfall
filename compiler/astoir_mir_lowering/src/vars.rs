@@ -51,7 +51,7 @@ pub fn lower_hir_variable_declaration(
 
             let ptr = build_stack_alloc(
                 &mut ctx.mir_ctx,
-                lowered.get_size(&lowered, false, &ctx.hir_ctx.global_scope),
+                lowered.get_size(&lowered, false, &ctx.hir_ctx.global_scope.scope),
                 lowered,
             )?;
 
@@ -68,7 +68,7 @@ pub fn lower_hir_variable_declaration(
 
                 build_store(
                     &mut ctx.mir_ctx,
-                    &ctx.hir_ctx.global_scope,
+                    &ctx.hir_ctx.global_scope.scope,
                     ptr.clone(),
                     val,
                 )?;
@@ -121,7 +121,12 @@ pub fn lower_hir_variable_assignment(
 
         let val = lower_hir_value(block, val, ctx)?;
 
-        variable_ref.write(block, &mut ctx.mir_ctx, val, &ctx.hir_ctx.global_scope)?;
+        variable_ref.write(
+            block,
+            &mut ctx.mir_ctx,
+            val,
+            &ctx.hir_ctx.global_scope.scope,
+        )?;
         return Ok(true);
     }
 

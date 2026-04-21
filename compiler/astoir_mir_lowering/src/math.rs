@@ -62,7 +62,7 @@ pub fn lower_hir_math_operation(
                 block,
                 &mut ctx.mir_ctx,
                 val.clone(),
-                &ctx.hir_ctx.global_scope,
+                &ctx.hir_ctx.global_scope.scope,
             )?;
         }
 

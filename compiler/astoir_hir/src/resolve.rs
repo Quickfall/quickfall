@@ -29,7 +29,7 @@ pub fn resolve_to_type<K: DiagnosticSpanOrigin>(
                 return Err(make_req_type_kind(origin, &"field-having".to_string()).into());
             }
 
-            for field in destination.get_fields(&context.global_scope) {
+            for field in destination.get_fields(&context.global_scope.scope) {
                 let identity = SelfHash { hash: field };
 
                 if !fields.contains_key(&identity) {
@@ -39,7 +39,7 @@ pub fn resolve_to_type<K: DiagnosticSpanOrigin>(
                 let val = fields[&identity].clone();
 
                 let field_data = destination
-                    .get_field(&context.global_scope, field)?
+                    .get_field(&context.global_scope.scope, field)?
                     .1
                     .resolve(&destination);
 

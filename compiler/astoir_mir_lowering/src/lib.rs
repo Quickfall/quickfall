@@ -105,11 +105,11 @@ pub fn lower_hir_generic(
                 hir_mir_indexes: HashMap::new(),
             };
 
-            let parent = match &ctx.hir_ctx.global_scope.entries[container.parent].as_type_unsafe()
-            {
-                RawType::Enum(container) => container.clone(),
-                _ => panic!("Enum parent not enum"),
-            };
+            let parent =
+                match &ctx.hir_ctx.global_scope.scope.entries[container.parent].as_type_unsafe() {
+                    RawType::Enum(container) => container.clone(),
+                    _ => panic!("Enum parent not enum"),
+                };
 
             lowered_container
                 .fields
@@ -158,7 +158,7 @@ pub fn lower_hir_generic(
                 entry_size = entry_size.max(lowered.get_generic().get_size(
                     &lowered,
                     false,
-                    &ctx.hir_ctx.global_scope,
+                    &ctx.hir_ctx.global_scope.scope,
                 ))
             }
 

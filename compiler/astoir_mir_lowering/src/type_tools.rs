@@ -68,7 +68,7 @@ pub fn is_enum_value_of_kind<K: DiagnosticSpanOrigin>(
         hint_type.get_size(
             &Type::GenericLowered(hint_type.clone()),
             false,
-            &ctx.hir_ctx.global_scope,
+            &ctx.hir_ctx.global_scope.scope,
         ),
     )?;
 
