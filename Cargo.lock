@@ -645,6 +645,7 @@ dependencies = [
 name = "lsp"
 version = "0.1.0"
 dependencies = [
+ "diagnostics",
  "tokio",
  "tower-lsp",
 ]
