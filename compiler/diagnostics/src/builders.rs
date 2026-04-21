@@ -31,6 +31,23 @@ pub fn make_expected_simple_error<K: DiagnosticSpanOrigin, E: Display, G: Displa
     )
 }
 
+pub fn make_expected_simple_error_originless<E: Display, G: Display>(
+    expected: &E,
+    got: &G,
+) -> Diagnostic {
+    let main_span = Span::make_primary(get_current_diagnostic_pos(), None);
+
+    Diagnostic::new_base(
+        Level::Error,
+        EXPECTED_TOKEN.0,
+        format!("expected {} but got {}", expected, got),
+        main_span,
+        vec![],
+        vec![],
+        vec![],
+    )
+}
+
 pub fn make_unexpected_simple_error<K: DiagnosticSpanOrigin, E: Display>(
     origin: &K,
     got: &E,

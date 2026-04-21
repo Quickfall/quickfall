@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use compiler_typing::{
-    enums::RawEnumTypeContainer, raw::RawType, references::TypeReference,
+    TypedGlobalScopeEntry, enums::RawEnumTypeContainer, raw::RawType, references::TypeReference,
     structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type,
 };
 use compiler_utils::{
@@ -13,7 +13,7 @@ use compiler_utils::{
 };
 use diagnostics::{
     DiagnosticSpanOrigin,
-    builders::{make_diff_type, make_diff_type_val},
+    builders::{make_diff_type, make_diff_type_val, make_expected_simple_error_originless},
     diagnostic::{Diagnostic, Span, SpanKind, SpanPosition},
     unsure_panic,
 };
@@ -416,7 +416,9 @@ impl HIRNode {
         match &self.kind {
             HIRNodeKind::VariableReference { index, is_static } => {
                 if *is_static {
-                    return Some(context.static_variables.vals[*index].clone());
+                    return Some(
+                        context.global_scope.scope.entries[*index].as_static_variable_unsafe(),
+                    );
                 }
 
                 return Some(curr_ctx.variables[*index].variable_type.clone());
@@ -490,9 +492,30 @@ impl HIRNode {
                 func_name,
                 arguments: _,
             } => {
-                let f = context.functions.vals[*func_name].0.clone();
+                //let f = context.functions.vals[*func_name].0.clone();
+                let ind = match &context.global_scope.scope.entries[*func_name].entry_type {
+                    TypedGlobalScopeEntry::Function {
+                        descriptor_ind,
+                        impl_ind: _,
+                    } => descriptor_ind,
+                    TypedGlobalScopeEntry::ImplLessFunction(ind) => ind,
+                    TypedGlobalScopeEntry::StructFunction {
+                        descriptor_ind,
+                        impl_ind: _,
+                        struct_type: _,
+                    } => descriptor_ind,
 
-                return f;
+                    _ => {
+                        make_expected_simple_error_originless(
+                            &"function".to_string(),
+                            &context.global_scope.scope.entries[*func_name].entry_type,
+                        );
+
+                        return None;
+                    }
+                };
+
+                return context.global_scope.descriptors[*ind].clone().0;
             }
 
             _ => return None,
