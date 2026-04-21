@@ -12,9 +12,15 @@ pub enum Platform {
     LLVM,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, ValueEnum, Debug)]
+pub enum IRLayer {
+    HIR,
+    MIR,
+}
+
 #[derive(Subcommand)]
 pub enum CLICommand {
-    #[command(visible_alias = "b")]
+    #[command(visible_alias = "b", about = "Builds the given file(s)")]
     Build {
         #[arg(short = 'o')]
         out: String,
@@ -22,7 +28,22 @@ pub enum CLICommand {
         #[arg(long, value_enum, default_value = "llvm")]
         platform: Platform,
 
+        #[arg(short = 'l', default_value = "ld")]
+        linker: String,
+
         #[arg(required = true)]
         input: Vec<String>,
+    },
+
+    #[command(visible_alias = "ver", about = "Displays the version")]
+    Version,
+
+    #[command(about = "Checks if a file is valid")]
+    Check {
+        #[arg(required = true)]
+        input: Vec<String>,
+
+        #[arg(long, value_enum, default_value = "mir")]
+        layer: IRLayer,
     },
 }
