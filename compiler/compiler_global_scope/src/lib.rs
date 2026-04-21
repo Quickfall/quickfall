@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hash};
 
 use diagnostics::{
-    DiagnosticResult, DiagnosticSpanOrigin, MaybeDiagnostic,
+    DiagnosticResult, DiagnosticSpanOrigin,
     builders::{make_already_in_scope, make_cannot_find, make_expected_simple_error},
 };
 
@@ -16,9 +16,11 @@ pub mod key;
 pub type GlobalStorageIdentifier = usize;
 
 #[derive(Debug)]
-pub struct GlobalScopeStorage<T, R> {
+pub struct GlobalScopeStorage<T: Hash, R: Hash> {
     pub entry_to_ind: HashMap<EntryKey, usize>,
     pub entries: Vec<GlobalStorageEntry<T, R>>,
+
+    pub value_to_ind: HashMap<GlobalStorageEntryType<T, R>, usize>,
 
     pub descriptor_counter: usize,
     pub impl_counter: usize,
@@ -34,10 +36,11 @@ pub struct GlobalScopeStorage<T, R> {
 ///
 /// # Safety
 /// The `GlobalScopeStorage` enforces correctness for global scope types and strictly allows only one entry per name. globally.
-impl<T: Clone, R: Clone> GlobalScopeStorage<T, R> {
+impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
     pub fn new() -> Self {
         GlobalScopeStorage {
             entry_to_ind: HashMap::new(),
+            value_to_ind: HashMap::new(),
             entries: vec![],
             descriptor_counter: 0,
             impl_counter: 0,
@@ -49,12 +52,14 @@ impl<T: Clone, R: Clone> GlobalScopeStorage<T, R> {
         name: EntryKey,
         entry: GlobalStorageEntryType<T, R>,
         origin: &K,
-    ) -> MaybeDiagnostic {
+    ) -> DiagnosticResult<usize> {
         if self.entry_to_ind.contains_key(&name) {
             return Err(make_already_in_scope(origin, &name.name_hash).into());
         }
 
         let parent_index = self.entries.len();
+
+        self.value_to_ind.insert(entry.clone(), parent_index);
 
         let entry = GlobalStorageEntry {
             entry_type: entry,
@@ -64,7 +69,7 @@ impl<T: Clone, R: Clone> GlobalScopeStorage<T, R> {
         self.entries.push(entry);
         self.entry_to_ind.insert(name, parent_index);
 
-        Ok(())
+        Ok(parent_index)
     }
 
     pub fn get_base<K: DiagnosticSpanOrigin>(

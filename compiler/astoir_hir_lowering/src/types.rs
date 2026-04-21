@@ -1,5 +1,6 @@
 use ast::types::ASTType;
 use astoir_hir::ctx::HIRContext;
+use compiler_global_scope::{entry::GlobalStorageEntryType, key::EntryKey};
 use compiler_typing::{TypeParamType, raw::RawType, references::TypeReference, tree::Type};
 use compiler_utils::hash::HashedString;
 use diagnostics::{
@@ -19,7 +20,10 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(
         ASTType::Generic(type_id, type_params, size_params, specifier) => {
             let hash = HashedString::new(type_id).hash;
 
-            let mut t = match context.type_storage.get_type(hash) {
+            let mut t = match context
+                .global_scope
+                .get_type(EntryKey { name_hash: hash }, origin)
+            {
                 Ok(v) => v,
                 Err(_) => return Err(make_cannot_find_type(origin, &hash).into()),
             };
@@ -33,11 +37,11 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(
                 t = container.get_entry(HashedString::new(specifier.unwrap()))?
             }
 
-            if t.get_type_params_count(&context.type_storage) != type_params.len() {
+            if t.get_type_params_count(&context.global_scope, origin)? != type_params.len() {
                 return Err(make_diff_type_specifiers(
                     origin,
                     &type_params.len(),
-                    &t.get_type_params_count(&context.type_storage),
+                    &t.get_type_params_count(&context.global_scope, origin)?,
                 )
                 .into());
             }
@@ -51,18 +55,26 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(
             let res = Type::Generic(t.clone(), t_params, size_params);
 
             if t.is_sized() {
-                let lower = lower_sized_base_type(context, &res, origin)?;
+                let lower = lower_sized_base_type(&res, origin)?;
 
-                if context.type_storage.type_to_ind.contains_key(&lower) {
+                if context
+                    .global_scope
+                    .value_to_ind
+                    .contains_key(&GlobalStorageEntryType::Type(lower.clone()))
+                {
                     return Ok(Type::Generic(t, vec![], vec![]));
                 } else {
-                    let ind = match context.type_storage.append_with_hash(hash, lower) {
+                    let ind = match context.global_scope.append(
+                        EntryKey { name_hash: hash },
+                        GlobalStorageEntryType::Type(lower),
+                        origin,
+                    ) {
                         Ok(v) => v,
                         Err(_) => panic!("Generic lowering type cannot be found on type_to_hash"),
                     };
 
                     return Ok(Type::Generic(
-                        context.type_storage.types.vals[ind].clone(),
+                        context.global_scope.entries[ind].as_type_unsafe(),
                         vec![],
                         vec![],
                     ));
@@ -106,13 +118,12 @@ pub fn lower_ast_type_struct<K: DiagnosticSpanOrigin, T: TypeParamType>(
 }
 
 pub fn lower_sized_base_type<K: DiagnosticSpanOrigin>(
-    context: &HIRContext,
     t: &Type,
     origin: &K,
 ) -> DiagnosticResult<RawType> {
     let data = t.get_generic_info();
 
-    match t.get_generic(&context.type_storage) {
+    match t.get_generic() {
         RawType::SizedInteger(e) => {
             if data.1.len() != 1 {
                 return Err(make_diff_size_specifiers(origin, &1, &data.1.len()).into());

@@ -6,6 +6,7 @@ use astoir_hir::{
     nodes::{HIRNode, HIRNodeKind},
     structs::HIRStructContainer,
 };
+use compiler_global_scope::{entry::GlobalStorageEntryType, key::EntryKey};
 use compiler_typing::{raw::RawType, structs::RawStructTypeContainer};
 use compiler_utils::utils::indexed::IndexStorage;
 use diagnostics::{DiagnosticResult, builders::make_already_in_scope};
@@ -103,7 +104,13 @@ pub fn lower_ast_struct_declaration(
 
         let base = RawType::Struct(layout, container.clone());
 
-        let ind = match context.type_storage.append(name.hash, base) {
+        let ind = match context.global_scope.append(
+            EntryKey {
+                name_hash: name.hash,
+            },
+            GlobalStorageEntryType::Type(base),
+            &*node,
+        ) {
             Ok(v) => v,
             Err(_) => return Err(make_already_in_scope(&*node, &name.val).into()),
         };
@@ -113,14 +120,14 @@ pub fn lower_ast_struct_declaration(
                 &ASTTreeNodeKind::StructFieldMember { .. } => {
                     lower_ast_struct_member(context, member, &mut container)?;
 
-                    context.type_storage.types.vals[ind] =
-                        RawType::Struct(layout, container.clone());
+                    context.global_scope.entries[ind].entry_type =
+                        GlobalStorageEntryType::Type(RawType::Struct(layout, container.clone()));
                 }
                 &ASTTreeNodeKind::FunctionDeclaration { .. } => {
                     let body = lower_ast_struct_function_decl(context, member, &mut container)?;
 
-                    context.type_storage.types.vals[ind] =
-                        RawType::Struct(layout, container.clone());
+                    context.global_scope.entries[ind].entry_type =
+                        GlobalStorageEntryType::Type(RawType::Struct(layout, container.clone()));
 
                     func_impls.push(body);
                 }

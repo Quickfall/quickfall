@@ -3,6 +3,7 @@ use astoir_hir::{
     ctx::HIRContext,
     nodes::{HIRNode, HIRNodeKind},
 };
+use compiler_global_scope::key::EntryKey;
 use compiler_typing::tree::Type;
 use diagnostics::{DiagnosticResult, builders::make_cannot_find_type};
 
@@ -12,7 +13,10 @@ pub fn lower_ast_literal(
 ) -> DiagnosticResult<Box<HIRNode>> {
     match node.kind {
         ASTTreeNodeKind::IntegerLit { val, hash } => {
-            let lit_type = match context.type_storage.get_type(hash) {
+            let lit_type = match context
+                .global_scope
+                .get_type(EntryKey { name_hash: hash }, &*node)
+            {
                 Ok(v) => v,
                 Err(_) => return Err(make_cannot_find_type(&*node, &hash).into()),
             };

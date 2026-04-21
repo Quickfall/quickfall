@@ -37,7 +37,7 @@ pub(crate) fn lower_ast_lru_base(
             let ind: usize;
 
             if let Some(curr_type_val) = curr_type {
-                let res = match curr_type_val.get_function(&context.type_storage, func.hash) {
+                let res = match curr_type_val.get_function(&context.global_scope, func.hash) {
                     Ok(v) => v,
                     Err(_) => {
                         return Err(
@@ -108,7 +108,7 @@ pub(crate) fn lower_ast_lru_base(
             let ind: usize;
 
             if let Some(curr_type_val) = curr_type {
-                let res = match curr_type_val.get_field(&context.type_storage, str.hash) {
+                let res = match curr_type_val.get_field(&context.global_scope, str.hash) {
                     Ok(v) => v,
                     Err(_) => {
                         return Err(

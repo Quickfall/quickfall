@@ -334,6 +334,21 @@ impl Hash for RawType {
                 hasher.write_usize(container.self_ref);
             }
 
+            RawType::SizedInteger(signed) => {
+                hasher.write_usize(8);
+                hasher.write_u8(*signed as u8);
+            }
+
+            RawType::SizedFloating(signed) => {
+                hasher.write_usize(9);
+                hasher.write_u8(*signed as u8);
+            }
+
+            RawType::SizedFixedPoint(signed) => {
+                hasher.write_usize(8);
+                hasher.write_u8(*signed as u8);
+            }
+
             _ => panic!("Unhashable type {:#?}", self),
         }
     }

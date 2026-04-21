@@ -1,7 +1,5 @@
-use astoir_hir::{
-    ctx::HIRContext,
-    storage::{EntryKey, GlobalStorageEntryType},
-};
+use astoir_hir::ctx::HIRContext;
+use compiler_global_scope::{entry::GlobalStorageEntryType, key::EntryKey};
 use compiler_typing::{
     TypeParameterContainer, enums::RawEnumTypeContainer, raw::RawType, references::TypeReference,
 };
@@ -71,7 +69,9 @@ pub fn register_prelude_type<K: DiagnosticSpanOrigin>(
         EntryKey { name_hash: hash },
         GlobalStorageEntryType::Type(t),
         origin,
-    )
+    )?;
+
+    Ok(())
 }
 
 pub fn apply_prelude_types<K: DiagnosticSpanOrigin>(

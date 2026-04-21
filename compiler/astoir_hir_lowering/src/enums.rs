@@ -3,6 +3,7 @@ use astoir_hir::{
     ctx::HIRContext,
     nodes::{HIRNode, HIRNodeKind},
 };
+use compiler_global_scope::{entry::GlobalStorageEntryType, key::EntryKey};
 use compiler_typing::{enums::RawEnumTypeContainer, raw::RawType};
 use diagnostics::{DiagnosticResult, MaybeDiagnostic, builders::make_already_in_scope};
 
@@ -46,16 +47,19 @@ pub fn lower_ast_enum(
     } = node.kind.clone()
     {
         let mut container =
-            RawEnumTypeContainer::new(context.type_storage.types.vals.len(), type_params);
+            RawEnumTypeContainer::new(context.global_scope.entries.len(), type_params);
 
         for entry in entries {
             lower_ast_enum_entry(context, entry, &mut container)?;
         }
 
-        let ind = match context
-            .type_storage
-            .append_with_hash(name.hash, RawType::Enum(container.clone()))
-        {
+        let ind = match context.global_scope.append(
+            EntryKey {
+                name_hash: name.hash,
+            },
+            GlobalStorageEntryType::Type(RawType::Enum(container.clone())),
+            &*node,
+        ) {
             Ok(v) => v,
             Err(_) => return Err(make_already_in_scope(&*node, &name.val).into()),
         };

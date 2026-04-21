@@ -1,13 +1,13 @@
 //! Definitions for entries
 
-use std::fmt::Display;
+use std::{fmt::Display, hash::Hash};
 
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_expected_simple_error};
 
 use crate::GlobalStorageIdentifier;
 
-#[derive(Clone, Debug)]
-pub enum GlobalStorageEntryType<T, R> {
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum GlobalStorageEntryType<T: Hash, R: Hash> {
     Function {
         descriptor_ind: usize,
         impl_ind: usize,
@@ -25,7 +25,7 @@ pub enum GlobalStorageEntryType<T, R> {
     Type(R),
 }
 
-impl<T: Clone, R: Clone> GlobalStorageEntry<T, R> {
+impl<T: Clone + Hash, R: Clone + Hash> GlobalStorageEntry<T, R> {
     pub fn as_function<K: DiagnosticSpanOrigin>(
         &self,
         origin: &K,
@@ -171,13 +171,13 @@ impl<T: Clone, R: Clone> GlobalStorageEntry<T, R> {
     }
 }
 
-#[derive(Debug)]
-pub struct GlobalStorageEntry<T, R> {
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+pub struct GlobalStorageEntry<T: Hash, R: Hash> {
     pub entry_type: GlobalStorageEntryType<T, R>,
     pub parent_index: usize,
 }
 
-impl<T, R> Display for GlobalStorageEntryType<T, R> {
+impl<T: Hash, R: Hash> Display for GlobalStorageEntryType<T, R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
             Self::Function { .. } => "function",
