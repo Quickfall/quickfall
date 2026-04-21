@@ -1,5 +1,5 @@
 #[derive(Clone, Debug)]
 pub enum MIRConstantValue {
-	Int(u128),
-	Float(f64)
+    Int(u128),
+    Float(f64),
 }

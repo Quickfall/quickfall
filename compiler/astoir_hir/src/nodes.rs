@@ -1,269 +1,524 @@
-//! The nodes inside of the AstoIR HIR. 
+//! The nodes inside of the AstoIR HIR.
 
 use std::collections::HashMap;
 
-use compiler_typing::{enums::{RawEnumTypeContainer}, raw::RawType, references::TypeReference, structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type};
-use compiler_utils::{Position, hash::SelfHash, operators::{ComparingOperator, MathOperator}};
-use diagnostics::{DiagnosticSpanOrigin, builders::{make_diff_type, make_diff_type_val}, diagnostic::{Diagnostic, Span, SpanKind, SpanPosition}, unsure_panic};
+use compiler_typing::{
+    TypedGlobalScopeEntry, enums::RawEnumTypeContainer, raw::RawType, references::TypeReference,
+    structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type,
+};
+use compiler_utils::{
+    Position,
+    hash::SelfHash,
+    operators::{ComparingOperator, MathOperator},
+};
+use diagnostics::{
+    DiagnosticSpanOrigin,
+    builders::{make_diff_type, make_diff_type_val, make_expected_simple_error_originless},
+    diagnostic::{Diagnostic, Span, SpanKind, SpanPosition},
+    unsure_panic,
+};
 
-use crate::{ctx::{HIRBranchedContext, HIRContext}, resolve::resolve_to_type, structs::{HIRIfBranch, StructLRUStep}};
+use crate::{
+    ctx::{HIRBranchedContext, HIRContext},
+    resolve::resolve_to_type,
+    structs::{HIRIfBranch, StructLRUStep},
+};
 
 #[derive(Debug, Clone)]
-pub struct HIRNode {	
-	pub kind: HIRNodeKind, 
-	pub start: Position,
-	pub end: Position
+pub struct HIRNode {
+    pub kind: HIRNodeKind,
+    pub start: Position,
+    pub end: Position,
 }
 
 impl HIRNode {
-	pub fn new(kind: HIRNodeKind, start: &Position, end: &Position) -> Self {
-		HIRNode { kind, start: start.clone(), end: end.clone() }
-	}
-	
-	pub fn with(&self, kind: HIRNodeKind) -> Self {
-		HIRNode { kind, start: self.start.clone(), end: self.end.clone() }
-	}
+    pub fn new(kind: HIRNodeKind, start: &Position, end: &Position) -> Self {
+        HIRNode {
+            kind,
+            start: start.clone(),
+            end: end.clone(),
+        }
+    }
+
+    pub fn with(&self, kind: HIRNodeKind) -> Self {
+        HIRNode {
+            kind,
+            start: self.start.clone(),
+            end: self.end.clone(),
+        }
+    }
 }
 
 impl DiagnosticSpanOrigin for HIRNode {
-	fn make_simple_diagnostic(&self, code: usize, level: diagnostics::diagnostic::Level, message: String, primary_span_msg: Option<String>, spans: Vec<Span>, notes: Vec<String>, help: Vec<String>) -> Diagnostic {
-		let span = self.make_span(SpanKind::Primary, primary_span_msg);
+    fn make_simple_diagnostic(
+        &self,
+        code: usize,
+        level: diagnostics::diagnostic::Level,
+        message: String,
+        primary_span_msg: Option<String>,
+        spans: Vec<Span>,
+        notes: Vec<String>,
+        help: Vec<String>,
+    ) -> Diagnostic {
+        let span = self.make_span(SpanKind::Primary, primary_span_msg);
 
-		Diagnostic::new_base(level, code, message, span, spans, notes, help)
-	}
+        Diagnostic::new_base(level, code, message, span, spans, notes, help)
+    }
 
-	fn get_pos(&self) -> SpanPosition {
-		SpanPosition::from_pos2(self.start.clone(), self.end.clone())
-	}
+    fn get_pos(&self) -> SpanPosition {
+        SpanPosition::from_pos2(self.start.clone(), self.end.clone())
+    }
 
-	fn make_span(&self, kind: SpanKind, msg: Option<String>) -> Span {
-		Span { start: SpanPosition::from_pos2(self.start.clone(), self.end.clone()), label: msg, kind }		
-	}
+    fn make_span(&self, kind: SpanKind, msg: Option<String>) -> Span {
+        Span {
+            start: SpanPosition::from_pos2(self.start.clone(), self.end.clone()),
+            label: msg,
+            kind,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
 pub enum HIRNodeKind {
-	CastValue { intentional: bool, value: Box<HIRNode>, old_type: Type, new_type: Type }, 
+    CastValue {
+        intentional: bool,
+        value: Box<HIRNode>,
+        old_type: Type,
+        new_type: Type,
+    },
 
-	VarDeclaration { variable: usize, var_type: Type, default_val: Option<Box<HIRNode>> },
-	StaticVariableDeclaration { variable: usize, var_type: Type, default_val: Option<Box<HIRNode>> },
+    VarDeclaration {
+        variable: usize,
+        var_type: Type,
+        default_val: Option<Box<HIRNode>>,
+    },
+    StaticVariableDeclaration {
+        variable: usize,
+        var_type: Type,
+        default_val: Option<Box<HIRNode>>,
+    },
 
-	VarAssigment { variable: usize, val: Box<HIRNode> },
-	
-	MathOperation { left:  Box<HIRNode>, right: Box<HIRNode>, operation: MathOperator },
+    VarAssigment {
+        variable: usize,
+        val: Box<HIRNode>,
+    },
 
-	UnwrapCondition { original: Box<HIRNode>, new_type: Type, new_var: Option<usize>, unsafe_unwrap: bool },
-	UnwrapValue { original: Box<HIRNode>, new_type: Type, unsafe_unwrap: bool },
+    MathOperation {
+        left: Box<HIRNode>,
+        right: Box<HIRNode>,
+        operation: MathOperator,
+    },
 
-	VariableReference { index: usize, is_static: bool },
-	FunctionReference { index: usize },
+    UnwrapCondition {
+        original: Box<HIRNode>,
+        new_type: Type,
+        new_var: Option<usize>,
+        unsafe_unwrap: bool,
+    },
+    UnwrapValue {
+        original: Box<HIRNode>,
+        new_type: Type,
+        unsafe_unwrap: bool,
+    },
 
-	PointerGrab { val: Box<HIRNode> },
-	ReferenceGrab { val: Box<HIRNode> },
+    VariableReference {
+        index: usize,
+        is_static: bool,
+    },
+    FunctionReference {
+        index: usize,
+    },
 
-	StructLRU { steps: Vec<StructLRUStep>, last: Type },
+    PointerGrab {
+        val: Box<HIRNode>,
+    },
+    ReferenceGrab {
+        val: Box<HIRNode>,
+    },
 
-	EnumParentCast { val: Box<HIRNode>, parent: Type },
+    StructLRU {
+        steps: Vec<StructLRUStep>,
+        last: Type,
+    },
 
-	EnumDeclaration { type_name: usize, container: RawEnumTypeContainer },
- 
-	StructDeclaration { type_name: usize, container: RawStructTypeContainer, layout: bool },
-	StructFunctionDeclaration { func_name: usize, arguments: Vec<(u64, TypeReference)>, return_type: Option<TypeReference>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
-	
-	ArrayVariableInitializerValue { vals: Vec<Box<HIRNode>> },
-	ArrayVariableInitializerValueSameValue { size: usize, val: Box<HIRNode> },
+    EnumParentCast {
+        val: Box<HIRNode>,
+        parent: Type,
+    },
 
-	ArrayIndexAccess { val: Box<HIRNode>, index: Box<HIRNode> },
-	ArrayIndexModify { array: Box<HIRNode>, index: Box<HIRNode>, new_val : Box<HIRNode> },
+    EnumDeclaration {
+        type_name: usize,
+        container: RawEnumTypeContainer,
+    },
 
-	/// Before transmutation
-	StructInitializer { fields: HashMap<SelfHash, Box<HIRNode>> },
-	StructInitializerTyped { t: Type, fields: Vec<Box<HIRNode>> },
+    StructDeclaration {
+        type_name: usize,
+        container: RawStructTypeContainer,
+        layout: bool,
+    },
+    StructFunctionDeclaration {
+        func_name: usize,
+        arguments: Vec<(u64, TypeReference)>,
+        return_type: Option<TypeReference>,
+        body: Vec<Box<HIRNode>>,
+        ctx: HIRBranchedContext,
+        requires_this: bool,
+    },
 
-	FunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type>, body: Vec<Box<HIRNode>>, ctx: HIRBranchedContext, requires_this: bool },
-	
-	ShadowFunctionDeclaration { func_name: usize, arguments: Vec<(u64, Type)>, return_type: Option<Type> },
+    ArrayVariableInitializerValue {
+        vals: Vec<Box<HIRNode>>,
+    },
+    ArrayVariableInitializerValueSameValue {
+        size: usize,
+        val: Box<HIRNode>,
+    },
 
-	FunctionCall { func_name: usize, arguments: Vec<Box<HIRNode>> },
+    ArrayIndexAccess {
+        val: Box<HIRNode>,
+        index: Box<HIRNode>,
+    },
+    ArrayIndexModify {
+        array: Box<HIRNode>,
+        index: Box<HIRNode>,
+        new_val: Box<HIRNode>,
+    },
 
-	WhileBlock { condition: Box<HIRNode>, body: Vec<Box<HIRNode>> },
-	ForBlock { initial_state: Box<HIRNode>, condition: Box<HIRNode>, incrementation: Box<HIRNode>, body: Vec<Box<HIRNode>> },
+    /// Before transmutation
+    StructInitializer {
+        fields: HashMap<SelfHash, Box<HIRNode>>,
+    },
+    StructInitializerTyped {
+        t: Type,
+        fields: Vec<Box<HIRNode>>,
+    },
 
-	IfStatement { branches: Vec<HIRIfBranch> },
+    FunctionDeclaration {
+        func_name: usize,
+        arguments: Vec<(u64, Type)>,
+        return_type: Option<Type>,
+        body: Vec<Box<HIRNode>>,
+        ctx: HIRBranchedContext,
+        requires_this: bool,
+    },
 
-	ReturnStatement { value: Option<Box<HIRNode>> },
+    ShadowFunctionDeclaration {
+        func_name: usize,
+        arguments: Vec<(u64, Type)>,
+        return_type: Option<Type>,
+    },
 
-	IntegerLiteral { value: i128, int_type: Type }, 
-	StringLiteral { value: String }, 
+    FunctionCall {
+        func_name: usize,
+        arguments: Vec<Box<HIRNode>>,
+    },
 
-	BooleanOperator { left: Box<HIRNode>, right: Box<HIRNode>, operator: ComparingOperator },
-	BooleanCondition { value: Box<HIRNode>, negation: bool }
+    WhileBlock {
+        condition: Box<HIRNode>,
+        body: Vec<Box<HIRNode>>,
+    },
+    ForBlock {
+        initial_state: Box<HIRNode>,
+        condition: Box<HIRNode>,
+        incrementation: Box<HIRNode>,
+        body: Vec<Box<HIRNode>>,
+    },
+
+    IfStatement {
+        branches: Vec<HIRIfBranch>,
+    },
+
+    ReturnStatement {
+        value: Option<Box<HIRNode>>,
+    },
+
+    IntegerLiteral {
+        value: i128,
+        int_type: Type,
+    },
+    StringLiteral {
+        value: String,
+    },
+
+    BooleanOperator {
+        left: Box<HIRNode>,
+        right: Box<HIRNode>,
+        operator: ComparingOperator,
+    },
+    BooleanCondition {
+        value: Box<HIRNode>,
+        negation: bool,
+    },
 }
 
 impl HIRNode {
-	pub fn is_variable_reference(&self) -> bool {
-		if let HIRNodeKind::VariableReference { .. } = self.kind {
-			return true;
-		}
+    pub fn is_variable_reference(&self) -> bool {
+        if let HIRNodeKind::VariableReference { .. } = self.kind {
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	pub fn get_variable_represent(&self) -> (usize, bool) {
-		match &self.kind {
-			HIRNodeKind::VariableReference { index, is_static} => return (*index, *is_static),
-			HIRNodeKind::ArrayIndexAccess { val, index: _ } => return val.get_variable_represent(),
+    pub fn get_variable_represent(&self) -> (usize, bool) {
+        match &self.kind {
+            HIRNodeKind::VariableReference { index, is_static } => return (*index, *is_static),
+            HIRNodeKind::ArrayIndexAccess { val, index: _ } => return val.get_variable_represent(),
 
-			_ => unsure_panic!("Used get_variable_represent on a non representing val")
-		};
-	}
+            _ => unsure_panic!("Used get_variable_represent on a non representing val"),
+        };
+    }
 
-	pub fn is_variable_representative(&self) -> bool {
-		if let HIRNodeKind::ArrayIndexAccess { .. } = self.kind {
-			return true;
-		}
+    pub fn is_variable_representative(&self) -> bool {
+        if let HIRNodeKind::ArrayIndexAccess { .. } = self.kind {
+            return true;
+        }
 
-		if let HIRNodeKind::VariableReference { .. } = self.kind {
-			return true;
-		}
+        if let HIRNodeKind::VariableReference { .. } = self.kind {
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	pub fn as_variable_reference(&self) -> (usize, bool) {
-		if let HIRNodeKind::VariableReference { index, is_static } = &self.kind {
-			return (*index, *is_static)
-		}
+    pub fn as_variable_reference(&self) -> (usize, bool) {
+        if let HIRNodeKind::VariableReference { index, is_static } = &self.kind {
+            return (*index, *is_static);
+        }
 
-		panic!("Tried using as_variable_reference on a non var ref")
-	}
-	
-	pub fn use_as<K: DiagnosticSpanOrigin>(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext, t: Type, origin: &K, var_origin: Option<&K>) -> Result<HIRNode, ()> {
-		if self.is_intederminately_typed() {
-			return Ok(resolve_to_type(Box::new(self.clone()), t.clone(), context, curr_ctx, origin)?.use_as(context, curr_ctx, t, origin, var_origin)?);
-		}
+        panic!("Tried using as_variable_reference on a non var ref")
+    }
 
-		let self_type = match self.get_node_type(context, curr_ctx) {
-			Some(v) => v,
-			_ => panic!("Tried using a typeless node in use_as: {:#?}", self)
-		};
+    pub fn use_as<K: DiagnosticSpanOrigin>(
+        &self,
+        context: &HIRContext,
+        curr_ctx: &HIRBranchedContext,
+        t: Type,
+        origin: &K,
+        var_origin: Option<&K>,
+    ) -> Result<HIRNode, ()> {
+        if self.is_intederminately_typed() {
+            return Ok(resolve_to_type(
+                Box::new(self.clone()),
+                t.clone(),
+                context,
+                curr_ctx,
+                origin,
+            )?
+            .use_as(context, curr_ctx, t, origin, var_origin)?);
+        }
 
-		if self_type == t {
-			return Ok(self.clone());
-		}
+        let self_type = match self.get_node_type(context, curr_ctx) {
+            Some(v) => v,
+            _ => panic!("Tried using a typeless node in use_as: {:#?}", self),
+        };
 
-		if self_type.can_transmute(&t, &context.type_storage) {
-			match &self.kind {
-				HIRNodeKind::IntegerLiteral { value, int_type: _ } => {
-					return Ok(self.with(HIRNodeKind::IntegerLiteral { value: *value, int_type: t }));
-				},
-				
-				HIRNodeKind::ArrayVariableInitializerValue { vals } => {
-					if can_transmute_inner(&self_type, &t, &context.type_storage) {
-						let mut new_vals = vec![];
-						let inner = t.get_inner_type();
+        if self_type == t {
+            return Ok(self.clone());
+        }
 
-						for val in vals {
-							new_vals.push(Box::new(val.use_as(context, curr_ctx, *inner.clone(), origin, var_origin)?));
-						}
+        if self_type.can_transmute(&t, &context.global_scope.scope) {
+            match &self.kind {
+                HIRNodeKind::IntegerLiteral { value, int_type: _ } => {
+                    return Ok(self.with(HIRNodeKind::IntegerLiteral {
+                        value: *value,
+                        int_type: t,
+                    }));
+                }
 
-						return Ok(self.with(HIRNodeKind::ArrayVariableInitializerValue { vals: new_vals }))
-					}
-				},
+                HIRNodeKind::ArrayVariableInitializerValue { vals } => {
+                    if can_transmute_inner(&self_type, &t, &context.global_scope.scope) {
+                        let mut new_vals = vec![];
+                        let inner = t.get_inner_type();
 
-				HIRNodeKind::ArrayVariableInitializerValueSameValue { size, val } => {
-					if can_transmute_inner(&self_type, &t, &context.type_storage) {
-						let new_val = Box::new(val.use_as(context, curr_ctx, *t.get_inner_type(), origin, var_origin)?);
+                        for val in vals {
+                            new_vals.push(Box::new(val.use_as(
+                                context,
+                                curr_ctx,
+                                *inner.clone(),
+                                origin,
+                                var_origin,
+                            )?));
+                        }
 
-						return Ok(self.with(HIRNodeKind::ArrayVariableInitializerValueSameValue { size: *size, val: new_val }))		
-					}
-				},
+                        return Ok(self
+                            .with(HIRNodeKind::ArrayVariableInitializerValue { vals: new_vals }));
+                    }
+                }
 
-				_ => {
-					return Ok(self.with(HIRNodeKind::CastValue { intentional: false, old_type: self_type.clone(), value: Box::new(self.clone()), new_type: t }));
-				}
-			}
-		}
+                HIRNodeKind::ArrayVariableInitializerValueSameValue { size, val } => {
+                    if can_transmute_inner(&self_type, &t, &context.global_scope.scope) {
+                        let new_val = Box::new(val.use_as(
+                            context,
+                            curr_ctx,
+                            *t.get_inner_type(),
+                            origin,
+                            var_origin,
+                        )?);
 
-		if let Some(v) = var_origin {
-			return Err(make_diff_type(origin, &"unnamed".to_string(), &t.faulty_lowering_generic(&context.type_storage), &self.get_node_type(context, curr_ctx).unwrap().faulty_lowering_generic(&context.type_storage), v).into())
-		}
+                        return Ok(self.with(
+                            HIRNodeKind::ArrayVariableInitializerValueSameValue {
+                                size: *size,
+                                val: new_val,
+                            },
+                        ));
+                    }
+                }
 
-		return Err(make_diff_type_val(origin, &t.faulty_lowering_generic(&context.type_storage), &self.get_node_type(context, curr_ctx).unwrap().faulty_lowering_generic(&context.type_storage)).into())
-	}	
+                _ => {
+                    return Ok(self.with(HIRNodeKind::CastValue {
+                        intentional: false,
+                        old_type: self_type.clone(),
+                        value: Box::new(self.clone()),
+                        new_type: t,
+                    }));
+                }
+            }
+        }
 
-	pub fn is_intederminately_typed(&self) -> bool {
-		match self.kind {
-			HIRNodeKind::StructInitializer { .. } => true,
+        if let Some(v) = var_origin {
+            return Err(make_diff_type(
+                origin,
+                &"unnamed".to_string(),
+                &t.faulty_lowering_generic(&context.global_scope.scope),
+                &self
+                    .get_node_type(context, curr_ctx)
+                    .unwrap()
+                    .faulty_lowering_generic(&context.global_scope.scope),
+                v,
+            )
+            .into());
+        }
 
-			_ => false
-		}
-	}
+        return Err(make_diff_type_val(
+            origin,
+            &t.faulty_lowering_generic(&context.global_scope.scope),
+            &self
+                .get_node_type(context, curr_ctx)
+                .unwrap()
+                .faulty_lowering_generic(&context.global_scope.scope),
+        )
+        .into());
+    }
 
-	pub fn get_node_type(&self, context: &HIRContext, curr_ctx: &HIRBranchedContext) -> Option<Type> {
-		match &self.kind {
-			HIRNodeKind::VariableReference { index, is_static } => {
-				if *is_static {
-					return Some(context.static_variables.vals[*index].clone());
-				}
+    pub fn is_intederminately_typed(&self) -> bool {
+        match self.kind {
+            HIRNodeKind::StructInitializer { .. } => true,
 
-				return Some(curr_ctx.variables[*index].variable_type.clone());
-			},
+            _ => false,
+        }
+    }
 
-			HIRNodeKind::PointerGrab { val } => {
-				return Some(Type::Pointer(false, Box::new(val.get_node_type(context, curr_ctx).unwrap())));
-			},
+    pub fn get_node_type(
+        &self,
+        context: &HIRContext,
+        curr_ctx: &HIRBranchedContext,
+    ) -> Option<Type> {
+        match &self.kind {
+            HIRNodeKind::VariableReference { index, is_static } => {
+                if *is_static {
+                    return Some(
+                        context.global_scope.scope.entries[*index].as_static_variable_unsafe(),
+                    );
+                }
 
-			HIRNodeKind::ReferenceGrab { val } => {
-				return Some(Type::Reference(Box::new(val.get_node_type(context, curr_ctx).unwrap())))
-			}
+                return Some(curr_ctx.variables[*index].variable_type.clone());
+            }
 
-			HIRNodeKind::UnwrapCondition { .. } => {
-				return Some(Type::Generic(RawType::Boolean, vec![], vec![]))
-			},
+            HIRNodeKind::PointerGrab { val } => {
+                return Some(Type::Pointer(
+                    false,
+                    Box::new(val.get_node_type(context, curr_ctx).unwrap()),
+                ));
+            }
 
-			HIRNodeKind::UnwrapValue { original: _, new_type, unsafe_unwrap: _ } => {
-				return Some(new_type.clone())
-			},
+            HIRNodeKind::ReferenceGrab { val } => {
+                return Some(Type::Reference(Box::new(
+                    val.get_node_type(context, curr_ctx).unwrap(),
+                )));
+            }
 
-			HIRNodeKind::ArrayIndexAccess { val, index: _ } => {
-				let t = val.get_node_type(context, curr_ctx).unwrap();
+            HIRNodeKind::UnwrapCondition { .. } => {
+                return Some(Type::Generic(RawType::Boolean, vec![], vec![]));
+            }
 
-				return Some(*t.get_inner_type())
-			}
+            HIRNodeKind::UnwrapValue {
+                original: _,
+                new_type,
+                unsafe_unwrap: _,
+            } => return Some(new_type.clone()),
 
-			HIRNodeKind::IntegerLiteral { value: _, int_type } => {
-				return Some(int_type.clone());
-			},
+            HIRNodeKind::ArrayIndexAccess { val, index: _ } => {
+                let t = val.get_node_type(context, curr_ctx).unwrap();
 
-			HIRNodeKind::StringLiteral { value: _ } => {
-				return Some(Type::Generic(RawType::StaticString, vec![], vec![]))
-			},
+                return Some(*t.get_inner_type());
+            }
 
-			HIRNodeKind::ArrayVariableInitializerValue { vals } => return Some(Type::Array(vals.len(), Box::new(vals[0].get_node_type(context, curr_ctx).unwrap()))),
-			HIRNodeKind::ArrayVariableInitializerValueSameValue { size, val } => return Some(Type::Array(*size, Box::new(val.get_node_type(context, curr_ctx).unwrap()))),
+            HIRNodeKind::IntegerLiteral { value: _, int_type } => {
+                return Some(int_type.clone());
+            }
 
-			HIRNodeKind::StructLRU { steps: _, last } => {
-				return Some(last.clone())
-			},
+            HIRNodeKind::StringLiteral { value: _ } => {
+                return Some(Type::Generic(RawType::StaticString, vec![], vec![]));
+            }
 
-			HIRNodeKind::MathOperation { left, right: _, operation: _ } => {
-				return left.get_node_type(context, curr_ctx)
-			},
+            HIRNodeKind::ArrayVariableInitializerValue { vals } => {
+                return Some(Type::Array(
+                    vals.len(),
+                    Box::new(vals[0].get_node_type(context, curr_ctx).unwrap()),
+                ));
+            }
+            HIRNodeKind::ArrayVariableInitializerValueSameValue { size, val } => {
+                return Some(Type::Array(
+                    *size,
+                    Box::new(val.get_node_type(context, curr_ctx).unwrap()),
+                ));
+            }
 
-			HIRNodeKind::BooleanOperator { .. } | HIRNodeKind::BooleanCondition { .. } => {
-				return Some(Type::Generic(RawType::Boolean, vec![], vec![]))
-			},
+            HIRNodeKind::StructLRU { steps: _, last } => return Some(last.clone()),
 
-			HIRNodeKind::StructInitializerTyped { t, fields: _ } => Some(t.clone()),
+            HIRNodeKind::MathOperation {
+                left,
+                right: _,
+                operation: _,
+            } => return left.get_node_type(context, curr_ctx),
 
-			HIRNodeKind::FunctionCall { func_name, arguments: _ } => {
-				let f = context.functions.vals[*func_name].0.clone();
+            HIRNodeKind::BooleanOperator { .. } | HIRNodeKind::BooleanCondition { .. } => {
+                return Some(Type::Generic(RawType::Boolean, vec![], vec![]));
+            }
 
-				return f;
-			},
+            HIRNodeKind::StructInitializerTyped { t, fields: _ } => Some(t.clone()),
 
-			_ => return None
-		}
-	}
+            HIRNodeKind::FunctionCall {
+                func_name,
+                arguments: _,
+            } => {
+                //let f = context.functions.vals[*func_name].0.clone();
+                let ind = match &context.global_scope.scope.entries[*func_name].entry_type {
+                    TypedGlobalScopeEntry::Function {
+                        descriptor_ind,
+                        impl_ind: _,
+                    } => descriptor_ind,
+                    TypedGlobalScopeEntry::ImplLessFunction(ind) => ind,
+                    TypedGlobalScopeEntry::StructFunction {
+                        descriptor_ind,
+                        impl_ind: _,
+                        struct_type: _,
+                    } => descriptor_ind,
+
+                    _ => {
+                        make_expected_simple_error_originless(
+                            &"function".to_string(),
+                            &context.global_scope.scope.entries[*func_name].entry_type,
+                        );
+
+                        return None;
+                    }
+                };
+
+                return context.global_scope.descriptors[*ind].clone().0;
+            }
+
+            _ => return None,
+        }
+    }
 }

@@ -11,76 +11,76 @@ use std::process::exit;
 use llvm_ir_bridge::bridge_llvm;
 
 pub fn parse_astoir_command(arguments: Vec<String>) {
-	if arguments.len() <= 2 {
-		println!("quickfall astoir <HIR> paths...");
-		return;
-	}
+    if arguments.len() <= 2 {
+        println!("quickfall astoir <HIR> paths...");
+        return;
+    }
 
-	let level = match parse_astoir_level(&arguments[2]) {
-		Ok(v) => v,
-		Err(_) => return
-	};
+    let level = match parse_astoir_level(&arguments[2]) {
+        Ok(v) => v,
+        Err(_) => return,
+    };
 
-	for i in 3..arguments.len() {
-		let lexer = lexer_parse_file(&arguments[i]).unwrap();
-		let ast = parse_ast_ctx(&lexer);
+    for i in 3..arguments.len() {
+        let lexer = lexer_parse_file(&arguments[i]).unwrap();
+        let ast = parse_ast_ctx(&lexer);
 
-		dump_diagnostics();
+        dump_diagnostics();
 
-		match level {
-			IRLevel::HIR => {
-				let ctx = run_astoir_hir(ast.unwrap());
-				let res_path = arguments[i].clone() + ".qfhir";
+        match level {
+            IRLevel::HIR => {
+                let ctx = run_astoir_hir(ast.unwrap());
+                let res_path = arguments[i].clone() + ".qfhir";
 
-				dump_diagnostics();
+                dump_diagnostics();
 
-				fs::write(res_path, format!("{:#?}", ctx.unwrap())).unwrap()
-			},
+                fs::write(res_path, format!("{:#?}", ctx.unwrap())).unwrap()
+            }
 
-			IRLevel::MIR => {
-				let ctx = run_astoir_mir(ast.unwrap());
-				let res_path = arguments[i].clone() + ".qfmir";
+            IRLevel::MIR => {
+                let ctx = run_astoir_mir(ast.unwrap());
+                let res_path = arguments[i].clone() + ".qfmir";
 
-				dump_diagnostics();
+                dump_diagnostics();
 
-				let _ = fs::write(res_path, format!("{}", ctx.unwrap()));
-			},
+                let _ = fs::write(res_path, format!("{}", ctx.unwrap()));
+            }
 
-			IRLevel::LLVM => {
-				#[cfg(feature = "llvm_ir_bridge")] {
-					let ctx = run_astoir_mir(ast.unwrap());
-					let res_path = arguments[i].clone() + ".llvm";
-	
-					dump_diagnostics();
-	
-					let ctx = bridge_llvm(&ctx.unwrap());
-	
-					dump_diagnostics();
-	
-					let _ = ctx.module.print_to_file(res_path);
-				}
+            IRLevel::LLVM => {
+                #[cfg(feature = "llvm_ir_bridge")]
+                {
+                    let ctx = run_astoir_mir(ast.unwrap());
+                    let res_path = arguments[i].clone() + ".llvm";
 
-				#[cfg(not(feature = "llvm_ir_bridge"))] {
-					println!("LLVM target is not bundled!");
+                    dump_diagnostics();
 
-					exit(0);
-				}
-			}
-		}
-	}
+                    let ctx = bridge_llvm(&ctx.unwrap());
 
+                    dump_diagnostics();
+
+                    let _ = ctx.module.print_to_file(res_path);
+                }
+
+                #[cfg(not(feature = "llvm_ir_bridge"))]
+                {
+                    println!("LLVM target is not bundled!");
+
+                    exit(0);
+                }
+            }
+        }
+    }
 }
 
 fn parse_astoir_level(str: &String) -> DiagnosticResult<IRLevel> {
-	match str as &str {
-		"hir" | "HIR" | "h" | "H" => return Ok(IRLevel::HIR),
-		"mir" | "MIR" | "m" | "M" => return Ok(IRLevel::MIR),
-		"llvm" | "LLVM" => return Ok(IRLevel::LLVM),
+    match str as &str {
+        "hir" | "HIR" | "h" | "H" => return Ok(IRLevel::HIR),
+        "mir" | "MIR" | "m" | "M" => return Ok(IRLevel::MIR),
+        "llvm" | "LLVM" => return Ok(IRLevel::LLVM),
 
-		_ => {
-			println!("Invalid level");
-			exit(0);
-		}
-	};
-
+        _ => {
+            println!("Invalid level");
+            exit(0);
+        }
+    };
 }

@@ -3,5 +3,5 @@
 //! - Trait bound: Mostly internal, is used to cleanly handle different types
 //! - Normal bound: Allows to select which kind of type you want
 
-pub mod traits;
 pub mod normal;
+pub mod traits;

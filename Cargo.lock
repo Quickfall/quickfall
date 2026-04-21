@@ -45,6 +45,7 @@ dependencies = [
 name = "astoir_hir"
 version = "0.1.0"
 dependencies = [
+ "compiler_global_scope",
  "compiler_typing",
  "compiler_utils",
  "diagnostics",
@@ -58,10 +59,12 @@ dependencies = [
  "ast",
  "ast_parser",
  "astoir_hir",
+ "compiler_global_scope",
  "compiler_typing",
  "compiler_utils",
  "diagnostics",
  "lexer",
+ "prelude",
 ]
 
 [[package]]
@@ -79,6 +82,7 @@ version = "0.1.0"
 dependencies = [
  "astoir_hir",
  "astoir_mir",
+ "compiler_global_scope",
  "compiler_typing",
  "compiler_utils",
  "diagnostics",
@@ -116,6 +120,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "compiler_global_scope"
+version = "0.1.0"
+dependencies = [
+ "diagnostics",
+]
+
+[[package]]
 name = "compiler_main"
 version = "0.1.0"
 dependencies = [
@@ -132,6 +143,7 @@ dependencies = [
 name = "compiler_typing"
 version = "0.1.0"
 dependencies = [
+ "compiler_global_scope",
  "compiler_utils",
  "diagnostics",
 ]
@@ -238,6 +250,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85eae3c4ed2f50dcfe72643da4befc30deadb458a9b590d720cde2f2b1e97da9"
 dependencies = [
  "zerocopy",
+]
+
+[[package]]
+name = "prelude"
+version = "0.1.0"
+dependencies = [
+ "astoir_hir",
+ "compiler_global_scope",
+ "compiler_typing",
+ "compiler_utils",
+ "diagnostics",
 ]
 
 [[package]]
