@@ -37,11 +37,11 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(
                 t = container.get_entry(HashedString::new(specifier.unwrap()))?
             }
 
-            if t.get_type_params_count(&context.global_scope, origin)? != type_params.len() {
+            if t.get_type_params_count(&context.global_scope.scope, origin)? != type_params.len() {
                 return Err(make_diff_type_specifiers(
                     origin,
                     &type_params.len(),
-                    &t.get_type_params_count(&context.global_scope, origin)?,
+                    &t.get_type_params_count(&context.global_scope.scope, origin)?,
                 )
                 .into());
             }
@@ -59,6 +59,7 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(
 
                 if context
                     .global_scope
+                    .scope
                     .value_to_ind
                     .contains_key(&GlobalStorageEntryType::Type(lower.clone()))
                 {
@@ -74,7 +75,7 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(
                     };
 
                     return Ok(Type::Generic(
-                        context.global_scope.entries[ind].as_type_unsafe(),
+                        context.global_scope.scope.entries[ind].as_type_unsafe(),
                         vec![],
                         vec![],
                     ));

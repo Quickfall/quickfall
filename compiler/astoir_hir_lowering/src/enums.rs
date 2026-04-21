@@ -47,7 +47,7 @@ pub fn lower_ast_enum(
     } = node.kind.clone()
     {
         let mut container =
-            RawEnumTypeContainer::new(context.global_scope.entries.len(), type_params);
+            RawEnumTypeContainer::new(context.global_scope.scope.entries.len(), type_params);
 
         for entry in entries {
             lower_ast_enum_entry(context, entry, &mut container)?;

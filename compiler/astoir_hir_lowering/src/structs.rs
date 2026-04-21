@@ -120,13 +120,13 @@ pub fn lower_ast_struct_declaration(
                 &ASTTreeNodeKind::StructFieldMember { .. } => {
                     lower_ast_struct_member(context, member, &mut container)?;
 
-                    context.global_scope.entries[ind].entry_type =
+                    context.global_scope.scope.entries[ind].entry_type =
                         GlobalStorageEntryType::Type(RawType::Struct(layout, container.clone()));
                 }
                 &ASTTreeNodeKind::FunctionDeclaration { .. } => {
                     let body = lower_ast_struct_function_decl(context, member, &mut container)?;
 
-                    context.global_scope.entries[ind].entry_type =
+                    context.global_scope.scope.entries[ind].entry_type =
                         GlobalStorageEntryType::Type(RawType::Struct(layout, container.clone()));
 
                     func_impls.push(body);
