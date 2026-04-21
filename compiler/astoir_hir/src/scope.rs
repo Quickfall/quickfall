@@ -2,7 +2,7 @@
 
 use compiler_global_scope::key::EntryKey;
 use compiler_typing::{TypedGlobalScope, TypedGlobalScopeEntry, raw::RawType, tree::Type};
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_cannot_find};
 
 use crate::{
     ctx::{HIRBranchedContext, HIRFunction, HIRFunctionImpl},
@@ -124,6 +124,18 @@ impl HIRGlobalScopeStorage {
         origin: &K,
     ) -> DiagnosticResult<TypedGlobalScopeEntry> {
         self.scope.get_base(name, origin)
+    }
+
+    pub fn get_ind<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<usize> {
+        if self.scope.entry_to_ind.contains_key(&name) {
+            return Ok(self.scope.entry_to_ind[&name]);
+        }
+
+        return Err(make_cannot_find(origin, &name.name_hash).into());
     }
 
     pub fn get_type<K: DiagnosticSpanOrigin>(

@@ -3,10 +3,9 @@ use astoir_hir::{
     ctx::{HIRBranchedContext, HIRContext},
     nodes::{HIRNode, HIRNodeKind},
 };
-use diagnostics::{
-    DiagnosticResult,
-    builders::{make_already_in_scope, make_cannot_find_func},
-};
+use compiler_global_scope::key::EntryKey;
+use compiler_typing::TypedGlobalScopeEntry;
+use diagnostics::{DiagnosticResult, builders::make_already_in_scope};
 
 use crate::{lower_ast_body, types::lower_ast_type, values::lower_ast_value};
 
@@ -16,12 +15,16 @@ pub fn lower_ast_function_call(
     node: Box<ASTTreeNode>,
 ) -> DiagnosticResult<Box<HIRNode>> {
     if let ASTTreeNodeKind::FunctionCall { func, args } = node.kind.clone() {
-        let f_ind = match context.functions.get_index(func.hash) {
-            Some(v) => v,
-            None => return Err(make_cannot_find_func(&*node, &func.hash).into()),
+        let name = EntryKey {
+            name_hash: func.hash,
         };
 
-        let func = &context.functions.vals[f_ind].clone();
+        let func = context
+            .global_scope
+            .get_function_base(name.clone(), &*node)?;
+
+        let func_ind = context.global_scope.get_ind(name, &*node)?;
+
         let mut hir_args = vec![];
         let mut ind = 0;
 
@@ -37,7 +40,7 @@ pub fn lower_ast_function_call(
 
         return Ok(Box::new(HIRNode::new(
             HIRNodeKind::FunctionCall {
-                func_name: f_ind,
+                func_name: func_ind,
                 arguments: hir_args,
             },
             &node.start,
@@ -91,14 +94,20 @@ pub fn lower_ast_function_declaration(
             }
         }
 
-        let ind = context.functions.append(
-            func_name.hash,
+        let key = EntryKey {
+            name_hash: func_name.hash,
+        };
+
+        let entry =
+            TypedGlobalScopeEntry::ImplLessFunction(context.global_scope.scope.descriptor_counter);
+
+        let ind = context.global_scope.append_implless_function(
+            key.clone(),
             (ret_type.clone(), arguments.clone(), func_name.val.clone()),
-        );
+            &*node,
+        )?;
 
         let body = lower_ast_body(context, &mut curr_ctx, body, false)?;
-
-        context.function_contexts.push(Some(curr_ctx.clone()));
 
         curr_ctx.end_branch(branch);
 
@@ -108,18 +117,37 @@ pub fn lower_ast_function_declaration(
             }
         }
 
-        return Ok(Box::new(HIRNode::new(
+        let implementation = Box::new(HIRNode::new(
             HIRNodeKind::FunctionDeclaration {
                 func_name: ind,
-                arguments,
-                return_type: ret_type,
+                arguments: arguments.clone(),
+                return_type: ret_type.clone(),
                 body,
-                ctx: curr_ctx,
+                ctx: curr_ctx.clone(),
                 requires_this,
             },
             &node.start,
             &node.end,
-        )));
+        ));
+
+        // Remove old impless version
+        context.global_scope.scope.entries.pop();
+        context.global_scope.scope.entry_to_ind.remove(&key);
+        context.global_scope.scope.value_to_ind.remove(&entry);
+        context.global_scope.descriptors.pop();
+        context.global_scope.scope.descriptor_counter -= 1;
+
+        // Append the new verison as a impl-containing function
+
+        context.global_scope.append_func(
+            key,
+            (ret_type.clone(), arguments.clone(), func_name.val.clone()),
+            implementation.clone(),
+            curr_ctx.clone(),
+            &*node,
+        );
+
+        return Ok(implementation);
     }
 
     panic!("Invalid node passed!");
@@ -155,12 +183,13 @@ pub fn lower_ast_shadow_function_declaration(
             arguments.push((arg.name.hash, t));
         }
 
-        let ind = context.functions.append(
-            func_name.hash,
+        let ind = context.global_scope.append_implless_function(
+            EntryKey {
+                name_hash: func_name.hash,
+            },
             (ret_type.clone(), arguments.clone(), func_name.val.clone()),
-        );
-
-        context.function_contexts.push(None);
+            &*node,
+        )?;
 
         return Ok(Box::new(HIRNode::new(
             HIRNodeKind::ShadowFunctionDeclaration {
