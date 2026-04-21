@@ -1,25 +1,9 @@
-use std::env;
+use clap::Parser;
 
-use crate::cmds::astoir::parse_astoir_command;
+use crate::cli::{CLICommand, Cli};
 
-pub mod cmds;
+pub mod cli;
 
 fn main() {
-    let arguments: Vec<String> = env::args().collect();
-
-    if arguments.len() <= 1 {
-        println!("Usage: quickfall comp|astoir");
-        return;
-    }
-
-    match &arguments[1] as &str {
-        "astoir" => {
-            parse_astoir_command(arguments);
-        }
-
-        _ => {
-            println!("Invalid subcommand!");
-            return;
-        }
-    }
+    let cli = Cli::parse();
 }
