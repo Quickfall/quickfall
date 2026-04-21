@@ -9,7 +9,7 @@ pub struct Cli {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, ValueEnum, Debug)]
-pub enum Platform {
+pub enum Bridge {
     AstoIR,
     LLVM,
 }
@@ -38,8 +38,8 @@ pub enum CLICommand {
         #[arg(short = 'o')]
         out: PathBuf,
 
-        #[arg(long, value_enum, default_value = "llvm")]
-        platform: Platform,
+        #[arg(long, value_enum, default_value = "llvm", short = 'b')]
+        bridge: Bridge,
 
         #[arg(short = 't', value_enum, long, default_value = "o")]
         format: OutputFormat,

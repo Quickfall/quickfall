@@ -1,14 +1,13 @@
 use std::{
     fs,
     path::{Path, PathBuf},
-    process::Output,
     time::Instant,
 };
 
 use clap::Parser;
 
 use crate::{
-    cli::{CLICommand, Cli, OutputFormat, Platform},
+    cli::{Bridge, CLICommand, Cli, OutputFormat},
     cmds::{build::build_mir, check::run_check},
     version::{GIT_HASH, VERSION},
 };
@@ -42,7 +41,7 @@ fn main() {
 
         CLICommand::Build {
             out,
-            platform,
+            bridge,
             format,
             linker,
             input,
@@ -59,12 +58,12 @@ fn main() {
                 fs::create_dir_all(out.clone()).unwrap();
             }
 
-            if platform == Platform::AstoIR && format != OutputFormat::IR {
+            if bridge == Bridge::AstoIR && format != OutputFormat::IR {
                 soft_panic!("Only IR target is supported by AstoIR platform!");
             }
 
-            match platform {
-                Platform::AstoIR => {
+            match bridge {
+                Bridge::AstoIR => {
                     for i in input {
                         let mut outfile = PathBuf::from(i.file_name().unwrap());
                         outfile.add_extension("air");
