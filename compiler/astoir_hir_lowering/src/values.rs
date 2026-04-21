@@ -4,13 +4,11 @@ use astoir_hir::{
     nodes::{HIRNode, HIRNodeKind},
     structs::StructLRUStep,
 };
+use compiler_global_scope::key::EntryKey;
 use compiler_typing::tree::Type;
 use diagnostics::{
     DiagnosticResult,
-    builders::{
-        make_cannot_find_func, make_invalid_pointing, make_struct_missing_field,
-        make_struct_missing_func,
-    },
+    builders::{make_invalid_pointing, make_struct_missing_field, make_struct_missing_func},
 };
 
 use crate::{
@@ -66,12 +64,12 @@ pub(crate) fn lower_ast_lru_base(
 
                 ind = res.0;
             } else {
-                ind = match context.functions.get_index(func.hash) {
-                    Some(v) => v,
-                    None => return Err(make_cannot_find_func(&*node, &func.val).into()),
+                let entry = EntryKey {
+                    name_hash: func.hash,
                 };
 
-                func_type = context.functions.vals[ind].clone();
+                ind = context.global_scope.get_ind(entry.clone(), &*node)?;
+                func_type = context.global_scope.get_function_base(entry, &*node)?;
             }
 
             let mut hir_args = vec![];

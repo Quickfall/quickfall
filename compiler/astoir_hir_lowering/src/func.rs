@@ -145,7 +145,7 @@ pub fn lower_ast_function_declaration(
             implementation.clone(),
             curr_ctx.clone(),
             &*node,
-        );
+        )?;
 
         return Ok(implementation);
     }

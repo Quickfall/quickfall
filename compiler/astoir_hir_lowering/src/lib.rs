@@ -123,17 +123,13 @@ pub fn lower_ast_toplevel(
 ) -> DiagnosticResult<bool> {
     match node.kind {
         ASTTreeNodeKind::FunctionDeclaration { .. } => {
-            let func_decl = lower_ast_function_declaration(context, node)?;
-
-            context.function_declarations.push(Some(func_decl));
+            lower_ast_function_declaration(context, node)?;
 
             return Ok(true);
         }
 
         ASTTreeNodeKind::ShadowFunctionDeclaration { .. } => {
-            let func_decl = lower_ast_shadow_function_declaration(context, node)?;
-
-            context.function_declarations.push(Some(func_decl));
+            lower_ast_shadow_function_declaration(context, node)?;
 
             return Ok(true);
         }

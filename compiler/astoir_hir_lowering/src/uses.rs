@@ -6,10 +6,7 @@ use ast::{
     types::ASTType,
 };
 use ast_parser::parse_ast_ctx;
-use astoir_hir::{
-    ctx::HIRContext,
-    nodes::{HIRNode, HIRNodeKind},
-};
+use astoir_hir::ctx::HIRContext;
 use compiler_global_scope::{entry::GlobalStorageEntryType, key::EntryKey};
 use compiler_typing::{raw::RawType, tree::Type};
 use compiler_utils::hash::HashedString;
@@ -60,24 +57,13 @@ pub fn handle_ast_use_statement_function_decl(
             arguments.push((arg.name.hash, t));
         }
 
-        let func_name = context.functions.append(
-            func_name.hash,
-            (ret_type.clone(), arguments.clone(), func_name.val.clone()),
-        );
-        context.function_contexts.push(None);
-
-        // Fabricate shadow func statement to satisfy functions_declarations
-
-        let node = HIRNode::new(
-            HIRNodeKind::ShadowFunctionDeclaration {
-                func_name,
-                arguments,
-                return_type: ret_type,
+        let _ = context.global_scope.append_implless_function(
+            EntryKey {
+                name_hash: func_name.hash,
             },
-            &node.start,
-            &node.end,
-        );
-        context.function_declarations.push(Some(Box::new(node)));
+            (ret_type.clone(), arguments.clone(), func_name.val.clone()),
+            &*node,
+        )?;
 
         return Ok(());
     }

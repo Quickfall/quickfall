@@ -349,6 +349,11 @@ impl Hash for RawType {
                 hasher.write_u8(*signed as u8);
             }
 
+            RawType::Struct(_, container) => {
+                hasher.write_usize(9);
+                hasher.write_usize(container.self_ref);
+            }
+
             _ => panic!("Unhashable type {:#?}", self),
         }
     }

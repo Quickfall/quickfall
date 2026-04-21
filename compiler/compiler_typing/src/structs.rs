@@ -19,6 +19,8 @@ pub struct RawStructTypeContainer {
     pub fields: IndexStorage<TypeReference>,
     pub type_params: TypeParameterContainer,
     pub functions: IndexStorage<TypedFunction>,
+    pub function_ids: Vec<usize>,
+    pub self_ref: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
