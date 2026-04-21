@@ -1,7 +1,7 @@
 use std::hash::Hash;
 
 /// Represents a key to a global storage entry. Potentially allows for namespaces later on
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EntryKey {
     pub name_hash: u64,
 }

@@ -2,14 +2,15 @@
 
 use std::collections::{HashMap, HashSet};
 
+use compiler_global_scope::key::EntryKey;
 use compiler_typing::tree::Type;
-use compiler_utils::{hash::SelfHash, utils::indexed::IndexStorage};
+use compiler_utils::hash::SelfHash;
 use diagnostics::{
     DiagnosticResult, DiagnosticSpanOrigin,
-    builders::{make_cannot_find_func, make_cannot_find_var, make_doesnt_exist_in_era},
+    builders::{make_cannot_find_var, make_doesnt_exist_in_era},
 };
 
-use crate::{nodes::HIRNode, scope::HIRGlobalScopeStorage, structs::HIRStructContainer};
+use crate::{nodes::HIRNode, scope::HIRGlobalScopeStorage};
 
 pub type HIRFunction = (Option<Type>, Vec<(u64, Type)>, String);
 pub type HIRFunctionImpl = (HIRBranchedContext, Box<HIRNode>);
@@ -274,11 +275,6 @@ pub struct HIRBranchedVariable {
 
 #[derive(Debug)]
 pub struct HIRContext {
-    pub functions: IndexStorage<HIRFunction>,
-    pub function_declarations: Vec<Option<Box<HIRNode>>>,
-    pub function_contexts: Vec<Option<HIRBranchedContext>>,
-    pub static_variables: IndexStorage<Type>,
-    pub struct_func_impls: HashMap<usize, HIRStructContainer>,
     pub global_scope: HIRGlobalScopeStorage,
 }
 
@@ -291,23 +287,7 @@ pub enum VariableKind {
 impl HIRContext {
     pub fn new() -> Self {
         return HIRContext {
-            functions: IndexStorage::new(),
-            static_variables: IndexStorage::new(),
-            function_contexts: vec![],
-            function_declarations: vec![],
-            struct_func_impls: HashMap::new(),
             global_scope: HIRGlobalScopeStorage::new(),
-        };
-    }
-
-    pub fn translate_function<K: DiagnosticSpanOrigin>(
-        &self,
-        func_hash: u64,
-        origin: &K,
-    ) -> DiagnosticResult<usize> {
-        return match self.functions.get_index(func_hash) {
-            Some(v) => Ok(v),
-            None => return Err(make_cannot_find_func(origin, &func_hash).into()),
         };
     }
 }
@@ -328,15 +308,12 @@ pub fn get_variable<K: DiagnosticSpanOrigin>(
         ));
     }
 
-    match context.static_variables.get_index(hash) {
-        Some(v) => {
-            return Ok((
-                VariableKind::STATIC,
-                context.static_variables.vals[v].clone(),
-                v,
-            ));
-        }
+    let name = EntryKey { name_hash: hash };
 
-        None => return Err(make_cannot_find_var(origin, &hash).into()),
-    };
+    let ind = context.global_scope.scope.value_to_ind
+        [&context.global_scope.get_base(name.clone(), origin)?];
+
+    let t = context.global_scope.get_static_variable(name, origin)?;
+
+    Ok((VariableKind::STATIC, t, ind))
 }
