@@ -45,6 +45,7 @@ dependencies = [
 name = "astoir_hir"
 version = "0.1.0"
 dependencies = [
+ "compiler_global_scope",
  "compiler_typing",
  "compiler_utils",
  "diagnostics",

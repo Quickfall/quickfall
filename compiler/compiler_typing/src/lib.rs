@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use compiler_global_scope::GlobalScopeStorage;
+use compiler_global_scope::{GlobalScopeStorage, entry::GlobalStorageEntryType};
 use compiler_utils::hash::HashedString;
 use diagnostics::DiagnosticResult;
 
@@ -18,6 +18,7 @@ pub mod tree;
 pub mod utils;
 
 pub type TypedGlobalScope = GlobalScopeStorage<Type, RawType>;
+pub type TypedGlobalScopeEntry = GlobalStorageEntryType<Type, RawType>;
 
 /// A function contained within a type.
 pub type TypedFunction = (Vec<(u64, TypeReference)>, Option<TypeReference>);
