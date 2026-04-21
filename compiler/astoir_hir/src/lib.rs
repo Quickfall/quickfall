@@ -4,4 +4,5 @@
 pub mod ctx;
 pub mod nodes;
 pub mod resolve;
+pub mod scope;
 pub mod structs;
