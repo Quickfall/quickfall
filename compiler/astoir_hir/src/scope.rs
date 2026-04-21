@@ -1,7 +1,11 @@
 //! HIR version of the global scope in order to store descriptors and implementations
 
+use std::collections::btree_map::Entry;
+
 use compiler_global_scope::key::EntryKey;
-use compiler_typing::{TypedGlobalScope, TypedGlobalScopeEntry, raw::RawType, tree::Type};
+use compiler_typing::{
+    TypedGlobalScope, TypedGlobalScopeEntry, bounds::traits, raw::RawType, tree::Type,
+};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin};
 
 use crate::{ctx::HIRFunction, nodes::HIRNode};
@@ -110,5 +114,86 @@ impl HIRGlobalScopeStorage {
     ) -> DiagnosticResult<usize> {
         self.scope
             .append(name, TypedGlobalScopeEntry::TypeAlias(t), origin)
+    }
+
+    pub fn get_base<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<TypedGlobalScopeEntry> {
+        self.scope.get_base(name, origin)
+    }
+
+    pub fn get_type<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<RawType> {
+        self.scope.get_type(name, origin)
+    }
+
+    pub fn get_static_variable<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<Type> {
+        self.scope.get_static_variable(name, origin)
+    }
+
+    pub fn get_function_base<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<HIRFunction> {
+        let ind = self.scope.get_function_base(name, origin)?;
+
+        return Ok(self.descriptors[ind].clone());
+    }
+
+    pub fn get_function_impl<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<Box<HIRNode>> {
+        let ind = self.scope.get_function_impl(name, origin)?;
+
+        return Ok(self.implementations[ind].clone());
+    }
+
+    pub fn get_implless_function<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<HIRFunction> {
+        let ind = self.scope.get_implless_function(name, origin)?;
+
+        return Ok(self.descriptors[ind].clone());
+    }
+
+    pub fn get_exact_function<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<(HIRFunction, Box<HIRNode>)> {
+        let inds = self.scope.get_exact_function(name, origin)?;
+
+        return Ok((
+            self.descriptors[inds.0].clone(),
+            self.implementations[inds.1].clone(),
+        ));
+    }
+
+    pub fn get_exact_struct_function<K: DiagnosticSpanOrigin>(
+        &self,
+        name: EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<(HIRFunction, Box<HIRNode>, RawType)> {
+        let res = self.scope.get_exact_struct_function(name, origin)?;
+
+        return Ok((
+            self.descriptors[res.0].clone(),
+            self.implementations[res.1].clone(),
+            res.2,
+        ));
     }
 }
