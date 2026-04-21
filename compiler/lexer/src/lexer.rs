@@ -42,7 +42,7 @@ const USE_KEYWORD_HASH: u64 = hash!("use");
 pub fn lexer_parse_file(file_path: &String) -> DiagnosticResult<Vec<LexerToken>> {
     let contents: String = match fs::read_to_string(file_path) {
         Ok(v) => v,
-        Err(_) => panic!("Couldn't read the file"),
+        Err(_) => panic!("Couldn't read the file {}", file_path),
     };
 
     let mut tokens: Vec<LexerToken> = Vec::new();

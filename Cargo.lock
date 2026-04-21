@@ -645,7 +645,11 @@ dependencies = [
 name = "lsp"
 version = "0.1.0"
 dependencies = [
+ "ast",
+ "ast_parser",
+ "astoir",
  "diagnostics",
+ "lexer",
  "tokio",
  "tower-lsp",
 ]
