@@ -4,7 +4,10 @@ use compiler_global_scope::key::EntryKey;
 use compiler_typing::{TypedGlobalScope, TypedGlobalScopeEntry, raw::RawType, tree::Type};
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin};
 
-use crate::{ctx::HIRFunction, nodes::HIRNode};
+use crate::{
+    ctx::{HIRBranchedContext, HIRFunction, HIRFunctionImpl},
+    nodes::HIRNode,
+};
 
 /// The HIR version of `GlobalScopeStorage`. Contains the descriptors and implementations.
 /// Every function to append, gather will automatically handle descriptors and implementations if needed
@@ -12,7 +15,7 @@ use crate::{ctx::HIRFunction, nodes::HIRNode};
 pub struct HIRGlobalScopeStorage {
     pub scope: TypedGlobalScope,
     pub descriptors: Vec<HIRFunction>,
-    pub implementations: Vec<Box<HIRNode>>,
+    pub implementations: Vec<HIRFunctionImpl>,
 }
 
 impl HIRGlobalScopeStorage {
@@ -39,10 +42,11 @@ impl HIRGlobalScopeStorage {
         name: EntryKey,
         descriptor: HIRFunction,
         implementation: Box<HIRNode>,
+        brctx: HIRBranchedContext,
         origin: &K,
     ) -> DiagnosticResult<usize> {
         self.descriptors.push(descriptor);
-        self.implementations.push(implementation);
+        self.implementations.push((brctx, implementation));
 
         self.scope.append(
             name,
@@ -74,11 +78,12 @@ impl HIRGlobalScopeStorage {
         name: EntryKey,
         descriptor: HIRFunction,
         implementation: Box<HIRNode>,
+        brctx: HIRBranchedContext,
         struct_type: RawType,
         origin: &K,
     ) -> DiagnosticResult<usize> {
         self.descriptors.push(descriptor);
-        self.implementations.push(implementation);
+        self.implementations.push((brctx, implementation));
 
         let ind = self.scope.value_to_ind[&TypedGlobalScopeEntry::Type(struct_type)];
 
@@ -151,7 +156,7 @@ impl HIRGlobalScopeStorage {
         &self,
         name: EntryKey,
         origin: &K,
-    ) -> DiagnosticResult<Box<HIRNode>> {
+    ) -> DiagnosticResult<HIRFunctionImpl> {
         let ind = self.scope.get_function_impl(name, origin)?;
 
         return Ok(self.implementations[ind].clone());
@@ -171,7 +176,7 @@ impl HIRGlobalScopeStorage {
         &self,
         name: EntryKey,
         origin: &K,
-    ) -> DiagnosticResult<(HIRFunction, Box<HIRNode>)> {
+    ) -> DiagnosticResult<(HIRFunction, HIRFunctionImpl)> {
         let inds = self.scope.get_exact_function(name, origin)?;
 
         return Ok((
@@ -184,7 +189,7 @@ impl HIRGlobalScopeStorage {
         &self,
         name: EntryKey,
         origin: &K,
-    ) -> DiagnosticResult<(HIRFunction, Box<HIRNode>, RawType)> {
+    ) -> DiagnosticResult<(HIRFunction, HIRFunctionImpl, RawType)> {
         let res = self.scope.get_exact_struct_function(name, origin)?;
 
         return Ok((

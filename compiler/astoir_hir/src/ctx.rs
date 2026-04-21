@@ -12,6 +12,7 @@ use diagnostics::{
 use crate::{nodes::HIRNode, scope::HIRGlobalScopeStorage, structs::HIRStructContainer};
 
 pub type HIRFunction = (Option<Type>, Vec<(u64, Type)>, String);
+pub type HIRFunctionImpl = (HIRBranchedContext, Box<HIRNode>);
 
 /// The function HIR context. Contains a mapping from element name hash to element index and other variable information.
 /// Uses a branch based system to contain variables.
