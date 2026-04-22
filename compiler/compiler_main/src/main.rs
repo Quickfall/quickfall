@@ -1,6 +1,6 @@
 use std::{
     fs,
-    path::{Path, PathBuf},
+    path::PathBuf,
     time::Instant,
 };
 
@@ -43,7 +43,7 @@ fn main() {
             out,
             bridge,
             format,
-            linker,
+            linker: _,
             input,
         } => {
             let needs_dir = input.len() > 1 && format != OutputFormat::Executable;

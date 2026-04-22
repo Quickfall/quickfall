@@ -13,12 +13,12 @@ pub fn run_check(path: String, layer: IRLayer) {
 
     match layer {
         IRLayer::HIR => {
-            let hir = run_astoir_hir(ast.unwrap());
+            let _hir = run_astoir_hir(ast.unwrap());
             quietlyquit_if_errors!();
         }
 
         IRLayer::MIR => {
-            let mir = run_astoir_mir(ast.unwrap());
+            let _mir = run_astoir_mir(ast.unwrap());
             quietlyquit_if_errors!();
         }
     }
