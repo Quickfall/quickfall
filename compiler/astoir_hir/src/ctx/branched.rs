@@ -300,4 +300,5 @@ pub struct HIRBranchedEndingPoint {
 pub enum EndingPointKind {
     Return,
     Crash,
+    NoneReturn,
 }
