@@ -74,7 +74,7 @@ impl HIRBranchedContext {
     }
 
     /// Checks whenever the code is currently beyond an ending point and thus is invalid
-    pub fn is_code_alive(&mut self) -> bool {
+    pub fn is_code_alive(&self) -> bool {
         for ending in &self.ending_points {
             let end = match self.ending_eras.get(&ending.introduced_in_era) {
                 Some(v) => *v,
@@ -87,6 +87,13 @@ impl HIRBranchedContext {
         }
 
         return true;
+    }
+
+    pub fn introduce_ending_point(&mut self, point: EndingPointKind) {
+        self.ending_points.push(HIRBranchedEndingPoint {
+            introduced_in_era: self.current_branch,
+            kind: point,
+        })
     }
 
     /// Introduces a new variable in the next branch era

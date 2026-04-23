@@ -1,11 +1,17 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{
-    ctx::{HIRContext, branched::HIRBranchedContext},
+    ctx::{
+        HIRContext,
+        branched::{EndingPointKind, HIRBranchedContext},
+    },
     nodes::{HIRNode, HIRNodeKind},
 };
 use compiler_global_scope::key::EntryKey;
 use compiler_typing::TypedGlobalScopeEntry;
-use diagnostics::{DiagnosticResult, builders::make_already_in_scope};
+use diagnostics::{
+    DiagnosticResult,
+    builders::{make_already_in_scope, make_ending_point_missing},
+};
 
 use crate::{lower_ast_body, types::lower_ast_type, values::lower_ast_value};
 
@@ -114,6 +120,14 @@ pub fn lower_ast_function_declaration(
         let body = lower_ast_body(context, &mut curr_ctx, body, false)?;
 
         curr_ctx.end_branch(branch);
+
+        if ret_type.is_none() {
+            curr_ctx.introduce_ending_point(EndingPointKind::NoneReturn);
+        }
+
+        if curr_ctx.is_code_alive() {
+            return Err(make_ending_point_missing(&*node).into());
+        }
 
         for var in 0..curr_ctx.variables.len() {
             if curr_ctx.is_eligible_for_ssa(var) {
