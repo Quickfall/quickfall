@@ -1,4 +1,9 @@
 # Quickfall
+![GitHub Release](https://img.shields.io/github/v/release/Quickfall/quickfall?include_prereleases)
+![GitHub repo size](https://img.shields.io/github/repo-size/Quickfall/quickfall)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/Quickfall/Quickfall)
+
+
 Quickfall is a programming language focusing  on allowing everyone to build fast, reliable and safe software.
 
 ## Why Quickfall

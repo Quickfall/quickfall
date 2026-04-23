@@ -11,6 +11,7 @@ lexer = { path = "../lexer" }
 llvm_ir_bridge = { path = "../llvm_ir_bridge", optional = true, default-features = false }
 diagnostics = { path = "../diagnostics" }
 compiler_utils = { path = "../compiler_utils" }
+clap = { version = "4.0", features = ["derive"] }
 
 [features]
 llvm = ["llvm_ir_bridge"]

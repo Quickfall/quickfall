@@ -65,6 +65,10 @@ pub fn lower_ast_type<K: DiagnosticSpanOrigin>(
                 {
                     return Ok(Type::Generic(t, vec![], vec![]));
                 } else {
+
+					println!("{}: {:#?}", hash, lower);
+					println!("{:#?}", context.global_scope.get_type(EntryKey { name_hash: hash }, origin));
+
                     let ind = match context.global_scope.append(
                         EntryKey { name_hash: hash },
                         GlobalStorageEntryType::Type(lower),

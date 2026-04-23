@@ -70,6 +70,18 @@ pub fn dump_diagnostics() {
     })
 }
 
+pub fn clear_diagnostics() {
+    DIAGNOSTIC_CONTAINER.with_borrow_mut(|f| f.diagnostics.clear())
+}
+
+pub fn has_diagnostics() -> bool {
+    DIAGNOSTIC_CONTAINER.with_borrow(|f| return !f.diagnostics.is_empty())
+}
+
+pub fn get_diagnostics() -> Vec<Diagnostic> {
+    DIAGNOSTIC_CONTAINER.with_borrow(|f| return f.diagnostics.clone())
+}
+
 pub fn move_current_diagnostic_pos(pos: SpanPosition) {
     CURR_DIAGNOSTIC_POS.with_borrow_mut(|f| {
         *f = Some(pos);
