@@ -3,7 +3,10 @@ use ast::{
     tree::{ASTTreeNode, ASTTreeNodeKind},
 };
 use astoir_hir::{
-    ctx::{HIRContext, branched::HIRBranchedContext},
+    ctx::{
+        HIRContext,
+        branched::{EndingPointKind, HIRBranchedContext},
+    },
     nodes::{HIRNode, HIRNodeKind},
 };
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos};
@@ -70,6 +73,8 @@ pub fn lower_ast_body_node(
             } else {
                 v = Some(lower_ast_value(context, curr_ctx, val.unwrap())?)
             }
+
+            curr_ctx.introduce_ending_point(EndingPointKind::Return);
 
             return Ok(Box::new(HIRNode::new(
                 HIRNodeKind::ReturnStatement { value: v },
