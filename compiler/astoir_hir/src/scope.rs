@@ -8,7 +8,7 @@ use diagnostics::{
 };
 
 use crate::{
-    ctx::{HIRBranchedContext, HIRFunction, HIRFunctionImpl},
+    ctx::branched::{HIRBranchedContext, HIRFunction, HIRFunctionImpl},
     nodes::HIRNode,
 };
 

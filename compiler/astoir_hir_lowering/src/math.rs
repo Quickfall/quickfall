@@ -1,6 +1,6 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{
-    ctx::{HIRBranchedContext, HIRContext},
+    ctx::{HIRContext, branched::HIRBranchedContext},
     nodes::{HIRNode, HIRNodeKind},
 };
 use diagnostics::{

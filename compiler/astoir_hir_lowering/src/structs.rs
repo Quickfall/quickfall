@@ -5,7 +5,7 @@ use std::{
 
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{
-    ctx::{HIRBranchedContext, HIRContext},
+    ctx::{HIRContext, branched::HIRBranchedContext},
     nodes::{HIRNode, HIRNodeKind},
 };
 use compiler_global_scope::{entry::GlobalStorageEntryType, key::EntryKey};

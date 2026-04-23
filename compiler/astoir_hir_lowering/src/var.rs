@@ -1,6 +1,6 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{
-    ctx::{HIRBranchedContext, HIRContext, VariableKind, get_variable},
+    ctx::{HIRContext, VariableKind, branched::HIRBranchedContext, get_variable},
     nodes::{HIRNode, HIRNodeKind},
 };
 use compiler_global_scope::key::EntryKey;

@@ -19,7 +19,7 @@ use diagnostics::{
 };
 
 use crate::{
-    ctx::{HIRBranchedContext, HIRContext},
+    ctx::{HIRContext, branched::HIRBranchedContext},
     resolve::resolve_to_type,
     structs::{HIRIfBranch, StructLRUStep},
 };

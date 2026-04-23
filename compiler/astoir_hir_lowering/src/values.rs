@@ -1,6 +1,6 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{
-    ctx::{HIRBranchedContext, HIRContext, get_variable},
+    ctx::{HIRContext, branched::HIRBranchedContext, get_variable},
     nodes::{HIRNode, HIRNodeKind},
     structs::StructLRUStep,
 };
