@@ -6,7 +6,6 @@ use inkwell::{
     types::{BasicMetadataTypeEnum, BasicTypeEnum, IntType, PointerType},
     values::{BasicValueEnum, FunctionValue},
 };
-use rand::{Rng, distributions::Alphanumeric};
 
 pub type LLVMBlock = LLVMSiblingObject<BasicBlock<'static>>;
 pub type LLVMBasicValue = LLVMSiblingObject<BasicValueEnum<'static>>;
@@ -83,14 +82,4 @@ impl<T: Clone> Deref for LLVMSiblingObject<T> {
     fn deref(&self) -> &Self::Target {
         return &self.inner;
     }
-}
-
-pub fn get_block_name() -> String {
-    let s = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(24)
-        .map(char::from)
-        .collect();
-
-    return s;
 }

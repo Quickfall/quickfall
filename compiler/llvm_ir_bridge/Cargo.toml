@@ -9,4 +9,3 @@ inkwell = { git = "https://github.com/TheDan64/inkwell", features = [
 ] }
 astoir_mir = { path = "../astoir_mir" }
 compiler_typing = { path = "../compiler_typing" }
-rand = "0.8"
