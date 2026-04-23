@@ -37,6 +37,7 @@ pub struct HIRBranchedContext {
     pub ending_eras: HashMap<usize, usize>,
 
     pub variables: Vec<HIRBranchedVariable>, // index is the resolved index
+    pub ending_points: Vec<HIRBranchedEndingPoint>,
 
     pub current_branch: usize,
     pub current_element_index: usize,
@@ -47,7 +48,8 @@ impl HIRBranchedContext {
         HIRBranchedContext {
             hash_to_ind: HashMap::new(),
             ending_eras: HashMap::new(),
-            variables: Vec::new(),
+            variables: vec![],
+            ending_points: vec![],
             current_branch: 0,
             current_element_index: 0,
         }
@@ -69,6 +71,22 @@ impl HIRBranchedContext {
         self.ending_eras.insert(branch, self.current_branch);
 
         return self.current_branch;
+    }
+
+    /// Checks whenever the code is currently beyond an ending point and thus is invalid
+    pub fn is_code_alive(&mut self) -> bool {
+        for ending in &self.ending_points {
+            let end = match self.ending_eras.get(&ending.introduced_in_era) {
+                Some(v) => *v,
+                None => ending.introduced_in_era,
+            };
+
+            if self.current_branch >= end {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// Introduces a new variable in the next branch era
@@ -270,4 +288,16 @@ pub struct HIRBranchedVariable {
 
     pub has_default: bool,
     pub introduced_values: HashSet<usize>, // TODO: try to potentially reduce this
+}
+
+#[derive(Clone, Debug)]
+pub struct HIRBranchedEndingPoint {
+    pub introduced_in_era: usize,
+    pub kind: EndingPointKind,
+}
+
+#[derive(Clone, Debug)]
+pub enum EndingPointKind {
+    Return,
+    Crash,
 }
