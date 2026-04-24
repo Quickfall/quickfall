@@ -13,6 +13,5 @@ members = [
 	"compiler/llvm_ir_bridge",
 	"compiler/diagnostics",
 	"compiler/prelude",
-	"compiler/compiler_global_scope",
 	"lsp",
 ]

@@ -12,4 +12,3 @@ compiler_utils = { path = "../compiler_utils" }
 lexer = { path = "../lexer" }
 ast_parser = { path = "../ast_parser" }
 prelude = { path = "../prelude" }
-compiler_global_scope = { path = "../compiler_global_scope" }
