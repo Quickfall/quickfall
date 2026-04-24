@@ -1,6 +1,7 @@
 //! HIR function related definitions
 
 use compiler_typing::references::TypeReference;
+use compiler_utils::utils::maybe::Maybe;
 
 use crate::{ctx::branched::HIRBranchedContext, nodes::HIRNode};
 
@@ -16,8 +17,8 @@ pub struct HIRNewFunction {
     pub return_type: Option<TypeReference>,
     pub arguments: Vec<HIRFunctionArgument>,
 
-    pub branched_ctx: Option<HIRBranchedContext>,
-    pub implementation: Option<Box<HIRNode>>,
+    pub branched_ctx: Maybe<HIRBranchedContext>,
+    pub implementation: Maybe<Box<HIRNode>>,
 
     /// The number of times this function is called, allows for dead code elimination
     pub usage_count: usize,
@@ -29,8 +30,8 @@ impl HIRNewFunction {
         HIRNewFunction {
             return_type,
             arguments: args,
-            branched_ctx: None,
-            implementation: None,
+            branched_ctx: Maybe::None,
+            implementation: Maybe::None,
             usage_count: 0,
         }
     }
@@ -44,8 +45,8 @@ impl HIRNewFunction {
         HIRNewFunction {
             return_type,
             arguments: args,
-            branched_ctx: Some(branched_ctx),
-            implementation: None,
+            branched_ctx: Maybe::Some(branched_ctx),
+            implementation: Maybe::None,
             usage_count: 0,
         }
     }
@@ -65,8 +66,8 @@ impl HIRNewFunction {
         HIRNewFunction {
             return_type,
             arguments: args,
-            branched_ctx: Some(branched_ctx),
-            implementation: Some(implementation),
+            branched_ctx: Maybe::Some(branched_ctx),
+            implementation: Maybe::Some(implementation),
             usage_count: 0,
         }
     }
