@@ -36,7 +36,7 @@ pub const TRAIT_CPU_SUPPORTED: u64 = hash!("cpusupported");
 pub const TRAIT_STRING: u64 = hash!("stringlike");
 pub const TRAIT_STATIC: u64 = hash!("static");
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum Trait {
     Numeric,
     Signed,
@@ -67,6 +67,7 @@ impl Display for Trait {
     }
 }
 
+#[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum TraitBoundMember {
     /// Selects a trait to require it
     Select(Trait),
@@ -76,6 +77,7 @@ pub enum TraitBoundMember {
 }
 
 /// Represents the actual trait bound. Is used to make sure that the type is compatible
+#[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub struct TraitBound {
     pub members: Vec<TraitBoundMember>,
 }
@@ -99,5 +101,29 @@ impl TraitBound {
         }
 
         return Ok(());
+    }
+}
+
+impl Display for TraitBound {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for member in &self.members {
+            write!(f, "{} ", member)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl Display for TraitBoundMember {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Self::Exclude(v) = self {
+            write!(f, "#{}", v)?;
+        }
+
+        if let Self::Select(v) = self {
+            write!(f, "!{}", v)?;
+        }
+
+        Ok(())
     }
 }

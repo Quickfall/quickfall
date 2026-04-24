@@ -1,6 +1,8 @@
 //! Normal bounds are kind of bounds that allow to require specific functions or fields on the given type.
 //! Thus allowing you to use these with generics.
 
+use std::fmt::Display;
+
 use diagnostics::{
     MaybeDiagnostic,
     builders::{make_bound_fail_field, make_bound_fail_function},
@@ -8,7 +10,9 @@ use diagnostics::{
 
 use crate::{TypedGlobalScope, TypedResolvedFunction, tree::Type};
 
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct NormalBound {
+    pub name: String,
     pub functions: Vec<(u64, TypedResolvedFunction)>,
     pub fields: Vec<(u64, Type)>,
 }
@@ -53,5 +57,11 @@ impl NormalBound {
         }
 
         return Ok(());
+    }
+}
+
+impl Display for NormalBound {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
     }
 }

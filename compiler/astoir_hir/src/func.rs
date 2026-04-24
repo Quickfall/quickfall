@@ -1,6 +1,6 @@
 //! HIR function related definitions
 
-use compiler_typing::references::TypeReference;
+use compiler_typing::{references::TypeReference, tree::Type};
 use compiler_utils::utils::maybe::Maybe;
 
 use crate::{ctx::branched::HIRBranchedContext, nodes::HIRNode};
@@ -15,7 +15,7 @@ pub type HIRFunctionArgument = (u64, TypeReference);
 #[doc = "Experimental: will progressively be propagated"]
 #[derive(Debug)]
 pub struct HIRNewFunction {
-    pub return_type: Option<TypeReference>,
+    pub return_type: Option<Type>,
     pub arguments: Vec<HIRFunctionArgument>,
 
     pub branched_ctx: Maybe<HIRBranchedContext>,

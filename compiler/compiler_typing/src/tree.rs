@@ -7,7 +7,7 @@ use diagnostics::{
 };
 
 use crate::{
-    SizedType, StructuredType, TypedFunction, TypedGlobalScope, raw::RawType,
+    SizedType, StructuredType, TypedFunction, TypedGlobalScope, bounds::TypeSelector, raw::RawType,
     references::TypeReference, utils::get_pointer_size,
 };
 
@@ -19,6 +19,8 @@ pub enum Type {
     /// 1: The type parameters
     /// 2: The size specifiers
     Generic(RawType, Vec<Box<Type>>, Vec<usize>), // Potential lowering to base-sized
+
+    TypeParameter(Vec<TypeSelector>),
 
     /// A generic type node but lowered. Represents a concrete type.
     GenericLowered(RawType),
@@ -201,6 +203,7 @@ impl Type {
     /// Cheaply lowers the generic just to avoid a display crash
     pub fn faulty_lowering_generic(&self, storage: &TypedGlobalScope) -> Type {
         match self {
+            Type::TypeParameter(_) => self.clone(),
             Type::Array(a, b) => Type::Array(*a, Box::new(b.faulty_lowering_generic(storage))),
             Type::Pointer(a, b) => Type::Pointer(*a, Box::new(b.faulty_lowering_generic(storage))),
             Type::Reference(t) => Type::Reference(Box::new(t.faulty_lowering_generic(storage))),
@@ -278,6 +281,16 @@ impl Display for Type {
                 format!("{}[{}]", inner, size)
             }
 
+            Self::TypeParameter(selectors) => {
+                let mut s = "".to_string();
+
+                for select in selectors {
+                    s += &format!("{} ", select);
+                }
+
+                s
+            }
+
             Self::Generic(low, _, _) => {
                 format!("{}", low)
             }
@@ -315,6 +328,7 @@ impl SizedType for Type {
             Self::Reference(_) => get_pointer_size(),
             Self::Generic(e, _, _) => e.get_size(t, compacted_size, storage),
             Self::GenericLowered(e) => e.get_size(t, compacted_size, storage),
+            Self::TypeParameter(_) => panic!("Tried using get_size on type parameter"),
         };
     }
 }

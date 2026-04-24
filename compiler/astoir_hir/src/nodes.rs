@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 
+use compiler_global_scope::key::EntryKey;
 use compiler_typing::{
     TypedGlobalScopeEntry, enums::RawEnumTypeContainer, raw::RawType, references::TypeReference,
     structs::RawStructTypeContainer, transmutation::array::can_transmute_inner, tree::Type,
@@ -493,29 +494,15 @@ impl HIRNode {
                 arguments: _,
             } => {
                 //let f = context.functions.vals[*func_name].0.clone();
-                let ind = match &context.global_scope.scope.entries[*func_name].entry_type {
-                    TypedGlobalScopeEntry::Function {
-                        descriptor_ind,
-                        impl_ind: _,
-                    } => descriptor_ind,
-                    TypedGlobalScopeEntry::ImplLessFunction(ind) => ind,
-                    TypedGlobalScopeEntry::StructFunction {
-                        descriptor_ind,
-                        impl_ind: _,
-                        struct_type: _,
-                    } => descriptor_ind,
-
-                    _ => {
-                        make_expected_simple_error_originless(
-                            &"function".to_string(),
-                            &context.global_scope.scope.entries[*func_name].entry_type,
-                        );
-
-                        return None;
-                    }
-                };
-
-                return context.global_scope.descriptors[*ind].clone().0;
+                return context
+                    .global_scope
+                    .get_function(
+                        EntryKey {
+                            name_hash: *func_name,
+                        },
+                        origin,
+                    )?
+                    .return_type;
             }
 
             _ => return None,
