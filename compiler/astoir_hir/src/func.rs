@@ -13,6 +13,7 @@ pub type HIRFunctionArgument = (u64, TypeReference);
 /// This approach allows for us to easily add components like HIRBranchedContexts or impls to existing functions.
 /// Allowing for clean recursion handling
 #[doc = "Experimental: will progressively be propagated"]
+#[derive(Debug)]
 pub struct HIRNewFunction {
     pub return_type: Option<TypeReference>,
     pub arguments: Vec<HIRFunctionArgument>,

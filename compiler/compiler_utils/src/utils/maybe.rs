@@ -1,5 +1,6 @@
 //! A custom result to handle modification cleanly
 
+#[derive(Debug)]
 pub enum Maybe<K> {
     Some(K),
     None,

@@ -4,25 +4,9 @@ use std::{fmt::Display, hash::Hash};
 
 use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_expected_simple_error};
 
-use crate::GlobalStorageIdentifier;
-
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum GlobalStorageEntryType<T: Hash, R: Hash> {
-    Function {
-        descriptor_ind: usize,
-        impl_ind: usize,
-    },
-    ImplLessFunction(usize),
-    HalfImplFunction {
-        descriptor_ind: usize,
-        branch_ctx: usize,
-    },
-    StructFunction {
-        descriptor_ind: usize,
-        impl_ind: usize,
-        struct_type: GlobalStorageIdentifier,
-    },
-
+    Function(usize),
     StaticVariable(T),
 
     TypeAlias(T),
@@ -30,87 +14,14 @@ pub enum GlobalStorageEntryType<T: Hash, R: Hash> {
 }
 
 impl<T: Clone + Hash, R: Clone + Hash> GlobalStorageEntry<T, R> {
-    pub fn as_function<K: DiagnosticSpanOrigin>(
-        &self,
-        origin: &K,
-    ) -> DiagnosticResult<(usize, usize)> {
+    pub fn as_function<K: DiagnosticSpanOrigin>(&self, origin: &K) -> DiagnosticResult<usize> {
         match self.entry_type {
-            GlobalStorageEntryType::Function {
-                descriptor_ind,
-                impl_ind,
-            } => Ok((descriptor_ind, impl_ind)),
+            GlobalStorageEntryType::Function(ind) => Ok(ind),
 
             _ => Err(
                 make_expected_simple_error(origin, &"function".to_string(), &self.entry_type)
                     .into(),
             ),
-        }
-    }
-
-    pub fn as_function_unsafe(&self) -> (usize, usize) {
-        match self.entry_type {
-            GlobalStorageEntryType::Function {
-                descriptor_ind,
-                impl_ind,
-            } => (descriptor_ind, impl_ind),
-
-            _ => panic!(),
-        }
-    }
-
-    pub fn as_implless_function<K: DiagnosticSpanOrigin>(
-        &self,
-        origin: &K,
-    ) -> DiagnosticResult<usize> {
-        match self.entry_type {
-            GlobalStorageEntryType::ImplLessFunction(ind) => Ok(ind),
-
-            _ => Err(make_expected_simple_error(
-                origin,
-                &"implless function".to_string(),
-                &self.entry_type,
-            )
-            .into()),
-        }
-    }
-
-    pub fn as_implless_function_unsafe(&self) -> usize {
-        match self.entry_type {
-            GlobalStorageEntryType::ImplLessFunction(ind) => ind,
-
-            _ => panic!(),
-        }
-    }
-
-    pub fn as_struct_function<K: DiagnosticSpanOrigin>(
-        &self,
-        origin: &K,
-    ) -> DiagnosticResult<(usize, usize, GlobalStorageIdentifier)> {
-        match self.entry_type {
-            GlobalStorageEntryType::StructFunction {
-                descriptor_ind,
-                impl_ind,
-                struct_type,
-            } => Ok((descriptor_ind, impl_ind, struct_type)),
-
-            _ => Err(make_expected_simple_error(
-                origin,
-                &"struct function".to_string(),
-                &self.entry_type,
-            )
-            .into()),
-        }
-    }
-
-    pub fn as_struct_function_unsafe(&self) -> (usize, usize, GlobalStorageIdentifier) {
-        match self.entry_type {
-            GlobalStorageEntryType::StructFunction {
-                descriptor_ind,
-                impl_ind,
-                struct_type,
-            } => (descriptor_ind, impl_ind, struct_type),
-
-            _ => panic!(),
         }
     }
 
@@ -184,10 +95,7 @@ pub struct GlobalStorageEntry<T: Hash, R: Hash> {
 impl<T: Hash, R: Hash> Display for GlobalStorageEntryType<T, R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
-            Self::HalfImplFunction { .. } => "function",
-            Self::Function { .. } => "function",
-            Self::ImplLessFunction(_) => "function",
-            Self::StructFunction { .. } => "function",
+            Self::Function(_) => "function",
             Self::StaticVariable(_) => "static variable",
             Self::Type(_) => "type",
             Self::TypeAlias(_) => "type (alias)",

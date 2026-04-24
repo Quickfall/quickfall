@@ -7,28 +7,21 @@ use diagnostics::{
     builders::{make_already_in_scope, make_cannot_find},
 };
 
-use crate::{
-    ctx::branched::{HIRBranchedContext, HIRFunction, HIRFunctionImpl},
-    nodes::HIRNode,
-};
+use crate::func::HIRNewFunction;
 
 /// The HIR version of `GlobalScopeStorage`. Contains the descriptors and implementations.
 /// Every function to append, gather will automatically handle descriptors and implementations if needed
 #[derive(Debug)]
 pub struct HIRGlobalScopeStorage {
     pub scope: TypedGlobalScope,
-    pub descriptors: Vec<HIRFunction>,
-    pub implementations: Vec<HIRFunctionImpl>,
-    pub contexts: Vec<HIRBranchedContext>,
+    pub functions: Vec<HIRNewFunction>,
 }
 
 impl HIRGlobalScopeStorage {
     pub fn new() -> Self {
         HIRGlobalScopeStorage {
             scope: TypedGlobalScope::new(),
-            descriptors: vec![],
-            implementations: vec![],
-            contexts: vec![],
+            functions: vec![],
         }
     }
 
@@ -57,82 +50,14 @@ impl HIRGlobalScopeStorage {
     pub fn append_func<K: DiagnosticSpanOrigin>(
         &mut self,
         name: EntryKey,
-        descriptor: HIRFunction,
-        implementation: Box<HIRNode>,
-        brctx: HIRBranchedContext,
+        func: HIRNewFunction,
         origin: &K,
     ) -> DiagnosticResult<usize> {
-        self.descriptors.push(descriptor);
-        self.implementations.push(implementation);
-        self.contexts.push(brctx);
+        self.functions.push(func);
 
         self.scope.append(
             name,
-            TypedGlobalScopeEntry::Function {
-                descriptor_ind: self.scope.descriptor_counter,
-                impl_ind: self.scope.impl_counter,
-            },
-            origin,
-        )
-    }
-
-    pub fn append_half_function<K: DiagnosticSpanOrigin>(
-        &mut self,
-        name: EntryKey,
-        descriptor: HIRFunction,
-        brctx: HIRBranchedContext,
-        origin: &K,
-    ) -> DiagnosticResult<usize> {
-        self.descriptors.push(descriptor);
-        self.contexts.push(brctx);
-
-        self.scope.append(
-            name,
-            TypedGlobalScopeEntry::HalfImplFunction {
-                descriptor_ind: self.scope.descriptor_counter,
-                branch_ctx: self.scope.ctx_counter,
-            },
-            origin,
-        )
-    }
-
-    pub fn append_implless_function<K: DiagnosticSpanOrigin>(
-        &mut self,
-        name: EntryKey,
-        descriptor: HIRFunction,
-        origin: &K,
-    ) -> DiagnosticResult<usize> {
-        self.descriptors.push(descriptor);
-
-        self.scope.append(
-            name,
-            TypedGlobalScopeEntry::ImplLessFunction(self.scope.descriptor_counter),
-            origin,
-        )
-    }
-
-    pub fn append_struct_function<K: DiagnosticSpanOrigin>(
-        &mut self,
-        name: EntryKey,
-        descriptor: HIRFunction,
-        implementation: Box<HIRNode>,
-        brctx: HIRBranchedContext,
-        struct_type: RawType,
-        origin: &K,
-    ) -> DiagnosticResult<usize> {
-        self.descriptors.push(descriptor);
-        self.implementations.push(implementation);
-        self.contexts.push(brctx);
-
-        let ind = self.scope.value_to_ind[&TypedGlobalScopeEntry::Type(struct_type)];
-
-        self.scope.append(
-            name,
-            TypedGlobalScopeEntry::StructFunction {
-                descriptor_ind: self.scope.descriptor_counter,
-                impl_ind: self.scope.impl_counter,
-                struct_type: ind,
-            },
+            TypedGlobalScopeEntry::Function(self.scope.function_counter),
             origin,
         )
     }
@@ -193,74 +118,13 @@ impl HIRGlobalScopeStorage {
         self.scope.get_static_variable(name, origin)
     }
 
-    pub fn get_function_base<K: DiagnosticSpanOrigin>(
+    pub fn get_function<K: DiagnosticSpanOrigin>(
         &self,
         name: EntryKey,
         origin: &K,
-    ) -> DiagnosticResult<HIRFunction> {
-        let ind = self.scope.get_function_base(name, origin)?;
+    ) -> DiagnosticResult<&HIRNewFunction> {
+        let ind = self.scope.get_function(name, origin)?;
 
-        return Ok(self.descriptors[ind].clone());
-    }
-
-    pub fn get_function_ctx<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<HIRBranchedContext> {
-        let ind = self.scope.get_function_ctx(name, origin)?;
-
-        return Ok(self.contexts[ind].clone());
-    }
-
-    pub fn get_function_impl<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<(HIRFunctionImpl, HIRBranchedContext)> {
-        let ind = self.scope.get_function_impl(name, origin)?;
-
-        return Ok((
-            self.implementations[ind].clone(),
-            self.contexts[ind].clone(),
-        ));
-    }
-
-    pub fn get_implless_function<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<HIRFunction> {
-        let ind = self.scope.get_implless_function(name, origin)?;
-
-        return Ok(self.descriptors[ind].clone());
-    }
-
-    pub fn get_exact_function<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<(HIRFunction, HIRFunctionImpl)> {
-        let inds = self.scope.get_exact_function(name, origin)?;
-
-        return Ok((
-            self.descriptors[inds.0].clone(),
-            self.implementations[inds.1].clone(),
-        ));
-    }
-
-    pub fn get_exact_struct_function<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<(HIRFunction, HIRFunctionImpl, HIRBranchedContext, RawType)> {
-        let res = self.scope.get_exact_struct_function(name, origin)?;
-
-        return Ok((
-            self.descriptors[res.0].clone(),
-            self.implementations[res.1].clone(),
-            self.contexts[res.1].clone(),
-            res.2,
-        ));
+        return Ok(&self.functions[ind]);
     }
 }

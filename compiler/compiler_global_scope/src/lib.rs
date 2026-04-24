@@ -22,9 +22,7 @@ pub struct GlobalScopeStorage<T: Hash, R: Hash> {
 
     pub value_to_ind: HashMap<GlobalStorageEntryType<T, R>, usize>,
 
-    pub descriptor_counter: usize,
-    pub impl_counter: usize,
-    pub ctx_counter: usize,
+    pub function_counter: usize,
 }
 
 /// The global storage for every element inside of the scope.
@@ -43,9 +41,7 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
             entry_to_ind: HashMap::new(),
             value_to_ind: HashMap::new(),
             entries: vec![],
-            descriptor_counter: 0,
-            impl_counter: 0,
-            ctx_counter: 0,
+            function_counter: 0,
         }
     }
 
@@ -60,24 +56,7 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
         }
 
         if let GlobalStorageEntryType::Function { .. } = entry {
-            self.descriptor_counter += 1;
-            self.ctx_counter += 1;
-            self.impl_counter += 1;
-        }
-
-        if let GlobalStorageEntryType::ImplLessFunction(_) = entry {
-            self.descriptor_counter += 1;
-        }
-
-        if let GlobalStorageEntryType::StructFunction { .. } = entry {
-            self.descriptor_counter += 1;
-            self.ctx_counter += 1;
-            self.impl_counter += 1;
-        }
-
-        if let GlobalStorageEntryType::HalfImplFunction { .. } = entry {
-            self.descriptor_counter += 1;
-            self.ctx_counter += 1;
+            self.function_counter += 1;
         }
 
         let parent_index = self.entries.len();
@@ -135,7 +114,7 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
         };
     }
 
-    pub fn get_function_base<K: DiagnosticSpanOrigin>(
+    pub fn get_function<K: DiagnosticSpanOrigin>(
         &self,
         name: EntryKey,
         origin: &K,
@@ -143,139 +122,8 @@ impl<T: Clone + Hash + Eq, R: Clone + Hash + Eq> GlobalScopeStorage<T, R> {
         let base = self.get_base(name, origin)?;
 
         return match base {
-            GlobalStorageEntryType::Function {
-                descriptor_ind,
-                impl_ind: _,
-            } => Ok(descriptor_ind),
-            GlobalStorageEntryType::ImplLessFunction(descriptor_ind) => Ok(descriptor_ind),
-            GlobalStorageEntryType::HalfImplFunction {
-                descriptor_ind,
-                branch_ctx: _,
-            } => Ok(descriptor_ind),
-            GlobalStorageEntryType::StructFunction {
-                descriptor_ind,
-                impl_ind: _,
-                struct_type: _,
-            } => Ok(descriptor_ind),
-
+            GlobalStorageEntryType::Function(ind) => Ok(ind),
             _ => Err(make_expected_simple_error(origin, &"function".to_string(), &base).into()),
-        };
-    }
-
-    pub fn get_function_ctx<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<usize> {
-        let base = self.get_base(name, origin)?;
-
-        return match base {
-            GlobalStorageEntryType::Function {
-                descriptor_ind: _,
-                impl_ind,
-            } => Ok(impl_ind),
-
-            GlobalStorageEntryType::StructFunction {
-                descriptor_ind: _,
-                impl_ind,
-                struct_type: _,
-            } => Ok(impl_ind),
-
-            GlobalStorageEntryType::HalfImplFunction {
-                descriptor_ind: _,
-                branch_ctx,
-            } => Ok(branch_ctx),
-
-            _ => Err(
-                make_expected_simple_error(origin, &"function with implementation", &base).into(),
-            ),
-        };
-    }
-
-    pub fn get_function_impl<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<usize> {
-        let base = self.get_base(name, origin)?;
-
-        return match base {
-            GlobalStorageEntryType::Function {
-                descriptor_ind: _,
-                impl_ind,
-            } => Ok(impl_ind),
-            GlobalStorageEntryType::StructFunction {
-                descriptor_ind: _,
-                impl_ind,
-                struct_type: _,
-            } => Ok(impl_ind),
-
-            _ => Err(
-                make_expected_simple_error(origin, &"function with implementation", &base).into(),
-            ),
-        };
-    }
-
-    pub fn get_implless_function<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<usize> {
-        let base = self.get_base(name, origin)?;
-
-        return match base {
-            GlobalStorageEntryType::ImplLessFunction(descriptor_ind) => Ok(descriptor_ind),
-
-            _ => Err(
-                make_expected_simple_error(origin, &"function without implementation", &base)
-                    .into(),
-            ),
-        };
-    }
-
-    pub fn get_exact_function<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<(usize, usize)> {
-        let base = self.get_base(name, origin)?;
-
-        return match base {
-            GlobalStorageEntryType::Function {
-                descriptor_ind,
-                impl_ind,
-            } => Ok((descriptor_ind, impl_ind)),
-
-            _ => Err(make_expected_simple_error(origin, &"function", &base).into()),
-        };
-    }
-
-    pub fn get_exact_struct_function<K: DiagnosticSpanOrigin>(
-        &self,
-        name: EntryKey,
-        origin: &K,
-    ) -> DiagnosticResult<(usize, usize, R)> {
-        let base = self.get_base(name, origin)?;
-
-        return match base {
-            GlobalStorageEntryType::StructFunction {
-                descriptor_ind,
-                impl_ind,
-                struct_type,
-            } => {
-                if let GlobalStorageEntryType::Type(t) =
-                    self.entries[struct_type].entry_type.clone()
-                {
-                    Ok((descriptor_ind, impl_ind, t))
-                } else {
-                    Err(
-                        make_expected_simple_error(origin, &"type", &self.entries[0].entry_type)
-                            .into(),
-                    )
-                }
-            }
-
-            _ => Err(make_expected_simple_error(origin, &"struct function", &base).into()),
         };
     }
 }
