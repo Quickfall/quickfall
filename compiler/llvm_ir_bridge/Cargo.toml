@@ -8,4 +8,3 @@ inkwell = { git = "https://github.com/TheDan64/inkwell", features = [
 	"llvm22-1",
 ] }
 astoir_mir = { path = "../astoir_mir" }
-compiler_typing = { path = "../compiler_typing" }

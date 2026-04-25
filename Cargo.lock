@@ -62,7 +62,6 @@ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 name = "ast"
 version = "0.1.0"
 dependencies = [
- "compiler_typing",
  "compiler_utils",
  "diagnostics",
  "lexer",
@@ -73,7 +72,6 @@ name = "ast_parser"
 version = "0.1.0"
 dependencies = [
  "ast",
- "compiler_typing",
  "compiler_utils",
  "diagnostics",
  "lexer",
@@ -84,44 +82,15 @@ name = "astoir"
 version = "0.1.0"
 dependencies = [
  "ast",
- "astoir_hir",
- "astoir_hir_lowering",
  "astoir_mir",
  "astoir_mir_lowering",
  "diagnostics",
 ]
 
 [[package]]
-name = "astoir_hir"
-version = "0.1.0"
-dependencies = [
- "compiler_global_scope",
- "compiler_typing",
- "compiler_utils",
- "diagnostics",
- "lexer",
-]
-
-[[package]]
-name = "astoir_hir_lowering"
-version = "0.1.0"
-dependencies = [
- "ast",
- "ast_parser",
- "astoir_hir",
- "compiler_global_scope",
- "compiler_typing",
- "compiler_utils",
- "diagnostics",
- "lexer",
- "prelude",
-]
-
-[[package]]
 name = "astoir_mir"
 version = "0.1.0"
 dependencies = [
- "compiler_typing",
  "compiler_utils",
  "diagnostics",
 ]
@@ -130,10 +99,8 @@ dependencies = [
 name = "astoir_mir_lowering"
 version = "0.1.0"
 dependencies = [
- "astoir_hir",
  "astoir_mir",
  "compiler_global_scope",
- "compiler_typing",
  "compiler_utils",
  "diagnostics",
 ]
@@ -268,15 +235,6 @@ dependencies = [
  "diagnostics",
  "lexer",
  "llvm_ir_bridge",
-]
-
-[[package]]
-name = "compiler_typing"
-version = "0.1.0"
-dependencies = [
- "compiler_global_scope",
- "compiler_utils",
- "diagnostics",
 ]
 
 [[package]]
@@ -616,7 +574,6 @@ name = "llvm_ir_bridge"
 version = "0.1.0"
 dependencies = [
  "astoir_mir",
- "compiler_typing",
  "inkwell",
 ]
 
@@ -752,9 +709,7 @@ dependencies = [
 name = "prelude"
 version = "0.1.0"
 dependencies = [
- "astoir_hir",
  "compiler_global_scope",
- "compiler_typing",
  "compiler_utils",
  "diagnostics",
 ]
@@ -1091,6 +1046,10 @@ checksum = "db97caf9d906fbde555dd62fa95ddba9eecfd14cb388e4f491a66d74cd5fb79a"
 dependencies = [
  "once_cell",
 ]
+
+[[package]]
+name = "typing"
+version = "0.1.0"
 
 [[package]]
 name = "unicode-ident"

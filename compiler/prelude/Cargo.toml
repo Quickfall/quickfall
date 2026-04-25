@@ -4,8 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-compiler_typing = { path = "../compiler_typing" }
 compiler_utils = { path = "../compiler_utils" }
 compiler_global_scope = { path = "../compiler_global_scope" }
 diagnostics = { path = "../diagnostics" }
-astoir_hir = { path = "../astoir_hir" }
