@@ -13,6 +13,7 @@
 use crate::constraints::feature::FeatureFlag;
 
 /// The main container for types
+#[derive(Clone)]
 pub enum Type {
     /// Represents an array of a given size and of type of the inner type container within
     Array { size: usize, inner: Box<Type> },
@@ -41,6 +42,14 @@ impl Type {
     }
 
     pub fn has_feature_flag(&self, _flag: &FeatureFlag) -> bool {
+        false
+    }
+
+    pub fn has_field(&self, _name: u64, _t: Type) -> bool {
+        false
+    }
+
+    pub fn has_method(&self, _name: u64, _returntype: Type, _args: Vec<Type>) -> bool {
         false
     }
 }
