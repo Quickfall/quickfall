@@ -21,6 +21,8 @@
 //! }
 //! ```
 //!
+
+use std::fmt::Display;
 pub enum FeatureFlag {
     /// Is the type a numeric type (holds a number directly)
     Numeric,
@@ -54,4 +56,45 @@ pub enum FeatureFlag {
 
     /// Is the type a structure like type
     Struct,
+}
+
+/// An entry for the feature flag container
+pub struct FeatureFlagEntry {
+    pub flag: FeatureFlag,
+    pub exclude: bool,
+}
+
+impl Display for FeatureFlag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Numeric => "numeric",
+            Self::Signed => "signed",
+            Self::Integer => "integer",
+            Self::Floating => "floating",
+            Self::Fixed => "fixed",
+            Self::NonInteger => "noninteger",
+            Self::CpuSupported => "cpusupported",
+            Self::StringLike => "stringlike",
+            Self::Static => "static",
+            Self::MathOperations => "mathoperations",
+            Self::Struct => "struct",
+        };
+
+        write!(f, "{}", s)?;
+        Ok(())
+    }
+}
+
+impl Display for FeatureFlagEntry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.exclude {
+            write!(f, "#")?;
+        } else {
+            write!(f, "!")?;
+        }
+
+        write!(f, "{}", self.flag)?;
+
+        Ok(())
+    }
 }

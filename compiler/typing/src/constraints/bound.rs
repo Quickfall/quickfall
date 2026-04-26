@@ -17,12 +17,16 @@ pub enum BoundConstraintMember {
 }
 
 pub struct BoundConstraint {
+    pub name: String,
     pub members: Vec<(BoundConstraintMember, bool)>,
 }
 
 impl BoundConstraint {
-    pub fn new(&self) -> Self {
-        BoundConstraint { members: vec![] }
+    pub fn new(&self, name: String) -> Self {
+        BoundConstraint {
+            name,
+            members: vec![],
+        }
     }
 
     /// Appends a new restriction to the bound constraint member.
