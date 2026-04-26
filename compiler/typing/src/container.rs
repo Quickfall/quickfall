@@ -26,3 +26,15 @@ pub enum Type {
     /// It must follow the constraints given by the type parameter
     GenericTypeParam {},
 }
+
+impl Type {
+    /// Is the type real and doesn't rely on generic type arguments.
+    pub fn is_real(&self) -> bool {
+        match self {
+            Self::Array { size: _, inner } => inner.is_real(),
+            Self::Pointer { is_array: _, inner } => inner.is_real(),
+            Self::Raw { .. } => true,
+            Self::GenericTypeParam { .. } => false,
+        }
+    }
+}
