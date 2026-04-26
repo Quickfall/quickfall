@@ -10,6 +10,8 @@
 //! -	-	- Raw (signed 32 bit integer)
 //! ```
 
+use crate::constraints::feature::FeatureFlag;
+
 /// The main container for types
 pub enum Type {
     /// Represents an array of a given size and of type of the inner type container within
@@ -36,5 +38,9 @@ impl Type {
             Self::Raw { .. } => true,
             Self::GenericTypeParam { .. } => false,
         }
+    }
+
+    pub fn has_feature_flag(&self, _flag: &FeatureFlag) -> bool {
+        false
     }
 }
