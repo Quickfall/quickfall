@@ -9,7 +9,7 @@
 //! }
 //! ```
 
-use crate::container::Type;
+use crate::{constraints::TypeConstraint, container::Type};
 
 pub enum BoundConstraintMember {
     Method(u64, Type, Vec<Type>),
@@ -38,9 +38,10 @@ impl BoundConstraint {
     pub fn append_exclude(&mut self, member: BoundConstraintMember) {
         self.members.push((member, true))
     }
+}
 
-    /// Checks whenever the type fits the bound constraint
-    pub fn fits(&self, t: Type) -> bool {
+impl TypeConstraint for BoundConstraint {
+    fn fits(&self, t: Type) -> bool {
         for member in &self.members {
             let b = match &member.0 {
                 BoundConstraintMember::Field(a, b) => t.has_field(a.clone(), b.clone()),

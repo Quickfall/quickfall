@@ -23,6 +23,8 @@
 //!
 
 use std::fmt::Display;
+
+use crate::constraints::TypeConstraint;
 pub enum FeatureFlag {
     /// Is the type a numeric type (holds a number directly)
     Numeric,
@@ -64,6 +66,34 @@ pub struct FeatureFlagEntry {
     pub exclude: bool,
 }
 
+pub struct FeatureConstraint {
+    pub entries: Vec<FeatureFlagEntry>,
+}
+
+impl FeatureConstraint {
+    pub fn new() -> Self {
+        FeatureConstraint { entries: vec![] }
+    }
+
+    pub fn append(&mut self, entry: FeatureFlagEntry) {
+        self.entries.push(entry);
+    }
+}
+
+impl TypeConstraint for FeatureConstraint {
+    fn fits(&self, t: crate::container::Type) -> bool {
+        for entry in &self.entries {
+            let b = t.has_feature_flag(&entry.flag);
+
+            if b == entry.exclude {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
 impl Display for FeatureFlag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
@@ -94,6 +124,16 @@ impl Display for FeatureFlagEntry {
         }
 
         write!(f, "{}", self.flag)?;
+
+        Ok(())
+    }
+}
+
+impl Display for FeatureConstraint {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for entry in &self.entries {
+            write!(f, "{} ", entry)?;
+        }
 
         Ok(())
     }
