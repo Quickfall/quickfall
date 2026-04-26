@@ -1,12 +1,46 @@
 //! A constraint represents bounds that a type must follow in order to be accepted inside of a type parameter
 
-use crate::{constraints::feature::FeatureFlag, container::Type};
+use std::ops::Bound;
+
+use crate::{
+    constraints::{
+        bound::BoundConstraint,
+        feature::{FeatureConstraint, FeatureFlag},
+    },
+    container::Type,
+};
 
 pub mod bound;
 pub mod feature;
 
-pub enum TypeConstraintEntry {
-    Feature { exclude: bool, feature: FeatureFlag },
+pub struct TypeConstraintContainer {
+    pub feature_constraint: FeatureConstraint,
+    pub bound_constraint: Vec<BoundConstraint>,
+}
+
+impl TypeConstraintContainer {
+    pub fn new() -> Self {
+        TypeConstraintContainer {
+            feature_constraint: FeatureConstraint::new(),
+            bound_constraint: vec![],
+        }
+    }
+}
+
+impl TypeConstraint for TypeConstraintContainer {
+    fn fits(&self, t: Type) -> bool {
+        if !self.feature_constraint.fits(t.clone()) {
+            return false;
+        }
+
+        for bound in &self.bound_constraint {
+            if !bound.fits(t.clone()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 
 /// Describes a constraint

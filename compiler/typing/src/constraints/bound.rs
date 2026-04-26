@@ -22,7 +22,7 @@ pub struct BoundConstraint {
 }
 
 impl BoundConstraint {
-    pub fn new(&self, name: String) -> Self {
+    pub fn new(name: String) -> Self {
         BoundConstraint {
             name,
             members: vec![],
