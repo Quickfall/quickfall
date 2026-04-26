@@ -11,11 +11,13 @@
 
 use crate::{constraints::TypeConstraint, container::Type};
 
+#[derive(Clone)]
 pub enum BoundConstraintMember {
     Method(u64, Type, Vec<Type>),
     Field(u64, Type),
 }
 
+#[derive(Clone)]
 pub struct BoundConstraint {
     pub name: String,
     pub members: Vec<(BoundConstraintMember, bool)>,

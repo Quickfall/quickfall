@@ -8,6 +8,7 @@ use crate::{
 pub mod bound;
 pub mod feature;
 
+#[derive(Clone)]
 pub struct TypeConstraintContainer {
     pub feature_constraint: FeatureConstraint,
     pub bound_constraint: Vec<BoundConstraint>,

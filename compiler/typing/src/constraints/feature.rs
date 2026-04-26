@@ -25,6 +25,8 @@
 use std::fmt::Display;
 
 use crate::constraints::TypeConstraint;
+
+#[derive(Clone)]
 pub enum FeatureFlag {
     /// Is the type a numeric type (holds a number directly)
     Numeric,
@@ -61,11 +63,13 @@ pub enum FeatureFlag {
 }
 
 /// An entry for the feature flag container
+#[derive(Clone)]
 pub struct FeatureFlagEntry {
     pub flag: FeatureFlag,
     pub exclude: bool,
 }
 
+#[derive(Clone)]
 pub struct FeatureConstraint {
     pub entries: Vec<FeatureFlagEntry>,
 }

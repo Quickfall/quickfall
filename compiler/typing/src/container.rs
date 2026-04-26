@@ -10,7 +10,7 @@
 //! -	-	- Raw (signed 32 bit integer)
 //! ```
 
-use crate::constraints::feature::FeatureFlag;
+use crate::constraints::{TypeConstraintContainer, feature::FeatureFlag};
 
 /// The main container for types
 #[derive(Clone)]
@@ -27,7 +27,9 @@ pub enum Type {
     /// Represents a generic type argument.
     /// A special kind of argument that passes a type parameter type as a type.
     /// It must follow the constraints given by the type parameter
-    GenericTypeParam {},
+    GenericTypeParam {
+        constraints: TypeConstraintContainer,
+    },
 }
 
 impl Type {
