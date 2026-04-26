@@ -1,12 +1,7 @@
 //! A constraint represents bounds that a type must follow in order to be accepted inside of a type parameter
 
-use std::ops::Bound;
-
 use crate::{
-    constraints::{
-        bound::BoundConstraint,
-        feature::{FeatureConstraint, FeatureFlag},
-    },
+    constraints::{bound::BoundConstraint, feature::FeatureConstraint},
     container::Type,
 };
 
