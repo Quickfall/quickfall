@@ -53,6 +53,14 @@ impl TypeSizedHIR for RawType {
     }
 }
 
+impl PartialEq for InformationRawType {
+    fn eq(&self, other: &Self) -> bool {
+        self.sizes == other.sizes
+            && self.t == other.t
+            && self.type_parameters == other.type_parameters
+    }
+}
+
 impl PartialEq for RawType {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {

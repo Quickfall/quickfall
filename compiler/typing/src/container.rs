@@ -78,7 +78,7 @@ impl PartialEq for Type {
                 },
             ) => is_array == is_array2 && inner == inner2,
 
-            (Self::Raw { raw }, Self::Raw { raw: raw2 }) => raw.t == raw2.t,
+            (Self::Raw { raw }, Self::Raw { raw: raw2 }) => raw == raw2,
             (
                 Self::GenericTypeParam { constraints },
                 Self::GenericTypeParam {
