@@ -23,6 +23,13 @@ impl TypeConstraintContainer {
     }
 }
 
+impl PartialEq for TypeConstraintContainer {
+    fn eq(&self, other: &Self) -> bool {
+        self.feature_constraint == other.feature_constraint
+            && self.bound_constraint == other.bound_constraint
+    }
+}
+
 impl TypeConstraint for TypeConstraintContainer {
     fn fits(&self, t: Type) -> bool {
         if !self.feature_constraint.fits(t.clone()) {

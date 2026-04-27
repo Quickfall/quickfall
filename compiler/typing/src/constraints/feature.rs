@@ -84,6 +84,42 @@ impl FeatureConstraint {
     }
 }
 
+impl PartialEq for FeatureFlag {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Numeric, Self::Numeric) => true,
+            (Self::Signed, Self::Signed) => true,
+            (Self::Integer, Self::Integer) => true,
+            (Self::Floating, Self::Floating) => true,
+            (Self::Fixed, Self::Fixed) => true,
+            (Self::NonInteger, Self::NonInteger) => true,
+            (Self::CpuSupported, Self::CpuSupported) => true,
+            (Self::StringLike, Self::StringLike) => true,
+            (Self::Static, Self::Static) => true,
+            (Self::MathOperations, Self::MathOperations) => true,
+            (Self::Struct, Self::Struct) => true,
+
+            _ => false,
+        }
+    }
+}
+
+impl PartialEq for FeatureFlagEntry {
+    fn eq(&self, other: &Self) -> bool {
+        self.exclude == other.exclude && self.flag == other.flag
+    }
+}
+
+impl PartialEq for FeatureConstraint {
+    fn eq(&self, other: &Self) -> bool {
+        self.entries == other.entries
+    }
+}
+
+impl Eq for FeatureFlag {}
+impl Eq for FeatureFlagEntry {}
+impl Eq for FeatureConstraint {}
+
 impl TypeConstraint for FeatureConstraint {
     fn fits(&self, t: crate::container::Type) -> bool {
         for entry in &self.entries {

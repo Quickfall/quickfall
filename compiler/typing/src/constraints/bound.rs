@@ -42,6 +42,22 @@ impl BoundConstraint {
     }
 }
 
+impl PartialEq for BoundConstraintMember {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Field(a, b), Self::Field(c, d)) => a == c && b == d,
+            (Self::Method(a, b, c), Self::Method(d, e, f)) => a == d && b == e && c == f,
+            _ => false,
+        }
+    }
+}
+
+impl PartialEq for BoundConstraint {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.members == other.members
+    }
+}
+
 impl TypeConstraint for BoundConstraint {
     fn fits(&self, t: Type) -> bool {
         for member in &self.members {
