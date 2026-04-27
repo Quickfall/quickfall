@@ -32,3 +32,33 @@ impl TypeSizedHIR for RawType {
         }
     }
 }
+
+impl PartialEq for RawType {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Integer(a, b), RawType::Integer(c, d)) => *a == *c && *b == *d,
+            (Self::Floating(a, b), RawType::Floating(c, d)) => *a == *c && *b == *d,
+            (Self::FixedPoint(a, b, c), RawType::FixedPoint(d, e, f)) => {
+                *a == *d && *b == *e && *c == *f
+            }
+            (Self::ExactPoint(a, b, c), RawType::ExactPoint(d, e, f)) => {
+                *a == *d && *b == *e && *c == *f
+            }
+
+            (Self::Boolean, Self::Boolean) => true,
+            (Self::StaticString, Self::StaticString) => true,
+            (Self::AnyPointer, Self::StaticString) => true,
+            (Self::StaticString, Self::AnyPointer) => true,
+            (Self::AnyPointer, Self::AnyPointer) => true,
+
+            (Self::UnsizedInteger(a), Self::UnsizedInteger(b)) => *a == *b,
+            (Self::UnsizedFloating(a), Self::UnsizedFloating(b)) => a == b,
+            (Self::UnsizedFixedPoint(a), Self::UnsizedFixedPoint(b)) => a == b,
+            (Self::UnsizedExactPoint(a), Self::UnsizedExactPoint(b)) => a == b,
+
+            _ => false,
+        }
+    }
+}
+
+impl Eq for RawType {}
