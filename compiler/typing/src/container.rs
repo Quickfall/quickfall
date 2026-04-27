@@ -32,6 +32,7 @@ pub enum Type {
     /// It must follow the constraints given by the type parameter
     GenericTypeParam {
         constraints: TypeConstraintContainer,
+        name: String,
     },
 }
 
@@ -78,7 +79,10 @@ impl Type {
     pub fn has_feature_flag(&self, flag: &FeatureFlag) -> bool {
         match self {
             Self::Raw { raw } => raw.t.has_feature_flag(flag, &raw),
-            Self::GenericTypeParam { constraints } => constraints.has_feature_flag(flag),
+            Self::GenericTypeParam {
+                name: _,
+                constraints,
+            } => constraints.has_feature_flag(flag),
             _ => {
                 if flag == &FeatureFlag::CpuSupported || flag == &FeatureFlag::Static {
                     self.get_next().has_feature_flag(flag)
@@ -119,11 +123,12 @@ impl PartialEq for Type {
 
             (Self::Raw { raw }, Self::Raw { raw: raw2 }) => raw == raw2,
             (
-                Self::GenericTypeParam { constraints },
+                Self::GenericTypeParam { name, constraints },
                 Self::GenericTypeParam {
+                    name: name2,
                     constraints: constraints2,
                 },
-            ) => constraints == constraints2,
+            ) => name == name2 && constraints == constraints2,
 
             _ => false,
         }

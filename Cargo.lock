@@ -1050,6 +1050,9 @@ dependencies = [
 [[package]]
 name = "typing"
 version = "0.1.0"
+dependencies = [
+ "compiler_utils",
+]
 
 [[package]]
 name = "unicode-ident"

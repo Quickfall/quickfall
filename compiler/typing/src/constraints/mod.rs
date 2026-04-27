@@ -17,6 +17,18 @@ pub struct TypeConstraintContainer {
     pub bound_constraint: Vec<BoundConstraint>,
 }
 
+#[derive(Clone)]
+pub struct TypeParameter {
+    pub name: String,
+    pub constraint: TypeConstraintContainer,
+}
+
+impl TypeParameter {
+    pub fn new(name: String, constraint: TypeConstraintContainer) -> Self {
+        TypeParameter { name, constraint }
+    }
+}
+
 impl TypeConstraintContainer {
     pub fn new() -> Self {
         TypeConstraintContainer {
@@ -24,9 +36,7 @@ impl TypeConstraintContainer {
             bound_constraint: vec![],
         }
     }
-}
 
-impl TypeConstraintContainer {
     pub fn has_feature_flag(&self, flag: &FeatureFlag) -> bool {
         for entry in &self.feature_constraint.entries {
             if entry.exclude {
