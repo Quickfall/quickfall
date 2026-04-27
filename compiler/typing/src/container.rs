@@ -12,7 +12,7 @@
 
 use crate::{
     constraints::{TypeConstraintContainer, feature::FeatureFlag},
-    raw::InformationRawType,
+    raw::{InformationRawType, RawType},
 };
 
 /// The main container for types
@@ -56,5 +56,35 @@ impl Type {
 
     pub fn has_method(&self, _name: u64, _returntype: Type, _args: Vec<Type>) -> bool {
         false
+    }
+}
+
+impl PartialEq for Type {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (
+                Self::Array { size, inner },
+                Self::Array {
+                    size: size2,
+                    inner: inner2,
+                },
+            ) => size == size2 && inner == inner2,
+
+            (
+                Self::Pointer { is_array, inner },
+                Self::Pointer {
+                    is_array: is_array2,
+                    inner: inner2,
+                },
+            ) => is_array == is_array2 && inner == inner2,
+
+            (Self::Raw { raw }, Self::Raw { raw: raw2 }) => raw.t == raw2.t,
+            (
+                Self::GenericTypeParam { constraints },
+                Self::GenericTypeParam {
+                    constraints: constraints2,
+                },
+            ) => constraints == constraints2,
+        }
     }
 }
