@@ -11,7 +11,7 @@
 
 use compiler_utils::hash::HashedString;
 
-use crate::{constraints::TypeConstraint, container::Type};
+use crate::{FieldMethodType, constraints::TypeConstraint, container::Type};
 
 #[derive(Clone)]
 pub enum BoundConstraintMember {
