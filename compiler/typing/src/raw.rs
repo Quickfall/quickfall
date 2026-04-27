@@ -8,7 +8,6 @@ pub enum RawType {
     Integer(bool, usize),
     Floating(bool, usize),
     FixedPoint(bool, usize, usize),
-    ExactPoint(bool, usize, usize),
 
     StaticString,
     AnyPointer,
@@ -18,7 +17,6 @@ pub enum RawType {
     UnsizedInteger(bool),
     UnsizedFloating(bool),
     UnsizedFixedPoint(bool),
-    UnsizedExactPoint(bool),
 }
 
 /// A RawType that stores additional information such as size parameters and type parameters
@@ -28,6 +26,106 @@ pub struct InformationRawType {
 
     pub sizes: Vec<usize>,
     pub type_parameters: Vec<Box<Type>>,
+}
+
+impl RawType {
+    pub fn is_numeric(&self) -> bool {
+        match self {
+            Self::Integer(_, _) => true,
+            Self::Floating(_, _) => true,
+            Self::FixedPoint(_, _, _) => true,
+
+            Self::UnsizedInteger(_) => true,
+            Self::UnsizedFloating(_) => true,
+            Self::UnsizedFixedPoint(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_signed(&self) -> bool {
+        match self {
+            Self::Integer(signed, _) => *signed,
+            Self::Floating(signed, _) => *signed,
+            Self::FixedPoint(signed, _, _) => *signed,
+            Self::UnsizedInteger(signed) => *signed,
+            Self::UnsizedFloating(signed) => *signed,
+            Self::UnsizedFixedPoint(signed) => *signed,
+            _ => false,
+        }
+    }
+
+    pub fn is_integer(&self) -> bool {
+        match self {
+            Self::Integer(_, _) => true,
+            Self::UnsizedInteger(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_floating(&self) -> bool {
+        match self {
+            Self::Floating(_, _) => true,
+            Self::UnsizedFloating(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_fixed(&self) -> bool {
+        match self {
+            Self::FixedPoint(_, _, _) => true,
+            Self::UnsizedFixedPoint(_) => true,
+
+            _ => false,
+        }
+    }
+
+    pub fn is_noninteger(&self) -> bool {
+        self.is_floating() || self.is_fixed()
+    }
+
+    pub fn is_cpu_supported(&self, information: &InformationRawType) -> bool {
+        match self {
+            Self::Floating(_, size) => {
+                let log = size.ilog2();
+
+                return (log >= 4 && log <= 7) || *size == 80;
+            }
+
+            Self::UnsizedFloating(_) => {
+                let size = information.sizes[0];
+
+                let log = size.ilog2();
+
+                return (log >= 4 && log <= 7) || size == 80;
+            }
+
+            _ => true,
+        }
+    }
+
+    pub fn is_stringlike(&self) -> bool {
+        match self {
+            Self::StaticString => true,
+
+            _ => false,
+        }
+    }
+
+    pub fn is_static(&self) -> bool {
+        match self {
+            Self::StaticString => true,
+            _ => false,
+        }
+    }
+
+    pub fn has_math_operations(&self) -> bool {
+        self.is_numeric()
+    }
+
+    pub fn is_struct(&self) {
+        todo!("Add struct here")
+        // TODO: add struct here
+    }
 }
 
 impl InformationRawType {
@@ -46,7 +144,6 @@ impl TypeSizedHIR for RawType {
             Self::UnsizedInteger(_) => false,
             Self::UnsizedFloating(_) => false,
             Self::UnsizedFixedPoint(_) => false,
-            Self::UnsizedExactPoint(_) => false,
 
             _ => true,
         }
@@ -69,9 +166,6 @@ impl PartialEq for RawType {
             (Self::FixedPoint(a, b, c), RawType::FixedPoint(d, e, f)) => {
                 *a == *d && *b == *e && *c == *f
             }
-            (Self::ExactPoint(a, b, c), RawType::ExactPoint(d, e, f)) => {
-                *a == *d && *b == *e && *c == *f
-            }
 
             (Self::Boolean, Self::Boolean) => true,
             (Self::StaticString, Self::StaticString) => true,
@@ -82,7 +176,6 @@ impl PartialEq for RawType {
             (Self::UnsizedInteger(a), Self::UnsizedInteger(b)) => *a == *b,
             (Self::UnsizedFloating(a), Self::UnsizedFloating(b)) => a == b,
             (Self::UnsizedFixedPoint(a), Self::UnsizedFixedPoint(b)) => a == b,
-            (Self::UnsizedExactPoint(a), Self::UnsizedExactPoint(b)) => a == b,
 
             _ => false,
         }
