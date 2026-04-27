@@ -3,6 +3,7 @@
 use crate::TypeSizedHIR;
 
 /// Represents a real raw type. A raw type is a concrete type that can be simply lowered.
+#[derive(Clone)]
 pub enum RawType {
     Integer(bool, usize),
     Floating(bool, usize),

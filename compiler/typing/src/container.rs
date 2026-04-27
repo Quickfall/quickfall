@@ -10,7 +10,10 @@
 //! -	-	- Raw (signed 32 bit integer)
 //! ```
 
-use crate::constraints::{TypeConstraintContainer, feature::FeatureFlag};
+use crate::{
+    constraints::{TypeConstraintContainer, feature::FeatureFlag},
+    raw::RawType,
+};
 
 /// The main container for types
 #[derive(Clone)]
@@ -22,7 +25,7 @@ pub enum Type {
     Pointer { is_array: bool, inner: Box<Type> },
 
     /// Represents a real raw type. A raw type is a concrete type that can be simply lowered.
-    Raw {},
+    Raw { raw: RawType },
 
     /// Represents a generic type argument.
     /// A special kind of argument that passes a type parameter type as a type.
