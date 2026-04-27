@@ -1,6 +1,6 @@
 //! The definitions of the raw types
 
-use crate::{TypeSizedHIR, container::Type};
+use crate::{TypeSizedHIR, constraints::feature::FeatureFlag, container::Type};
 
 /// Represents a real raw type. A raw type is a concrete type that can be simply lowered.
 #[derive(Clone)]
@@ -122,9 +122,25 @@ impl RawType {
         self.is_numeric()
     }
 
-    pub fn is_struct(&self) {
+    pub fn is_struct(&self) -> bool {
         todo!("Add struct here")
         // TODO: add struct here
+    }
+
+    pub fn has_feature_flag(&self, flag: &FeatureFlag, information: &InformationRawType) -> bool {
+        match flag {
+            FeatureFlag::Numeric => self.is_numeric(),
+            FeatureFlag::Signed => self.is_signed(),
+            FeatureFlag::Integer => self.is_integer(),
+            FeatureFlag::Floating => self.is_floating(),
+            FeatureFlag::Fixed => self.is_fixed(),
+            FeatureFlag::NonInteger => self.is_noninteger(),
+            FeatureFlag::CpuSupported => self.is_cpu_supported(information),
+            FeatureFlag::StringLike => self.is_stringlike(),
+            FeatureFlag::Static => self.is_static(),
+            FeatureFlag::Struct => self.is_struct(),
+            FeatureFlag::MathOperations => self.has_math_operations(),
+        }
     }
 }
 

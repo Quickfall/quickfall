@@ -1,7 +1,10 @@
 //! A constraint represents bounds that a type must follow in order to be accepted inside of a type parameter
 
 use crate::{
-    constraints::{bound::BoundConstraint, feature::FeatureConstraint},
+    constraints::{
+        bound::BoundConstraint,
+        feature::{FeatureConstraint, FeatureFlag},
+    },
     container::Type,
 };
 
@@ -20,6 +23,22 @@ impl TypeConstraintContainer {
             feature_constraint: FeatureConstraint::new(),
             bound_constraint: vec![],
         }
+    }
+}
+
+impl TypeConstraintContainer {
+    pub fn has_feature_flag(&self, flag: &FeatureFlag) -> bool {
+        for entry in &self.feature_constraint.entries {
+            if entry.exclude {
+                continue;
+            }
+
+            if &entry.flag == flag {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

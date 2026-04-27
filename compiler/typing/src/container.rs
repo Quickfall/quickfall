@@ -46,8 +46,47 @@ impl Type {
         }
     }
 
-    pub fn has_feature_flag(&self, _flag: &FeatureFlag) -> bool {
-        false
+    pub fn get_last(&self) -> Type {
+        match self {
+            Self::Array { size: _, inner } => inner.get_last(),
+            Self::Pointer { is_array: _, inner } => inner.get_last(),
+            Self::Raw { .. } => self.clone(),
+            Self::GenericTypeParam { .. } => self.clone(),
+        }
+    }
+
+    /// # Warn
+    /// This will panic if not checked properly
+    pub fn get_raw(&self) -> InformationRawType {
+        if let Self::Raw { raw } = self.get_last() {
+            return raw;
+        }
+
+        panic!("last node was not a raw but used get_raw")
+    }
+
+    /// # Warn
+    /// This will panic if not checked properly
+    pub fn get_next(&self) -> Type {
+        match self {
+            Self::Array { size: _, inner } => *inner.clone(),
+            Self::Pointer { is_array: _, inner } => *inner.clone(),
+            _ => panic!("tried using get_next on the last element"),
+        }
+    }
+
+    pub fn has_feature_flag(&self, flag: &FeatureFlag) -> bool {
+        match self {
+            Self::Raw { raw } => raw.t.has_feature_flag(flag, &raw),
+            Self::GenericTypeParam { constraints } => constraints.has_feature_flag(flag),
+            _ => {
+                if flag == &FeatureFlag::CpuSupported || flag == &FeatureFlag::Static {
+                    self.get_next().has_feature_flag(flag)
+                } else {
+                    false
+                }
+            }
+        }
     }
 
     pub fn has_field(&self, _name: u64, _t: Type) -> bool {
