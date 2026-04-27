@@ -38,6 +38,18 @@ impl ParentEnumContainer {
             functions: Storage::new(),
         }
     }
+
+    pub fn append_function(
+        &mut self,
+        name: String,
+        return_type: Option<Type>,
+        arguments: Vec<Type>,
+    ) -> bool {
+        self.functions.insert(
+            name.clone(),
+            StructuredFunction::new(name, return_type, arguments),
+        )
+    }
 }
 
 impl ChildEnumContainer {
@@ -49,6 +61,11 @@ impl ChildEnumContainer {
             child_index,
             fields: Storage::new(),
         }
+    }
+
+    pub fn append_field(&mut self, field: String, t: Type) -> bool {
+        self.fields
+            .insert(field.clone(), StructuredField::new(field, t))
     }
 }
 
