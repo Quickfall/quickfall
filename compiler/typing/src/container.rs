@@ -11,6 +11,7 @@
 //! ```
 
 use crate::{
+    FieldMethodType,
     constraints::{TypeConstraintContainer, feature::FeatureFlag},
     raw::InformationRawType,
 };
@@ -92,8 +93,10 @@ impl Type {
             }
         }
     }
+}
 
-    pub fn has_field(&self, name: String, t: Type) -> bool {
+impl FieldMethodType for Type {
+    fn has_field(&self, name: String, t: Type) -> bool {
         match self {
             Self::Raw { .. } => false, // TODO: add raw impl
             Self::GenericTypeParam {
@@ -107,7 +110,7 @@ impl Type {
         }
     }
 
-    pub fn has_method(&self, name: String, returntype: Option<Type>, args: Vec<Type>) -> bool {
+    fn has_method(&self, name: String, returntype: Option<Type>, args: Vec<Type>) -> bool {
         match self {
             Self::Raw { .. } => false, // TODO: add raw impl
             Self::GenericTypeParam {
