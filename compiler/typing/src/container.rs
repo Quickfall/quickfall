@@ -93,11 +93,21 @@ impl Type {
         }
     }
 
-    pub fn has_field(&self, _name: u64, _t: Type) -> bool {
-        false
+    pub fn has_field(&self, name: String, t: Type) -> bool {
+        match self {
+            Self::Raw { .. } => false, // TODO: add raw impl
+            Self::GenericTypeParam {
+                constraints,
+                name: _,
+            } => constraints.contain_field(name, t),
+
+            Self::Pointer { is_array: _, inner } => inner.has_field(name, t),
+
+            _ => false,
+        }
     }
 
-    pub fn has_method(&self, _name: u64, _returntype: Type, _args: Vec<Type>) -> bool {
+    pub fn has_method(&self, _name: String, _returntype: Type, _args: Vec<Type>) -> bool {
         false
     }
 }

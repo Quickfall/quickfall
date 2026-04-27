@@ -1,5 +1,7 @@
 //! A constraint represents bounds that a type must follow in order to be accepted inside of a type parameter
 
+use compiler_utils::hash::HashedString;
+
 use crate::{
     constraints::{
         bound::BoundConstraint,
@@ -45,6 +47,30 @@ impl TypeConstraintContainer {
 
             if &entry.flag == flag {
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    pub fn contain_field(&self, field: String, t: Type) -> bool {
+        let hash = HashedString::new(field).hash;
+
+        for entry in &self.bound_constraint {
+            for e in &entry.members {
+                if e.1 {
+                    continue;
+                }
+
+                match &e.0 {
+                    bound::BoundConstraintMember::Field(a, b) => {
+                        if hash == a.hash && &t == b {
+                            return true;
+                        }
+                    }
+
+                    _ => {}
+                }
             }
         }
 

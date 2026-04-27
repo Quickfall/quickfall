@@ -9,12 +9,14 @@
 //! }
 //! ```
 
+use compiler_utils::hash::HashedString;
+
 use crate::{constraints::TypeConstraint, container::Type};
 
 #[derive(Clone)]
 pub enum BoundConstraintMember {
-    Method(u64, Type, Vec<Type>),
-    Field(u64, Type),
+    Method(HashedString, Type, Vec<Type>),
+    Field(HashedString, Type),
 }
 
 #[derive(Clone)]
@@ -62,9 +64,9 @@ impl TypeConstraint for BoundConstraint {
     fn fits(&self, t: Type) -> bool {
         for member in &self.members {
             let b = match &member.0 {
-                BoundConstraintMember::Field(a, b) => t.has_field(a.clone(), b.clone()),
+                BoundConstraintMember::Field(a, b) => t.has_field(a.val.clone(), b.clone()),
                 BoundConstraintMember::Method(a, b, c) => {
-                    t.has_method(a.clone(), b.clone(), c.clone())
+                    t.has_method(a.val.clone(), b.clone(), c.clone())
                 }
             };
 
