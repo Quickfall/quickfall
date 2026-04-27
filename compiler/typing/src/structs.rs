@@ -1,8 +1,6 @@
 //! Declarations for structs in Quickfall
 
-use std::collections::HashMap;
-
-use compiler_utils::{hash::HashedString, storage::Storage, utils::indexed::IndexStorage};
+use compiler_utils::{hash::HashedString, storage::Storage};
 
 use crate::{TypeParameterContaining, constraints::TypeParameter, container::Type};
 
@@ -16,7 +14,7 @@ pub struct StructuredField {
 #[derive(Clone)]
 pub struct StructuredFunction {
     pub name: HashedString,
-    pub return_type: Type,
+    pub return_type: Option<Type>,
     pub arguments: Vec<Type>,
 }
 
@@ -39,6 +37,16 @@ impl StructuredField {
     }
 }
 
+impl StructuredFunction {
+    pub fn new(name: String, return_type: Option<Type>, arguments: Vec<Type>) -> Self {
+        StructuredFunction {
+            name: HashedString::new(name),
+            return_type,
+            arguments,
+        }
+    }
+}
+
 impl StructContainer {
     pub fn new(name: String, self_id: usize) -> Self {
         StructContainer {
@@ -54,11 +62,23 @@ impl StructContainer {
         self.fields
             .insert(field.clone(), StructuredField::new(field, t))
     }
+
+    pub fn append_function(
+        &mut self,
+        name: String,
+        return_type: Option<Type>,
+        arguments: Vec<Type>,
+    ) -> bool {
+        self.functions.insert(
+            name.clone(),
+            StructuredFunction::new(name, return_type, arguments),
+        )
+    }
 }
 
 impl TypeParameterContaining for StructContainer {
     fn get_type_param_type(&self, param: String) -> Type {
-        let param = &self.type_parameters[&param];
+        let param = self.type_parameters.get(&param).unwrap();
 
         Type::GenericTypeParam {
             constraints: param.constraint.clone(),
@@ -67,6 +87,6 @@ impl TypeParameterContaining for StructContainer {
     }
 
     fn has_param_type(&self, param: String) -> bool {
-        self.type_parameters.contains_key(&param)
+        self.type_parameters.has_key(&param)
     }
 }

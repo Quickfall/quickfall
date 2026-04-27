@@ -33,8 +33,8 @@ impl<K> Storage<K> {
         true
     }
 
-    pub fn get(&mut self, name: String) -> Option<&K> {
-        let ind = self.map.get(&name);
+    pub fn get(&self, name: &String) -> Option<&K> {
+        let ind = self.map.get(name);
 
         if let Some(ind) = ind {
             Some(&self.entries[*ind])
@@ -43,16 +43,16 @@ impl<K> Storage<K> {
         }
     }
 
-    pub fn get_from_index(&mut self, ind: usize) -> &K {
+    pub fn get_from_index(&self, ind: usize) -> &K {
         &self.entries[ind]
     }
 
-    pub fn get_key_from_index(&mut self, ind: usize) -> String {
+    pub fn get_key_from_index(&self, ind: usize) -> String {
         self.keys[ind].clone()
     }
 
-    pub fn get_index(&mut self, name: String) -> Option<usize> {
-        let ind = self.map.get(&name);
+    pub fn get_index(&self, name: &String) -> Option<usize> {
+        let ind = self.map.get(name);
 
         if let Some(ind) = ind {
             Some(*ind)
@@ -60,10 +60,14 @@ impl<K> Storage<K> {
             None
         }
     }
+
+    pub fn has_key(&self, name: &String) -> bool {
+        self.map.contains_key(name)
+    }
 }
 
 impl<K: Clone> Storage<K> {
-    pub fn get_as_clone(&mut self, name: String) -> Option<K> {
+    pub fn get_as_clone(&self, name: String) -> Option<K> {
         let ind = self.map.get(&name);
 
         if let Some(ind) = ind {
@@ -73,7 +77,7 @@ impl<K: Clone> Storage<K> {
         }
     }
 
-    pub fn get_clone_from_index(&mut self, ind: usize) -> K {
+    pub fn get_clone_from_index(&self, ind: usize) -> K {
         self.entries[ind].clone()
     }
 }
