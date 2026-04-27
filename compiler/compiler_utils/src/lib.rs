@@ -3,6 +3,7 @@ use std::{fs, io::Error};
 
 pub mod hash;
 pub mod operators;
+pub mod storage;
 pub mod utils;
 
 #[derive(Debug, Clone, PartialEq)]
