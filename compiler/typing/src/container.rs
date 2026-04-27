@@ -12,7 +12,7 @@
 
 use crate::{
     constraints::{TypeConstraintContainer, feature::FeatureFlag},
-    raw::{InformationRawType, RawType},
+    raw::InformationRawType,
 };
 
 /// The main container for types
@@ -85,6 +85,8 @@ impl PartialEq for Type {
                     constraints: constraints2,
                 },
             ) => constraints == constraints2,
+
+            _ => false,
         }
     }
 }
