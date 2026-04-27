@@ -15,7 +15,7 @@ use crate::{constraints::TypeConstraint, container::Type};
 
 #[derive(Clone)]
 pub enum BoundConstraintMember {
-    Method(HashedString, Type, Vec<Type>),
+    Method(HashedString, Option<Type>, Vec<Type>),
     Field(HashedString, Type),
 }
 

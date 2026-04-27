@@ -76,6 +76,35 @@ impl TypeConstraintContainer {
 
         return false;
     }
+
+    pub fn contain_function(
+        &self,
+        func: String,
+        return_type: Option<Type>,
+        arguments: Vec<Type>,
+    ) -> bool {
+        let hash = HashedString::new(func).hash;
+
+        for entry in &self.bound_constraint {
+            for e in &entry.members {
+                if e.1 {
+                    continue;
+                }
+
+                match &e.0 {
+                    bound::BoundConstraintMember::Method(a, b, c) => {
+                        if hash == a.hash && &return_type == b && &arguments == c {
+                            return true;
+                        }
+                    }
+
+                    _ => {}
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 impl PartialEq for TypeConstraintContainer {

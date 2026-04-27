@@ -107,8 +107,18 @@ impl Type {
         }
     }
 
-    pub fn has_method(&self, _name: String, _returntype: Type, _args: Vec<Type>) -> bool {
-        false
+    pub fn has_method(&self, name: String, returntype: Option<Type>, args: Vec<Type>) -> bool {
+        match self {
+            Self::Raw { .. } => false, // TODO: add raw impl
+            Self::GenericTypeParam {
+                constraints,
+                name: _,
+            } => constraints.contain_function(name, returntype, args),
+
+            Self::Pointer { is_array: _, inner } => inner.has_method(name, returntype, args),
+
+            _ => false,
+        }
     }
 }
 
