@@ -1,7 +1,7 @@
 //! The definitions of the raw types
 
 use crate::{
-    TypeSizedHIR,
+    FieldMethodType, TypeSizedHIR,
     constraints::feature::FeatureFlag,
     container::Type,
     enums::{ChildEnumContainer, ParentEnumContainer},
@@ -186,6 +186,58 @@ impl PartialEq for InformationRawType {
         self.sizes == other.sizes
             && self.t == other.t
             && self.type_parameters == other.type_parameters
+    }
+}
+
+impl FieldMethodType for RawType {
+    fn has_field(&self, name: String, t: Type) -> bool {
+        match self {
+            Self::Struct(container) => {
+                container.fields.has_key(&name) && container.fields.get(&name).unwrap().t == t
+            }
+
+            Self::EnumChild(container) => {
+                container.fields.has_key(&name) && container.fields.get(&name).unwrap().t == t
+            }
+
+            _ => false,
+        }
+    }
+
+    fn has_method(&self, name: String, return_type: Option<Type>, arguments: Vec<Type>) -> bool {
+        match self {
+            Self::Struct(container) => {
+                if !container.functions.has_key(&name) {
+                    return false;
+                }
+
+                let method = container.functions.get(&name).unwrap();
+
+                return method.arguments == arguments && method.return_type == return_type;
+            }
+
+            Self::Enum(container) => {
+                if !container.functions.has_key(&name) {
+                    return false;
+                }
+
+                let method = container.functions.get(&name).unwrap();
+
+                return method.arguments == arguments && method.return_type == return_type;
+            }
+
+            Self::EnumChild(container) => {
+                if !container.parent.functions.has_key(&name) {
+                    return false;
+                }
+
+                let method = container.parent.functions.get(&name).unwrap();
+
+                return method.arguments == arguments && method.return_type == return_type;
+            }
+
+            _ => false,
+        }
     }
 }
 
