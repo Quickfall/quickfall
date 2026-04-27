@@ -77,3 +77,13 @@ impl<K: Clone> Storage<K> {
         self.entries[ind].clone()
     }
 }
+
+impl<K: Clone> Clone for Storage<K> {
+    fn clone(&self) -> Self {
+        Self {
+            map: self.map.clone(),
+            entries: self.entries.clone(),
+            keys: self.keys.clone(),
+        }
+    }
+}
