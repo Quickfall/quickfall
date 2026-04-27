@@ -98,7 +98,7 @@ impl Type {
 impl FieldMethodType for Type {
     fn has_field(&self, name: String, t: Type) -> bool {
         match self {
-            Self::Raw { .. } => false, // TODO: add raw impl
+            Self::Raw { raw } => raw.t.has_field(name, t),
             Self::GenericTypeParam {
                 constraints,
                 name: _,
@@ -110,15 +110,15 @@ impl FieldMethodType for Type {
         }
     }
 
-    fn has_method(&self, name: String, returntype: Option<Type>, args: Vec<Type>) -> bool {
+    fn has_method(&self, name: String, return_type: Option<Type>, arguments: Vec<Type>) -> bool {
         match self {
-            Self::Raw { .. } => false, // TODO: add raw impl
+            Self::Raw { raw } => raw.t.has_method(name, return_type, arguments),
             Self::GenericTypeParam {
                 constraints,
                 name: _,
-            } => constraints.contain_function(name, returntype, args),
+            } => constraints.contain_function(name, return_type, arguments),
 
-            Self::Pointer { is_array: _, inner } => inner.has_method(name, returntype, args),
+            Self::Pointer { is_array: _, inner } => inner.has_method(name, return_type, arguments),
 
             _ => false,
         }
