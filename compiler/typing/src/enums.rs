@@ -11,6 +11,7 @@ use crate::{
     structs::{StructuredField, StructuredFunction},
 };
 
+#[derive(Clone)]
 pub struct ParentEnumContainer {
     pub self_id: usize,
     pub name: HashedString,
@@ -21,6 +22,7 @@ pub struct ParentEnumContainer {
     pub functions: Storage<StructuredFunction>,
 }
 
+#[derive(Clone)]
 pub struct ChildEnumContainer {
     pub parent: &'static ParentEnumContainer,
 

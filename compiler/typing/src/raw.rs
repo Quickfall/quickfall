@@ -1,6 +1,12 @@
 //! The definitions of the raw types
 
-use crate::{TypeSizedHIR, constraints::feature::FeatureFlag, container::Type};
+use crate::{
+    TypeSizedHIR,
+    constraints::feature::FeatureFlag,
+    container::Type,
+    enums::{ChildEnumContainer, ParentEnumContainer},
+    structs::StructContainer,
+};
 
 /// Represents a real raw type. A raw type is a concrete type that can be simply lowered.
 #[derive(Clone)]
@@ -13,6 +19,10 @@ pub enum RawType {
     AnyPointer,
 
     Boolean,
+
+    Struct(StructContainer),
+    Enum(ParentEnumContainer),
+    EnumChild(ChildEnumContainer),
 
     UnsizedInteger(bool),
     UnsizedFloating(bool),
@@ -123,8 +133,13 @@ impl RawType {
     }
 
     pub fn is_struct(&self) -> bool {
-        todo!("Add struct here")
-        // TODO: add struct here
+        match self {
+            Self::Struct(_) => true,
+            Self::Enum(_) => true,
+            Self::EnumChild(_) => true,
+
+            _ => false,
+        }
     }
 
     pub fn has_feature_flag(&self, flag: &FeatureFlag, information: &InformationRawType) -> bool {
