@@ -89,4 +89,13 @@ impl TypeParameterContaining for StructContainer {
     fn has_param_type(&self, param: String) -> bool {
         self.type_parameters.has_key(&param)
     }
+
+    fn append_type_parameter(
+        &mut self,
+        param: String,
+        constraint: crate::constraints::TypeConstraintContainer,
+    ) {
+        self.type_parameters
+            .insert(param.clone(), TypeParameter::new(param, constraint));
+    }
 }
