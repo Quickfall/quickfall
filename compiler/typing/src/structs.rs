@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use compiler_utils::hash::HashedString;
+use compiler_utils::{hash::HashedString, utils::indexed::IndexStorage};
 
 use crate::{TypeParameterContaining, constraints::TypeParameter, container::Type};
 
@@ -24,9 +24,9 @@ pub struct StructuredFunction {
 pub struct StructContainer {
     pub self_id: usize,
     pub name: String,
-    pub type_parameters: HashMap<String, TypeParameter>,
+    pub type_parameters: IndexStorage<String, TypeParameter>,
 
-    pub fields: Vec<StructuredField>,
+    pub fields: IndexStorage<String, StructuredField>,
     pub functions: Vec<StructuredFunction>,
 }
 
@@ -49,6 +49,9 @@ impl StructContainer {
             functions: vec![],
         }
     }
+
+	pub fn append_field(&mut self, field: )
+
 }
 
 impl TypeParameterContaining for StructContainer {
