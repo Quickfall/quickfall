@@ -1,6 +1,6 @@
 //! The definitions of the raw types
 
-use crate::TypeSizedHIR;
+use crate::{TypeSizedHIR, container::Type};
 
 /// Represents a real raw type. A raw type is a concrete type that can be simply lowered.
 #[derive(Clone)]
@@ -19,6 +19,25 @@ pub enum RawType {
     UnsizedFloating(bool),
     UnsizedFixedPoint(bool),
     UnsizedExactPoint(bool),
+}
+
+/// A RawType that stores additional information such as size parameters and type parameters
+#[derive(Clone)]
+pub struct InformationRawType {
+    pub t: RawType,
+
+    pub sizes: Vec<usize>,
+    pub type_parameters: Vec<Box<Type>>,
+}
+
+impl InformationRawType {
+    pub fn new(t: RawType) -> Self {
+        InformationRawType {
+            t,
+            sizes: vec![],
+            type_parameters: vec![],
+        }
+    }
 }
 
 impl TypeSizedHIR for RawType {

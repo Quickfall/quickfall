@@ -12,7 +12,7 @@
 
 use crate::{
     constraints::{TypeConstraintContainer, feature::FeatureFlag},
-    raw::RawType,
+    raw::InformationRawType,
 };
 
 /// The main container for types
@@ -25,7 +25,7 @@ pub enum Type {
     Pointer { is_array: bool, inner: Box<Type> },
 
     /// Represents a real raw type. A raw type is a concrete type that can be simply lowered.
-    Raw { raw: RawType },
+    Raw { raw: InformationRawType },
 
     /// Represents a generic type argument.
     /// A special kind of argument that passes a type parameter type as a type.
