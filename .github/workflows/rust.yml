@@ -2,7 +2,7 @@ name: Compile (No bridges)
 
 on:
   pull_request:
-    branches: [ "master", "dev_unstable", "dev" ]
+    branches: [ "master", "dev-unstable", "dev" ]
 
 env:
   CARGO_TERM_COLOR: always
