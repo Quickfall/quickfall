@@ -1,6 +1,6 @@
 //! Definitions for each node kind of HIR
 
-use std::{collections::HashMap, fmt::Binary, mem::transmute};
+use std::{collections::HashMap, fmt::Binary};
 
 use compiler_utils::{
     Position,
@@ -9,7 +9,7 @@ use compiler_utils::{
 };
 use typing::{container::Type, enums::ParentEnumContainer, structs::StructContainer};
 
-use crate::PureCompTimeCandidate;
+use crate::{PureCompTimeCandidate, context::local::BranchedContext};
 
 pub struct HIRNode {
     pub kind: HIRNodeKind,
@@ -116,7 +116,7 @@ pub enum HIRNodeKind {
         arguments: Vec<(HashedString, Type)>,
         return_type: Option<Type>,
         body: Vec<Box<HIRNode>>,
-        ctx: Binary, // TODO: add actual type here
+        ctx: BranchedContext, // TODO: add actual type here
         requires_this: bool,
     },
 
@@ -155,7 +155,7 @@ pub enum HIRNodeKind {
         arguments: Vec<(HashedString, Type)>,
         return_type: Option<Type>,
         body: Vec<Box<HIRNode>>,
-        ctx: Binary, // TODO: change to type
+        ctx: BranchedContext, // TODO: change to type
         requires_this: bool,
     },
 

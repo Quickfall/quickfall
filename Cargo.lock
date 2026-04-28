@@ -92,6 +92,7 @@ name = "astoir_hir"
 version = "0.1.0"
 dependencies = [
  "compiler_utils",
+ "diagnostics",
  "typing",
 ]
 

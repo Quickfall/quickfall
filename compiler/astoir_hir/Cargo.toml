@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 typing = { path = "../typing" }
 compiler_utils = { path = "../compiler_utils" }
+diagnostics = { path = "../diagnostics" }

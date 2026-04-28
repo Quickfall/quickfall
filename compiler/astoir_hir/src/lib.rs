@@ -1,5 +1,6 @@
 //! The core of the HIR layer of AstoIR.
 
+pub mod context;
 pub mod nodes;
 
 pub trait PureCompTimeCandidate {
