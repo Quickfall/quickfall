@@ -1,6 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
 use compiler_utils::hash::HashedString;
+use diagnostics::{
+    DiagnosticResult, DiagnosticSpanOrigin,
+    builders::{make_cannot_find, make_doesnt_exist_in_era},
+};
 use typing::container::Type;
 
 pub struct BranchedContext {
@@ -85,6 +89,28 @@ impl BranchedContext {
         self.hash_to_ind.insert(identity, ind);
 
         Ok(ind)
+    }
+
+    pub fn obtain<K: DiagnosticSpanOrigin>(
+        &mut self,
+        name: String,
+        origin: &K,
+    ) -> DiagnosticResult<usize> {
+        let identity = HashedString::new(name);
+
+        match self.hash_to_ind.get(&identity) {
+            None => return Err(make_cannot_find(origin, &identity.val).into()),
+            Some(ind) => {
+                let ind = *ind;
+
+                if !self.is_alive(ind) {
+                    return Err(make_doesnt_exist_in_era(origin, &identity.val).into());
+                }
+
+                self.variables[ind].usage_count += 1;
+                Ok(ind)
+            }
+        }
     }
 
     /// Starts a new branch by incrementing the `current_branch` by one. Returns the newly started branch's index
