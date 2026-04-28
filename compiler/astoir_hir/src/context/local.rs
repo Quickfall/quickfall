@@ -132,19 +132,33 @@ impl BranchedContext {
     }
 
     /// Checks whenever the code is currently beyond an ending point and thus is invalid
-    pub fn is_code_alive(&self) -> bool {
+    pub fn is_code_alive(&self, branch: usize) -> bool {
         for ending in &self.ending_points {
             let end = match self.ending_eras.get(&ending.introduced_in_era) {
                 Some(v) => *v,
                 None => ending.introduced_in_era,
             };
 
-            if self.current_branch >= end {
+            if branch >= end {
                 return false;
             }
         }
 
         return true;
+    }
+
+    pub fn is_code_valid(&self) -> bool {
+        if !self.is_code_alive(self.current_branch) {
+            return true;
+        }
+
+        for i in 0..self.current_branch {
+            if self.is_code_alive(i) {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     pub fn introduce_ending_point(&mut self, point: EndingPointKind) {
