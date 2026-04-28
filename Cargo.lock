@@ -88,6 +88,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "astoir_hir"
+version = "0.1.0"
+
+[[package]]
 name = "astoir_mir"
 version = "0.1.0"
 dependencies = [

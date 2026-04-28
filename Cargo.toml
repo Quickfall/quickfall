@@ -13,5 +13,5 @@ members = [
 	"compiler/prelude",
 	"compiler/compiler_global_scope",
 	"lsp",
-	"compiler/typing",
+	"compiler/typing", "compiler/astoir_hir",
 ]
