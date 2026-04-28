@@ -14,7 +14,14 @@ git clone https://github.com/Quickfall/quickfall
 ```
 
 You will need the following installed in order to compile & use Quickfall:
-- Rust 1.91.1
-- LLVM 21.1
+- Rust 1.94.1
+- LLVM 22.1
 
 You can then build the project by using the `cargo` Rust tool.
+
+You can build different targets for the Quickfall project:
+- `-p compiler_main`: The compiler
+- `-p lsp`: The language server provider 
+
+Additionally, for the compiler target. You can add different features to customize the build. Here's a list of features and what they change
+- `diagbacktraces`: Add backtraces for inside of the compiler codebase for every Diagnostic. Automatically enables backtraces on diagnostics

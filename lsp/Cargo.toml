@@ -1,0 +1,13 @@
+[package]
+name = "lsp"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tower-lsp = "0.20"
+tokio = { version = "1", features = ["full"] }
+diagnostics = { path = "../compiler/diagnostics" }
+astoir = { path = "../compiler/astoir" }
+ast = { path = "../compiler/ast" }
+ast_parser = { path = "../compiler/ast_parser" }
+lexer = { path = "../compiler/lexer" }

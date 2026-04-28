@@ -1,6 +1,6 @@
 //! # Trait bounds
 //! Trait bounds are used to select types with given features. These traits can be represented with a `!` prefix. They can also be used to exclude certain types with the given features.
-//! 
+//!
 //! Here's a list of every trait bound with their corresponding feature:
 //! - `!numeric`: Is a numeric type
 //! - `!signed`: Is a signed numeric type
@@ -11,7 +11,7 @@
 //! - `!cpusupported`: Is the type supported by the CPU.
 //! - `!stringlike`: Is the type a string
 //! - `!static`: Is the type supposed to be statically stored
-//! 
+//!
 //! # Examples
 //! ```
 //! struct test<A: !numeric ~!cpusupported> {
@@ -24,7 +24,7 @@ use std::fmt::Display;
 use compiler_utils::hash;
 use diagnostics::{MaybeDiagnostic, builders::make_bound_trait};
 
-use crate::{storage::TypeStorage, tree::Type};
+use crate::tree::Type;
 
 pub const TRAIT_NUMERIC: u64 = hash!("numeric");
 pub const TRAIT_SIGNED: u64 = hash!("signed");
@@ -38,66 +38,66 @@ pub const TRAIT_STATIC: u64 = hash!("static");
 
 #[derive(Clone)]
 pub enum Trait {
-	Numeric,
-	Signed,
-	Integer,
-	Floating,
-	Fixed,
-	NonInteger,
-	CpuSupported,
-	String,
-	Static
+    Numeric,
+    Signed,
+    Integer,
+    Floating,
+    Fixed,
+    NonInteger,
+    CpuSupported,
+    String,
+    Static,
 }
 
 impl Display for Trait {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		let s = match self {
-			Trait::Numeric => "numeric",
-			Trait::Signed => "signed",
-			Trait::Integer => "integer",
-			Trait::Floating => "floating",
-			Trait::Fixed => "fixed",
-			Trait::NonInteger => "noninteger",
-			Trait::CpuSupported => "cpusupported",
-			Trait::String => "stringlike",
-			Trait::Static => "static"
-		};
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Trait::Numeric => "numeric",
+            Trait::Signed => "signed",
+            Trait::Integer => "integer",
+            Trait::Floating => "floating",
+            Trait::Fixed => "fixed",
+            Trait::NonInteger => "noninteger",
+            Trait::CpuSupported => "cpusupported",
+            Trait::String => "stringlike",
+            Trait::Static => "static",
+        };
 
-		write!(f, "!{}", s)
-	}
+        write!(f, "!{}", s)
+    }
 }
 
 pub enum TraitBoundMember {
-	/// Selects a trait to require it
-	Select(Trait),
+    /// Selects a trait to require it
+    Select(Trait),
 
-	/// Excludes a trait. Types having this trait will not be accepted
-	Exclude(Trait)
+    /// Excludes a trait. Types having this trait will not be accepted
+    Exclude(Trait),
 }
 
 /// Represents the actual trait bound. Is used to make sure that the type is compatible
 pub struct TraitBound {
-	pub members: Vec<TraitBoundMember>
+    pub members: Vec<TraitBoundMember>,
 }
 
 impl TraitBound {
-	pub fn check(&self, t: &Type, storage: &TypeStorage) -> MaybeDiagnostic {
-		for member in &self.members {
-			match member {
-				TraitBoundMember::Select(tt) => {
-					if !t.as_generic(storage).has_trait(tt.clone(), t) {
-						return Err(make_bound_trait(tt, t).into())
-					}
-				},
+    pub fn check(&self, t: &Type) -> MaybeDiagnostic {
+        for member in &self.members {
+            match member {
+                TraitBoundMember::Select(tt) => {
+                    if !t.as_generic().has_trait(tt.clone(), t) {
+                        return Err(make_bound_trait(tt, t).into());
+                    }
+                }
 
-				TraitBoundMember::Exclude(tt) => {
-					if t.as_generic(storage).has_trait(tt.clone(), t) {
-						return Err(make_bound_trait(&format!("~{}", tt), t).into())
-					}
-				}
-			}
-		}
+                TraitBoundMember::Exclude(tt) => {
+                    if t.as_generic().has_trait(tt.clone(), t) {
+                        return Err(make_bound_trait(&format!("~{}", tt), t).into());
+                    }
+                }
+            }
+        }
 
-		return Ok(());
-	}
+        return Ok(());
+    }
 }

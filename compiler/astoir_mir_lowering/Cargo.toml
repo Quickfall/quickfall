@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-astoir_mir = {path = "../astoir_mir"}
-astoir_hir = {path = "../astoir_hir"}
+astoir_mir = { path = "../astoir_mir" }
+astoir_hir = { path = "../astoir_hir" }
 diagnostics = { path = "../diagnostics" }
-lexer = {path = "../lexer"}
 compiler_typing = { path = "../compiler_typing" }
 compiler_utils = { path = "../compiler_utils" }
+compiler_global_scope = { path = "../compiler_global_scope" }

@@ -9,3 +9,7 @@ compiler_typing = { path = "../compiler_typing" }
 ast = { path = "../ast" }
 diagnostics = { path = "../diagnostics" }
 compiler_utils = { path = "../compiler_utils" }
+lexer = { path = "../lexer" }
+ast_parser = { path = "../ast_parser" }
+prelude = { path = "../prelude" }
+compiler_global_scope = { path = "../compiler_global_scope" }

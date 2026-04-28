@@ -7,4 +7,5 @@ edition = "2024"
 compiler_utils = { path = "../compiler_utils" }
 diagnostics = { path = "../diagnostics" }
 compiler_typing = { path = "../compiler_typing" }
+compiler_global_scope = { path = "../compiler_global_scope" }
 lexer = { path = "../lexer" }
