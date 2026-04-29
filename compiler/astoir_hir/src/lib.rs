@@ -1,12 +1,12 @@
 //! The core of the HIR layer of AstoIR.
 
 pub mod context;
-pub mod nodes;
+pub mod func;
 pub mod ifelse;
 pub mod lru;
-pub mod func;
-pub mod types;
+pub mod nodes;
 pub mod scope;
+pub mod types;
 
 pub trait PureCompTimeCandidate {
     /// Is the given node pure? Meaning can it be used inside of a pure function.
