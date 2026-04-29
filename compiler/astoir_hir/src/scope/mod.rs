@@ -2,9 +2,16 @@
 
 use std::collections::HashMap;
 
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_already_in_scope};
+use diagnostics::{
+    DiagnosticResult, DiagnosticSpanOrigin,
+    builders::{make_already_in_scope, make_cannot_find},
+};
 
-use crate::scope::{entry::ScopeEntry, key::EntryKey};
+use crate::{
+    func::HIRFunction,
+    scope::{entry::ScopeEntry, key::EntryKey},
+    types::ScopeStoredType,
+};
 
 pub mod entry;
 pub mod key;
@@ -38,5 +45,35 @@ impl ScopeStorage {
         self.entries.push(val);
 
         Ok(ind)
+    }
+
+    pub fn get<K: DiagnosticSpanOrigin>(
+        &mut self,
+        key: &EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<&ScopeEntry> {
+        if !self.key_to_ind.contains_key(key) {
+            return Err(make_cannot_find(origin, key).into());
+        }
+
+        let ind = &self.key_to_ind[key];
+
+        Ok(&self.entries[*ind])
+    }
+
+    pub fn get_function<K: DiagnosticSpanOrigin>(
+        &mut self,
+        key: &EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<&'static HIRFunction> {
+        self.get(key, origin)?.as_function(origin)
+    }
+
+    pub fn get_type<K: DiagnosticSpanOrigin>(
+        &mut self,
+        key: &EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<&'static ScopeStoredType> {
+        self.get(key, origin)?.as_type(origin)
     }
 }
