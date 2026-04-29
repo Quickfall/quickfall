@@ -1,6 +1,6 @@
 //! Definitions for scope entry keys
 
-use std::hash::Hash;
+use std::{fmt::Display, hash::Hash};
 
 use compiler_utils::hash::HashedString;
 use typing::raw::RawType;
@@ -41,5 +41,18 @@ impl Hash for EntryKey {
         } else {
             self.linked_type.clone().unwrap().hash(state);
         }
+    }
+}
+
+impl PartialEq for EntryKey {
+    fn eq(&self, other: &Self) -> bool {
+        self.name.val == other.name.val && self.linked_type == other.linked_type
+    }
+}
+impl Eq for EntryKey {}
+
+impl Display for EntryKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name.val)
     }
 }
