@@ -1,5 +1,7 @@
 //! Definitions for scope entry keys
 
+use std::hash::Hash;
+
 use compiler_utils::hash::HashedString;
 use typing::raw::RawType;
 
@@ -24,6 +26,20 @@ impl EntryKey {
         EntryKey {
             name,
             linked_type: Some(linked),
+        }
+    }
+}
+
+impl Hash for EntryKey {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        state.write_usize(1257877); // Key magic
+
+        self.name.val.hash(state);
+
+        if self.linked_type.is_none() {
+            state.write_usize(0);
+        } else {
+            self.linked_type.clone().unwrap().hash(state);
         }
     }
 }
