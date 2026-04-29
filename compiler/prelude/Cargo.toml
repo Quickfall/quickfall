@@ -5,5 +5,4 @@ edition = "2024"
 
 [dependencies]
 compiler_utils = { path = "../compiler_utils" }
-compiler_global_scope = { path = "../compiler_global_scope" }
 diagnostics = { path = "../diagnostics" }
