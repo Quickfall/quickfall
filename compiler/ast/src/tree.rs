@@ -4,7 +4,6 @@
 
 use std::{collections::HashMap, fmt::Display};
 
-use compiler_typing::TypeParameterContainer;
 use compiler_utils::{
     Position,
     hash::{HashedString, SelfHash},
@@ -106,7 +105,7 @@ pub enum ASTTreeNodeKind {
         name: HashedString,
         entries: Vec<Box<ASTTreeNode>>,
         functions: Vec<Box<ASTTreeNode>>,
-        type_params: TypeParameterContainer,
+        type_params: HashMap<HashedString, usize>,
     },
     EnumEntryDeclaration {
         name: HashedString,
@@ -117,7 +116,7 @@ pub enum ASTTreeNodeKind {
         name: HashedString,
         layout: bool,
         members: Vec<Box<ASTTreeNode>>,
-        type_params: TypeParameterContainer,
+        type_params: HashMap<HashedString, usize>,
     },
     StructFieldMember {
         name: HashedString,

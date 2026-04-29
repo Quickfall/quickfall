@@ -1,7 +1,8 @@
 //! Parsing for type related features
 
+use std::collections::HashMap;
+
 use ast::types::ASTType;
-use compiler_typing::TypeParameterContainer;
 use compiler_utils::hash::HashedString;
 use diagnostics::{
     DiagnosticResult,
@@ -220,12 +221,12 @@ pub fn parse_type(tokens: &Vec<LexerToken>, ind: &mut usize) -> DiagnosticResult
 pub fn parse_type_parameters_declaration(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
-) -> DiagnosticResult<TypeParameterContainer> {
+) -> DiagnosticResult<HashMap<HashedString, usize>> {
     if tokens[*ind].tok_type != LexerTokenType::AngelBracketOpen {
-        return Ok(TypeParameterContainer::new());
+        return Ok(HashMap::new());
     }
 
-    let mut container = TypeParameterContainer::new();
+    let mut container = HashMap::new();
 
     *ind += 1;
 
