@@ -1,6 +1,6 @@
 //! Definitions for each node kind of HIR
 
-use std::{collections::HashMap, fmt::Binary};
+use std::{collections::HashMap};
 
 use compiler_utils::{
     Position,
@@ -9,8 +9,9 @@ use compiler_utils::{
 };
 use typing::{container::Type, enums::ParentEnumContainer, structs::StructContainer};
 
-use crate::{PureCompTimeCandidate, context::local::BranchedContext};
+use crate::{PureCompTimeCandidate, context::local::BranchedContext, ifelse::HIRIfBranch, lru::StructLRUStep};
 
+#[derive(Clone)]
 pub struct HIRNode {
     pub kind: HIRNodeKind,
     pub start: Position,
@@ -19,6 +20,7 @@ pub struct HIRNode {
     pub parent: Option<&'static HIRNode>,
 }
 
+#[derive(Clone)]
 pub enum HIRNodeKind {
     IntegerLiteral(i128),
     FloatLiteral(f64),
@@ -89,7 +91,7 @@ pub enum HIRNodeKind {
     },
 
     StructLRU {
-        steps: Vec<Binary>, // TODO: Change this to actual type
+        steps: Vec<StructLRUStep>, // TODO: Change this to actual type
         last: Type,
     },
 
@@ -116,7 +118,7 @@ pub enum HIRNodeKind {
         arguments: Vec<(HashedString, Type)>,
         return_type: Option<Type>,
         body: Vec<Box<HIRNode>>,
-        ctx: BranchedContext,
+        ctx: &'static BranchedContext,
         requires_this: bool,
     },
 
@@ -155,7 +157,7 @@ pub enum HIRNodeKind {
         arguments: Vec<(HashedString, Type)>,
         return_type: Option<Type>,
         body: Vec<Box<HIRNode>>,
-        ctx: BranchedContext, 
+        ctx: &'static BranchedContext, 
         requires_this: bool,
     },
 
@@ -184,7 +186,7 @@ pub enum HIRNodeKind {
     },
 
     IfStatement {
-        branches: Vec<Binary>, // TODO: change to type
+        branches: Vec<HIRIfBranch>, // TODO: change to type
     },
 
     ReturnStatement {

@@ -2,6 +2,8 @@
 
 pub mod context;
 pub mod nodes;
+pub mod ifelse;
+pub mod lru;
 
 pub trait PureCompTimeCandidate {
     /// Is the given node pure? Meaning can it be used inside of a pure function.
