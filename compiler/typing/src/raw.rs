@@ -1,5 +1,7 @@
 //! The definitions of the raw types
 
+use std::hash::Hash;
+
 use crate::{
     FieldMethodType, TypeSizedHIR,
     constraints::feature::FeatureFlag,
@@ -155,6 +157,74 @@ impl RawType {
             FeatureFlag::Static => self.is_static(),
             FeatureFlag::Struct => self.is_struct(),
             FeatureFlag::MathOperations => self.has_math_operations(),
+        }
+    }
+}
+
+impl Hash for RawType {
+    fn hash<H: std::hash::Hasher>(&self, h: &mut H) {
+        match self {
+            Self::Integer(a, b) => {
+                h.write_usize(1);
+                h.write_u8(*a as u8);
+                h.write_usize(*b);
+            }
+
+            Self::Floating(a, b) => {
+                h.write_usize(2);
+                h.write_u8(*a as u8);
+                h.write_usize(*b);
+            }
+
+            Self::FixedPoint(a, b, c) => {
+                h.write_usize(3);
+                h.write_u8(*a as u8);
+                h.write_usize(*b);
+                h.write_usize(*c);
+            }
+
+            Self::StaticString => {
+                h.write_usize(4);
+            }
+
+            Self::AnyPointer => {
+                h.write_usize(5);
+            }
+
+            Self::Boolean => {
+                h.write_usize(6);
+            }
+
+            Self::Struct(container) => {
+                h.write_usize(7);
+                container.name.hash(h);
+            }
+
+            Self::Enum(container) => {
+                h.write_usize(8);
+                container.name.val.hash(h);
+            }
+
+            Self::EnumChild(container) => {
+                h.write_usize(9);
+                h.write_usize(container.child_index);
+                container.parent.name.val.hash(h);
+            }
+
+            Self::UnsizedInteger(signed) => {
+                h.write_usize(10);
+                h.write_u8(*signed as u8);
+            }
+
+            Self::UnsizedFloating(signed) => {
+                h.write_usize(11);
+                h.write_u8(*signed as u8);
+            }
+
+            Self::UnsizedFixedPoint(signed) => {
+                h.write_usize(12);
+                h.write_u8(*signed as u8);
+            }
         }
     }
 }
