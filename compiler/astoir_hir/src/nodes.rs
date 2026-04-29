@@ -116,7 +116,7 @@ pub enum HIRNodeKind {
         arguments: Vec<(HashedString, Type)>,
         return_type: Option<Type>,
         body: Vec<Box<HIRNode>>,
-        ctx: BranchedContext, // TODO: add actual type here
+        ctx: BranchedContext,
         requires_this: bool,
     },
 
@@ -155,7 +155,7 @@ pub enum HIRNodeKind {
         arguments: Vec<(HashedString, Type)>,
         return_type: Option<Type>,
         body: Vec<Box<HIRNode>>,
-        ctx: BranchedContext, // TODO: change to type
+        ctx: BranchedContext, 
         requires_this: bool,
     },
 
