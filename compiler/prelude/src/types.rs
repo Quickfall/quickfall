@@ -1,290 +1,55 @@
-use astoir_hir::ctx::HIRContext;
-use compiler_global_scope::{entry::GlobalStorageEntryType, key::EntryKey};
-use compiler_typing::{
-    TypeParameterContainer, enums::RawEnumTypeContainer, raw::RawType, references::TypeReference,
+use astoir_hir::{
+    scope::{ScopeStorage, entry::ScopeEntry, key::EntryKey},
+    types::ScopeStoredType,
 };
-use compiler_utils::hash;
+
 use compiler_utils::hash::HashedString;
 use diagnostics::{DiagnosticSpanOrigin, MaybeDiagnostic};
+use typing::raw::RawType;
 
-pub const SIGNED_INTEGER_8: u64 = hash!("s8");
-pub const SIGNED_INTEGER_16: u64 = hash!("s16");
-pub const SIGNED_INTEGER_32: u64 = hash!("s32");
-pub const SIGNED_INTEGER_64: u64 = hash!("s64");
-pub const SIGNED_INTEGER_128: u64 = hash!("s128");
-pub const SIGNED_INTEGER: u64 = hash!("s");
-
-pub const UNSIGNED_INTEGER_8: u64 = hash!("u8");
-pub const UNSIGNED_INTEGER_16: u64 = hash!("u16");
-pub const UNSIGNED_INTEGER_32: u64 = hash!("u32");
-pub const UNSIGNED_INTEGER_64: u64 = hash!("u64");
-pub const UNSIGNED_INTEGER_128: u64 = hash!("u128");
-pub const UNSIGNED_INTEGER: u64 = hash!("u");
-
-pub const SIGNED_FLOATING_POINT_8: u64 = hash!("f8");
-pub const SIGNED_FLOATING_POINT_16: u64 = hash!("f16");
-pub const SIGNED_FLOATING_POINT_32: u64 = hash!("f32");
-pub const SIGNED_FLOATING_POINT_64: u64 = hash!("f64");
-pub const SIGNED_FLOATING_POINT_80: u64 = hash!("f80");
-pub const SIGNED_FLOATING_POINT_128: u64 = hash!("f128");
-pub const SIGNED_FLOATING_POINT: u64 = hash!("f");
-
-pub const SIGNED_FIXED_POINT_8: u64 = hash!("x8");
-pub const SIGNED_FIXED_POINT_16: u64 = hash!("x16");
-pub const SIGNED_FIXED_POINT_32: u64 = hash!("x32");
-pub const SIGNED_FIXED_POINT_64: u64 = hash!("x64");
-pub const SIGNED_FIXED_POINT_128: u64 = hash!("x128");
-pub const SIGNED_FIXED_POINT: u64 = hash!("x");
-
-pub const UNSIGNED_FLOATING_POINT_8: u64 = hash!("uf8");
-pub const UNSIGNED_FLOATING_POINT_16: u64 = hash!("uf16");
-pub const UNSIGNED_FLOATING_POINT_32: u64 = hash!("uf32");
-pub const UNSIGNED_FLOATING_POINT_64: u64 = hash!("uf64");
-pub const UNSIGNED_FLOATING_POINT_80: u64 = hash!("uf80");
-pub const UNSIGNED_FLOATING_POINT_128: u64 = hash!("uf128");
-pub const UNSIGNED_FLOATING_POINT: u64 = hash!("uf");
-
-pub const UNSIGNED_FIXED_POINT_8: u64 = hash!("ux8");
-pub const UNSIGNED_FIXED_POINT_16: u64 = hash!("ux16");
-pub const UNSIGNED_FIXED_POINT_32: u64 = hash!("ux32");
-pub const UNSIGNED_FIXED_POINT_64: u64 = hash!("ux64");
-pub const UNSIGNED_FIXED_POINT_128: u64 = hash!("ux128");
-pub const UNSIGNED_FIXED_POINT: u64 = hash!("ux");
-
-pub const STATIC_STR: u64 = hash!("staticstr");
-
-pub const POINTER_TYPE: u64 = hash!("ptr");
-pub const BOOLEAN_TYPE: u64 = hash!("bool");
-
-/// Experimental
-pub const RESULT_TYPE: u64 = hash!("result");
-
-pub fn register_prelude_type<K: DiagnosticSpanOrigin>(
-    hir: &mut HIRContext,
-    hash: u64,
-    t: RawType,
+fn register_type<K: DiagnosticSpanOrigin>(
+    hir: &mut ScopeStorage,
+    name: &str,
+    val: RawType,
     origin: &K,
 ) -> MaybeDiagnostic {
-    hir.global_scope.append(
-        EntryKey { name_hash: hash },
-        GlobalStorageEntryType::Type(t),
-        origin,
-    )?;
+    let key = EntryKey::new(HashedString::new(name.to_string()));
+    let entry = ScopeEntry::new_type(ScopeStoredType {
+        t: val,
+        function_implementations: vec![],
+    });
 
+    hir.append(key, entry, origin)?;
     Ok(())
 }
 
 pub fn apply_prelude_types<K: DiagnosticSpanOrigin>(
-    hir: &mut HIRContext,
+    hir: &mut ScopeStorage,
     origin: &K,
 ) -> MaybeDiagnostic {
-    register_prelude_type(hir, SIGNED_INTEGER, RawType::SizedInteger(true), origin)?;
-    register_prelude_type(hir, SIGNED_INTEGER_8, RawType::Integer(8, true), origin)?;
-    register_prelude_type(hir, SIGNED_INTEGER_16, RawType::Integer(16, true), origin)?;
-    register_prelude_type(hir, SIGNED_INTEGER_32, RawType::Integer(32, true), origin)?;
-    register_prelude_type(hir, SIGNED_INTEGER_64, RawType::Integer(64, true), origin)?;
-    register_prelude_type(hir, SIGNED_INTEGER_128, RawType::Integer(128, true), origin)?;
+    register_type(hir, "s8", RawType::Integer(true, 8), origin)?;
+    register_type(hir, "s16", RawType::Integer(true, 16), origin)?;
+    register_type(hir, "s32", RawType::Integer(true, 32), origin)?;
+    register_type(hir, "s64", RawType::Integer(true, 64), origin)?;
+    register_type(hir, "s128", RawType::Integer(true, 128), origin)?;
 
-    register_prelude_type(hir, UNSIGNED_INTEGER, RawType::SizedInteger(false), origin)?;
-    register_prelude_type(hir, UNSIGNED_INTEGER_8, RawType::Integer(8, false), origin)?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_INTEGER_16,
-        RawType::Integer(16, false),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_INTEGER_32,
-        RawType::Integer(32, false),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_INTEGER_64,
-        RawType::Integer(64, false),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_INTEGER_128,
-        RawType::Integer(128, false),
-        origin,
-    )?;
+    register_type(hir, "u8", RawType::Integer(false, 8), origin)?;
+    register_type(hir, "u16", RawType::Integer(false, 16), origin)?;
+    register_type(hir, "u32", RawType::Integer(false, 32), origin)?;
+    register_type(hir, "u64", RawType::Integer(false, 64), origin)?;
+    register_type(hir, "u128", RawType::Integer(false, 128), origin)?;
 
-    register_prelude_type(
-        hir,
-        SIGNED_FLOATING_POINT,
-        RawType::SizedFloating(true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FLOATING_POINT_8,
-        RawType::Floating(8, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FLOATING_POINT_16,
-        RawType::Floating(16, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FLOATING_POINT_32,
-        RawType::Floating(32, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FLOATING_POINT_64,
-        RawType::Floating(64, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FLOATING_POINT_128,
-        RawType::Floating(128, true),
-        origin,
-    )?;
+    register_type(hir, "f8", RawType::Floating(true, 8), origin)?;
+    register_type(hir, "f16", RawType::Floating(true, 16), origin)?;
+    register_type(hir, "f32", RawType::Floating(true, 32), origin)?;
+    register_type(hir, "f64", RawType::Floating(true, 64), origin)?;
+    register_type(hir, "f128", RawType::Floating(true, 128), origin)?;
 
-    register_prelude_type(
-        hir,
-        UNSIGNED_FLOATING_POINT,
-        RawType::SizedFloating(false),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FLOATING_POINT_8,
-        RawType::Floating(8, false),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FLOATING_POINT_16,
-        RawType::Floating(16, false),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FLOATING_POINT_32,
-        RawType::Floating(32, false),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FLOATING_POINT_64,
-        RawType::Floating(64, false),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FLOATING_POINT_128,
-        RawType::Floating(128, false),
-        origin,
-    )?;
-
-    register_prelude_type(
-        hir,
-        SIGNED_FIXED_POINT,
-        RawType::SizedFixedPoint(true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FIXED_POINT_8,
-        RawType::FixedPoint(4, 4, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FIXED_POINT_16,
-        RawType::FixedPoint(8, 8, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FIXED_POINT_32,
-        RawType::FixedPoint(16, 16, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FIXED_POINT_64,
-        RawType::FixedPoint(64, 64, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        SIGNED_FIXED_POINT_128,
-        RawType::FixedPoint(128, 128, true),
-        origin,
-    )?;
-
-    register_prelude_type(
-        hir,
-        UNSIGNED_FIXED_POINT,
-        RawType::SizedFixedPoint(true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FIXED_POINT_8,
-        RawType::FixedPoint(4, 4, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FIXED_POINT_16,
-        RawType::FixedPoint(8, 8, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FIXED_POINT_32,
-        RawType::FixedPoint(16, 16, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FIXED_POINT_64,
-        RawType::FixedPoint(64, 64, true),
-        origin,
-    )?;
-    register_prelude_type(
-        hir,
-        UNSIGNED_FIXED_POINT_128,
-        RawType::FixedPoint(128, 128, true),
-        origin,
-    )?;
-
-    register_prelude_type(hir, BOOLEAN_TYPE, RawType::Boolean, origin)?;
-    register_prelude_type(hir, STATIC_STR, RawType::StaticString, origin)?;
-    register_prelude_type(hir, POINTER_TYPE, RawType::Pointer, origin)?;
-
-    // result<V, E>
-    {
-        let mut type_params = TypeParameterContainer::new();
-
-        type_params.insert(HashedString::new("V".to_string()), 0);
-        type_params.insert(HashedString::new("E".to_string()), 1);
-
-        let mut result_enum =
-            RawEnumTypeContainer::new(hir.global_scope.scope.entries.len(), type_params);
-
-        result_enum.append_entry(
-            HashedString::new("value".to_string()),
-            vec![(hash!("val"), TypeReference::make_unresolved(0))],
-        );
-        result_enum.append_entry(
-            HashedString::new("error".to_string()),
-            vec![(hash!("err"), TypeReference::make_unresolved(1))],
-        );
-
-        register_prelude_type(hir, RESULT_TYPE, RawType::Enum(result_enum), origin)?;
-    }
+    register_type(hir, "uf8", RawType::Floating(false, 8), origin)?;
+    register_type(hir, "uf16", RawType::Floating(false, 16), origin)?;
+    register_type(hir, "uf32", RawType::Floating(false, 32), origin)?;
+    register_type(hir, "uf64", RawType::Floating(false, 64), origin)?;
+    register_type(hir, "uf128", RawType::Floating(false, 128), origin)?;
 
     Ok(())
 }

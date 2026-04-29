@@ -710,8 +710,10 @@ dependencies = [
 name = "prelude"
 version = "0.1.0"
 dependencies = [
+ "astoir_hir",
  "compiler_utils",
  "diagnostics",
+ "typing",
 ]
 
 [[package]]
