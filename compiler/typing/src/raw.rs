@@ -159,6 +159,28 @@ impl RawType {
             FeatureFlag::MathOperations => self.has_math_operations(),
         }
     }
+
+    pub fn get_raw_require_type_parameters(&self) -> usize {
+        match self {
+            Self::UnsizedInteger(_) => 1,
+            Self::UnsizedFloating(_) => 1,
+            Self::UnsizedFixedPoint(_) => 2,
+
+            _ => 0,
+        }
+    }
+
+    pub fn lower(self, size_params: Vec<usize>) -> RawType {
+        match self {
+            Self::UnsizedInteger(signed) => Self::Integer(signed, size_params[0]),
+            Self::UnsizedFloating(signed) => Self::Floating(signed, size_params[0]),
+            Self::UnsizedFixedPoint(signed) => {
+                Self::FixedPoint(signed, size_params[0], size_params[1])
+            }
+
+            _ => self,
+        }
+    }
 }
 
 impl TypeParameterContaining for RawType {

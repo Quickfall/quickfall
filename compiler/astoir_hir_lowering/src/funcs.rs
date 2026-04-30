@@ -2,9 +2,12 @@ use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{
     context::{HIRContext, local::BranchedContext},
     func::HIRFunction,
-    nodes::HIRNode,
+    nodes::{HIRNode, HIRNodeKind},
+    scope::{entry::ScopeEntry, key::EntryKey},
 };
 use diagnostics::DiagnosticResult;
+
+use crate::{lower_ast_body, types::lower_ast_type};
 
 pub fn lower_ast_function_declaration(
     ctx: &mut HIRContext,
@@ -18,7 +21,65 @@ pub fn lower_ast_function_declaration(
         requires_this,
     } = node.kind.clone()
     {
-        let branched = BranchedContext::new();
+        let mut branched = BranchedContext::new();
+        let ret_type;
+
+        if let Some(return_type) = return_type {
+            ret_type = Some(lower_ast_type(ctx, return_type, None, &*node)?);
+        } else {
+            ret_type = None;
+        }
+
+        let mut arguments = vec![];
+
+        for arg in args {
+            arguments.push((
+                arg.name.clone(),
+                lower_ast_type(ctx, arg.argument_type, None, &*node)?,
+            ))
+        }
+
+        for arg in &arguments {
+            branched.introduce_variable(arg.0.val.clone(), arg.1.clone(), true)?;
+        }
+
+        let hir_function = HIRFunction::new_pre_full(
+            func_name.val.clone(),
+            ret_type.clone(),
+            arguments.clone(),
+            branched,
+        );
+        let key = EntryKey::new(func_name.clone());
+
+        // Register pre full function
+
+        let res = ctx
+            .scope
+            .append(key, ScopeEntry::new_function(hir_function), &*node)?;
+
+        let hir_function = ctx.scope.get_function(&key, &*node)?;
+
+        let body = lower_ast_body(ctx, body)?;
+
+        let implementation = Box::new(HIRNode::new(
+            HIRNodeKind::FunctionDeclaration {
+                func_name: res,
+                raw_name: func_name.clone(),
+                arguments,
+                return_type: ret_type,
+                body,
+                ctx: &hir_function.ctx.as_ref().unwrap(),
+                requires_this,
+            },
+            None,
+            &node.start,
+            &node.end,
+        ));
+
+        // TODO: add a modifier function for functions
+        hir_function.implementation = Some(implementation.clone());
+
+        return Ok(implementation);
     }
 
     panic!("Invalid node")

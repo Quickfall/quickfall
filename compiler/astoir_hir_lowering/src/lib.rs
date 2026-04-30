@@ -1,13 +1,9 @@
-use ast::{ctx::ParserCtx, types::ASTType};
-use astoir_hir::{context::HIRContext, scope::key::EntryKey};
-use compiler_utils::hash::HashedString;
-use diagnostics::{
-    DiagnosticResult, DiagnosticSpanOrigin,
-    builders::{make_cannot_find, make_req_type_kind},
-};
-use typing::raw::RawType;
+use ast::{ctx::ParserCtx, tree::ASTTreeNode};
+use astoir_hir::{context::HIRContext, nodes::HIRNode};
+use diagnostics::DiagnosticResult;
 
 pub mod funcs;
+pub mod types;
 
 pub fn lower_ast_hir(ctx: ParserCtx) -> DiagnosticResult<HIRContext> {
     let hir = HIRContext::new();
@@ -15,33 +11,22 @@ pub fn lower_ast_hir(ctx: ParserCtx) -> DiagnosticResult<HIRContext> {
     Ok(hir)
 }
 
-pub fn lower_ast_type<K: DiagnosticSpanOrigin>(
-    context: &mut HIRContext,
-    t: ASTType,
-    origin: &K,
-) -> DiagnosticResult<Type> {
-    return match t {
-        ASTType::Generic(type_id, type_params, size_params, specifier) => {
-            let hash = HashedString::new(type_id);
-            let key = EntryKey::new(hash.clone());
+pub fn lower_ast_body_node(
+    ctx: &mut HIRContext,
+    node: Box<ASTTreeNode>,
+) -> DiagnosticResult<Box<HIRNode>> {
+    todo!()
+}
 
-            let mut hir = context.scope.get_type(&key, origin)?.t;
+pub fn lower_ast_body(
+    ctx: &mut HIRContext,
+    body: Vec<Box<ASTTreeNode>>,
+) -> DiagnosticResult<Vec<Box<HIRNode>>> {
+    let mut vec = vec![];
 
-            if let Some(spec) = specifier {
-                let container = match &hir {
-                    RawType::Enum(container) => container,
-                    _ => return Err(make_req_type_kind(origin, &"enum".to_string()).into()),
-                };
+    for node in body {
+        vec.push(lower_ast_body_node(ctx, node)?);
+    }
 
-                let child = match container.children.get(&spec) {
-                    Some(v) => v,
-                    None => {
-                        return Err(make_cannot_find(origin, &format!("{}:{}", key, spec)).into());
-                    }
-                };
-
-                hir = RawType::EnumChild(child.clone());
-            };
-        }
-    };
+    return Ok(vec);
 }
