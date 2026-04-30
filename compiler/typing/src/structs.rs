@@ -98,4 +98,8 @@ impl TypeParameterContaining for StructContainer {
         self.type_parameters
             .insert(param.clone(), TypeParameter::new(param, constraint));
     }
+
+    fn get_param_types(&self) -> Vec<String> {
+        self.type_parameters.keys.clone()
+    }
 }

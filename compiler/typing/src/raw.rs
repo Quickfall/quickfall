@@ -3,7 +3,7 @@
 use std::hash::Hash;
 
 use crate::{
-    FieldMethodType, TypeSizedHIR,
+    FieldMethodType, TypeParameterContaining, TypeSizedHIR,
     constraints::feature::FeatureFlag,
     container::Type,
     enums::{ChildEnumContainer, ParentEnumContainer},
@@ -157,6 +157,51 @@ impl RawType {
             FeatureFlag::Static => self.is_static(),
             FeatureFlag::Struct => self.is_struct(),
             FeatureFlag::MathOperations => self.has_math_operations(),
+        }
+    }
+}
+
+impl TypeParameterContaining for RawType {
+    fn get_param_types(&self) -> Vec<String> {
+        match self {
+            Self::Struct(container) => container.get_param_types(),
+            Self::Enum(container) => container.get_param_types(),
+            Self::EnumChild(container) => container.get_param_types(),
+
+            _ => vec![],
+        }
+    }
+
+    fn append_type_parameter(
+        &mut self,
+        param: String,
+        constraint: crate::constraints::TypeConstraintContainer,
+    ) {
+        match self {
+            Self::Struct(container) => container.append_type_parameter(param, constraint),
+            Self::Enum(container) => container.append_type_parameter(param, constraint),
+
+            _ => panic!("Cannot add type parameter here"),
+        }
+    }
+
+    fn has_param_type(&self, param: String) -> bool {
+        match self {
+            Self::Struct(container) => container.has_param_type(param),
+            Self::Enum(container) => container.has_param_type(param),
+            Self::EnumChild(container) => container.has_param_type(param),
+
+            _ => false,
+        }
+    }
+
+    fn get_type_param_type(&self, param: String) -> Type {
+        match self {
+            Self::Struct(container) => container.get_type_param_type(param),
+            Self::Enum(container) => container.get_type_param_type(param),
+            Self::EnumChild(container) => container.get_type_param_type(param),
+
+            _ => panic!("cannot get param type from type"),
         }
     }
 }

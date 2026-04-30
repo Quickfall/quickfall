@@ -19,6 +19,8 @@ pub trait TypeParameterContaining {
 
     /// Appends a new type parameter into the given container.
     fn append_type_parameter(&mut self, param: String, constraint: TypeConstraintContainer);
+
+    fn get_param_types(&self) -> Vec<String>;
 }
 
 pub trait FieldMethodType {

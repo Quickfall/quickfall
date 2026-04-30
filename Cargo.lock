@@ -99,6 +99,13 @@ dependencies = [
 [[package]]
 name = "astoir_hir_lowering"
 version = "0.1.0"
+dependencies = [
+ "ast",
+ "astoir_hir",
+ "compiler_utils",
+ "diagnostics",
+ "typing",
+]
 
 [[package]]
 name = "astoir_mir"

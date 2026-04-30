@@ -93,6 +93,10 @@ impl TypeParameterContaining for ParentEnumContainer {
     fn has_param_type(&self, param: String) -> bool {
         self.type_parameters.has_key(&param)
     }
+
+    fn get_param_types(&self) -> Vec<String> {
+        self.type_parameters.keys.clone()
+    }
 }
 
 impl TypeParameterContaining for ChildEnumContainer {
@@ -110,5 +114,9 @@ impl TypeParameterContaining for ChildEnumContainer {
 
     fn has_param_type(&self, param: String) -> bool {
         self.parent.has_param_type(param)
+    }
+
+    fn get_param_types(&self) -> Vec<String> {
+        self.parent.get_param_types().clone()
     }
 }
