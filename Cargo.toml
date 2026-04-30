@@ -1,5 +1,4 @@
 [workspace]
-resolver = "3"
 members = [
 	"compiler/ast",
 	"compiler/ast_parser",
@@ -12,5 +11,8 @@ members = [
 	"compiler/diagnostics",
 	"compiler/prelude",
 	"lsp",
-	"compiler/typing", "compiler/astoir_hir",
+	"compiler/typing",
+	"compiler/astoir_hir",
+	"compiler/astoir_hir_lowering",
 ]
+resolver = "3"

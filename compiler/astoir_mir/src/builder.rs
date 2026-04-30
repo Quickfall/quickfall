@@ -1,7 +1,7 @@
 //! Utility functions to build instructions and more
 
-use compiler_typing::{SizedType, TypedGlobalScope, raw::RawType, tree::Type};
 use diagnostics::{DiagnosticResult, MaybeDiagnostic, unsure_panic};
+use typing::container::Type;
 
 use crate::{
     blocks::{hints::MIRValueHint, refer::MIRBlockReference},
@@ -42,7 +42,6 @@ pub fn build_load(ctx: &mut MIRContext, ptr: MIRPointerValue) -> DiagnosticResul
 
 pub fn build_store(
     ctx: &mut MIRContext,
-    storage: &TypedGlobalScope,
     ptr: MIRPointerValue,
     val: BaseMIRValue,
 ) -> DiagnosticResult<()> {
@@ -50,7 +49,7 @@ pub fn build_store(
 
     let hint = ctx.ssa_hints.get_hint(base.get_ssa_index()).get_type();
 
-    if !hint.get_maybe_containing_type().is_truly_eq(&val.vtype) && !hint.is_ptr() {
+    if !hint.is_truly_eq(&val.vtype) && !hint.is_ptr() {
         if hint
             .get_maybe_containing_type()
             .get_generic()
