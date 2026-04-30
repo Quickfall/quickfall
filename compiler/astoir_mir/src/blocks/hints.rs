@@ -1,10 +1,10 @@
-use compiler_typing::tree::Type;
 use diagnostics::unsure_panic;
+use typing::container::Type;
 
 use crate::vals::consts::MIRConstantValue;
 
 /// A hint on a given value, contains constants or pointer types for example
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum MIRValueHint {
     Constant(MIRConstantValue),
     Pointer(Type),

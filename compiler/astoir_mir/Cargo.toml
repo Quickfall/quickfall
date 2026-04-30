@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+typing = { path = "../typing" }
 diagnostics = { path = "../diagnostics" }
 compiler_utils = { path = "../compiler_utils" }
