@@ -7,6 +7,9 @@ use crate::types::apply_prelude_types;
 
 pub mod types;
 
-pub fn apply_prelude<K: DiagnosticSpanOrigin>(scope: &ScopeStorage, origin: &K) -> MaybeDiagnostic {
-    apply_prelude_types(hir, origin)
+pub fn apply_prelude<K: DiagnosticSpanOrigin>(
+    scope: &mut ScopeStorage,
+    origin: &K,
+) -> MaybeDiagnostic {
+    apply_prelude_types(scope, origin)
 }
