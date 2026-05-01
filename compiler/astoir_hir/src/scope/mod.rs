@@ -18,7 +18,7 @@ pub mod key;
 
 pub struct ScopeStorage {
     key_to_ind: HashMap<EntryKey, usize>,
-    entries: Vec<ScopeEntry>,
+    pub entries: Vec<ScopeEntry>,
 }
 
 impl ScopeStorage {

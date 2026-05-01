@@ -7,10 +7,20 @@ use compiler_utils::{
     hash::HashedString,
     operators::{ComparingOperator, MathOperator},
 };
-use typing::{container::Type, enums::ParentEnumContainer, structs::StructContainer};
+use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_expected_simple_error};
+use typing::{
+    container::Type,
+    enums::ParentEnumContainer,
+    raw::{InformationRawType, RawType},
+    structs::StructContainer,
+};
 
 use crate::{
-    PureCompTimeCandidate, context::local::BranchedContext, ifelse::HIRIfBranch, lru::StructLRUStep,
+    PureCompTimeCandidate,
+    context::{HIRContext, local::BranchedContext},
+    ifelse::HIRIfBranch,
+    lru::StructLRUStep,
+    scope::key::EntryKey,
 };
 
 #[derive(Clone)]
@@ -24,6 +34,7 @@ pub struct HIRNode {
 pub enum HIRNodeKind {
     IntegerLiteral(i128),
     FloatLiteral(f64),
+    StringLiteral(String),
 
     CastValue {
         intentional: bool,
@@ -74,7 +85,7 @@ pub enum HIRNodeKind {
     VariableReference {
         index: usize,
         name: HashedString,
-        is_static: bool,
+        static_key: Option<EntryKey>,
     },
 
     FunctionReference {
@@ -211,6 +222,111 @@ impl HIRNode {
             kind,
             start: start.clone(),
             end: end.clone(),
+        }
+    }
+
+    pub fn get_type<K: DiagnosticSpanOrigin>(
+        &self,
+        context: &mut HIRContext,
+        func_entry: Option<&EntryKey>,
+        origin: &K,
+    ) -> DiagnosticResult<Option<Type>> {
+        match self.kind.clone() {
+            HIRNodeKind::IntegerLiteral(_) => Ok(Some(Type::Raw {
+                raw: InformationRawType::new(RawType::Integer(true, 128)),
+            })),
+
+            HIRNodeKind::FloatLiteral(_) => Ok(Some(Type::Raw {
+                raw: InformationRawType::new(RawType::Floating(true, 128)),
+            })),
+
+            HIRNodeKind::CastValue {
+                intentional: _,
+                value: _,
+                old_type: _,
+                new_type,
+            } => Ok(Some(new_type.clone())),
+
+            HIRNodeKind::MathOperation {
+                left,
+                right: _,
+                operation: _,
+            } => left.get_type(context, func_entry, origin),
+
+            HIRNodeKind::UnwrapCondition {
+                original: _,
+                new_type,
+                new_var: _,
+                new_var_name: _,
+                unsafe_unwrap: _,
+            } => Ok(Some(new_type.clone())),
+
+            HIRNodeKind::UnwrapValue {
+                original: _,
+                new_type,
+                unsafe_unwrap: _,
+            } => Ok(Some(new_type.clone())),
+
+            HIRNodeKind::VariableReference {
+                index,
+                name: _,
+                static_key,
+            } => {
+                if let Some(static_key) = static_key {
+                    todo!("Add static support");
+                }
+
+                let entry = context
+                    .scope
+                    .get_function(func_entry.clone().unwrap(), origin)?;
+
+                return Ok(Some(
+                    entry.ctx.as_ref().clone().unwrap().variables[index]
+                        .variable_type
+                        .clone(),
+                ));
+            }
+
+            HIRNodeKind::PointerGrab { val } => Ok(Some(Type::Pointer {
+                is_array: false,
+                inner: Box::new(val.get_type(context, func_entry, origin)?.unwrap()),
+            })),
+
+            HIRNodeKind::ReferenceGrab { val } => Ok(Some(Type::Pointer {
+                is_array: false,
+                inner: Box::new(val.get_type(context, func_entry, origin)?.unwrap()),
+            })),
+
+            HIRNodeKind::StructLRU { steps: _, last } => Ok(Some(last.clone())),
+
+            HIRNodeKind::ArrayVariableInitValue { vals } => Ok(Some(Type::Array {
+                size: vals.len(),
+                inner: Box::new(vals[0].get_type(context, func_entry, origin)?.unwrap()),
+            })),
+
+            HIRNodeKind::ArrayVariableInitValueSame { size, val } => Ok(Some(Type::Array {
+                size,
+                inner: Box::new(val.get_type(context, func_entry, origin)?.unwrap()),
+            })),
+
+            HIRNodeKind::StructInitTyped { t, fields: _ } => Ok(Some(t.clone())),
+
+            HIRNodeKind::FunctionCall {
+                func_name,
+                arguments: _,
+            } => Ok(context.scope.entries[func_name]
+                .as_function(origin)?
+                .return_type
+                .clone()),
+
+            HIRNodeKind::BooleanCondition { .. } => Ok(Some(Type::Raw {
+                raw: InformationRawType::new(RawType::Boolean),
+            })),
+            HIRNodeKind::BooleanOperator { .. } => Ok(Some(Type::Raw {
+                raw: InformationRawType::new(RawType::Boolean),
+            })),
+
+            _ => Ok(None),
         }
     }
 }

@@ -1,5 +1,6 @@
 //! The core of the HIR layer of AstoIR.
 
+pub mod casting;
 pub mod context;
 pub mod func;
 pub mod ifelse;
