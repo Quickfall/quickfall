@@ -1,10 +1,12 @@
 use diagnostics::{
     DiagnosticResult, DiagnosticSpanOrigin,
     builders::{
-        make_expected_simple_error, make_field_no_such, make_field_type, make_struct_missing_field,
+        make_diff_type_val, make_expected_simple_error, make_field_no_such, make_field_type,
+        make_struct_missing_field,
     },
+    unsure_panic,
 };
-use typing::{FieldMethodType, container::Type};
+use typing::{FieldMethodType, TypeTransmutation, container::Type};
 
 use crate::{
     context::HIRContext,
@@ -80,6 +82,69 @@ impl HIRNode {
             panic!("Invalid node")
         }
 
-        todo!("Add casting here")
+        if self_type.can_transmute(t.clone()) {
+            match &self.kind {
+                HIRNodeKind::IntegerLiteral(a, _) => {
+                    if !t.get_raw().t.is_integer() {
+                        unsure_panic!("tried making integer lit with no integer type!")
+                    }
+
+                    return Ok(self.with(HIRNodeKind::IntegerLiteral(*a, t.get_raw().t)));
+                }
+
+                HIRNodeKind::FloatLiteral(a, _) => {
+                    if !t.get_raw().t.is_floating() && !t.get_raw().t.is_fixed() {
+                        unsure_panic!("tried making float lit with no floating integer types!")
+                    }
+
+                    return Ok(self.with(HIRNodeKind::FloatLiteral(*a, t.get_raw().t)));
+                }
+
+                HIRNodeKind::ArrayVariableInitValue { vals } => {
+                    if can_transmute_inner(&self_type, &t) {
+                        let mut values = vec![];
+                        let inner = t.get_next();
+
+                        for val in vals {
+                            values.push(val.use_as(context, func_entry, inner.clone(), origin)?)
+                        }
+
+                        return Ok(self.with(HIRNodeKind::ArrayVariableInitValue { vals: values }));
+                    }
+                }
+
+                HIRNodeKind::ArrayVariableInitValueSame { size, val } => {
+                    if can_transmute_inner(&self_type, &t) {
+                        let new_val = val.use_as(context, func_entry, t.get_next(), origin)?;
+
+                        return Ok(self.with(HIRNodeKind::ArrayVariableInitValueSame {
+                            size: *size,
+                            val: new_val,
+                        }));
+                    }
+                }
+
+                _ => {
+                    return Ok(self.with(HIRNodeKind::CastValue {
+                        intentional: false,
+                        value: Box::new(self.clone()),
+                        old_type: self_type.clone(),
+                        new_type: t.clone(),
+                    }));
+                }
+            }
+        }
+
+        return Err(make_diff_type_val(origin, &t, &self_type).into());
     }
+}
+
+pub fn can_transmute_inner(array_type: &Type, new_type: &Type) -> bool {
+    if !array_type.is_array() || !new_type.is_array() {
+        unsure_panic!(
+            "either ones of the types sent using can_transmute_inner were not array types"
+        );
+    }
+
+    return array_type.get_next().can_transmute(new_type.get_next());
 }

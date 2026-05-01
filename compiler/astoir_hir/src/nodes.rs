@@ -32,8 +32,8 @@ pub struct HIRNode {
 
 #[derive(Clone)]
 pub enum HIRNodeKind {
-    IntegerLiteral(i128),
-    FloatLiteral(f64),
+    IntegerLiteral(i128, RawType),
+    FloatLiteral(f64, RawType),
     StringLiteral(String),
 
     CastValue {
@@ -232,12 +232,12 @@ impl HIRNode {
         origin: &K,
     ) -> DiagnosticResult<Option<Type>> {
         match self.kind.clone() {
-            HIRNodeKind::IntegerLiteral(_) => Ok(Some(Type::Raw {
-                raw: InformationRawType::new(RawType::Integer(true, 128)),
+            HIRNodeKind::IntegerLiteral(_, t) => Ok(Some(Type::Raw {
+                raw: InformationRawType::new(t.clone()),
             })),
 
-            HIRNodeKind::FloatLiteral(_) => Ok(Some(Type::Raw {
-                raw: InformationRawType::new(RawType::Floating(true, 128)),
+            HIRNodeKind::FloatLiteral(_, t) => Ok(Some(Type::Raw {
+                raw: InformationRawType::new(t.clone()),
             })),
 
             HIRNodeKind::CastValue {
@@ -272,7 +272,7 @@ impl HIRNode {
                 name: _,
                 static_key,
             } => {
-                if let Some(static_key) = static_key {
+                if let Some(_) = static_key {
                     todo!("Add static support");
                 }
 
@@ -328,6 +328,13 @@ impl HIRNode {
 
             _ => Ok(None),
         }
+    }
+
+    pub fn with(&self, kind: HIRNodeKind) -> Box<HIRNode> {
+        let mut new = self.clone();
+        new.kind = kind;
+
+        Box::new(new)
     }
 }
 
