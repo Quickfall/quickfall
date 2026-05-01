@@ -106,3 +106,5 @@ declare_error!(CANNOT_FIND, 33, "cannot find {} in the current scope");
 
 declare_error!(ENDING_POINT_MISSING, 34, "missing ending point.");
 declare_error!(CODE_UNREACHABLE, 35, "unreachable code.");
+declare_error!(FIELD_USELESS, 36, "no such field {}");
+declare_error!(FIELD_TYPE, 37, "field {} expected a type {}");

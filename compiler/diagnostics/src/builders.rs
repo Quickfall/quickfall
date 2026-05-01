@@ -7,10 +7,10 @@ use crate::{
         ALREADY_IN_SCOPE, ASSIGN_DIFF_TYPE_IR, BOUND_MISSING, CANNOT_FIND, CODE_UNREACHABLE,
         DIFF_SIZE_SPECIFIERS, DIFF_TYPE_SPECIFIERS, ENDING_POINT_MISSING, ENUM_PARENT_FIELDS,
         ERA_NOT_EXIST, EXPECTED_FREE, EXPECTED_TOKEN, EXPECTED_TYPE, FIELD_MISSING,
-        FIELD_STRUCT_INIT, FIND_TYPE, FIND_TYPE_FIELD, FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING,
-        INDEX_USAGE, INVALID_POINTING, INVALID_TYPE_REQ, IR_CAST, IR_INSTRUCTION_HELD_VAL,
-        MATH_OPERATION_ASSIGNS, NOT_FOUND_USE, TRAIT_MISSING, TYPE_NOT_PART, UNEXPECTED_TOKEN,
-        VARIABLE_UNINIT,
+        FIELD_STRUCT_INIT, FIELD_TYPE, FIELD_USELESS, FIND_TYPE, FIND_TYPE_FIELD,
+        FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING, INDEX_USAGE, INVALID_POINTING,
+        INVALID_TYPE_REQ, IR_CAST, IR_INSTRUCTION_HELD_VAL, MATH_OPERATION_ASSIGNS, NOT_FOUND_USE,
+        TRAIT_MISSING, TYPE_NOT_PART, UNEXPECTED_TOKEN, VARIABLE_UNINIT,
     },
     get_current_diagnostic_pos,
     warnings::UNUSED_VAR,
@@ -667,5 +667,36 @@ pub fn make_unreachable_code<K: DiagnosticSpanOrigin>(origin: &K) -> Diagnostic 
         vec![],
         vec!["an ending point (eg: return statement) was previously introduced, this code is then unreachable".to_string()],
         vec!["move this code before the ending point".to_string()],
+    )
+}
+
+pub fn make_field_no_such<K: DiagnosticSpanOrigin, F: Display>(
+    origin: &K,
+    field: &F,
+) -> Diagnostic {
+    origin.make_simple_diagnostic(
+        FIELD_USELESS.0,
+        Level::Error,
+        format!("no such field {}", field),
+        None,
+        vec![],
+        vec!["this field in the initializer does not exist".to_string()],
+        vec!["remove this field".to_string()],
+    )
+}
+
+pub fn make_field_type<K: DiagnosticSpanOrigin, F: Display, T: Display>(
+    origin: &K,
+    field: &F,
+    expected: &T,
+) -> Diagnostic {
+    origin.make_simple_diagnostic(
+        FIELD_TYPE.0,
+        Level::Error,
+        format!("field {} expected a type {}", field, expected),
+        None,
+        vec![],
+        vec![],
+        vec![],
     )
 }
