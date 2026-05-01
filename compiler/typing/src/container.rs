@@ -15,7 +15,7 @@ use std::hash::Hash;
 use crate::{
     FieldMethodType, TypeTransmutation,
     constraints::{TypeConstraintContainer, feature::FeatureFlag},
-    raw::InformationRawType,
+    raw::{InformationRawType, RawType},
 };
 
 /// The main container for types
@@ -239,6 +239,22 @@ impl TypeTransmutation for Type {
             ) => size == size2 && inner.can_transmute(*inner2.clone()),
 
             (Type::GenericTypeParam { .. }, Type::GenericTypeParam { .. }) => false, // Transmutation disabled for type parameters
+
+            (Type::Pointer { is_array, inner: _ }, Type::Raw { raw }) => {
+                if !is_array && raw.t == RawType::AnyPointer {
+                    return true;
+                }
+
+                return false;
+            }
+
+            (Type::Raw { raw }, Type::Pointer { is_array, inner: _ }) => {
+                if !is_array && raw.t == RawType::AnyPointer {
+                    return true;
+                }
+
+                return false;
+            }
 
             _ => false,
         }
