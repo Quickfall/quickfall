@@ -1,3 +1,5 @@
+use compiler_utils::hash::HashedString;
+
 use crate::{constraints::TypeConstraintContainer, container::Type};
 
 pub mod constraints;
@@ -27,4 +29,6 @@ pub trait TypeParameterContaining {
 pub trait FieldMethodType {
     fn has_field(&self, name: String, t: Type) -> bool;
     fn has_method(&self, name: String, return_type: Option<Type>, arguments: Vec<Type>) -> bool;
+    fn get_fields(&self) -> Vec<(HashedString, Type)>;
+    fn get_methods(&self) -> Vec<(HashedString, Vec<Type>, Option<Type>)>;
 }

@@ -1,6 +1,8 @@
 //! The definitions of the raw types
 
-use std::{fmt::Display, hash::Hash};
+use std::hash::Hash;
+
+use compiler_utils::hash::HashedString;
 
 use crate::{
     FieldMethodType, TypeParameterContaining, TypeSizedHIR,
@@ -32,7 +34,7 @@ pub enum RawType {
 }
 
 /// A RawType that stores additional information such as size parameters and type parameters
-#[derive(Clone)]
+#[derive(Clone, Hash)]
 pub struct InformationRawType {
     pub t: RawType,
 
@@ -327,6 +329,83 @@ impl PartialEq for InformationRawType {
 }
 
 impl FieldMethodType for RawType {
+    fn get_fields(&self) -> Vec<(compiler_utils::hash::HashedString, Type)> {
+        let mut fields = vec![];
+        match self {
+            Self::Struct(container) => {
+                for key in &container.fields.keys {
+                    fields.push((
+                        HashedString::new(key.clone()),
+                        container.fields.get_as_clone(key.clone()).unwrap().t,
+                    ))
+                }
+            }
+
+            Self::EnumChild(container) => {
+                for key in &container.fields.keys {
+                    fields.push((
+                        HashedString::new(key.clone()),
+                        container.fields.get_as_clone(key.clone()).unwrap().t,
+                    ))
+                }
+            }
+
+            _ => {}
+        }
+
+        fields
+    }
+
+    fn get_methods(&self) -> Vec<(HashedString, Vec<Type>, Option<Type>)> {
+        let mut methods = vec![];
+
+        match self {
+            Self::Struct(container) => {
+                for key in &container.functions.keys {
+                    let func = container.functions.get_as_clone(key.clone()).unwrap();
+
+                    methods.push((
+                        func.name.clone(),
+                        func.arguments.clone(),
+                        func.return_type.clone(),
+                    ));
+                }
+            }
+
+            Self::Enum(container) => {
+                for key in &container.functions.keys {
+                    let func = container.functions.get_as_clone(key.clone()).unwrap();
+
+                    methods.push((
+                        func.name.clone(),
+                        func.arguments.clone(),
+                        func.return_type.clone(),
+                    ));
+                }
+            }
+
+            Self::EnumChild(container) => {
+                for key in &container.parent.functions.keys {
+                    let func = container
+                        .parent
+                        .functions
+                        .get_as_clone(key.clone())
+                        .unwrap();
+
+                    methods.push((
+                        func.name.clone(),
+                        func.arguments.clone(),
+                        func.return_type.clone(),
+                    ));
+                }
+            }
+
+            _ => {}
+        }
+
+        methods
+    }
+
     fn has_field(&self, name: String, t: Type) -> bool {
         match self {
             Self::Struct(container) => {

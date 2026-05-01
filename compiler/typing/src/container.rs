@@ -10,6 +10,8 @@
 //! -	-	- Raw (signed 32 bit integer)
 //! ```
 
+use std::hash::Hash;
+
 use crate::{
     FieldMethodType,
     constraints::{TypeConstraintContainer, feature::FeatureFlag},
@@ -110,6 +112,32 @@ impl FieldMethodType for Type {
         }
     }
 
+    fn get_fields(&self) -> Vec<(compiler_utils::hash::HashedString, Type)> {
+        match self {
+            Self::Raw { raw } => raw.t.get_fields(),
+            Self::GenericTypeParam {
+                constraints,
+                name: _,
+            } => constraints.get_fields(),
+            Self::Pointer { is_array: _, inner } => inner.get_fields(),
+
+            _ => vec![],
+        }
+    }
+
+    fn get_methods(&self) -> Vec<(compiler_utils::hash::HashedString, Vec<Type>, Option<Type>)> {
+        match self {
+            Self::Raw { raw } => raw.t.get_methods(),
+            Self::GenericTypeParam {
+                constraints,
+                name: _,
+            } => constraints.get_functions(),
+            Self::Pointer { is_array: _, inner } => inner.get_methods(),
+
+            _ => vec![],
+        }
+    }
+
     fn has_method(&self, name: String, return_type: Option<Type>, arguments: Vec<Type>) -> bool {
         match self {
             Self::Raw { raw } => raw.t.has_method(name, return_type, arguments),
@@ -154,6 +182,39 @@ impl PartialEq for Type {
             ) => name == name2 && constraints == constraints2,
 
             _ => false,
+        }
+    }
+}
+
+impl Eq for Type {}
+
+impl Hash for Type {
+    fn hash<H: std::hash::Hasher>(&self, h: &mut H) {
+        match self {
+            Self::Raw { raw } => {
+                h.write_usize(0);
+                raw.hash(h);
+            }
+
+            Self::GenericTypeParam {
+                constraints: _,
+                name,
+            } => {
+                h.write_usize(1);
+                name.hash(h);
+            }
+
+            Self::Array { size, inner } => {
+                h.write_usize(2);
+                h.write_usize(*size);
+                inner.hash(h);
+            }
+
+            Self::Pointer { is_array, inner } => {
+                h.write_usize(3);
+                h.write_u8(*is_array as u8);
+                inner.hash(h);
+            }
         }
     }
 }
