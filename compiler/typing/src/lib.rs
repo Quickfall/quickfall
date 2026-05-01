@@ -3,6 +3,7 @@ use crate::{constraints::TypeConstraintContainer, container::Type};
 pub mod constraints;
 pub mod container;
 pub mod enums;
+pub mod fmt;
 pub mod raw;
 pub mod structs;
 

@@ -1,6 +1,6 @@
 //! The definitions of the raw types
 
-use std::hash::Hash;
+use std::{fmt::Display, hash::Hash};
 
 use crate::{
     FieldMethodType, TypeParameterContaining, TypeSizedHIR,
