@@ -4,7 +4,7 @@ use astoir_hir::{
     nodes::{HIRNode, HIRNodeKind},
     scope::key::EntryKey,
 };
-use diagnostics::DiagnosticResult;
+use diagnostics::{DiagnosticResult, builders::make_cannot_find};
 
 use crate::{types::lower_ast_type, values::lower_ast_value};
 
@@ -57,6 +57,39 @@ pub fn lower_ast_variable_declaration(
             &node.start,
             &node.end,
         )));
+    }
+
+    panic!("Invalid node")
+}
+
+pub fn lower_ast_variable_reference(
+    context: &mut HIRContext,
+    func_key: &EntryKey,
+    node: Box<ASTTreeNode>,
+) -> DiagnosticResult<Box<HIRNode>> {
+    if let ASTTreeNodeKind::VariableReference(e) = node.kind.clone() {
+        let ctx = context
+            .scope
+            .get(func_key, &*node)?
+            .as_function(&*node)?
+            .ctx
+            .as_ref()
+            .clone()
+            .unwrap();
+
+        if ctx.hash_to_ind.contains_key(&e) {
+            return Ok(Box::new(HIRNode::new(
+                HIRNodeKind::VariableReference {
+                    index: ctx.hash_to_ind[&e],
+                    name: e.clone(),
+                    static_key: None,
+                },
+                &node.start,
+                &node.end,
+            )));
+        }
+
+        return Err(make_cannot_find(&*node, &e.val).into());
     }
 
     panic!("Invalid node")
