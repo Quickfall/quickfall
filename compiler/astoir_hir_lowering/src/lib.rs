@@ -11,6 +11,7 @@ use diagnostics::DiagnosticResult;
 use crate::funcs::lower_ast_function_declaration;
 
 pub mod body;
+pub mod booleans;
 pub mod funcs;
 pub mod math;
 pub mod types;

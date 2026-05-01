@@ -10,7 +10,11 @@ use typing::{
     raw::{InformationRawType, RawType},
 };
 
-use crate::{math::lower_ast_math_operation, vars::lower_ast_variable_reference};
+use crate::{
+    booleans::{lower_ast_boolean_compare, lower_ast_boolean_condition},
+    math::lower_ast_math_operation,
+    vars::lower_ast_variable_reference,
+};
 
 pub fn lower_ast_generic(
     context: &mut HIRContext,
@@ -54,6 +58,14 @@ pub fn lower_ast_value(
 
         ASTTreeNodeKind::MathResult { .. } => {
             return lower_ast_math_operation(context, func_key, node, false);
+        }
+
+        ASTTreeNodeKind::BooleanBasedConditionMember { .. } => {
+            return lower_ast_boolean_condition(context, func_key, node);
+        }
+
+        ASTTreeNodeKind::OperatorBasedConditionMember { .. } => {
+            return lower_ast_boolean_compare(context, func_key, node);
         }
 
         _ => panic!("Invalid node"),
