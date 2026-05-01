@@ -2,7 +2,7 @@ use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{context::HIRContext, nodes::HIRNode, scope::key::EntryKey};
 use diagnostics::DiagnosticResult;
 
-use crate::vars::lower_ast_variable_declaration;
+use crate::{math::lower_ast_math_operation, vars::lower_ast_variable_declaration};
 
 pub fn lower_ast_body_node(
     context: &mut HIRContext,
@@ -12,6 +12,10 @@ pub fn lower_ast_body_node(
     match node.kind {
         ASTTreeNodeKind::VarDeclaration { .. } => {
             lower_ast_variable_declaration(context, func_key, node)
+        }
+
+        ASTTreeNodeKind::MathResult { .. } => {
+            lower_ast_math_operation(context, Some(func_key), node, true)
         }
 
         _ => panic!("Invalid node!"),

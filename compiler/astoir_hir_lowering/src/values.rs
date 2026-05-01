@@ -10,6 +10,8 @@ use typing::{
     raw::{InformationRawType, RawType},
 };
 
+use crate::{math::lower_ast_math_operation, vars::lower_ast_variable_reference};
+
 pub fn lower_ast_generic(
     context: &mut HIRContext,
     node: Box<ASTTreeNode>,
@@ -38,12 +40,20 @@ pub fn lower_ast_generic(
 
 pub fn lower_ast_value(
     context: &mut HIRContext,
-    func_key: &EntryKey,
+    func_key: Option<&EntryKey>,
     node: Box<ASTTreeNode>,
 ) -> DiagnosticResult<Box<HIRNode>> {
     match node.kind {
         ASTTreeNodeKind::StringLit(_) | ASTTreeNodeKind::IntegerLit { .. } => {
             return lower_ast_generic(context, node);
+        }
+
+        ASTTreeNodeKind::VariableReference(_) => {
+            return lower_ast_variable_reference(context, func_key.unwrap(), node);
+        }
+
+        ASTTreeNodeKind::MathResult { .. } => {
+            return lower_ast_math_operation(context, func_key, node, false);
         }
 
         _ => panic!("Invalid node"),
