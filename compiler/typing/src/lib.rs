@@ -32,3 +32,7 @@ pub trait FieldMethodType {
     fn get_fields(&self) -> Vec<(HashedString, Type)>;
     fn get_methods(&self) -> Vec<(HashedString, Vec<Type>, Option<Type>)>;
 }
+
+pub trait TypeTransmutation {
+    fn can_transmute(&self, type_destination: Type) -> bool;
+}

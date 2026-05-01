@@ -13,7 +13,7 @@
 use std::hash::Hash;
 
 use crate::{
-    FieldMethodType,
+    FieldMethodType, TypeTransmutation,
     constraints::{TypeConstraintContainer, feature::FeatureFlag},
     raw::InformationRawType,
 };
@@ -215,6 +215,32 @@ impl Hash for Type {
                 h.write_u8(*is_array as u8);
                 inner.hash(h);
             }
+        }
+    }
+}
+
+impl TypeTransmutation for Type {
+    fn can_transmute(&self, type_destination: Type) -> bool {
+        match (self, &type_destination) {
+            (
+                Type::Pointer { is_array, inner: _ },
+                Type::Pointer {
+                    is_array: is_array2,
+                    inner: _,
+                },
+            ) => *is_array == *is_array2,
+
+            (
+                Type::Array { size, inner },
+                Type::Array {
+                    size: size2,
+                    inner: inner2,
+                },
+            ) => size == size2 && inner.can_transmute(*inner2.clone()),
+
+            (Type::GenericTypeParam { .. }, Type::GenericTypeParam { .. }) => false, // Transmutation disabled for type parameters
+
+            _ => false,
         }
     }
 }
