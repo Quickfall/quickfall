@@ -18,8 +18,6 @@ pub struct HIRNode {
     pub kind: HIRNodeKind,
     pub start: Position,
     pub end: Position,
-
-    pub parent: Option<&'static HIRNode>,
 }
 
 #[derive(Clone)]
@@ -208,30 +206,11 @@ pub enum HIRNodeKind {
 }
 
 impl HIRNode {
-    pub fn new(
-        kind: HIRNodeKind,
-        parent: Option<&HIRNode>,
-        start: &Position,
-        end: &Position,
-    ) -> Self {
-        if parent.is_none() {
-            HIRNode {
-                kind,
-                parent: None,
-                start: start.clone(),
-                end: end.clone(),
-            }
-        } else {
-            HIRNode {
-                kind,
-                start: start.clone(),
-                end: end.clone(),
-                parent: unsafe {
-                    Some(std::mem::transmute::<&HIRNode, &'static HIRNode>(
-                        parent.unwrap(),
-                    ))
-                },
-            }
+    pub fn new(kind: HIRNodeKind, start: &Position, end: &Position) -> Self {
+        HIRNode {
+            kind,
+            start: start.clone(),
+            end: end.clone(),
         }
     }
 }

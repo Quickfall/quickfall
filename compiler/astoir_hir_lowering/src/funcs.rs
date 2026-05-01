@@ -7,7 +7,7 @@ use astoir_hir::{
 };
 use diagnostics::DiagnosticResult;
 
-use crate::{lower_ast_body, types::lower_ast_type};
+use crate::{body::lower_ast_body, types::lower_ast_type};
 
 pub fn lower_ast_function_declaration(
     ctx: &mut HIRContext,
@@ -59,7 +59,7 @@ pub fn lower_ast_function_declaration(
 
         let hir_function = ctx.scope.get_function(&key, &*node)?;
 
-        let body = lower_ast_body(ctx, body)?;
+        let body = lower_ast_body(ctx, &key, body)?;
 
         let implementation = Box::new(HIRNode::new(
             HIRNodeKind::FunctionDeclaration {
@@ -71,7 +71,6 @@ pub fn lower_ast_function_declaration(
                 ctx: &hir_function.ctx.as_ref().unwrap(),
                 requires_this,
             },
-            None,
             &node.start,
             &node.end,
         ));
