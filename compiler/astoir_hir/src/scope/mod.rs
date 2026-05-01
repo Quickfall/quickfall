@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use diagnostics::{
-    DiagnosticResult, DiagnosticSpanOrigin,
+    DiagnosticResult, DiagnosticSpanOrigin, MaybeDiagnostic,
     builders::{make_already_in_scope, make_cannot_find},
 };
 
@@ -48,7 +48,7 @@ impl ScopeStorage {
     }
 
     pub fn get<K: DiagnosticSpanOrigin>(
-        &mut self,
+        &self,
         key: &EntryKey,
         origin: &K,
     ) -> DiagnosticResult<&ScopeEntry> {
@@ -62,7 +62,7 @@ impl ScopeStorage {
     }
 
     pub fn get_function<K: DiagnosticSpanOrigin>(
-        &mut self,
+        &self,
         key: &EntryKey,
         origin: &K,
     ) -> DiagnosticResult<&'static HIRFunction> {
@@ -70,10 +70,48 @@ impl ScopeStorage {
     }
 
     pub fn get_type<K: DiagnosticSpanOrigin>(
-        &mut self,
+        &self,
         key: &EntryKey,
         origin: &K,
     ) -> DiagnosticResult<&'static ScopeStoredType> {
         self.get(key, origin)?.as_type(origin)
+    }
+
+    fn get_modify<K: DiagnosticSpanOrigin>(
+        &mut self,
+        key: &EntryKey,
+        origin: &K,
+    ) -> DiagnosticResult<&mut ScopeEntry> {
+        if !self.key_to_ind.contains_key(key) {
+            return Err(make_cannot_find(origin, key).into());
+        }
+
+        let ind = &self.key_to_ind[key];
+
+        Ok(&mut self.entries[*ind])
+    }
+
+    pub fn modify_function<K: DiagnosticSpanOrigin, F>(
+        &mut self,
+        key: &EntryKey,
+        origin: &K,
+        f: F,
+    ) -> MaybeDiagnostic
+    where
+        F: FnOnce(&mut HIRFunction) -> (),
+    {
+        self.get_modify(key, origin)?.modify_as_function(origin, f)
+    }
+
+    pub fn modify_type<K: DiagnosticSpanOrigin, F>(
+        &mut self,
+        key: &EntryKey,
+        origin: &K,
+        f: F,
+    ) -> MaybeDiagnostic
+    where
+        F: FnOnce(&mut ScopeStoredType) -> (),
+    {
+        self.get_modify(key, origin)?.modify_as_type(origin, f)
     }
 }
