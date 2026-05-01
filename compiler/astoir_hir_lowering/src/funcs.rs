@@ -76,8 +76,9 @@ pub fn lower_ast_function_declaration(
             &node.end,
         ));
 
-        // TODO: add a modifier function for functions
-        hir_function.implementation = Some(implementation.clone());
+        ctx.scope.modify_function(&key, &*node, |func| {
+            func.implementation = Some(implementation.clone());
+        })?;
 
         return Ok(implementation);
     }
