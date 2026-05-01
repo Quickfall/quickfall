@@ -5,6 +5,10 @@ use astoir_hir::{
     scope::key::EntryKey,
 };
 use diagnostics::DiagnosticResult;
+use typing::{
+    container::Type,
+    raw::{InformationRawType, RawType},
+};
 
 pub fn lower_ast_generic(
     context: &mut HIRContext,
@@ -12,7 +16,10 @@ pub fn lower_ast_generic(
 ) -> DiagnosticResult<Box<HIRNode>> {
     if let ASTTreeNodeKind::IntegerLit { val, hash } = node.kind.clone() {
         return Ok(Box::new(HIRNode::new(
-            HIRNodeKind::IntegerLiteral(val),
+            HIRNodeKind::IntegerLiteral(
+                val,
+                RawType::Integer(true, 128), // TODO: change hash to an actual type to allow for a non placeholder type here
+            ),
             &node.start,
             &node.end,
         )));

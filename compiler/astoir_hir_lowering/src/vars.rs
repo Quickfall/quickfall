@@ -37,7 +37,12 @@ pub fn lower_ast_variable_declaration(
         let var_value;
 
         if let Some(v) = value {
-            var_value = Some(lower_ast_value(context, func_key, v)?);
+            var_value = Some(lower_ast_value(context, func_key, v)?.use_as(
+                context,
+                Some(func_key),
+                var_type.clone(),
+                &*node,
+            )?);
         } else {
             var_value = None;
         }
