@@ -37,6 +37,10 @@ impl TypeTransmutation for Type {
                 return false;
             }
 
+            (Type::Raw { raw }, Type::Raw { raw: raw2 }) => {
+                return raw.t.can_transmute(raw2.t.clone());
+            }
+
             _ => false,
         }
     }
