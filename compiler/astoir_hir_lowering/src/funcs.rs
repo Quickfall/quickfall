@@ -55,7 +55,7 @@ pub fn lower_ast_function_declaration(
 
         let res = ctx
             .scope
-            .append(key, ScopeEntry::new_function(hir_function), &*node)?;
+            .append(key.clone(), ScopeEntry::new_function(hir_function), &*node)?;
 
         let hir_function = ctx.scope.get_function(&key, &*node)?;
 

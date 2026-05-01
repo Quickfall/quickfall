@@ -5,6 +5,7 @@ use std::{fmt::Display, hash::Hash};
 use compiler_utils::hash::HashedString;
 use typing::raw::RawType;
 
+#[derive(Clone)]
 pub struct EntryKey {
     pub name: HashedString,
 
