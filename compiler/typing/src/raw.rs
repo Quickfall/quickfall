@@ -5,7 +5,7 @@ use std::hash::Hash;
 use compiler_utils::hash::HashedString;
 
 use crate::{
-    FieldMethodType, TypeParameterContaining, TypeSizedHIR,
+    FieldMethodType, TypeParameterContaining, TypeSizedHIR, TypeTransmutation,
     constraints::feature::FeatureFlag,
     container::Type,
     enums::{ChildEnumContainer, ParentEnumContainer},

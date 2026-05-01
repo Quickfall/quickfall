@@ -8,6 +8,7 @@ pub mod enums;
 pub mod fmt;
 pub mod raw;
 pub mod structs;
+pub mod transmutation;
 
 pub trait TypeSizedHIR {
     fn has_concrete_size(&self) -> bool;
@@ -34,5 +35,5 @@ pub trait FieldMethodType {
 }
 
 pub trait TypeTransmutation {
-    fn can_transmute(&self, type_destination: Type) -> bool;
+    fn can_transmute(&self, type_destination: Self) -> bool;
 }
