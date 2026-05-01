@@ -2,7 +2,9 @@
 
 use std::{fmt::Display, mem::transmute};
 
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, builders::make_expected_simple_error};
+use diagnostics::{
+    DiagnosticResult, DiagnosticSpanOrigin, MaybeDiagnostic, builders::make_expected_simple_error,
+};
 
 use crate::{func::HIRFunction, types::ScopeStoredType};
 
@@ -42,6 +44,38 @@ impl ScopeEntry {
     ) -> DiagnosticResult<&'static HIRFunction> {
         if let Self::Function(func) = self {
             return Ok(unsafe { transmute::<&HIRFunction, &'static HIRFunction>(func) });
+        }
+
+        return Err(make_expected_simple_error(origin, &"function".to_string(), self).into());
+    }
+
+    pub fn modify_as_function<K: DiagnosticSpanOrigin, F>(
+        &mut self,
+        origin: &K,
+        f: F,
+    ) -> MaybeDiagnostic
+    where
+        F: FnOnce(&mut HIRFunction) -> (),
+    {
+        if let Self::Function(func) = self {
+            f(func);
+            return Ok(());
+        }
+
+        return Err(make_expected_simple_error(origin, &"function".to_string(), self).into());
+    }
+
+    pub fn modify_as_type<K: DiagnosticSpanOrigin, F>(
+        &mut self,
+        origin: &K,
+        f: F,
+    ) -> MaybeDiagnostic
+    where
+        F: FnOnce(&mut ScopeStoredType) -> (),
+    {
+        if let Self::Type(t) = self {
+            f(t);
+            return Ok(());
         }
 
         return Err(make_expected_simple_error(origin, &"function".to_string(), self).into());
