@@ -6,11 +6,13 @@ use astoir_hir::{
     scope::{entry::ScopeEntry, key::EntryKey},
 };
 use diagnostics::DiagnosticResult;
+use typing::raw::RawType;
 
 use crate::{body::lower_ast_body, types::lower_ast_type, values::lower_ast_value};
 
 pub fn lower_ast_function_declaration(
     ctx: &mut HIRContext,
+    ty: Option<RawType>,
     node: Box<ASTTreeNode>,
 ) -> DiagnosticResult<Box<HIRNode>> {
     if let ASTTreeNodeKind::FunctionDeclaration {
@@ -49,7 +51,14 @@ pub fn lower_ast_function_declaration(
             arguments.clone(),
             branched,
         );
-        let key = EntryKey::new(func_name.clone());
+
+        let key;
+
+        if ty.is_some() {
+            key = EntryKey::new_linked(func_name.clone(), ty.unwrap());
+        } else {
+            key = EntryKey::new(func_name.clone());
+        }
 
         // Register pre full function
 

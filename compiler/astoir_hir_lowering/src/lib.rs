@@ -36,7 +36,7 @@ pub fn lower_root_node(
 ) -> DiagnosticResult<Box<HIRNode>> {
     match &node.kind {
         ASTTreeNodeKind::FunctionDeclaration { .. } => {
-            return lower_ast_function_declaration(ctx, node);
+            return lower_ast_function_declaration(ctx, None, node);
         }
 
         _ => panic!("Invalid node"),
