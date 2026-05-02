@@ -2,14 +2,12 @@ use ast::{
     ctx::ParserCtx,
     tree::{ASTTreeNode, ASTTreeNodeKind},
 };
-use astoir_hir::{
-    context::HIRContext,
-    nodes::{HIRNode, HIRNodeKind},
-};
+use astoir_hir::{context::HIRContext, nodes::HIRNode};
 use diagnostics::DiagnosticResult;
 
 use crate::funcs::lower_ast_function_declaration;
 
+pub mod arrays;
 pub mod body;
 pub mod booleans;
 pub mod funcs;

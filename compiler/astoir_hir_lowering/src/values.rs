@@ -5,22 +5,20 @@ use astoir_hir::{
     scope::key::EntryKey,
 };
 use diagnostics::DiagnosticResult;
-use typing::{
-    container::Type,
-    raw::{InformationRawType, RawType},
-};
+use typing::raw::RawType;
 
 use crate::{
+    arrays::{lower_ast_array_index_access, lower_ast_array_init},
     booleans::{lower_ast_boolean_compare, lower_ast_boolean_condition},
     math::lower_ast_math_operation,
     vars::lower_ast_variable_reference,
 };
 
 pub fn lower_ast_generic(
-    context: &mut HIRContext,
+    _context: &mut HIRContext,
     node: Box<ASTTreeNode>,
 ) -> DiagnosticResult<Box<HIRNode>> {
-    if let ASTTreeNodeKind::IntegerLit { val, hash } = node.kind.clone() {
+    if let ASTTreeNodeKind::IntegerLit { val, hash: _ } = node.kind.clone() {
         return Ok(Box::new(HIRNode::new(
             HIRNodeKind::IntegerLiteral(
                 val,
@@ -66,6 +64,15 @@ pub fn lower_ast_value(
 
         ASTTreeNodeKind::OperatorBasedConditionMember { .. } => {
             return lower_ast_boolean_compare(context, func_key, node);
+        }
+
+        ASTTreeNodeKind::ArrayIndexAccess { .. } => {
+            return lower_ast_array_index_access(context, func_key, node);
+        }
+
+        ASTTreeNodeKind::ArrayVariableInitializerValue { .. }
+        | ASTTreeNodeKind::ArrayVariableInitializerValueSameValue { .. } => {
+            return lower_ast_array_init(context, func_key, node);
         }
 
         _ => panic!("Invalid node"),

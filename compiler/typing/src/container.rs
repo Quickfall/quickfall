@@ -40,6 +40,12 @@ pub enum Type {
 }
 
 impl Type {
+    pub fn make_raw(t: RawType) -> Type {
+        Type::Raw {
+            raw: InformationRawType::new(t),
+        }
+    }
+
     /// Is the type real and doesn't rely on generic type arguments.
     pub fn is_real(&self) -> bool {
         match self {
