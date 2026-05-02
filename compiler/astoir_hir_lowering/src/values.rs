@@ -80,6 +80,38 @@ pub fn lower_ast_value(
             return lower_ast_struct_init(context, func_key, node);
         }
 
+        ASTTreeNodeKind::PointerGrab(_) | ASTTreeNodeKind::ReferenceGrab(_) => {
+            return lower_ast_grab(context, func_key, node);
+        }
+
         _ => panic!("Invalid node"),
     }
+}
+
+pub fn lower_ast_grab(
+    context: &mut HIRContext,
+    func_key: Option<&EntryKey>,
+    node: Box<ASTTreeNode>,
+) -> DiagnosticResult<Box<HIRNode>> {
+    if let ASTTreeNodeKind::PointerGrab(inner) = node.kind.clone() {
+        let inner = lower_ast_value(context, func_key, inner)?;
+
+        return Ok(Box::new(HIRNode::new(
+            HIRNodeKind::PointerGrab { val: inner },
+            &node.start,
+            &node.end,
+        )));
+    }
+
+    if let ASTTreeNodeKind::ReferenceGrab(inner) = node.kind.clone() {
+        let inner = lower_ast_value(context, func_key, inner)?;
+
+        return Ok(Box::new(HIRNode::new(
+            HIRNodeKind::ReferenceGrab { val: inner },
+            &node.start,
+            &node.end,
+        )));
+    }
+
+    panic!("Invalid node!")
 }

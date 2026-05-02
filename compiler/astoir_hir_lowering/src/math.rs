@@ -1,7 +1,6 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use astoir_hir::{
     context::HIRContext,
-    func,
     nodes::{HIRNode, HIRNodeKind},
     scope::key::EntryKey,
 };
