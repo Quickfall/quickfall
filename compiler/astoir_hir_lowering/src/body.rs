@@ -8,6 +8,7 @@ use diagnostics::DiagnosticResult;
 
 use crate::{
     arrays::lower_ast_array_modify,
+    control::{lower_ast_for_block, lower_ast_while_block},
     funcs::lower_ast_function_call,
     math::lower_ast_math_operation,
     values::lower_ast_value,
@@ -55,6 +56,9 @@ pub fn lower_ast_body_node(
                 &node.end,
             )));
         }
+
+        ASTTreeNodeKind::ForBlock { .. } => lower_ast_for_block(context, func_key, node),
+        ASTTreeNodeKind::WhileBlock { .. } => lower_ast_while_block(context, func_key, node),
 
         _ => panic!("Invalid node!"),
     }

@@ -10,6 +10,7 @@ use crate::{funcs::lower_ast_function_declaration, structs::lower_ast_struct_dec
 pub mod arrays;
 pub mod body;
 pub mod booleans;
+pub mod control;
 pub mod funcs;
 pub mod math;
 pub mod structs;
