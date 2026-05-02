@@ -14,6 +14,7 @@ pub mod funcs;
 pub mod math;
 pub mod structs;
 pub mod types;
+pub mod unwraps;
 pub mod values;
 pub mod vars;
 

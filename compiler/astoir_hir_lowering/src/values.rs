@@ -12,6 +12,7 @@ use crate::{
     booleans::{lower_ast_boolean_compare, lower_ast_boolean_condition},
     math::lower_ast_math_operation,
     structs::lower_ast_struct_init,
+    unwraps::{lower_ast_unwrap_condition, lower_ast_unwrap_value},
     vars::lower_ast_variable_reference,
 };
 
@@ -82,6 +83,14 @@ pub fn lower_ast_value(
 
         ASTTreeNodeKind::PointerGrab(_) | ASTTreeNodeKind::ReferenceGrab(_) => {
             return lower_ast_grab(context, func_key, node);
+        }
+
+        ASTTreeNodeKind::UnwrapCondition { .. } => {
+            return lower_ast_unwrap_condition(context, func_key, node);
+        }
+
+        ASTTreeNodeKind::UnwrapValue { .. } => {
+            return lower_ast_unwrap_value(context, func_key, node);
         }
 
         _ => panic!("Invalid node"),
