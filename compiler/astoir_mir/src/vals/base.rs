@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use compiler_typing::{raw::RawType, tree::Type};
 use diagnostics::DiagnosticResult;
+use typing::container::Type;
 
 use crate::vals::{
     arrays::MIRArrayValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue,
@@ -9,7 +9,7 @@ use crate::vals::{
 };
 
 /// Represents a basic value in the MIR.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct BaseMIRValue {
     val_index: usize,
     pub vtype: Type,
@@ -41,9 +41,7 @@ impl BaseMIRValue {
     }
 
     pub fn can_be_pointer(&self) -> bool {
-        return self.vtype.is_technically_pointer()
-            || self.vtype.is_array()
-            || self.vtype.as_generic_lowered() == RawType::Pointer;
+        return self.vtype.is_ptr() || self.vtype.is_array();
     }
 
     pub fn get_ssa_index(&self) -> usize {

@@ -2,7 +2,7 @@
 
 use std::fmt::Display;
 
-use compiler_typing::{raw::RawType, tree::Type};
+use typing::{container::Type, raw::RawType};
 
 use crate::{
     blocks::refer::MIRBlockReference,
@@ -315,7 +315,7 @@ impl MIRInstruction {
 
     pub fn get_return_type(&self, ctx: &MIRContext) -> Type {
         match self {
-            Self::StackAlloc { .. } => return Type::GenericLowered(RawType::Pointer),
+            Self::StackAlloc { .. } => return Type::make_raw(RawType::AnyPointer),
             Self::Load { value } => {
                 let base: BaseMIRValue = value.clone().into();
 
@@ -325,17 +325,17 @@ impl MIRInstruction {
             }
 
             Self::DowncastInteger { val, size } => {
-                return Type::GenericLowered(RawType::Integer(*size, val.signed));
+                return Type::make_raw(RawType::Integer(val.signed, *size));
             }
             Self::UpcastInteger { val, size } => {
-                return Type::GenericLowered(RawType::Integer(*size, val.signed));
+                return Type::make_raw(RawType::Integer(val.signed, *size));
             }
 
             Self::DowncastFloat { val, size } => {
-                return Type::GenericLowered(RawType::Floating(*size, val.signed));
+                return Type::make_raw(RawType::Floating(val.signed, *size));
             }
             Self::UpcastFloat { val, size } => {
-                return Type::GenericLowered(RawType::Floating(*size, val.signed));
+                return Type::make_raw(RawType::Floating(val.signed, *size));
             }
 
             Self::IntegerAdd {
@@ -343,33 +343,33 @@ impl MIRInstruction {
                 fast: _,
                 left,
                 right: _,
-            } => return Type::GenericLowered(RawType::Integer(left.size, *signed)),
+            } => return Type::make_raw(RawType::Integer(*signed, left.size)),
             Self::IntegerSub {
                 signed,
                 fast: _,
                 left,
                 right: _,
-            } => return Type::GenericLowered(RawType::Integer(left.size, *signed)),
+            } => return Type::make_raw(RawType::Integer(*signed, left.size)),
             Self::IntegerMul {
                 signed,
                 fast: _,
                 left,
                 right: _,
-            } => return Type::GenericLowered(RawType::Integer(left.size, *signed)),
+            } => return Type::make_raw(RawType::Integer(*signed, left.size)),
             Self::IntegerDiv {
                 signed,
                 fast: _,
                 left,
                 right: _,
-            } => return Type::GenericLowered(RawType::Integer(left.size, *signed)),
+            } => return Type::make_raw(RawType::Integer(*signed, left.size)),
             Self::IntegerMod {
                 signed,
                 fast: _,
                 left,
                 right: _,
-            } => return Type::GenericLowered(RawType::Integer(left.size, *signed)),
+            } => return Type::make_raw(RawType::Integer(*signed, left.size)),
             Self::IntegerNeg { val } => {
-                return Type::GenericLowered(RawType::Integer(val.size, true));
+                return Type::make_raw(RawType::Integer(true, val.size));
             }
 
             Self::FloatAdd {
@@ -377,89 +377,97 @@ impl MIRInstruction {
                 fast: _,
                 left,
                 right: _,
-            } => return Type::GenericLowered(RawType::Floating(left.size, *signed)),
+            } => return Type::make_raw(RawType::Floating(*signed, left.size)),
             Self::FloatSub {
                 signed,
                 fast: _,
                 left,
                 right: _,
-            } => return Type::GenericLowered(RawType::Floating(left.size, *signed)),
+            } => return Type::make_raw(RawType::Floating(*signed, left.size)),
             Self::FloatMul {
                 signed,
                 fast: _,
                 left,
                 right: _,
-            } => return Type::GenericLowered(RawType::Floating(left.size, *signed)),
+            } => return Type::make_raw(RawType::Floating(*signed, left.size)),
             Self::FloatDiv {
                 signed,
                 fast: _,
                 left,
                 right: _,
-            } => return Type::GenericLowered(RawType::Floating(left.size, *signed)),
+            } => return Type::make_raw(RawType::Floating(*signed, left.size)),
             Self::FloatNeg { val } => {
-                return Type::GenericLowered(RawType::Floating(val.size, true));
+                return Type::make_raw(RawType::Floating(true, val.size));
             }
 
             Self::BitwiseAnd { a, b: _ } => {
-                return Type::GenericLowered(RawType::Integer(a.size, a.signed));
+                return Type::make_raw(RawType::Integer(a.signed, a.size));
             }
             Self::BitwiseOr { a, b: _ } => {
-                return Type::GenericLowered(RawType::Integer(a.size, a.signed));
+                return Type::make_raw(RawType::Integer(a.signed, a.size));
             }
             Self::BitwiseXor { a, b: _ } => {
-                return Type::GenericLowered(RawType::Integer(a.size, a.signed));
+                return Type::make_raw(RawType::Integer(a.signed, a.size));
             }
             Self::BitwiseNot { val } => {
-                return Type::GenericLowered(RawType::Integer(val.size, val.signed));
+                return Type::make_raw(RawType::Integer(val.signed, val.size));
             }
 
             Self::ShiftLeft { a, shift: _ } => {
-                return Type::GenericLowered(RawType::Integer(a.size, a.signed));
+                return Type::make_raw(RawType::Integer(a.signed, a.size));
             }
             Self::ShiftRight { a, shift: _ } => {
-                return Type::GenericLowered(RawType::Integer(a.size, a.signed));
+                return Type::make_raw(RawType::Integer(a.signed, a.size));
             }
 
-            Self::CompEq { .. } => return Type::GenericLowered(RawType::Boolean),
-            Self::CompNeg { .. } => return Type::GenericLowered(RawType::Boolean),
-            Self::CompLt { .. } => return Type::GenericLowered(RawType::Boolean),
-            Self::CompLe { .. } => return Type::GenericLowered(RawType::Boolean),
-            Self::CompGt { .. } => return Type::GenericLowered(RawType::Boolean),
-            Self::CompGe { .. } => return Type::GenericLowered(RawType::Boolean),
+            Self::CompEq { .. } => return Type::make_raw(RawType::Boolean),
+            Self::CompNeg { .. } => return Type::make_raw(RawType::Boolean),
+            Self::CompLt { .. } => return Type::make_raw(RawType::Boolean),
+            Self::CompLe { .. } => return Type::make_raw(RawType::Boolean),
+            Self::CompGt { .. } => return Type::make_raw(RawType::Boolean),
+            Self::CompGe { .. } => return Type::make_raw(RawType::Boolean),
 
             Self::IntegerSignedConstant { raw: _, bitsize } => {
-                return Type::GenericLowered(RawType::Integer(*bitsize, true));
+                return Type::make_raw(RawType::Integer(true, *bitsize));
             }
             Self::IntegerUnsignedConstant { raw: _, bitsize } => {
-                return Type::GenericLowered(RawType::Integer(*bitsize, false));
+                return Type::make_raw(RawType::Integer(false, *bitsize));
             }
             Self::FloatUnsignedConstant { raw: _, size } => {
-                return Type::GenericLowered(RawType::Floating(*size, false));
+                return Type::make_raw(RawType::Floating(false, *size));
             }
             Self::FloatSignedConstant { raw: _, size } => {
-                return Type::GenericLowered(RawType::Floating(*size, true));
+                return Type::make_raw(RawType::Floating(true, *size));
             }
             Self::FixedSignedConstant {
                 raw: _,
                 number,
                 fraction,
-            } => return Type::GenericLowered(RawType::FixedPoint(*number, *fraction, true)),
+            } => {
+                return Type::make_raw(RawType::FixedPoint(true, *number, *fraction));
+            }
             Self::FixedUnsignedConstant {
                 raw: _,
                 number,
                 fraction,
-            } => return Type::GenericLowered(RawType::FixedPoint(*number, *fraction, false)),
-            Self::StaticStringConstant { raw: _ } => return Type::GenericLowered(RawType::Pointer),
+            } => return Type::make_raw(RawType::FixedPoint(false, *number, *fraction)),
+            Self::StaticStringConstant { raw: _ } => return Type::make_raw(RawType::AnyPointer),
             Self::StructInitializerConstant {
                 struct_type,
                 values: _,
-            } => return Type::GenericLowered(struct_type.clone()),
+            } => return Type::make_raw(struct_type.clone()),
 
             Self::ArrayInitializerConstant { values } => {
-                return Type::Array(values.len(), Box::new(values[0].vtype.clone()));
+                return Type::Array {
+                    size: values.len(),
+                    inner: Box::new(values[0].vtype.clone()),
+                };
             }
             Self::ArrayInitializerConstantSame { size, val } => {
-                return Type::Array(*size, Box::new(val.vtype.clone()));
+                return Type::Array {
+                    size: *size,
+                    inner: Box::new(val.vtype.clone()),
+                };
             }
 
             Self::Phi { choices } => {
@@ -481,11 +489,11 @@ impl MIRInstruction {
                 return func.return_type.clone().unwrap();
             }
 
-            Self::FieldPointer { .. } => return Type::GenericLowered(RawType::Pointer),
-            Self::IndexPointer { .. } => return Type::GenericLowered(RawType::Pointer),
+            Self::FieldPointer { .. } => return Type::make_raw(RawType::AnyPointer),
+            Self::IndexPointer { .. } => return Type::make_raw(RawType::AnyPointer),
 
-            Self::PointerAdd { .. } => return Type::GenericLowered(RawType::Pointer),
-            Self::PointerSub { .. } => return Type::GenericLowered(RawType::Pointer),
+            Self::PointerAdd { .. } => return Type::make_raw(RawType::AnyPointer),
+            Self::PointerSub { .. } => return Type::make_raw(RawType::AnyPointer),
 
             Self::FuncArgumentGrab { ind: _, argtype } => argtype.clone(),
 

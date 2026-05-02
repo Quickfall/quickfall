@@ -1,4 +1,3 @@
-use compiler_typing::TypedGlobalScope;
 use diagnostics::{DiagnosticResult, builders::make_invalid_assign_diff_type_ir, unsure_panic};
 
 use crate::{
@@ -21,7 +20,6 @@ use crate::{
 ///
 /// # Usage
 /// This can be used to reference any true variable to modify it's content or read it. This will automatically handle diverse instructions needed such as `load` and `store`.
-#[derive(Debug)]
 pub enum MIRVariableReference {
     PointerReference(MIRPointerValue),
     SSAReference(usize),
@@ -56,7 +54,6 @@ impl MIRVariableReference {
         block: MIRBlockReference,
         ctx: &mut MIRContext,
         val: BaseMIRValue,
-        storage: &TypedGlobalScope,
     ) -> DiagnosticResult<bool> {
         if self.is_pointer_ref() {
             let mut ptr_ref = self.as_pointer_ref()?;
@@ -64,11 +61,11 @@ impl MIRVariableReference {
                 .ssa_hints
                 .get_hint(BaseMIRValue::from(ptr_ref.clone().into()).get_ssa_index());
 
-            if hint.get_type().is_technically_pointer() {
+            if hint.get_type().is_ptr() {
                 ptr_ref = build_load(ctx, ptr_ref)?.as_ptr()?;
             }
 
-            build_store(ctx, storage, ptr_ref, val)?;
+            build_store(ctx, ptr_ref, val)?;
 
             return Ok(true);
         }
@@ -78,12 +75,7 @@ impl MIRVariableReference {
         let block = &mut ctx.blocks[block];
 
         if block.variables[&ind].hint.is_some()
-            && !block.variables[&ind]
-                .hint
-                .clone()
-                .unwrap()
-                .vtype
-                .is_truly_eq(&val.vtype)
+            && block.variables[&ind].hint.clone().unwrap().vtype != val.vtype
         {
             return Err(make_invalid_assign_diff_type_ir().into());
         }

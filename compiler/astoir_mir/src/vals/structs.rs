@@ -12,10 +12,10 @@ pub struct MIRStructValue {
 
 impl MIRStructValue {
     pub fn new(base: BaseMIRValue) -> DiagnosticResult<Self> {
-        if let RawType::LoweredStruct(_, _) = base.vtype.clone().as_generic_lowered() {
+        if let RawType::LoweredStruct(_, _) = base.vtype.clone().get_raw().t {
             return Ok(MIRStructValue {
                 base: base.clone(),
-                t: base.vtype.clone().as_generic_lowered(),
+                t: base.vtype.clone().get_raw().t,
             });
         }
 

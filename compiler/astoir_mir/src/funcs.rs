@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use compiler_typing::tree::Type;
 use compiler_utils::hash::HashedString;
 use diagnostics::unsure_panic;
+use typing::container::Type;
 
 use crate::{
     blocks::{MIRBlockVariableSSAHint, MIRBlockVariableType, refer::MIRBlockReference},

@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use compiler_typing::raw::RawType;
 use diagnostics::{DiagnosticResult, builders::make_invalid_var_type_ir};
+use typing::raw::RawType;
 
 use crate::vals::base::BaseMIRValue;
 
@@ -14,7 +14,7 @@ pub struct MIRIntValue {
 
 impl MIRIntValue {
     pub fn new(base: BaseMIRValue) -> DiagnosticResult<Self> {
-        if let RawType::Integer(size, signed) = base.vtype.clone().as_generic_lowered() {
+        if let RawType::Integer(signed, size) = base.vtype.clone().get_raw().t {
             return Ok(MIRIntValue {
                 base: base.clone(),
                 size,
@@ -22,7 +22,7 @@ impl MIRIntValue {
             });
         }
 
-        if let RawType::Boolean = base.vtype.clone().as_generic_lowered() {
+        if let RawType::Boolean = base.vtype.clone().get_raw().t {
             return Ok(MIRIntValue {
                 base: base.clone(),
                 signed: false,

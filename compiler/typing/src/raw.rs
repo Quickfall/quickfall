@@ -97,6 +97,20 @@ impl RawType {
         self.is_floating() || self.is_fixed()
     }
 
+    pub fn is_enum_parent(&self) -> bool {
+        match self {
+            Self::Enum(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_enum_child(&self) -> bool {
+        match self {
+            Self::EnumChild(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_cpu_supported(&self, information: &InformationRawType) -> bool {
         match self {
             Self::Floating(_, size) => {

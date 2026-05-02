@@ -75,6 +75,14 @@ impl Type {
         panic!("last node was not a raw but used get_raw")
     }
 
+    pub fn is_ptr(&self) -> bool {
+        match self {
+            Self::Pointer { .. } => true,
+            Self::Raw { raw } => raw.t == RawType::AnyPointer,
+            _ => self.get_last().is_ptr(),
+        }
+    }
+
     /// # Warn
     /// This will panic if not checked properly
     pub fn get_next(&self) -> Type {

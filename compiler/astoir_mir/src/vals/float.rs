@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use compiler_typing::raw::RawType;
 use diagnostics::{DiagnosticResult, builders::make_invalid_var_type_ir};
+use typing::raw::RawType;
 
 use crate::vals::base::BaseMIRValue;
 
@@ -14,7 +14,7 @@ pub struct MIRFloatValue {
 
 impl MIRFloatValue {
     pub fn new(base: BaseMIRValue) -> DiagnosticResult<Self> {
-        if let RawType::Floating(size, signed) = base.vtype.as_generic_lowered() {
+        if let RawType::Floating(signed, size) = base.vtype.get_raw().t {
             return Ok(MIRFloatValue {
                 base: base.clone(),
                 size,

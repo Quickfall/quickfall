@@ -1,7 +1,7 @@
 //! Utility functions to build instructions and more
 
 use diagnostics::{DiagnosticResult, MaybeDiagnostic, unsure_panic};
-use typing::container::Type;
+use typing::{container::Type, raw::RawType};
 
 use crate::{
     blocks::{hints::MIRValueHint, refer::MIRBlockReference},
@@ -49,14 +49,9 @@ pub fn build_store(
 
     let hint = ctx.ssa_hints.get_hint(base.get_ssa_index()).get_type();
 
-    if !hint.is_truly_eq(&val.vtype) && !hint.is_ptr() {
-        if hint
-            .get_maybe_containing_type()
-            .get_generic()
-            .is_enum_parent()
-            && val.vtype.get_generic().is_enum_child()
-        {
-            return build_store_fallback(ctx, ptr, val.clone(), storage);
+    if hint != base.vtype && !hint.is_ptr() {
+        if hint.get_raw().t.is_enum_parent() && val.vtype.get_raw().t.is_enum_child() {
+            return build_store_fallback(ctx, ptr, val.clone());
         }
 
         unsure_panic!("cannot put this value onto this pointer since it's not the type");
@@ -904,7 +899,6 @@ pub fn build_store_fallback(
     ctx: &mut MIRContext,
     dest: MIRPointerValue,
     src: BaseMIRValue,
-    storage: &TypedGlobalScope,
 ) -> MaybeDiagnostic {
     let sz = src.vtype.get_size(&src.vtype, false, storage);
 
