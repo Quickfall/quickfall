@@ -109,7 +109,7 @@ pub fn lower_ast_struct_declaration(
 ) -> DiagnosticResult<Box<HIRNode>> {
     if let ASTTreeNodeKind::StructLayoutDeclaration {
         name,
-        layout: _,
+        layout: _, // TODO: add layouts back
         members,
         type_params,
     } = node.kind.clone()

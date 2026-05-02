@@ -5,7 +5,7 @@ use ast::{
 use astoir_hir::{context::HIRContext, nodes::HIRNode};
 use diagnostics::DiagnosticResult;
 
-use crate::funcs::lower_ast_function_declaration;
+use crate::{funcs::lower_ast_function_declaration, structs::lower_ast_struct_declaration};
 
 pub mod arrays;
 pub mod body;
@@ -37,6 +37,10 @@ pub fn lower_root_node(
     match &node.kind {
         ASTTreeNodeKind::FunctionDeclaration { .. } => {
             return lower_ast_function_declaration(ctx, None, node);
+        }
+
+        ASTTreeNodeKind::StructLayoutDeclaration { .. } => {
+            return lower_ast_struct_declaration(ctx, node);
         }
 
         _ => panic!("Invalid node"),
