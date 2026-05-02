@@ -5,6 +5,7 @@ use astoir_hir::{
     scope::key::EntryKey,
 };
 use diagnostics::{DiagnosticResult, builders::make_cannot_find};
+use typing::container::Type;
 
 use crate::{types::lower_ast_type, values::lower_ast_value};
 
@@ -62,6 +63,32 @@ pub fn lower_ast_variable_declaration(
     panic!("Invalid node")
 }
 
+pub fn lower_ast_variable_reference_actual(
+    context: &mut HIRContext,
+    func_key: &EntryKey,
+    node: Box<ASTTreeNode>,
+) -> DiagnosticResult<(Type, usize)> {
+    if let ASTTreeNodeKind::VariableReference(e) = node.kind.clone() {
+        let ctx = context
+            .scope
+            .get(func_key, &*node)?
+            .as_function(&*node)?
+            .ctx
+            .as_ref()
+            .clone()
+            .unwrap();
+
+        if ctx.hash_to_ind.contains_key(&e) {
+            return Ok((
+                ctx.variables[ctx.hash_to_ind[&e]].variable_type.clone(),
+                ctx.hash_to_ind[&e],
+            ));
+        }
+    }
+
+    panic!("Invalid node!")
+}
+
 pub fn lower_ast_variable_reference(
     context: &mut HIRContext,
     func_key: &EntryKey,
@@ -93,4 +120,32 @@ pub fn lower_ast_variable_reference(
     }
 
     panic!("Invalid node")
+}
+
+pub fn lower_ast_variable_assign(
+    context: &mut HIRContext,
+    func_key: &EntryKey,
+    node: Box<ASTTreeNode>,
+) -> DiagnosticResult<Box<HIRNode>> {
+    if let ASTTreeNodeKind::VarValueChange { var, value } = node.kind.clone() {
+        let variable_info = lower_ast_variable_reference_actual(context, func_key, var.clone())?;
+
+        let value = lower_ast_value(context, Some(func_key), value.clone())?.use_as(
+            context,
+            Some(func_key),
+            variable_info.0,
+            &*value,
+        )?;
+
+        return Ok(Box::new(HIRNode::new(
+            HIRNodeKind::VarAssignment {
+                variable: variable_info.1,
+                val: value,
+            },
+            &node.start,
+            &node.end,
+        )));
+    }
+
+    panic!("Invalid node!")
 }

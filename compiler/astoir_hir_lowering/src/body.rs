@@ -3,8 +3,9 @@ use astoir_hir::{context::HIRContext, nodes::HIRNode, scope::key::EntryKey};
 use diagnostics::DiagnosticResult;
 
 use crate::{
-    funcs::lower_ast_function_call, math::lower_ast_math_operation,
-    vars::lower_ast_variable_declaration,
+    funcs::lower_ast_function_call,
+    math::lower_ast_math_operation,
+    vars::{lower_ast_variable_assign, lower_ast_variable_declaration},
 };
 
 pub fn lower_ast_body_node(
@@ -23,6 +24,10 @@ pub fn lower_ast_body_node(
 
         ASTTreeNodeKind::FunctionCall { .. } => {
             lower_ast_function_call(context, Some(func_key), node)
+        }
+
+        ASTTreeNodeKind::VarValueChange { .. } => {
+            lower_ast_variable_assign(context, func_key, node)
         }
 
         _ => panic!("Invalid node!"),
