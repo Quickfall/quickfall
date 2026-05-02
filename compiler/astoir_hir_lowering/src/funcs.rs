@@ -7,7 +7,7 @@ use astoir_hir::{
 };
 use diagnostics::DiagnosticResult;
 
-use crate::{body::lower_ast_body, types::lower_ast_type};
+use crate::{body::lower_ast_body, types::lower_ast_type, values::lower_ast_value};
 
 pub fn lower_ast_function_declaration(
     ctx: &mut HIRContext,
@@ -80,6 +80,45 @@ pub fn lower_ast_function_declaration(
         })?;
 
         return Ok(implementation);
+    }
+
+    panic!("Invalid node")
+}
+
+pub fn lower_ast_function_call(
+    context: &mut HIRContext,
+    func_key: Option<&EntryKey>,
+    node: Box<ASTTreeNode>,
+) -> DiagnosticResult<Box<HIRNode>> {
+    if let ASTTreeNodeKind::FunctionCall { func, args } = node.kind.clone() {
+        let function_key = EntryKey::new(func);
+        let func = context.scope.get_function(&function_key, &*node)?;
+
+        let mut arguments = vec![];
+        let mut i = 0;
+
+        for argument in args {
+            let expected_type = func.arguments[i].1.clone();
+            let arg = lower_ast_value(context, func_key, argument.clone())?.use_as(
+                context,
+                func_key,
+                expected_type,
+                &*argument,
+            )?;
+
+            arguments.push(arg);
+
+            i += 1;
+        }
+
+        return Ok(Box::new(HIRNode::new(
+            HIRNodeKind::FunctionCall {
+                func_name: func.self_id,
+                arguments,
+            },
+            &node.start,
+            &node.end,
+        )));
     }
 
     panic!("Invalid node")

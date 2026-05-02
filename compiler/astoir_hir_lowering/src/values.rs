@@ -10,6 +10,7 @@ use typing::raw::RawType;
 use crate::{
     arrays::{lower_ast_array_index_access, lower_ast_array_init},
     booleans::{lower_ast_boolean_compare, lower_ast_boolean_condition},
+    funcs::lower_ast_function_call,
     math::lower_ast_math_operation,
     structs::lower_ast_struct_init,
     unwraps::{lower_ast_unwrap_condition, lower_ast_unwrap_value},
@@ -91,6 +92,10 @@ pub fn lower_ast_value(
 
         ASTTreeNodeKind::UnwrapValue { .. } => {
             return lower_ast_unwrap_value(context, func_key, node);
+        }
+
+        ASTTreeNodeKind::FunctionCall { .. } => {
+            return lower_ast_function_call(context, func_key, node);
         }
 
         _ => panic!("Invalid node"),
