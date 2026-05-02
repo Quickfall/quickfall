@@ -11,6 +11,7 @@ use crate::{
     arrays::{lower_ast_array_index_access, lower_ast_array_init},
     booleans::{lower_ast_boolean_compare, lower_ast_boolean_condition},
     math::lower_ast_math_operation,
+    structs::lower_ast_struct_init,
     vars::lower_ast_variable_reference,
 };
 
@@ -73,6 +74,10 @@ pub fn lower_ast_value(
         ASTTreeNodeKind::ArrayVariableInitializerValue { .. }
         | ASTTreeNodeKind::ArrayVariableInitializerValueSameValue { .. } => {
             return lower_ast_array_init(context, func_key, node);
+        }
+
+        ASTTreeNodeKind::StructInitializer { .. } => {
+            return lower_ast_struct_init(context, func_key, node);
         }
 
         _ => panic!("Invalid node"),

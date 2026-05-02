@@ -15,7 +15,7 @@ pub fn parse_struct_initialize(
 
     *ind += 1;
 
-    let mut map: HashMap<SelfHash, Box<ASTTreeNode>> = HashMap::new();
+    let mut map: HashMap<HashedString, Box<ASTTreeNode>> = HashMap::new();
 
     while tokens[*ind].is_keyword() {
         let field_name = tokens[*ind].expects_keyword()?;
@@ -26,12 +26,7 @@ pub fn parse_struct_initialize(
 
         let value = parse_ast_value(tokens, ind)?;
 
-        map.insert(
-            SelfHash {
-                hash: HashedString::new(field_name.0).hash,
-            },
-            value,
-        );
+        map.insert(HashedString::new(field_name.0), value);
 
         //*ind += 1;
 

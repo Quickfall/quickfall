@@ -12,6 +12,7 @@ pub mod body;
 pub mod booleans;
 pub mod funcs;
 pub mod math;
+pub mod structs;
 pub mod types;
 pub mod values;
 pub mod vars;

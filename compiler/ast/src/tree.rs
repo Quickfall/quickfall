@@ -81,7 +81,7 @@ pub enum ASTTreeNodeKind {
     ReferenceGrab(Box<ASTTreeNode>),
 
     StructInitializer {
-        map: HashMap<SelfHash, Box<ASTTreeNode>>,
+        map: HashMap<HashedString, Box<ASTTreeNode>>,
     },
     ArrayVariableInitializerValueSameValue {
         size: usize,
