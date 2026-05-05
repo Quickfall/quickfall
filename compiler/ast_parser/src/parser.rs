@@ -76,7 +76,7 @@ pub fn parse_ast_node_in_body(
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
     match &tokens[*ind].tok_type {
         LexerTokenType::Var => {
-            return parse_variable_declaration(tokens, ind);
+            return parse_variable_declaration(tokens, ind, true);
         }
 
         LexerTokenType::If => {

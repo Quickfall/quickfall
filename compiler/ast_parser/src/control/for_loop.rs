@@ -25,7 +25,7 @@ pub fn parse_for_loop(
 
     tokens[*ind].expects(LexerTokenType::Var)?;
 
-    let initial = parse_variable_declaration(tokens, ind)?;
+    let initial = parse_variable_declaration(tokens, ind, true)?;
 
     tokens[*ind].expects(LexerTokenType::Comma)?;
 
@@ -64,7 +64,7 @@ pub fn parse_for_ranged_loop(
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
     let start = tokens[*ind].pos.clone();
 
-    let var = parse_variable_declaration(tokens, ind)?;
+    let var = parse_variable_declaration(tokens, ind, false)?;
 
     tokens[*ind].expects(LexerTokenType::EqualSign)?;
     *ind += 1;
@@ -75,11 +75,10 @@ pub fn parse_for_ranged_loop(
     let range = parse_value_range(tokens, ind)?;
 
     tokens[*ind].expects(LexerTokenType::BracketOpen)?;
-    *ind += 1;
 
     let body = parse_node_body(tokens, ind)?;
 
-    let end = tokens[*ind - 1].get_end_pos();
+    let end: compiler_utils::Position = tokens[*ind - 1].get_end_pos();
 
     Ok(Box::new(ASTTreeNode::new(
         ASTTreeNodeKind::RangedForBlock { var, range, body },
