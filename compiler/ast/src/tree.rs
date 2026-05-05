@@ -175,7 +175,7 @@ pub enum ASTTreeNodeKind {
     },
 
     RangedForBlock {
-        var: HashedString,
+        var: Box<ASTTreeNode>,
         range: ASTRange,
         body: Vec<Box<ASTTreeNode>>,
     },
