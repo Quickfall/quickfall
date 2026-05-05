@@ -14,8 +14,8 @@ use crate::{
     control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block},
     enums::lower_ast_enum,
     func::{
-        lower_ast_function_call, lower_ast_function_declaration,
-        lower_ast_shadow_function_declaration,
+        lower_ast_extern_function_declaration, lower_ast_function_call,
+        lower_ast_function_declaration,
     },
     math::lower_ast_math_operation,
     structs::lower_ast_struct_declaration,
@@ -128,8 +128,8 @@ pub fn lower_ast_toplevel(
             return Ok(true);
         }
 
-        ASTTreeNodeKind::ShadowFunctionDeclaration { .. } => {
-            lower_ast_shadow_function_declaration(context, node)?;
+        ASTTreeNodeKind::ExternFunctionDeclaration { .. } => {
+            lower_ast_extern_function_declaration(context, node)?;
 
             return Ok(true);
         }

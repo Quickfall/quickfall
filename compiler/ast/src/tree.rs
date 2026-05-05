@@ -185,7 +185,7 @@ pub enum ASTTreeNodeKind {
         requires_this: bool,
     },
 
-    ShadowFunctionDeclaration {
+    ExternFunctionDeclaration {
         func_name: HashedString,
         args: Vec<FunctionDeclarationArgument>,
         return_type: Option<ASTType>,
@@ -222,7 +222,7 @@ impl ASTTreeNodeKind {
             ASTTreeNodeKind::FunctionDeclaration { .. }
                 | ASTTreeNodeKind::EnumDeclaration { .. }
                 | ASTTreeNodeKind::StaticVariableDeclaration { .. }
-                | ASTTreeNodeKind::ShadowFunctionDeclaration { .. }
+                | ASTTreeNodeKind::ExternFunctionDeclaration { .. }
                 | ASTTreeNodeKind::StructLayoutDeclaration { .. }
         );
     }
@@ -239,7 +239,7 @@ impl ASTTreeNodeKind {
                 return Some(HashedString::new(func_name.val.to_string()));
             }
 
-            ASTTreeNodeKind::ShadowFunctionDeclaration {
+            ASTTreeNodeKind::ExternFunctionDeclaration {
                 func_name,
                 args: _,
                 return_type: _,
@@ -367,7 +367,7 @@ impl Display for ASTTreeNodeKind {
             Self::ForBlock { .. } => "for block",
             Self::FunctionCall { .. } => "function call",
             Self::FunctionDeclaration { .. } => "function declaration",
-            Self::ShadowFunctionDeclaration { .. } => "shadow function declaration",
+            Self::ExternFunctionDeclaration { .. } => "extern function declaration",
             Self::StructLRFunction { .. } => "struct LRU function usage",
             Self::StructLRVariable { .. } => "struct LRU variable usage",
             Self::StructLayoutDeclaration { .. } => "struct / layout declaration",

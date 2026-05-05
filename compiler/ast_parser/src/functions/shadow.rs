@@ -7,7 +7,7 @@ use lexer::token::{LexerToken, LexerTokenType};
 
 use crate::{functions::arguments::parse_function_arguments, types::parse_type};
 
-pub fn parse_shadow_function_declaration(
+pub fn parse_extern_function_definition(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
@@ -35,7 +35,7 @@ pub fn parse_shadow_function_declaration(
     }
 
     return Ok(Box::new(ASTTreeNode::new(
-        ASTTreeNodeKind::ShadowFunctionDeclaration {
+        ASTTreeNodeKind::ExternFunctionDeclaration {
             func_name: HashedString::new(function_name.0),
             args: args.0,
             return_type: ret_type,

@@ -11,7 +11,7 @@ use compiler_typing::{
 use compiler_utils::utils::indexed::IndexStorage;
 use diagnostics::{DiagnosticResult, unsure_panic};
 
-use crate::funcs::{lower_hir_function_decl, lower_hir_shadow_decl};
+use crate::funcs::{lower_hir_extern_decl, lower_hir_function_decl};
 
 pub mod arrays;
 pub mod body;
@@ -37,7 +37,7 @@ pub fn lower_hir_top_level(
 ) -> DiagnosticResult<bool> {
     return match node.kind {
         HIRNodeKind::FunctionDeclaration { .. } => lower_hir_function_decl(node, ctx),
-        HIRNodeKind::ShadowFunctionDeclaration { .. } => lower_hir_shadow_decl(node, ctx),
+        HIRNodeKind::ExternFunctionDeclaration { .. } => lower_hir_extern_decl(node, ctx),
         HIRNodeKind::StructDeclaration { .. } => {
             // Since Struct declarations are already fulled lowered in HIR, we do need handling here!
 

@@ -201,7 +201,7 @@ pub enum HIRNodeKind {
         requires_this: bool,
     },
 
-    ShadowFunctionDeclaration {
+    ExternFunctionDeclaration {
         func_name: usize,
         arguments: Vec<(u64, Type)>,
         return_type: Option<Type>,

@@ -159,11 +159,11 @@ pub fn lower_ast_function_declaration(
     panic!("Invalid node passed!");
 }
 
-pub fn lower_ast_shadow_function_declaration(
+pub fn lower_ast_extern_function_declaration(
     context: &mut HIRContext,
     node: Box<ASTTreeNode>,
 ) -> DiagnosticResult<Box<HIRNode>> {
-    if let ASTTreeNodeKind::ShadowFunctionDeclaration {
+    if let ASTTreeNodeKind::ExternFunctionDeclaration {
         func_name,
         args,
         return_type,
@@ -198,7 +198,7 @@ pub fn lower_ast_shadow_function_declaration(
         )?;
 
         return Ok(Box::new(HIRNode::new(
-            HIRNodeKind::ShadowFunctionDeclaration {
+            HIRNodeKind::ExternFunctionDeclaration {
                 func_name: ind,
                 arguments,
                 return_type: ret_type,

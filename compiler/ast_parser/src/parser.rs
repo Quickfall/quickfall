@@ -15,7 +15,7 @@ use crate::{
     },
     functions::{
         parse_function_call, parse_function_declaraction, returns::parse_function_return_statement,
-        shadow::parse_shadow_function_declaration,
+        shadow::parse_extern_function_definition,
     },
     structs::{enums::parse_enum_declaration, parse_type_declaration},
     use_statements::parse_use_statement,
@@ -39,8 +39,8 @@ pub fn parse_ast_node(
             return parse_function_declaraction(tokens, ind, None);
         }
 
-        LexerTokenType::ShadowFunction => {
-            return parse_shadow_function_declaration(tokens, ind);
+        LexerTokenType::ExternFunc => {
+            return parse_extern_function_definition(tokens, ind);
         }
 
         LexerTokenType::Struct => {
