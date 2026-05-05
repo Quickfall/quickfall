@@ -1,5 +1,4 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
-use ast_parser::structs::val;
 use astoir_hir::{
     ctx::{HIRBranchedContext, HIRContext, VariableKind, get_variable},
     nodes::{HIRNode, HIRNodeKind},

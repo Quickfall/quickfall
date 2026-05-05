@@ -62,7 +62,7 @@ fn lower_ast_struct_function_decl(
             ret_type = None;
         }
 
-        let mut curr_ctx = HIRBranchedContext::new();
+        let mut curr_ctx = HIRBranchedContext::new(None); // TODO: remove type reference
         let body = lower_ast_body(context, &mut curr_ctx, body, true)?;
 
         let ind = container
