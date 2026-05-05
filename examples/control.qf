@@ -1,0 +1,17 @@
+func multiply_number(s32 a, s32 b) -> s32 {
+	mut s32 res = 0;
+
+	for(i => [0..b]) {
+		res += b;
+	}
+
+	return res;
+}
+
+func check_number(s32 test) -> bool {
+	if(test <= 53) {
+		return true;
+	}
+
+	return false;
+}
