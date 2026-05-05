@@ -17,7 +17,6 @@ const RET_KEYWORD_HASH: u64 = hash!("ret");
 const VAR_KEYWORD_HASH: u64 = hash!("var");
 const STRUCT_KEYWORD_HASH: u64 = hash!("struct");
 const LAYOUT_KEYWORD_HASH: u64 = hash!("layout");
-const LAY_KEYWORD_HASH: u64 = hash!("lay");
 const FALSE_KEYWORD_HASH: u64 = hash!("false");
 const TRUE_KEYWORD_HASH: u64 = hash!("true");
 const IF_KEYWORD_HASH: u64 = hash!("if");
