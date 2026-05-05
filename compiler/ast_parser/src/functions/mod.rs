@@ -17,6 +17,26 @@ pub mod arguments;
 pub mod returns;
 pub mod shadow;
 
+pub fn parse_function_return_type(
+    tokens: &Vec<LexerToken>,
+    ind: &mut usize,
+) -> DiagnosticResult<Option<ASTType>> {
+    if tokens[*ind].tok_type == LexerTokenType::Minus {
+        *ind += 1;
+
+        tokens[*ind].expects(LexerTokenType::AngelBracketClose)?;
+        *ind += 1;
+
+        let ty = parse_type(tokens, ind)?;
+
+        return Ok(Some(ty));
+    } else {
+        *ind += 1;
+
+        return Ok(None);
+    }
+}
+
 pub fn parse_function_declaraction(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
@@ -34,12 +54,7 @@ pub fn parse_function_declaraction(
 
     *ind += 1;
 
-    let mut ret_type = None;
-
-    if tokens[*ind].is_keyword() {
-        ret_type = Some(parse_type(tokens, ind)?);
-        //*ind += 1;
-    }
+    let ret_type = parse_function_return_type(tokens, ind)?;
 
     tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
