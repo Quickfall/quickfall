@@ -83,7 +83,7 @@ pub fn lower_ast_function_declaration(
             arguments.push((arg.name.hash, t));
         }
 
-        let mut curr_ctx = HIRBranchedContext::new();
+        let mut curr_ctx = HIRBranchedContext::new(ret_type.clone());
 
         let branch = curr_ctx.start_branch();
 

@@ -39,16 +39,19 @@ pub struct HIRBranchedContext {
 
     pub variables: Vec<HIRBranchedVariable>, // index is the resolved indec
 
+    pub return_type: Option<Type>,
+
     pub current_branch: usize,
     pub current_element_index: usize,
 }
 
 impl HIRBranchedContext {
-    pub fn new() -> Self {
+    pub fn new(return_type: Option<Type>) -> Self {
         HIRBranchedContext {
             hash_to_ind: HashMap::new(),
             ending_eras: HashMap::new(),
             variables: Vec::new(),
+            return_type,
             current_branch: 0,
             current_element_index: 0,
         }

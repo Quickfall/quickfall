@@ -1,8 +1,11 @@
-use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
+use ast::{
+    ranges::ASTRange,
+    tree::{ASTTreeNode, ASTTreeNodeKind},
+};
 use astoir_hir::{
     ctx::{HIRBranchedContext, HIRContext, get_variable},
     nodes::{HIRNode, HIRNodeKind},
-    structs::StructLRUStep,
+    structs::{HIRRange, StructLRUStep},
 };
 use compiler_global_scope::key::EntryKey;
 use compiler_typing::tree::Type;
@@ -229,6 +232,17 @@ pub fn lower_ast_value(
 
         _ => panic!("Invalid AST value node"),
     }
+}
+
+pub fn lower_ast_range(
+    context: &mut HIRContext,
+    curr_ctx: &mut HIRBranchedContext,
+    range: ASTRange,
+) -> DiagnosticResult<HIRRange> {
+    let min = lower_ast_value(context, curr_ctx, range.min.clone())?;
+    let max = lower_ast_value(context, curr_ctx, range.max)?;
+
+    Ok(HIRRange { min, max })
 }
 
 pub fn lower_ast_array_init(

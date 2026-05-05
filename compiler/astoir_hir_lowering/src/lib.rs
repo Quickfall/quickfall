@@ -11,7 +11,10 @@ use prelude::apply_prelude;
 
 use crate::{
     arrays::lower_ast_array_modify,
-    control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block},
+    control::{
+        lower_ast_for_block, lower_ast_for_ranged_block, lower_ast_if_statement,
+        lower_ast_while_block,
+    },
     enums::lower_ast_enum,
     func::{
         lower_ast_extern_function_declaration, lower_ast_function_call,
@@ -46,7 +49,7 @@ pub fn lower_ast_body_node(
     move_current_diagnostic_pos(node.get_pos());
     match node.kind.clone() {
         ASTTreeNodeKind::VarDeclaration { .. } => {
-            return lower_ast_variable_declaration(context, curr_ctx, node);
+            return lower_ast_variable_declaration(context, curr_ctx, node, false);
         }
         ASTTreeNodeKind::FunctionCall { .. } => {
             return lower_ast_function_call(context, curr_ctx, node);
@@ -68,7 +71,19 @@ pub fn lower_ast_body_node(
             if val.is_none() {
                 v = None;
             } else {
-                v = Some(lower_ast_value(context, curr_ctx, val.unwrap())?)
+                let mut k = lower_ast_value(context, curr_ctx, val.unwrap())?;
+
+                if curr_ctx.return_type.is_some() {
+                    k = Box::new(k.use_as(
+                        context,
+                        curr_ctx,
+                        curr_ctx.return_type.clone().unwrap(),
+                        &*node,
+                        None,
+                    )?);
+                }
+
+                v = Some(k)
             }
 
             return Ok(Box::new(HIRNode::new(
@@ -79,6 +94,9 @@ pub fn lower_ast_body_node(
         }
 
         ASTTreeNodeKind::ForBlock { .. } => return lower_ast_for_block(context, curr_ctx, node),
+        ASTTreeNodeKind::RangedForBlock { .. } => {
+            return lower_ast_for_ranged_block(context, curr_ctx, node);
+        }
         ASTTreeNodeKind::WhileBlock { .. } => {
             return lower_ast_while_block(context, curr_ctx, node);
         }

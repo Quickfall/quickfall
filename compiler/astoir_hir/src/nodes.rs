@@ -21,7 +21,7 @@ use diagnostics::{
 use crate::{
     ctx::{HIRBranchedContext, HIRContext},
     resolve::resolve_to_type,
-    structs::{HIRIfBranch, StructLRUStep},
+    structs::{HIRIfBranch, HIRRange, StructLRUStep},
 };
 
 #[derive(Debug, Clone)]
@@ -220,6 +220,12 @@ pub enum HIRNodeKind {
         initial_state: Box<HIRNode>,
         condition: Box<HIRNode>,
         incrementation: Box<HIRNode>,
+        body: Vec<Box<HIRNode>>,
+    },
+
+    RangedForBlock {
+        variable: Box<HIRNode>,
+        range: HIRRange,
         body: Vec<Box<HIRNode>>,
     },
 

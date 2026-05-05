@@ -1,4 +1,5 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
+use ast_parser::structs::val;
 use astoir_hir::{
     ctx::{HIRBranchedContext, HIRContext, VariableKind, get_variable},
     nodes::{HIRNode, HIRNodeKind},
@@ -12,6 +13,7 @@ pub fn lower_ast_variable_declaration(
     context: &mut HIRContext,
     curr_ctx: &mut HIRBranchedContext,
     node: Box<ASTTreeNode>,
+    force_default: bool,
 ) -> DiagnosticResult<Box<HIRNode>> {
     if let ASTTreeNodeKind::VarDeclaration {
         var_name,
@@ -28,8 +30,11 @@ pub fn lower_ast_variable_declaration(
 
         let lowered = lower_ast_type(context, var_type, &*node)?;
 
-        let name_ind =
-            curr_ctx.introduce_variable(var_name.hash, lowered.clone(), value.is_some())?;
+        let name_ind = curr_ctx.introduce_variable(
+            var_name.hash,
+            lowered.clone(),
+            value.is_some() || force_default,
+        )?;
 
         let default_val;
 
