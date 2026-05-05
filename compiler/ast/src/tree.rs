@@ -15,7 +15,7 @@ use diagnostics::{
     diagnostic::{Diagnostic, Span, SpanKind, SpanPosition},
 };
 
-use crate::types::ASTType;
+use crate::{ranges::ASTRange, types::ASTType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
@@ -166,10 +166,17 @@ pub enum ASTTreeNodeKind {
         cond: Box<ASTTreeNode>,
         body: Vec<Box<ASTTreeNode>>,
     },
+
     ForBlock {
         initial_state: Box<ASTTreeNode>,
         cond: Box<ASTTreeNode>,
         increment: Box<ASTTreeNode>,
+        body: Vec<Box<ASTTreeNode>>,
+    },
+
+    RangedForBlock {
+        var: HashedString,
+        range: ASTRange,
         body: Vec<Box<ASTTreeNode>>,
     },
 
@@ -364,7 +371,7 @@ impl Display for ASTTreeNodeKind {
             Self::ReturnStatement { .. } => "return statement",
             Self::StaticVariableDeclaration { .. } => "static variable declaration",
             Self::WhileBlock { .. } => "while block",
-            Self::ForBlock { .. } => "for block",
+            Self::ForBlock { .. } | Self::RangedForBlock { .. } => "for block",
             Self::FunctionCall { .. } => "function call",
             Self::FunctionDeclaration { .. } => "function declaration",
             Self::ExternFunctionDeclaration { .. } => "extern function declaration",
