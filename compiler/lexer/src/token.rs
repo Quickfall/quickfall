@@ -16,7 +16,7 @@ use diagnostics::{
 pub enum LexerTokenType {
     /// Represent the func keyword
     Function,
-    ShadowFunction,
+    ExternFunc,
 
     Comment(String),
     GlobalComment(String),
@@ -216,7 +216,7 @@ impl Display for LexerTokenType {
             Self::ParenClose => ")",
             Self::ParenOpen => "(",
             Self::Return => "ret",
-            Self::ShadowFunction => "shadowfunc",
+            Self::ExternFunc => "externfunc",
             Self::Static => "static",
             Self::StringLit(_) => "string literal",
             Self::Var => "var",

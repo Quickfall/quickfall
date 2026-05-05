@@ -11,7 +11,7 @@ use diagnostics::diagnostic::SpanPosition;
 
 use crate::token::{LexerToken, LexerTokenType};
 
-const SHADOWFUNC_KEYWORD_HASH: u64 = hash!("shadowfunc");
+const EXTERNFUNC_KEYWORD_HASH: u64 = hash!("externfunc");
 const FUNC_KEYWORD_HASH: u64 = hash!("func");
 const RET_KEYWORD_HASH: u64 = hash!("ret");
 const VAR_KEYWORD_HASH: u64 = hash!("var");
@@ -351,11 +351,10 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 
     let token_type = match hash {
         FUNC_KEYWORD_HASH => LexerTokenType::Function,
-        SHADOWFUNC_KEYWORD_HASH => LexerTokenType::ShadowFunction,
+        EXTERNFUNC_KEYWORD_HASH => LexerTokenType::ExternFunc,
         RET_KEYWORD_HASH => LexerTokenType::Return,
         STRUCT_KEYWORD_HASH => LexerTokenType::Struct,
         LAYOUT_KEYWORD_HASH => LexerTokenType::Layout,
-        LAY_KEYWORD_HASH => LexerTokenType::Lay,
         TRUE_KEYWORD_HASH => LexerTokenType::True,
         FALSE_KEYWORD_HASH => LexerTokenType::False,
         VAR_KEYWORD_HASH => LexerTokenType::Var,
