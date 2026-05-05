@@ -22,6 +22,9 @@ pub fn parse_use_statement(
 
         tokens[*ind].expects(LexerTokenType::Collon)?;
         *ind += 1;
+
+        tokens[*ind].expects(LexerTokenType::Collon)?;
+        *ind += 1;
     }
 
     tokens[*ind].expects(LexerTokenType::ArrayOpen)?;
