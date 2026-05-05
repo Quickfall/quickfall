@@ -1,7 +1,7 @@
 func multiply_number(s32 a, s32 b) -> s32 {
 	mut s32 res = 0;
 
-	for(i => [0..b]) {
+	for(s32 i => [0..b]) {
 		res += b;
 	}
 
