@@ -26,7 +26,8 @@ pub fn lower_ast_for_block(
     {
         let branch = curr_ctx.start_branch();
 
-        let initial = lower_ast_variable_declaration(context, curr_ctx, initial_state, false)?;
+        let initial =
+            lower_ast_variable_declaration(context, curr_ctx, initial_state, false, None)?;
         let condition = lower_ast_condition(context, curr_ctx, cond)?;
 
         let incrementation = lower_ast_math_operation(context, curr_ctx, increment, true)?;
@@ -58,14 +59,12 @@ pub fn lower_ast_for_ranged_block(
     if let ASTTreeNodeKind::RangedForBlock { var, range, body } = node.kind.clone() {
         let branch = curr_ctx.start_branch();
 
-        let initial = lower_ast_variable_declaration(context, curr_ctx, var, true)?;
-        let range = lower_ast_range(
-            context,
-            curr_ctx,
-            range,
-            Type::Generic(RawType::Integer(64, false), vec![], vec![]),
-            &*node,
-        )?;
+        let ty = Type::Generic(RawType::Integer(64, false), vec![], vec![]);
+
+        let initial =
+            lower_ast_variable_declaration(context, curr_ctx, var, true, Some(ty.clone()))?;
+
+        let range = lower_ast_range(context, curr_ctx, range, ty, &*node)?;
         let body = lower_ast_body(context, curr_ctx, body, false)?;
 
         curr_ctx.end_branch(branch);

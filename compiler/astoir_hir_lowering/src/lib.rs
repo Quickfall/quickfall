@@ -49,7 +49,7 @@ pub fn lower_ast_body_node(
     move_current_diagnostic_pos(node.get_pos());
     match node.kind.clone() {
         ASTTreeNodeKind::VarDeclaration { .. } => {
-            return lower_ast_variable_declaration(context, curr_ctx, node, false);
+            return lower_ast_variable_declaration(context, curr_ctx, node, false, None);
         }
         ASTTreeNodeKind::FunctionCall { .. } => {
             return lower_ast_function_call(context, curr_ctx, node);
