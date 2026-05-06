@@ -4,6 +4,7 @@ use astoir_hir::{
     nodes::{HIRNode, HIRNodeKind},
     structs::HIRIfBranch,
 };
+use compiler_typing::{raw::RawType, tree::Type};
 use diagnostics::DiagnosticResult;
 
 use crate::{
@@ -58,7 +59,13 @@ pub fn lower_ast_for_ranged_block(
         let branch = curr_ctx.start_branch();
 
         let initial = lower_ast_variable_declaration(context, curr_ctx, var, true)?;
-        let range = lower_ast_range(context, curr_ctx, range)?;
+        let range = lower_ast_range(
+            context,
+            curr_ctx,
+            range,
+            Type::Generic(RawType::Integer(64, false), vec![], vec![]),
+            &*node,
+        )?;
         let body = lower_ast_body(context, curr_ctx, body, false)?;
 
         curr_ctx.end_branch(branch);

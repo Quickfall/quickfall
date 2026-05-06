@@ -10,7 +10,7 @@ use astoir_hir::{
 use compiler_global_scope::key::EntryKey;
 use compiler_typing::tree::Type;
 use diagnostics::{
-    DiagnosticResult,
+    DiagnosticResult, DiagnosticSpanOrigin,
     builders::{make_invalid_pointing, make_struct_missing_field, make_struct_missing_func},
 };
 
@@ -234,13 +234,26 @@ pub fn lower_ast_value(
     }
 }
 
-pub fn lower_ast_range(
+pub fn lower_ast_range<K: DiagnosticSpanOrigin>(
     context: &mut HIRContext,
     curr_ctx: &mut HIRBranchedContext,
     range: ASTRange,
+    ty: Type,
+    origin: &K,
 ) -> DiagnosticResult<HIRRange> {
-    let min = lower_ast_value(context, curr_ctx, range.min.clone())?;
-    let max = lower_ast_value(context, curr_ctx, range.max)?;
+    let min = Box::new(
+        lower_ast_value(context, curr_ctx, range.min.clone())?.use_as(
+            context,
+            curr_ctx,
+            ty.clone(),
+            origin,
+            None,
+        )?,
+    );
+    let max = Box::new(
+        lower_ast_value(context, curr_ctx, range.max)?
+            .use_as(context, curr_ctx, ty, origin, None)?,
+    );
 
     Ok(HIRRange { min, max })
 }
