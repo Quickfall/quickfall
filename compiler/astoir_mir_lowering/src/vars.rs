@@ -15,7 +15,8 @@ pub fn lower_hir_variable_declaration(
     block_id: MIRBlockReference,
     node: Box<HIRNode>,
     ctx: &mut MIRLoweringContext,
-) -> DiagnosticResult<bool> {
+    override_val: Option<BaseMIRValue>,
+) -> DiagnosticResult<MIRVariableReference> {
     if let HIRNodeKind::VarDeclaration {
         variable,
         var_type,
@@ -75,6 +76,8 @@ pub fn lower_hir_variable_declaration(
                     },
                 );
             }
+
+            return Ok(MIRVariableReference::SSAReference(variable));
         } else {
             let lowered = lower_hir_type(ctx, var_type)?;
 
@@ -92,6 +95,17 @@ pub fn lower_hir_variable_declaration(
                 },
             );
 
+            if !default_val.is_some() && override_val.is_some() {
+                let val = override_val.unwrap();
+
+                build_store(
+                    &mut ctx.mir_ctx,
+                    &ctx.hir_ctx.global_scope.scope,
+                    ptr.clone(),
+                    val,
+                )?;
+            }
+
             if default_val.is_some() {
                 let val = lower_hir_value(block_id, default_val.unwrap(), ctx)?;
 
@@ -102,9 +116,9 @@ pub fn lower_hir_variable_declaration(
                     val,
                 )?;
             }
-        }
 
-        return Ok(true);
+            return Ok(MIRVariableReference::PointerReference(ptr.clone()));
+        }
     }
 
     panic!("Invalid node")

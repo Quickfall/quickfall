@@ -8,7 +8,10 @@ use diagnostics::{
 use crate::{
     MIRLoweringContext,
     arrays::lower_hir_array_modify,
-    control::{forloop::lower_hir_for_loop, ifstatement::lower_hir_if_statement},
+    control::{
+        forloop::{lower_hir_for_loop, lower_hir_ranged_for_loop},
+        ifstatement::lower_hir_if_statement,
+    },
     funcs::lower_hir_function_call,
     introductions::handle_var_introduction_queue,
     math::lower_hir_math_operation,
@@ -30,7 +33,10 @@ pub fn lower_hir_body_member(
 
     return match node.kind.clone() {
         HIRNodeKind::VarAssigment { .. } => lower_hir_variable_assignment(block, node, ctx),
-        HIRNodeKind::VarDeclaration { .. } => lower_hir_variable_declaration(block, node, ctx),
+        HIRNodeKind::VarDeclaration { .. } => {
+            let _ = lower_hir_variable_declaration(block, node, ctx, None)?;
+            Ok(true)
+        }
         HIRNodeKind::MathOperation {
             left: _,
             right: _,
@@ -46,6 +52,12 @@ pub fn lower_hir_body_member(
         }
 
         HIRNodeKind::ArrayIndexModify { .. } => lower_hir_array_modify(block, node, ctx),
+
+        HIRNodeKind::RangedForBlock { .. } => {
+            let _ = lower_hir_ranged_for_loop(block, node, ctx)?;
+
+            Ok(true)
+        }
 
         HIRNodeKind::ForBlock { .. } => lower_hir_for_loop(block, node, ctx),
         HIRNodeKind::IfStatement { .. } => lower_hir_if_statement(block, node, ctx),
