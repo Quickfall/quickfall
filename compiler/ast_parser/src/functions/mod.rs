@@ -123,22 +123,8 @@ pub fn parse_node_body(
     let mut tok: &LexerToken = &tokens[*ind];
     let mut body: Vec<Box<ASTTreeNode>> = Vec::new();
 
-    let mut stock = 1;
-
     while tok.tok_type != LexerTokenType::EndOfFile && tok.tok_type != LexerTokenType::BracketClose
     {
-        if tok.tok_type == LexerTokenType::BracketClose {
-            stock -= 1;
-        }
-
-        if stock == 0 {
-            break;
-        }
-
-        if tok.tok_type == LexerTokenType::BracketOpen {
-            stock += 1;
-        }
-
         let n = parse_ast_node_in_body(tokens, ind)?;
 
         body.push(n);
