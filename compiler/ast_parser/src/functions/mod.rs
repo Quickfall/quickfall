@@ -125,6 +125,13 @@ pub fn parse_node_body(
 
     while tok.tok_type != LexerTokenType::EndOfFile && tok.tok_type != LexerTokenType::BracketClose
     {
+        if tok.tok_type == LexerTokenType::SemiCollon {
+            *ind += 1;
+            tok = &tokens[*ind];
+
+            continue;
+        }
+
         let n = parse_ast_node_in_body(tokens, ind)?;
 
         body.push(n);
