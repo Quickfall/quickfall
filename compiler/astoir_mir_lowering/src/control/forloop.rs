@@ -142,6 +142,8 @@ pub fn lower_hir_ranged_for_loop(
         build_conditional_branch(&mut ctx.mir_ctx, cond_val, body_ref, exit_ref)?;
 
         ctx.mir_ctx.writer.move_end(exit_ref);
+
+        return Ok(());
     }
 
     panic!("Invalid node")
