@@ -59,6 +59,7 @@ pub enum LexerTokenType {
     Dot,
     Ampersand,
     Collon,
+    SemiCollon,
 
     Plus,
     Minus,
@@ -194,6 +195,7 @@ impl Display for LexerTokenType {
             Self::ArrayOpen => "[",
             Self::Asterisk => "*",
             Self::Collon => ":",
+            Self::SemiCollon => ";",
             Self::BracketClose => "}",
             Self::BracketOpen => "{",
             Self::Comma => ",",

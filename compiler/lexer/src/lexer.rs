@@ -178,6 +178,10 @@ pub fn lexer_parse(contents: String, file_path: &String) -> DiagnosticResult<Vec
             '-' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Minus)),
             '/' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Divide)),
             '~' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Tidle)),
+            ';' => tokens.push(LexerToken::make_single_sized(
+                pos,
+                LexerTokenType::SemiCollon,
+            )),
             '%' => tokens.push(LexerToken::make_single_sized(
                 pos,
                 LexerTokenType::PercentSign,
