@@ -888,7 +888,7 @@ pub fn bridge_llvm_instruction(
                 function,
                 arguments,
             } => {
-                let func = bridge.functions[function].clone().inner;
+                let func = bridge.functions[&function].clone().inner;
 
                 let mut args = vec![];
 
@@ -902,7 +902,7 @@ pub fn bridge_llvm_instruction(
             }
 
             MIRInstruction::FuncArgumentGrab { ind, argtype: _ } => {
-                let func = bridge.functions[func].clone().inner;
+                let func = bridge.functions[&func].clone().inner;
 
                 func.get_nth_param(ind as u32)
             }

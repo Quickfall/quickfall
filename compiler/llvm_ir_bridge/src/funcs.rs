@@ -11,6 +11,8 @@ use crate::{
 pub fn bridge_llvm_functions(mir: &MIRContext, bridge: &mut LLVMBridgeContext) {
     for func in &mir.functions {
         let mut args = vec![];
+        let ind = func.0;
+
         let func = func.1;
 
         if !func.blocks.is_empty() {
@@ -35,6 +37,6 @@ pub fn bridge_llvm_functions(mir: &MIRContext, bridge: &mut LLVMBridgeContext) {
             );
         }
 
-        bridge.functions.push(LLVMFunction::new(ff));
+        bridge.functions.insert(*ind, LLVMFunction::new(ff));
     }
 }

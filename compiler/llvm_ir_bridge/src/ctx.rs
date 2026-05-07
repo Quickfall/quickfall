@@ -14,7 +14,7 @@ pub struct LLVMBridgeContext {
     pub blocks: HashMap<usize, LLVMBlock>,
     pub values: HashMap<usize, LLVMBasicValue>,
     pub completed_blocks: HashSet<usize>,
-    pub functions: Vec<LLVMFunction>,
+    pub functions: HashMap<usize, LLVMFunction>,
 
     pub types: LLVMTypeStorage,
 
@@ -32,7 +32,7 @@ impl LLVMBridgeContext {
             blocks: HashMap::new(),
             completed_blocks: HashSet::new(),
             types: LLVMTypeStorage::new(&ctx),
-            functions: vec![],
+            functions: HashMap::new(),
             void_type: unsafe { transmute::<VoidType, VoidType<'static>>(ctx.void_type()) },
             values: HashMap::new(),
             ctx: ctx.clone(),
