@@ -40,8 +40,6 @@ pub fn lower_ast_variable_declaration(
             }
         }
 
-        println!("Variable introduce: {} -> {}", var_name.hash, var_name.val);
-
         let name_ind = curr_ctx.introduce_variable(
             var_name.hash,
             lowered.clone(),

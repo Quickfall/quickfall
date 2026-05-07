@@ -109,6 +109,19 @@ impl MIRBlock {
         return ind;
     }
 
+    pub fn propagate_variables(
+        base: MIRBlockReference,
+        target: MIRBlockReference,
+        ctx: &mut MIRContext,
+    ) {
+        let variables = ctx.blocks[base].variables.clone();
+        let target_block = &mut ctx.blocks[target];
+
+        for (ind, hint) in variables {
+            target_block.variables.insert(ind, hint);
+        }
+    }
+
     pub fn get_variable_ref(&self, var_ind: usize) -> DiagnosticResult<MIRVariableReference> {
         let var = &self.variables[&var_ind];
 

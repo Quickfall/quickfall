@@ -42,6 +42,10 @@ pub fn lower_hir_for_loop(
         move_current_diagnostic_pos(initial_state.get_pos());
         lower_hir_variable_declaration(block, initial_state, ctx, None)?;
 
+        MIRBlock::propagate_variables(block, body_ref, &mut ctx.mir_ctx);
+        MIRBlock::propagate_variables(block, header_ref, &mut ctx.mir_ctx);
+        MIRBlock::propagate_variables(block, cond_ref, &mut ctx.mir_ctx);
+
         build_unconditional_branch(&mut ctx.mir_ctx, cond_ref)?;
 
         // Body reference
@@ -90,15 +94,15 @@ pub fn lower_hir_ranged_for_loop(
         body,
     } = node.kind.clone()
     {
+        move_current_diagnostic_pos(node.get_pos());
+
         let header_ref = MIRBlock::new_merge(block, &mut ctx.mir_ctx, false);
         let cond_ref = MIRBlock::new_merge(header_ref, &mut ctx.mir_ctx, false);
-        let body_ref = MIRBlock::new_merge(header_ref, &mut ctx.mir_ctx, false);
         let exit_ref = MIRBlock::new_merge(block, &mut ctx.mir_ctx, false);
+        let body_ref = MIRBlock::new_merge(header_ref, &mut ctx.mir_ctx, false);
 
         ctx.mir_ctx.blocks[header_ref].merge_blocks.push(block);
         ctx.mir_ctx.blocks[header_ref].merge_blocks.push(body_ref);
-
-        move_current_diagnostic_pos(node.get_pos());
 
         // Initial state
 
@@ -106,6 +110,10 @@ pub fn lower_hir_ranged_for_loop(
         let max = lower_hir_value(block, range.max, ctx)?;
 
         let v = lower_hir_variable_declaration(block, variable, ctx, Some(min.clone()))?;
+
+        MIRBlock::propagate_variables(block, body_ref, &mut ctx.mir_ctx);
+        MIRBlock::propagate_variables(block, header_ref, &mut ctx.mir_ctx);
+        MIRBlock::propagate_variables(block, cond_ref, &mut ctx.mir_ctx);
 
         build_unconditional_branch(&mut ctx.mir_ctx, cond_ref)?;
 
