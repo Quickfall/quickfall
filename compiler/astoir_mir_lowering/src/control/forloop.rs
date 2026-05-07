@@ -42,6 +42,8 @@ pub fn lower_hir_for_loop(
         move_current_diagnostic_pos(initial_state.get_pos());
         lower_hir_variable_declaration(block, initial_state, ctx, None)?;
 
+        build_unconditional_branch(&mut ctx.mir_ctx, cond_ref)?;
+
         // Body reference
 
         ctx.mir_ctx.writer.move_end(body_ref);
@@ -104,6 +106,8 @@ pub fn lower_hir_ranged_for_loop(
         let max = lower_hir_value(block, range.max, ctx)?;
 
         let v = lower_hir_variable_declaration(block, variable, ctx, Some(min.clone()))?;
+
+        build_unconditional_branch(&mut ctx.mir_ctx, cond_ref)?;
 
         // Body reference
 

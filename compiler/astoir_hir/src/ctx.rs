@@ -175,7 +175,7 @@ impl HIRBranchedContext {
     pub fn is_alive(&self, ind: usize) -> bool {
         let start_branch = self.variables[ind].introduced_in_era;
 
-        if start_branch > self.current_element_index {
+        if start_branch > self.current_branch {
             return false;
         }
 
@@ -240,7 +240,13 @@ impl HIRBranchedContext {
                         return Err(make_doesnt_exist_in_era(origin, &hash).into());
                     }
 
-                    panic!("Dropped unalived variable")
+                    println!(
+                        "Variable dropped before! Information dump: introduced {}, ending era {}",
+                        self.variables[ind].introduced_in_era,
+                        self.ending_eras[&self.variables[ind].introduced_in_era]
+                    );
+
+                    panic!("Dropped unalived variable {} -> hash {}", ind, hash);
                 }
 
                 self.variables[ind].usage_count += 1;

@@ -31,8 +31,6 @@ pub fn parse_function_return_type(
 
         return Ok(Some(ty));
     } else {
-        *ind += 1;
-
         return Ok(None);
     }
 }

@@ -54,6 +54,14 @@ impl Type {
         }
     }
 
+    pub fn is_generic_direct(&self) -> bool {
+        match self {
+            Self::Generic(_, _, _) => true,
+            Self::GenericLowered(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_ptr(&self) -> bool {
         match self {
             Self::Pointer(_, _) => true,
