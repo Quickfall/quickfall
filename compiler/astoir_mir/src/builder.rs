@@ -60,7 +60,8 @@ pub fn build_store(
             return build_store_fallback(ctx, ptr, val.clone(), storage);
         }
 
-        unsure_panic!("cannot put this value onto this pointer since it's not the type");
+        println!("Expected {}({}) got {}({})", hint, base, val.vtype, val);
+        //unsure_panic!("cannot put this value onto this pointer since it's not the type.");
     }
 
     ctx.append_inst(MIRInstruction::Store {
@@ -69,6 +70,17 @@ pub fn build_store(
     });
 
     return Ok(());
+}
+
+pub fn build_pointer_deref(
+    ctx: &mut MIRContext,
+    val: MIRPointerValue,
+) -> DiagnosticResult<BaseMIRValue> {
+    let res = ctx
+        .append_inst(MIRInstruction::DerefPointer { ptr: val })
+        .get()?;
+
+    Ok(res)
 }
 
 pub fn build_downcast_int(

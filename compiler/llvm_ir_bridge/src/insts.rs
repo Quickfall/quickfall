@@ -49,6 +49,23 @@ pub fn bridge_llvm_instruction(
                 Some(res.into())
             }
 
+            MIRInstruction::DerefPointer { ptr } => {
+                let base = BaseMIRValue::from(ptr.into());
+
+                let res = llvm_to_base!(
+                    bridge.builder.build_load(
+                        bridge
+                            .types
+                            .convert(mir.ssa_hints.get_hint(base.get_ssa_index()).get_type())
+                            .inner,
+                        bridge.values[&base.get_ssa_index()].into_pointer_value(),
+                        &format!("{}", instruction.as_valuedindex())
+                    )
+                );
+
+                Some(res.into())
+            }
+
             MIRInstruction::Store { variable, value } => {
                 let base = BaseMIRValue::from(variable.into());
                 let ptr = bridge.values[&base.get_ssa_index()].into_pointer_value();

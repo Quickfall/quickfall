@@ -22,6 +22,11 @@ pub enum MIRInstruction {
     Load {
         value: MIRPointerValue,
     },
+
+    DerefPointer {
+        ptr: MIRPointerValue,
+    },
+
     Store {
         variable: MIRPointerValue,
         value: BaseMIRValue,
@@ -324,6 +329,12 @@ impl MIRInstruction {
                 return hint.as_pointer();
             }
 
+            Self::DerefPointer { ptr } => {
+                let base: BaseMIRValue = ptr.clone().into();
+
+                *base.vtype.get_inner_type()
+            }
+
             Self::DowncastInteger { val, size } => {
                 return Type::GenericLowered(RawType::Integer(*size, val.signed));
             }
@@ -505,6 +516,7 @@ impl Display for MIRInstruction {
             Self::StackAlloc { alloc_size, t: _ } => writeln!(f, "stkalloc {}", *alloc_size)?,
             Self::Load { value } => writeln!(f, "load {}", value)?,
             Self::Store { variable, value } => writeln!(f, "store d{} s{}", variable, value)?,
+            Self::DerefPointer { ptr } => writeln!(f, "ptrderef {}", ptr)?,
 
             Self::MemoryCopy { src, dest, sz } => {
                 writeln!(f, "unsmemcopy s{} d{} {}b", src, dest, sz)?

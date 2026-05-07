@@ -39,7 +39,7 @@ declare_error!(
     10,
     "functions are not supported in layouts"
 );
-declare_error!(INVALID_POINTING, 11, "cannot point to a non-variable");
+declare_error!(INVALID_POINTING, 11, "cannot dereference non-pointer");
 declare_error!(
     TRAIT_MISSING,
     12,

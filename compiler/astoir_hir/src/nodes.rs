@@ -129,7 +129,12 @@ pub enum HIRNodeKind {
         index: usize,
     },
 
-    PointerGrab {
+    DereferenceModify {
+        pointer: Box<HIRNode>,
+        val: Box<HIRNode>,
+    },
+
+    Dereference {
         val: Box<HIRNode>,
     },
     ReferenceGrab {
@@ -430,17 +435,21 @@ impl HIRNode {
                 return Some(curr_ctx.variables[*index].variable_type.clone());
             }
 
-            HIRNodeKind::PointerGrab { val } => {
+            HIRNodeKind::Dereference { val } => {
+                let ty = val.get_node_type(context, curr_ctx).unwrap();
+
+                if ty.is_generic_direct() {
+                    None
+                } else {
+                    Some(*ty.get_inner_type())
+                }
+            }
+
+            HIRNodeKind::ReferenceGrab { val } => {
                 return Some(Type::Pointer(
                     false,
                     Box::new(val.get_node_type(context, curr_ctx).unwrap()),
                 ));
-            }
-
-            HIRNodeKind::ReferenceGrab { val } => {
-                return Some(Type::Reference(Box::new(
-                    val.get_node_type(context, curr_ctx).unwrap(),
-                )));
             }
 
             HIRNodeKind::UnwrapCondition { .. } => {

@@ -1,7 +1,7 @@
 use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{
     blocks::refer::MIRBlockReference,
-    builder::{build_static_array_const, build_static_array_one_const},
+    builder::{build_pointer_deref, build_static_array_const, build_static_array_one_const},
     vals::base::BaseMIRValue,
 };
 use diagnostics::{
@@ -47,10 +47,14 @@ pub fn lower_hir_value(
                 .as_pointer_ref()?
                 .into());
         }
-        HIRNodeKind::PointerGrab { val } => {
-            return Ok(lower_hir_variable_reference(block, &val, ctx)?
-                .as_pointer_ref()?
-                .into());
+        HIRNodeKind::Dereference { val } => {
+            let ptr = lower_hir_variable_reference(block, &val, ctx)?
+                .read(block, &mut ctx.mir_ctx)?
+                .as_ptr()?;
+
+            let val = build_pointer_deref(&mut ctx.mir_ctx, ptr)?;
+
+            Ok(val)
         }
         HIRNodeKind::BooleanCondition { .. } => {
             return Ok(lowering_hir_boolean_condition(block, node, ctx)?.into());

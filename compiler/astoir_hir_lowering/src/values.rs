@@ -218,7 +218,7 @@ pub fn lower_ast_value(
             return lower_ast_variable_reference(context, curr_ctx, node, true);
         }
 
-        ASTTreeNodeKind::PointerGrab(_) => return lower_ast_pointer(context, curr_ctx, node),
+        ASTTreeNodeKind::Dereference(_) => return lower_ast_pointer(context, curr_ctx, node),
 
         ASTTreeNodeKind::ReferenceGrab(_) => return lower_ast_reference(context, curr_ctx, node),
 
@@ -296,10 +296,12 @@ pub fn lower_ast_pointer(
     curr_ctx: &mut HIRBranchedContext,
     node: Box<ASTTreeNode>,
 ) -> DiagnosticResult<Box<HIRNode>> {
-    if let ASTTreeNodeKind::PointerGrab(val) = node.kind.clone() {
+    if let ASTTreeNodeKind::Dereference(val) = node.kind.clone() {
         let val = lower_ast_value(context, curr_ctx, val)?;
 
-        if !val.is_variable_representative() {
+        let ty = val.get_node_type(context, curr_ctx);
+
+        if ty.is_none() || !ty.unwrap().is_pointer() {
             return Err(make_invalid_pointing(&*node).into());
         }
 
@@ -308,7 +310,7 @@ pub fn lower_ast_pointer(
         curr_ctx.introduce_variable_refer(r.0);
 
         return Ok(Box::new(HIRNode::new(
-            HIRNodeKind::PointerGrab { val },
+            HIRNodeKind::Dereference { val },
             &node.start,
             &node.end,
         )));
