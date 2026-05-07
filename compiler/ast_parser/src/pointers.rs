@@ -1,8 +1,8 @@
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 use diagnostics::DiagnosticResult;
-use lexer::token::LexerToken;
+use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::value::{parse_ast_value_full, parse_ast_value_post_l};
+use crate::value::{parse_ast_value, parse_ast_value_full};
 
 pub fn parse_deref_modify(
     tokens: &Vec<LexerToken>,
@@ -10,15 +10,21 @@ pub fn parse_deref_modify(
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
     *ind += 1; // *
 
-    let val = parse_ast_value_full(tokens, ind, false)?;
+    let pointer = parse_ast_value_full(tokens, ind, false)?;
+
+    tokens[*ind].expects(LexerTokenType::EqualSign)?;
+    *ind += 1; // =
+
+    let val = parse_ast_value(tokens, ind)?;
 
     let deref = Box::new(ASTTreeNode::new(
         ASTTreeNodeKind::DereferenceModify {
-            pointer: val.clone(),
+            pointer,
+            val: val.clone(),
         },
         val.start.clone(),
         val.end,
     ));
 
-    parse_ast_value_post_l(tokens, ind, Ok(deref), false)
+    Ok(deref)
 }

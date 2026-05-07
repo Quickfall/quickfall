@@ -326,7 +326,7 @@ impl MIRInstruction {
 
                 let hint = ctx.ssa_hints.get_hint(base.get_ssa_index());
 
-                return hint.as_pointer();
+                return hint.get_type();
             }
 
             Self::DerefPointer { ptr } => {

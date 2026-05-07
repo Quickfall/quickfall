@@ -23,7 +23,7 @@ use crate::{
     math::lower_ast_math_operation,
     structs::lower_ast_struct_declaration,
     uses::handle_ast_use_statement,
-    values::lower_ast_value,
+    values::{lower_ast_pointer_modify, lower_ast_value},
     var::{lower_ast_variable_assign, lower_ast_variable_declaration},
 };
 
@@ -102,6 +102,10 @@ pub fn lower_ast_body_node(
         }
         ASTTreeNodeKind::IfStatement { .. } => {
             return lower_ast_if_statement(context, curr_ctx, node);
+        }
+
+        ASTTreeNodeKind::DereferenceModify { .. } => {
+            return lower_ast_pointer_modify(context, curr_ctx, node);
         }
 
         _ => panic!("Invalid node type"),

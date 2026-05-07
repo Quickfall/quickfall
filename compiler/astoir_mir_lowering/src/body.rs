@@ -16,7 +16,7 @@ use crate::{
     introductions::handle_var_introduction_queue,
     math::lower_hir_math_operation,
     values::lower_hir_value,
-    vars::{lower_hir_variable_assignment, lower_hir_variable_declaration},
+    vars::{lower_hir_deref_modify, lower_hir_variable_assignment, lower_hir_variable_declaration},
 };
 
 pub fn lower_hir_body_member(
@@ -78,6 +78,12 @@ pub fn lower_hir_body_member(
 
             ctx.mir_ctx
                 .append_inst(MIRInstruction::Return { val: None });
+
+            return Ok(true);
+        }
+
+        HIRNodeKind::DereferenceModify { .. } => {
+            let _ = lower_hir_deref_modify(block, node, ctx)?;
 
             return Ok(true);
         }

@@ -11,7 +11,10 @@ use compiler_global_scope::key::EntryKey;
 use compiler_typing::tree::Type;
 use diagnostics::{
     DiagnosticResult, DiagnosticSpanOrigin,
-    builders::{make_invalid_pointing, make_struct_missing_field, make_struct_missing_func},
+    builders::{
+        make_expected_simple_error, make_invalid_pointing, make_struct_missing_field,
+        make_struct_missing_func,
+    },
 };
 
 use crate::{
@@ -219,7 +222,6 @@ pub fn lower_ast_value(
         }
 
         ASTTreeNodeKind::Dereference(_) => return lower_ast_pointer(context, curr_ctx, node),
-
         ASTTreeNodeKind::ReferenceGrab(_) => return lower_ast_reference(context, curr_ctx, node),
 
         ASTTreeNodeKind::UnwrapCondition { .. } => {
@@ -305,12 +307,49 @@ pub fn lower_ast_pointer(
             return Err(make_invalid_pointing(&*node).into());
         }
 
-        let r = val.get_variable_represent();
+        // TODO: add deref counter perhaps?
 
-        curr_ctx.introduce_variable_refer(r.0);
+        //let r = val.get_variable_represent();
+
+        //curr_ctx.introduce_variable_refer(r.0);
 
         return Ok(Box::new(HIRNode::new(
             HIRNodeKind::Dereference { val },
+            &node.start,
+            &node.end,
+        )));
+    }
+
+    panic!("Invalid node")
+}
+
+pub fn lower_ast_pointer_modify(
+    context: &mut HIRContext,
+    curr_ctx: &mut HIRBranchedContext,
+    node: Box<ASTTreeNode>,
+) -> DiagnosticResult<Box<HIRNode>> {
+    if let ASTTreeNodeKind::DereferenceModify { pointer, val } = node.kind.clone() {
+        let ptr = lower_ast_value(context, curr_ctx, pointer)?;
+        let ty = ptr.get_node_type(context, curr_ctx);
+
+        let val = lower_ast_value(context, curr_ctx, val)?;
+        let val_type = val.get_node_type(context, curr_ctx).unwrap();
+
+        if ty.is_none() || !ty.clone().unwrap().is_pointer() {
+            return Err(make_invalid_pointing(&*node).into());
+        }
+
+        if !ty
+            .clone()
+            .unwrap()
+            .get_inner_type()
+            .can_transmute(&val_type, &context.global_scope.scope)
+        {
+            return Err(make_expected_simple_error(&*val, &ty.unwrap(), &val_type).into());
+        }
+
+        return Ok(Box::new(HIRNode::new(
+            HIRNodeKind::DereferenceModify { pointer: ptr, val },
             &node.start,
             &node.end,
         )));

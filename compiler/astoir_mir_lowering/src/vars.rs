@@ -7,7 +7,9 @@ use astoir_mir::{
     vals::{base::BaseMIRValue, refer::MIRVariableReference},
 };
 use compiler_typing::{SizedType, TypedGlobalScopeEntry};
-use diagnostics::{DiagnosticResult, builders::make_expected_simple_error_originless};
+use diagnostics::{
+    DiagnosticResult, MaybeDiagnostic, builders::make_expected_simple_error_originless,
+};
 
 use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
 
@@ -127,7 +129,7 @@ pub fn lower_hir_variable_declaration(
 pub fn lower_hir_variable_reference(
     block: MIRBlockReference,
     node: &Box<HIRNode>,
-    ctx: &MIRLoweringContext,
+    ctx: &mut MIRLoweringContext,
 ) -> DiagnosticResult<MIRVariableReference> {
     if let HIRNodeKind::VariableReference {
         index,
@@ -136,6 +138,29 @@ pub fn lower_hir_variable_reference(
     {
         // TODO: add support for static variables
         return ctx.mir_ctx.blocks[block].get_variable_ref(*index);
+    }
+
+    panic!("Invalid node")
+}
+
+pub fn lower_hir_deref_modify(
+    block: MIRBlockReference,
+    node: Box<HIRNode>,
+    ctx: &mut MIRLoweringContext,
+) -> MaybeDiagnostic {
+    if let HIRNodeKind::DereferenceModify { pointer, val } = node.kind.clone() {
+        let ptr = lower_hir_value(block, pointer, ctx)?.as_ptr()?;
+        let val = lower_hir_value(block, val, ctx)?;
+
+        let var = MIRVariableReference::PointerReference(ptr);
+        var.write(
+            block,
+            &mut ctx.mir_ctx,
+            val,
+            &ctx.hir_ctx.global_scope.scope,
+        )?;
+
+        return Ok(());
     }
 
     panic!("Invalid node")

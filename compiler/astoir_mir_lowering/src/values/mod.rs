@@ -88,7 +88,6 @@ pub fn lower_hir_value(
 
             return Ok(res.unwrap());
         }
-
         _ => panic!("Invalid node {:#?}", node),
     }
 }
