@@ -78,7 +78,13 @@ pub enum ASTTreeNodeKind {
 
     VariableReference(HashedString),
 
-    PointerGrab(Box<ASTTreeNode>),
+    Dereference(Box<ASTTreeNode>),
+
+    DereferenceModify {
+        pointer: Box<ASTTreeNode>,
+        new_value: Box<ASTTreeNode>,
+    },
+
     ReferenceGrab(Box<ASTTreeNode>),
 
     StructInitializer {
@@ -356,7 +362,8 @@ impl Display for ASTTreeNodeKind {
             Self::BooleanBasedConditionMember { .. } => "boolean condition",
             Self::MathResult { .. } => "math operation",
             Self::VariableReference(_) => "variable reference",
-            Self::PointerGrab(_) => "pointer grabbing",
+            Self::DereferenceModify { .. } => "modifying dereference",
+            Self::Dereference(_) => "dereference",
             Self::ReferenceGrab(_) => "reference",
             Self::StructInitializer { .. } => "struct value initializer",
             Self::ArrayVariableInitializerValue { .. }

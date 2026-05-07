@@ -160,6 +160,21 @@ pub fn parse_ast_value_post_l(
 
                     return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
                 }
+
+                if let ASTTreeNodeKind::Dereference(inner) = &v.kind {
+                    let start = original.clone()?.start.clone();
+
+                    let right_val = parse_ast_value(tokens, ind)?;
+
+                    let end = right_val.end.clone();
+
+                    let kind = ASTTreeNodeKind::DereferenceModify {
+                        pointer: inner.clone(),
+                        new_value: right_val,
+                    };
+
+                    return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
+                }
             }
 
             let start = original.clone()?.start.clone();
@@ -248,7 +263,7 @@ pub fn parse_ast_value(
             return parse_ast_array_init(tokens, ind);
         }
 
-        LexerTokenType::Asterisk => return parse_ast_pointer(tokens, ind),
+        LexerTokenType::Asterisk => return parse_ast_dereference(tokens, ind),
         LexerTokenType::Ampersand => return parse_ast_reference(tokens, ind),
 
         LexerTokenType::IntLit(_, _) => {
@@ -339,7 +354,7 @@ pub fn parse_ast_array_init(
     )));
 }
 
-pub fn parse_ast_pointer(
+pub fn parse_ast_dereference(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
@@ -351,7 +366,7 @@ pub fn parse_ast_pointer(
     let value = parse_ast_value(tokens, ind)?;
 
     return Ok(Box::new(ASTTreeNode::new(
-        ASTTreeNodeKind::PointerGrab(value),
+        ASTTreeNodeKind::Dereference(value),
         start,
         tokens[*ind].get_end_pos(),
     )));
