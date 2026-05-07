@@ -160,21 +160,6 @@ pub fn parse_ast_value_post_l(
 
                     return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
                 }
-
-                if let ASTTreeNodeKind::Dereference(inner) = &v.kind {
-                    let start = original.clone()?.start.clone();
-
-                    let right_val = parse_ast_value(tokens, ind)?;
-
-                    let end = right_val.end.clone();
-
-                    let kind = ASTTreeNodeKind::DereferenceModify {
-                        pointer: inner.clone(),
-                        new_value: right_val,
-                    };
-
-                    return Ok(Box::new(ASTTreeNode::new(kind, start, end)));
-                }
             }
 
             let start = original.clone()?.start.clone();
@@ -230,14 +215,23 @@ pub fn parse_ast_condition_if_statement_value(
 /// - Math operation results (both with or without value changing)
 /// - Boolean negation result
 /// - Boolean compare result
+
 pub fn parse_ast_value(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
+    parse_ast_value_full(tokens, ind, true)
+}
+
+pub fn parse_ast_value_full(
+    tokens: &Vec<LexerToken>,
+    ind: &mut usize,
+    allow_lparsing: bool,
+) -> DiagnosticResult<Box<ASTTreeNode>> {
     match &tokens[*ind].tok_type {
         LexerTokenType::ExclamationMark => {
             *ind += 1;
-            let ast = parse_ast_value(tokens, ind)?;
+            let ast = parse_ast_value_full(tokens, ind, allow_lparsing)?;
 
             if ast.kind.is_function_call() || ast.kind.is_var_access() {
                 let end = ast.end.clone();
@@ -268,12 +262,22 @@ pub fn parse_ast_value(
 
         LexerTokenType::IntLit(_, _) => {
             let int = parse_integer_literal(tokens, ind);
-            return parse_ast_value_post_l(tokens, ind, int, false);
+
+            if allow_lparsing {
+                return parse_ast_value_post_l(tokens, ind, int, false);
+            } else {
+                return int;
+            }
         }
 
         LexerTokenType::StringLit(_) => {
             let str = parse_string_literal(tokens, ind);
-            return parse_ast_value_post_l(tokens, ind, str, false);
+
+            if allow_lparsing {
+                return parse_ast_value_post_l(tokens, ind, str, false);
+            } else {
+                return str;
+            }
         }
 
         LexerTokenType::BracketOpen => {
@@ -283,7 +287,12 @@ pub fn parse_ast_value(
         LexerTokenType::Keyword(str, _) => {
             if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
                 let call = parse_function_call(tokens, ind);
-                return parse_ast_value_post_l(tokens, ind, call, false);
+
+                if allow_lparsing {
+                    return parse_ast_value_post_l(tokens, ind, call, false);
+                } else {
+                    return call;
+                }
             }
 
             let n = Ok(make_node!(
@@ -296,7 +305,11 @@ pub fn parse_ast_value(
 
             let chain = parse_ast_value_dotacess(tokens, ind, n);
 
-            return parse_ast_value_post_l(tokens, ind, chain, false);
+            if allow_lparsing {
+                return parse_ast_value_post_l(tokens, ind, chain, false);
+            } else {
+                return chain;
+            }
         }
 
         LexerTokenType::Unwrap | LexerTokenType::UnwrapUnsafe => parse_unwrap_value(tokens, ind),

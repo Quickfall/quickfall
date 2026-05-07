@@ -319,6 +319,8 @@ pub fn lower_ast_pointer(
     panic!("Invalid node")
 }
 
+//pub fn lower_ast_pointer_modify()
+
 pub fn lower_ast_reference(
     context: &mut HIRContext,
     curr_ctx: &mut HIRBranchedContext,

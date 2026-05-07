@@ -17,6 +17,7 @@ use crate::{
         parse_function_call, parse_function_declaraction, returns::parse_function_return_statement,
         shadow::parse_extern_function_definition,
     },
+    pointers::parse_deref_modify,
     structs::{enums::parse_enum_declaration, parse_type_declaration},
     use_statements::parse_use_statement,
     value::parse_ast_value_post_l,
@@ -90,6 +91,8 @@ pub fn parse_ast_node_in_body(
         LexerTokenType::For => {
             return parse_for_loop(tokens, ind);
         }
+
+        LexerTokenType::Asterisk => return parse_deref_modify(tokens, ind),
 
         LexerTokenType::Return => {
             return parse_function_return_statement(tokens, ind);

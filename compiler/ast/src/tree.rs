@@ -80,9 +80,9 @@ pub enum ASTTreeNodeKind {
 
     Dereference(Box<ASTTreeNode>),
 
+    /// A stub to mark a value as being a modifying deref
     DereferenceModify {
         pointer: Box<ASTTreeNode>,
-        new_value: Box<ASTTreeNode>,
     },
 
     ReferenceGrab(Box<ASTTreeNode>),
