@@ -1,12 +1,12 @@
 //! The definitions for instructions within the MIR.
 
-use std::fmt::Display;
-
 use compiler_typing::{raw::RawType, tree::Type};
 
 use crate::{
+    DisplayAstoIR,
     blocks::refer::MIRBlockReference,
     ctx::MIRContext,
+    fmt::DisplayWithCtx,
     vals::{base::BaseMIRValue, float::MIRFloatValue, int::MIRIntValue, ptr::MIRPointerValue},
 };
 
@@ -504,14 +504,14 @@ impl MIRInstruction {
 
             _ => panic!(
                 "Tried using get_return_type on non returning type! {}",
-                self
+                DisplayWithCtx::new(ctx, self)
             ),
         }
     }
 }
 
-impl Display for MIRInstruction {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl DisplayAstoIR for MIRInstruction {
+    fn format(&self, f: &mut std::fmt::Formatter<'_>, _ctx: &MIRContext) -> std::fmt::Result {
         match self {
             Self::StackAlloc { alloc_size, t: _ } => writeln!(f, "stkalloc {}", *alloc_size)?,
             Self::Load { value } => writeln!(f, "load {}", value)?,

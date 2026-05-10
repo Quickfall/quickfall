@@ -34,8 +34,6 @@ impl Into<BaseMIRValue> for MIRFloatValue {
 
 impl Display for MIRFloatValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "#{}", self.base.get_ssa_index())?;
-
-        Ok(())
+        self.base.fmt(f)
     }
 }

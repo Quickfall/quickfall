@@ -125,10 +125,14 @@ pub fn parse_ast_value_post_l(
         | LexerTokenType::Minus
         | LexerTokenType::Asterisk
         | LexerTokenType::Divide => {
-            let o = &original?;
+            let o = &original.clone()?;
             let k = Box::new(ASTTreeNode::clone(o.as_ref()));
 
-            return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
+            if !invoked_on_body {
+                return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
+            } else {
+                return original;
+            }
         }
 
         LexerTokenType::ArrayOpen => {

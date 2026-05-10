@@ -2,6 +2,7 @@ use std::{fs, path::PathBuf};
 
 use ast_parser::parse_ast_ctx;
 use astoir::run_astoir_mir;
+use astoir_mir::fmt::DisplayWithCtx;
 use lexer::lexer::lexer_parse_file;
 
 #[cfg(feature = "llvm")]
@@ -19,7 +20,9 @@ pub fn build_mir(path: String, out: PathBuf) {
     let mir = run_astoir_mir(ast.unwrap());
     quietlyquit_if_errors!();
 
-    fs::write(out, format!("{}", mir.unwrap())).unwrap();
+    let mir = mir.unwrap();
+
+    fs::write(out, format!("{}", DisplayWithCtx::new(&mir, &mir))).unwrap();
 }
 
 #[cfg(feature = "llvm")]

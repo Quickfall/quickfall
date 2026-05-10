@@ -345,11 +345,22 @@ pub fn lower_ast_pointer_modify(
             .get_inner_type()
             .can_transmute(&val_type, &context.global_scope.scope)
         {
-            return Err(make_expected_simple_error(&*val, &ty.unwrap(), &val_type).into());
+            return Err(make_expected_simple_error(&*val, &ty.clone().unwrap(), &val_type).into());
         }
 
+        let val = val.use_as(
+            context,
+            curr_ctx,
+            *ty.clone().unwrap().get_inner_type(),
+            &*val,
+            None,
+        )?;
+
         return Ok(Box::new(HIRNode::new(
-            HIRNodeKind::DereferenceModify { pointer: ptr, val },
+            HIRNodeKind::DereferenceModify {
+                pointer: ptr,
+                val: Box::new(val),
+            },
             &node.start,
             &node.end,
         )));

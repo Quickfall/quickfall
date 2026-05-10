@@ -5,7 +5,7 @@ out
 out.*
 
 *.qf
-*.qfmir
 *.llvm
+*.air
 
 !examples/**.qf

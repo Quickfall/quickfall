@@ -152,6 +152,12 @@ pub fn lower_hir_deref_modify(
         let ptr = lower_hir_value(block, pointer, ctx)?.as_ptr()?;
         let val = lower_hir_value(block, val, ctx)?;
 
+        println!(
+            "ptr: {}, val: {}",
+            BaseMIRValue::from(ptr.clone().into()).vtype,
+            val.vtype
+        );
+
         let var = MIRVariableReference::PointerReference(ptr);
         var.write(
             block,

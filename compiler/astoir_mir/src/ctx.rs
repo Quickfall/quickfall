@@ -1,14 +1,16 @@
-use std::{collections::HashMap, fmt::Display};
+use std::collections::HashMap;
 
 use diagnostics::DiagnosticResult;
 
 use crate::{
+    DisplayAstoIR,
     blocks::{
         MIRBlock, MIRBlockHeldInstruction,
         hints::{HintStorage, MIRValueHint},
         refer::MIRBlockReference,
     },
     builder::build_phi,
+    fmt::DisplayWithCtx,
     funcs::MIRFunction,
     inst_writer::{BlockPosition, InstructionWriterPosition},
     insts::{MIRInstruction, val::InstructionValue},
@@ -152,14 +154,14 @@ impl MIRContext {
     }
 }
 
-impl Display for MIRContext {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl DisplayAstoIR for MIRContext {
+    fn format(&self, f: &mut std::fmt::Formatter<'_>, ctx: &MIRContext) -> std::fmt::Result {
         for func in &self.functions {
             writeln!(f, "{}", func.1)?;
         }
 
         for block in &self.blocks {
-            writeln!(f, "{}", block)?;
+            writeln!(f, "{}", DisplayWithCtx::new(ctx, block))?;
         }
 
         Ok(())

@@ -31,8 +31,6 @@ pub fn parse_math_operation(
             .into());
     }
 
-    println!("{:#?}", tokens[*ind].tok_type);
-
     let right_member = parse_ast_value(tokens, ind)?;
 
     let start = original.start.clone();

@@ -1,8 +1,8 @@
 use astoir_hir::nodes::{HIRNode, HIRNodeKind};
 use astoir_mir::{
     blocks::refer::MIRBlockReference,
-    builder::{build_pointer_deref, build_static_array_const, build_static_array_one_const},
-    vals::base::BaseMIRValue,
+    builder::{build_static_array_const, build_static_array_one_const},
+    vals::{base::BaseMIRValue, refer::MIRVariableReference},
 };
 use diagnostics::{
     DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos, unsure_panic,
@@ -52,7 +52,10 @@ pub fn lower_hir_value(
                 .read(block, &mut ctx.mir_ctx)?
                 .as_ptr()?;
 
-            let val = build_pointer_deref(&mut ctx.mir_ctx, ptr)?;
+            let var = MIRVariableReference::PointerReference(ptr);
+            let val = var.read(block, &mut ctx.mir_ctx)?;
+
+            //let val = build_pointer_deref(&mut ctx.mir_ctx, ptr)?;
 
             Ok(val)
         }
