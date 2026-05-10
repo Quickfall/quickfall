@@ -195,6 +195,41 @@ impl HIRBranchedContext {
         return self.is_era_alive(start_branch);
     }
 
+    /// Checks if the code is currently alive on the given branch. Alive meaning before an ending point has taken effect.
+    /// This function can also be used to detect unreachable code by using this function on the current branch
+    pub fn is_code_alive(&self, branch: usize) -> bool {
+        for ending in &self.ending_points {
+            let end = match self.ending_eras.get(&ending.introduced_in_era) {
+                Some(v) => *v,
+                None => ending.introduced_in_era,
+            };
+
+            if branch >= end {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Determines if the current function meets the ending point requirement.
+    /// The requirement is that every single branch should have an ending point that affects it.
+    /// This function uses `is_code_alive` to check if the code ended on each branch before the current branch.
+	/// This function should only be ran at the end of body parsing
+    pub fn meets_ending_point(&self) -> bool {
+        if !self.is_code_alive(self.current_branch) {
+            return true;
+        }
+
+        for i in 0..self.current_branch {
+            if self.is_code_alive(i) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     pub fn is_era_alive(&self, era: usize) -> bool {
         if !self.ending_eras.contains_key(&era) {
             // If the era hasn't ended yet, (the ending era isn't added for branch start_branch)

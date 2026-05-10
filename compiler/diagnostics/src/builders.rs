@@ -4,12 +4,13 @@ use crate::{
     DiagnosticSpanOrigin,
     diagnostic::{Diagnostic, Level, Span, SpanKind, SpanPosition},
     errors::{
-        ALREADY_IN_SCOPE, ASSIGN_DIFF_TYPE_IR, BOUND_MISSING, CANNOT_FIND, DIFF_SIZE_SPECIFIERS,
-        DIFF_TYPE_SPECIFIERS, ENUM_PARENT_FIELDS, ERA_NOT_EXIST, EXPECTED_FREE, EXPECTED_TOKEN,
-        EXPECTED_TYPE, FIELD_MISSING, FIELD_STRUCT_INIT, FIND_TYPE, FIND_TYPE_FIELD,
-        FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING, INDEX_USAGE, INVALID_POINTING,
-        INVALID_TYPE_REQ, IR_CAST, IR_INSTRUCTION_HELD_VAL, MATH_OPERATION_ASSIGNS, NOT_FOUND_USE,
-        TRAIT_MISSING, TYPE_NOT_PART, UNEXPECTED_TOKEN, VARIABLE_UNINIT,
+        ALREADY_IN_SCOPE, ASSIGN_DIFF_TYPE_IR, BOUND_MISSING, CANNOT_FIND, CODE_UNREACHABLE,
+        DIFF_SIZE_SPECIFIERS, DIFF_TYPE_SPECIFIERS, ENDING_POINT_MISSING, ENUM_PARENT_FIELDS,
+        ERA_NOT_EXIST, EXPECTED_FREE, EXPECTED_TOKEN, EXPECTED_TYPE, FIELD_MISSING,
+        FIELD_STRUCT_INIT, FIND_TYPE, FIND_TYPE_FIELD, FIND_TYPE_FUNCTION, FIND_VAR, FUNC_MISSING,
+        INDEX_USAGE, INVALID_POINTING, INVALID_TYPE_REQ, IR_CAST, IR_INSTRUCTION_HELD_VAL,
+        MATH_OPERATION_ASSIGNS, NOT_FOUND_USE, TRAIT_MISSING, TYPE_NOT_PART, UNEXPECTED_TOKEN,
+        VARIABLE_UNINIT,
     },
     get_current_diagnostic_pos,
     warnings::UNUSED_VAR,
@@ -639,5 +640,32 @@ pub fn make_cannot_find<K: DiagnosticSpanOrigin, P: Display>(
         vec![],
         vec![],
         vec![],
+    )
+}
+
+pub fn make_ending_point_missing<K: DiagnosticSpanOrigin>(origin: &K) -> Diagnostic {
+    origin.make_simple_diagnostic(
+        ENDING_POINT_MISSING.0,
+        Level::Error,
+        ENDING_POINT_MISSING.1.to_string(),
+        None,
+        vec![],
+        vec![
+            "an ending point (eg: return statement) is missing on a function that must return"
+                .to_string(),
+        ],
+        vec!["try adding a ret statement".to_string()],
+    )
+}
+
+pub fn make_unreachable_code<K: DiagnosticSpanOrigin>(origin: &K) -> Diagnostic {
+    origin.make_simple_diagnostic(
+        CODE_UNREACHABLE.0,
+        Level::Error,
+        CODE_UNREACHABLE.1.to_string(),
+        None,
+        vec![],
+        vec!["an ending point (eg: return statement) was previously introduced, this code is then unreachable".to_string()],
+        vec!["move this code before the ending point".to_string()],
     )
 }
