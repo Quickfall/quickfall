@@ -212,6 +212,11 @@ pub enum ASTTreeNodeKind {
         l: Box<ASTTreeNode>,
         r: Box<ASTTreeNode>,
     },
+
+    CrashStatement {
+        reason: HashedString,
+        pos: Position,
+    },
 }
 
 impl ASTTreeNodeKind {
@@ -365,6 +370,7 @@ impl Display for ASTTreeNodeKind {
             Self::DereferenceModify { .. } => "modifying dereference",
             Self::Dereference(_) => "dereference",
             Self::ReferenceGrab(_) => "reference",
+            Self::CrashStatement { .. } => "crash statement",
             Self::StructInitializer { .. } => "struct value initializer",
             Self::ArrayVariableInitializerValue { .. }
             | Self::ArrayVariableInitializerValueSameValue { .. } => "array value initializer",

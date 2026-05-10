@@ -50,6 +50,8 @@ pub enum LexerTokenType {
     Else,
     While,
 
+    Crash,
+
     EqualSign,
     ExclamationMark,
 
@@ -208,6 +210,7 @@ impl Display for LexerTokenType {
             Self::False => "false",
             Self::For => "for",
             Self::Function => "func",
+            Self::Crash => "crash!",
             Self::GlobalComment(_) => "global comment",
             Self::If => "if",
             Self::IntLit(_, _) => "integer literal",

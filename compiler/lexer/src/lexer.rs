@@ -30,6 +30,7 @@ const UNWRAP_KEYWORD_HASH: u64 = hash!("unwrap");
 const UNWRAP_UNSAFE_KEYWORD_HASH: u64 = hash!("unsafe_unwrap");
 const ENUM_KEYWORD_HASH: u64 = hash!("enum");
 const USE_KEYWORD_HASH: u64 = hash!("use");
+const CRASH_KEYWORD_HASH: u64 = hash!("crash");
 
 /// Parses a file into a set of lexer tokens.
 ///
@@ -373,6 +374,7 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
         UNWRAP_UNSAFE_KEYWORD_HASH => LexerTokenType::UnwrapUnsafe,
         ENUM_KEYWORD_HASH => LexerTokenType::Enum,
         USE_KEYWORD_HASH => LexerTokenType::Use,
+        CRASH_KEYWORD_HASH => LexerTokenType::Crash,
         _ => LexerTokenType::Keyword(slice.to_string(), hash),
     };
 
