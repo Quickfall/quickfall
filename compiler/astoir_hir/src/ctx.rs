@@ -184,6 +184,13 @@ impl HIRBranchedContext {
         return true;
     }
 
+    pub fn introduce_ending_point(&mut self, kind: EndingPointKind) {
+        self.ending_points.push(HIRBranchedEndingPoint {
+            introduced_in_era: self.current_branch,
+            kind,
+        })
+    }
+
     /// Determines if the element with the given index is still alive in the current branch.
     pub fn is_alive(&self, ind: usize) -> bool {
         let start_branch = self.variables[ind].introduced_in_era;
@@ -215,7 +222,7 @@ impl HIRBranchedContext {
     /// Determines if the current function meets the ending point requirement.
     /// The requirement is that every single branch should have an ending point that affects it.
     /// This function uses `is_code_alive` to check if the code ended on each branch before the current branch.
-	/// This function should only be ran at the end of body parsing
+    /// This function should only be ran at the end of body parsing
     pub fn meets_ending_point(&self) -> bool {
         if !self.is_code_alive(self.current_branch) {
             return true;

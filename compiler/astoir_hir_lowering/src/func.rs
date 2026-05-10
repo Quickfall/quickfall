@@ -5,7 +5,10 @@ use astoir_hir::{
 };
 use compiler_global_scope::key::EntryKey;
 use compiler_typing::TypedGlobalScopeEntry;
-use diagnostics::{DiagnosticResult, builders::make_already_in_scope};
+use diagnostics::{
+    DiagnosticResult,
+    builders::{make_already_in_scope, make_ending_point_missing},
+};
 
 use crate::{lower_ast_body, types::lower_ast_type, values::lower_ast_value};
 
@@ -114,6 +117,10 @@ pub fn lower_ast_function_declaration(
         let body = lower_ast_body(context, &mut curr_ctx, body, false)?;
 
         curr_ctx.end_branch(branch);
+
+        if !curr_ctx.meets_ending_point() {
+            return Err(make_ending_point_missing(&*body[body.len() - 1]).into());
+        }
 
         let implementation = Box::new(HIRNode::new(
             HIRNodeKind::FunctionDeclaration {

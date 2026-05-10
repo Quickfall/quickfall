@@ -270,6 +270,13 @@ impl HIRNode {
         return false;
     }
 
+    pub fn is_ending_point(&self) -> bool {
+        match self.kind {
+            HIRNodeKind::ReturnStatement { .. } => true,
+            _ => false,
+        }
+    }
+
     pub fn get_variable_represent(&self) -> (usize, bool) {
         match &self.kind {
             HIRNodeKind::VariableReference { index, is_static } => return (*index, *is_static),

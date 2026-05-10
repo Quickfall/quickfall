@@ -105,3 +105,8 @@ declare_error!(NOT_FOUND_USE, 32, "element {} was not found in {}");
 declare_error!(CANNOT_FIND, 33, "cannot find {} in the current scope");
 declare_error!(ENDING_POINT_MISSING, 34, "missing ending point.");
 declare_error!(CODE_UNREACHABLE, 35, "unreachable code.");
+declare_error!(
+    RET_TYPE_NOT_MATCH,
+    36,
+    "different return type kinds. one is empty and one is not."
+);

@@ -3,10 +3,14 @@ use ast::{
     tree::{ASTTreeNode, ASTTreeNodeKind},
 };
 use astoir_hir::{
-    ctx::{HIRBranchedContext, HIRContext},
+    ctx::{EndingPointKind, HIRBranchedContext, HIRContext},
     nodes::{HIRNode, HIRNodeKind},
 };
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos};
+use diagnostics::{
+    DiagnosticResult, DiagnosticSpanOrigin,
+    builders::{make_ret_type_kind, make_unreachable_code},
+    move_current_diagnostic_pos,
+};
 use prelude::apply_prelude;
 
 use crate::{
@@ -68,20 +72,24 @@ pub fn lower_ast_body_node(
         ASTTreeNodeKind::ReturnStatement { val } => {
             let v;
 
+            if val.is_none() != curr_ctx.return_type.is_none() {
+                return Err(make_ret_type_kind(&*node).into());
+            }
+
             if val.is_none() {
+                curr_ctx.introduce_ending_point(EndingPointKind::NoneReturn);
+
                 v = None;
             } else {
-                let mut k = lower_ast_value(context, curr_ctx, val.unwrap())?;
+                curr_ctx.introduce_ending_point(EndingPointKind::Return);
 
-                if curr_ctx.return_type.is_some() {
-                    k = Box::new(k.use_as(
-                        context,
-                        curr_ctx,
-                        curr_ctx.return_type.clone().unwrap(),
-                        &*node,
-                        None,
-                    )?);
-                }
+                let k = Box::new(lower_ast_value(context, curr_ctx, val.unwrap())?.use_as(
+                    context,
+                    curr_ctx,
+                    curr_ctx.return_type.clone().unwrap(),
+                    &*node,
+                    None,
+                )?);
 
                 v = Some(k)
             }
@@ -129,7 +137,17 @@ pub fn lower_ast_body(
     }
 
     for n in nodes {
-        hir_nodes.push(lower_ast_body_node(context, curr_ctx, n)?);
+        let is_code_dead_pre = !curr_ctx.is_code_alive(curr_ctx.current_branch);
+
+        let node = lower_ast_body_node(context, curr_ctx, n)?;
+
+        if !curr_ctx.is_code_alive(curr_ctx.current_branch) {
+            if is_code_dead_pre || !node.is_ending_point() {
+                return Err(make_unreachable_code(&*node).into());
+            }
+        }
+
+        hir_nodes.push(node);
     }
 
     if introduce_era {
