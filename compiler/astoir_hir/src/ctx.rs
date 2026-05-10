@@ -30,14 +30,13 @@ pub type HIRFunctionImpl = Box<HIRNode>;
 /// Every variable has a specific branch period called era in which they are allowed to live in. An era can simply be defined as a branch index.
 ///
 /// Every branch index stores an end branch index from when it ends (inside of `ending_eras`). This end branch index will be used to calculate when the era of a variable ends.
-///
-///
 #[derive(Debug, Clone)]
 pub struct HIRBranchedContext {
     pub hash_to_ind: HashMap<SelfHash, usize>, // TODO: add a layer system to this so you are able to put multiple variables with the same name.
     pub ending_eras: HashMap<usize, usize>,
 
     pub variables: Vec<HIRBranchedVariable>, // index is the resolved indec
+    pub ending_points: Vec<HIRBranchedEndingPoint>,
 
     pub return_type: Option<Type>,
 
@@ -45,12 +44,26 @@ pub struct HIRBranchedContext {
     pub current_element_index: usize,
 }
 
+#[derive(Debug, Clone)]
+pub struct HIRBranchedEndingPoint {
+    pub introduced_in_era: usize,
+    pub kind: EndingPointKind,
+}
+
+#[derive(Debug, Clone)]
+pub enum EndingPointKind {
+    Return,
+    Crash,
+    NoneReturn,
+}
+
 impl HIRBranchedContext {
     pub fn new(return_type: Option<Type>) -> Self {
         HIRBranchedContext {
             hash_to_ind: HashMap::new(),
             ending_eras: HashMap::new(),
-            variables: Vec::new(),
+            ending_points: vec![],
+            variables: vec![],
             return_type,
             current_branch: 0,
             current_element_index: 0,

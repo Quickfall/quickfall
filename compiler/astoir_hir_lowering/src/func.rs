@@ -115,12 +115,6 @@ pub fn lower_ast_function_declaration(
 
         curr_ctx.end_branch(branch);
 
-        for var in 0..curr_ctx.variables.len() {
-            if curr_ctx.is_eligible_for_ssa(var) {
-                println!("* Function variable {} is eligible for SSA treatment!", var);
-            }
-        }
-
         let implementation = Box::new(HIRNode::new(
             HIRNodeKind::FunctionDeclaration {
                 func_name: ind,
