@@ -59,14 +59,16 @@ impl MIRVariableReference {
         storage: &TypedGlobalScope,
     ) -> DiagnosticResult<bool> {
         if self.is_pointer_ref() {
-            let mut ptr_ref = self.as_pointer_ref()?;
-            let hint = ctx
-                .ssa_hints
-                .get_hint(BaseMIRValue::from(ptr_ref.clone().into()).get_ssa_index());
+            let ptr_ref = self.as_pointer_ref()?;
 
-            if hint.get_type().is_technically_pointer() {
-                ptr_ref = build_load(ctx, ptr_ref)?.as_ptr()?;
-            }
+            //let _hint = ctx
+            //    .ssa_hints
+            //    .get_hint(BaseMIRValue::from(ptr_ref.clone().into()).get_ssa_index());
+
+            //if hint.get_type().is_technically_pointer() {
+            //    ptr_ref = build_load(ctx, ptr_ref)?.as_ptr()?;
+            //    println!("Triggered {}", val);
+            //}
 
             build_store(ctx, storage, ptr_ref, val)?;
 

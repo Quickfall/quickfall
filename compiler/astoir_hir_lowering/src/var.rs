@@ -4,7 +4,11 @@ use astoir_hir::{
     nodes::{HIRNode, HIRNodeKind},
 };
 use compiler_global_scope::key::EntryKey;
-use diagnostics::{DiagnosticResult, builders::make_variable_uninit};
+use compiler_typing::tree::Type;
+use diagnostics::{
+    DiagnosticResult,
+    builders::{make_expected_simple_error, make_variable_uninit},
+};
 
 use crate::{arrays::lower_ast_array_index_access, types::lower_ast_type, values::lower_ast_value};
 
@@ -12,6 +16,8 @@ pub fn lower_ast_variable_declaration(
     context: &mut HIRContext,
     curr_ctx: &mut HIRBranchedContext,
     node: Box<ASTTreeNode>,
+    force_default: bool,
+    enforce_type: Option<Type>,
 ) -> DiagnosticResult<Box<HIRNode>> {
     if let ASTTreeNodeKind::VarDeclaration {
         var_name,
@@ -28,8 +34,17 @@ pub fn lower_ast_variable_declaration(
 
         let lowered = lower_ast_type(context, var_type, &*node)?;
 
-        let name_ind =
-            curr_ctx.introduce_variable(var_name.hash, lowered.clone(), value.is_some())?;
+        if let Some(enforce_type) = enforce_type {
+            if lowered != enforce_type {
+                return Err(make_expected_simple_error(&*node, &enforce_type, &lowered).into());
+            }
+        }
+
+        let name_ind = curr_ctx.introduce_variable(
+            var_name.hash,
+            lowered.clone(),
+            value.is_some() || force_default,
+        )?;
 
         let default_val;
 

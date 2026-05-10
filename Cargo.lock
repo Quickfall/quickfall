@@ -263,6 +263,7 @@ dependencies = [
  "ast",
  "ast_parser",
  "astoir",
+ "astoir_mir",
  "clap",
  "compiler_utils",
  "diagnostics",

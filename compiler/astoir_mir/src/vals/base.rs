@@ -59,7 +59,7 @@ impl PartialEq for BaseMIRValue {
 
 impl Display for BaseMIRValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "#{}", self.val_index)?;
+        write!(f, "#{} ({})", self.val_index, self.vtype)?;
 
         Ok(())
     }

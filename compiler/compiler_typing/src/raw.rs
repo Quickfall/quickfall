@@ -140,6 +140,14 @@ impl RawType {
         }
     }
 
+    pub fn is_struct(&self) -> bool {
+        match self {
+            Self::Struct(_, _) => true,
+            Self::LoweredStruct(_, _) => true,
+            _ => false,
+        }
+    }
+
     pub fn has_trait(&self, t: Trait, raw_type: &Type) -> bool {
         match t {
             Trait::Integer => self.is_integer(),

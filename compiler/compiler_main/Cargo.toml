@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 astoir = { path = "../astoir" }
+astoir_mir = { path = "../astoir_mir" }
 ast = { path = "../ast" }
 ast_parser = { path = "../ast_parser" }
 lexer = { path = "../lexer" }

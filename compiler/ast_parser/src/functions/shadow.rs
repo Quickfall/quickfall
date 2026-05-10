@@ -5,9 +5,9 @@ use compiler_utils::hash::HashedString;
 use diagnostics::DiagnosticResult;
 use lexer::token::{LexerToken, LexerTokenType};
 
-use crate::{functions::arguments::parse_function_arguments, types::parse_type};
+use crate::functions::{arguments::parse_function_arguments, parse_function_return_type};
 
-pub fn parse_shadow_function_declaration(
+pub fn parse_extern_function_definition(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
@@ -23,19 +23,11 @@ pub fn parse_shadow_function_declaration(
 
     *ind += 1;
 
-    let mut ret_type = None;
-    let end;
-
-    if tokens[*ind].is_keyword() {
-        ret_type = Some(parse_type(tokens, ind)?);
-
-        end = tokens[*ind].get_end_pos().clone();
-    } else {
-        end = tokens[*ind - 1].get_end_pos().clone();
-    }
+    let ret_type = parse_function_return_type(tokens, ind)?;
+    let end = tokens[*ind].get_end_pos();
 
     return Ok(Box::new(ASTTreeNode::new(
-        ASTTreeNodeKind::ShadowFunctionDeclaration {
+        ASTTreeNodeKind::ExternFunctionDeclaration {
             func_name: HashedString::new(function_name.0),
             args: args.0,
             return_type: ret_type,

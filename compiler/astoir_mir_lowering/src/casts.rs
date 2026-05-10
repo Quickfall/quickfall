@@ -3,6 +3,7 @@ use astoir_mir::{
     blocks::{hints::MIRValueHint, refer::MIRBlockReference},
     vals::base::BaseMIRValue,
 };
+use compiler_typing::raw::RawType;
 use diagnostics::DiagnosticResult;
 
 use crate::{MIRLoweringContext, lower_hir_type, values::lower_hir_value};
@@ -39,7 +40,26 @@ pub fn lower_cast(
             return Ok(value);
         }
 
-        panic!("Bad castt {:#?} -> {:#?}", old_type, new_type);
+        if old_type.is_generic_direct()
+            && new_type.is_generic_direct()
+            && old_type.as_generic() == RawType::StaticString
+            && new_type.as_generic() == RawType::Pointer
+        {
+            match ctx.mir_ctx.ssa_hints.vec[value.get_ssa_index()] {
+                MIRValueHint::Pointer(_) => {
+                    ctx.mir_ctx.ssa_hints.vec[value.get_ssa_index()] =
+                        MIRValueHint::Pointer(new_type)
+                }
+                MIRValueHint::Value(_) => {
+                    ctx.mir_ctx.ssa_hints.vec[value.get_ssa_index()] = MIRValueHint::Value(new_type)
+                }
+                _ => panic!("constant enum cast"),
+            }
+
+            return Ok(value);
+        }
+
+        panic!("Bad cast {:#?} -> {:#?}", old_type, new_type);
     }
 
     panic!("Invalid node or cast!")

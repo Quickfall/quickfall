@@ -15,8 +15,9 @@ use crate::{
     },
     functions::{
         parse_function_call, parse_function_declaraction, returns::parse_function_return_statement,
-        shadow::parse_shadow_function_declaration,
+        shadow::parse_extern_function_definition,
     },
+    pointers::parse_deref_modify,
     structs::{enums::parse_enum_declaration, parse_type_declaration},
     use_statements::parse_use_statement,
     value::parse_ast_value_post_l,
@@ -39,8 +40,8 @@ pub fn parse_ast_node(
             return parse_function_declaraction(tokens, ind, None);
         }
 
-        LexerTokenType::ShadowFunction => {
-            return parse_shadow_function_declaration(tokens, ind);
+        LexerTokenType::ExternFunc => {
+            return parse_extern_function_definition(tokens, ind);
         }
 
         LexerTokenType::Struct => {
@@ -76,7 +77,7 @@ pub fn parse_ast_node_in_body(
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
     match &tokens[*ind].tok_type {
         LexerTokenType::Var => {
-            return parse_variable_declaration(tokens, ind);
+            return parse_variable_declaration(tokens, ind, true);
         }
 
         LexerTokenType::If => {
@@ -91,6 +92,8 @@ pub fn parse_ast_node_in_body(
             return parse_for_loop(tokens, ind);
         }
 
+        LexerTokenType::Asterisk => return parse_deref_modify(tokens, ind),
+
         LexerTokenType::Return => {
             return parse_function_return_statement(tokens, ind);
         }
@@ -98,6 +101,7 @@ pub fn parse_ast_node_in_body(
         LexerTokenType::Keyword(str, _) => {
             if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
                 let call = parse_function_call(tokens, ind);
+
                 return parse_ast_value_post_l(tokens, ind, call, true);
             }
 

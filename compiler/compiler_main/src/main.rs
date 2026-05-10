@@ -1,14 +1,13 @@
-use std::{
-    fs,
-    path::PathBuf,
-    time::Instant,
-};
+use std::{fs, path::PathBuf, time::Instant};
 
 use clap::Parser;
 
 use crate::{
     cli::{Bridge, CLICommand, Cli, OutputFormat},
-    cmds::{build::build_mir, check::run_check},
+    cmds::{
+        build::{build_llvm, build_mir},
+        check::run_check,
+    },
     version::{GIT_HASH, VERSION},
 };
 
@@ -74,7 +73,15 @@ fn main() {
                     }
                 }
 
-                _ => todo!(),
+                Bridge::LLVM => {
+                    for i in input {
+                        let mut outfile = PathBuf::from(i.file_name().unwrap());
+                        outfile.add_extension("ll");
+
+                        let output_path = out.join(outfile);
+                        build_llvm(i.to_str().unwrap().to_string(), output_path);
+                    }
+                }
             }
         }
 

@@ -30,25 +30,41 @@ pub type HIRFunctionImpl = Box<HIRNode>;
 /// Every variable has a specific branch period called era in which they are allowed to live in. An era can simply be defined as a branch index.
 ///
 /// Every branch index stores an end branch index from when it ends (inside of `ending_eras`). This end branch index will be used to calculate when the era of a variable ends.
-///
-///
 #[derive(Debug, Clone)]
 pub struct HIRBranchedContext {
     pub hash_to_ind: HashMap<SelfHash, usize>, // TODO: add a layer system to this so you are able to put multiple variables with the same name.
     pub ending_eras: HashMap<usize, usize>,
 
     pub variables: Vec<HIRBranchedVariable>, // index is the resolved indec
+    pub ending_points: Vec<HIRBranchedEndingPoint>,
+
+    pub return_type: Option<Type>,
 
     pub current_branch: usize,
     pub current_element_index: usize,
 }
 
+#[derive(Debug, Clone)]
+pub struct HIRBranchedEndingPoint {
+    pub introduced_in_era: usize,
+    pub kind: EndingPointKind,
+}
+
+#[derive(Debug, Clone)]
+pub enum EndingPointKind {
+    Return,
+    Crash,
+    NoneReturn,
+}
+
 impl HIRBranchedContext {
-    pub fn new() -> Self {
+    pub fn new(return_type: Option<Type>) -> Self {
         HIRBranchedContext {
             hash_to_ind: HashMap::new(),
             ending_eras: HashMap::new(),
-            variables: Vec::new(),
+            ending_points: vec![],
+            variables: vec![],
+            return_type,
             current_branch: 0,
             current_element_index: 0,
         }
@@ -168,15 +184,57 @@ impl HIRBranchedContext {
         return true;
     }
 
+    pub fn introduce_ending_point(&mut self, kind: EndingPointKind) {
+        self.ending_points.push(HIRBranchedEndingPoint {
+            introduced_in_era: self.current_branch,
+            kind,
+        })
+    }
+
     /// Determines if the element with the given index is still alive in the current branch.
     pub fn is_alive(&self, ind: usize) -> bool {
         let start_branch = self.variables[ind].introduced_in_era;
 
-        if start_branch > self.current_element_index {
+        if start_branch > self.current_branch {
             return false;
         }
 
         return self.is_era_alive(start_branch);
+    }
+
+    /// Checks if the code is currently alive on the given branch. Alive meaning before an ending point has taken effect.
+    /// This function can also be used to detect unreachable code by using this function on the current branch
+    pub fn is_code_alive(&self, branch: usize) -> bool {
+        for ending in &self.ending_points {
+            let end = match self.ending_eras.get(&ending.introduced_in_era) {
+                Some(v) => *v,
+                None => ending.introduced_in_era,
+            };
+
+            if branch >= end {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Determines if the current function meets the ending point requirement.
+    /// The requirement is that every single branch should have an ending point that affects it.
+    /// This function uses `is_code_alive` to check if the code ended on each branch before the current branch.
+    /// This function should only be ran at the end of body parsing
+    pub fn meets_ending_point(&self) -> bool {
+        if !self.is_code_alive(self.current_branch) {
+            return true;
+        }
+
+        for i in 0..self.current_branch {
+            if self.is_code_alive(i) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     pub fn is_era_alive(&self, era: usize) -> bool {
@@ -237,7 +295,13 @@ impl HIRBranchedContext {
                         return Err(make_doesnt_exist_in_era(origin, &hash).into());
                     }
 
-                    panic!("Dropped unalived variable")
+                    println!(
+                        "Variable dropped before! Information dump: introduced {}, ending era {}",
+                        self.variables[ind].introduced_in_era,
+                        self.ending_eras[&self.variables[ind].introduced_in_era]
+                    );
+
+                    panic!("Dropped unalived variable {} -> hash {}", ind, hash);
                 }
 
                 self.variables[ind].usage_count += 1;
@@ -253,7 +317,7 @@ impl HIRBranchedContext {
         return !var.requires_address
             && var.mutation_count <= 1
             && !var.variable_type.can_use_index_access()
-            && false;
+            && !var.variable_type.is_struct();
     }
 }
 

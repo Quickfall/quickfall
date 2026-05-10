@@ -3,24 +3,31 @@ use ast::{
     tree::{ASTTreeNode, ASTTreeNodeKind},
 };
 use astoir_hir::{
-    ctx::{HIRBranchedContext, HIRContext},
+    ctx::{EndingPointKind, HIRBranchedContext, HIRContext},
     nodes::{HIRNode, HIRNodeKind},
 };
-use diagnostics::{DiagnosticResult, DiagnosticSpanOrigin, move_current_diagnostic_pos};
+use diagnostics::{
+    DiagnosticResult, DiagnosticSpanOrigin,
+    builders::{make_ret_type_kind, make_unreachable_code},
+    move_current_diagnostic_pos,
+};
 use prelude::apply_prelude;
 
 use crate::{
     arrays::lower_ast_array_modify,
-    control::{lower_ast_for_block, lower_ast_if_statement, lower_ast_while_block},
+    control::{
+        lower_ast_for_block, lower_ast_for_ranged_block, lower_ast_if_statement,
+        lower_ast_while_block,
+    },
     enums::lower_ast_enum,
     func::{
-        lower_ast_function_call, lower_ast_function_declaration,
-        lower_ast_shadow_function_declaration,
+        lower_ast_extern_function_declaration, lower_ast_function_call,
+        lower_ast_function_declaration,
     },
     math::lower_ast_math_operation,
     structs::lower_ast_struct_declaration,
     uses::handle_ast_use_statement,
-    values::lower_ast_value,
+    values::{lower_ast_pointer_modify, lower_ast_value},
     var::{lower_ast_variable_assign, lower_ast_variable_declaration},
 };
 
@@ -46,7 +53,7 @@ pub fn lower_ast_body_node(
     move_current_diagnostic_pos(node.get_pos());
     match node.kind.clone() {
         ASTTreeNodeKind::VarDeclaration { .. } => {
-            return lower_ast_variable_declaration(context, curr_ctx, node);
+            return lower_ast_variable_declaration(context, curr_ctx, node, false, None);
         }
         ASTTreeNodeKind::FunctionCall { .. } => {
             return lower_ast_function_call(context, curr_ctx, node);
@@ -65,10 +72,26 @@ pub fn lower_ast_body_node(
         ASTTreeNodeKind::ReturnStatement { val } => {
             let v;
 
+            if val.is_none() != curr_ctx.return_type.is_none() {
+                return Err(make_ret_type_kind(&*node).into());
+            }
+
             if val.is_none() {
+                curr_ctx.introduce_ending_point(EndingPointKind::NoneReturn);
+
                 v = None;
             } else {
-                v = Some(lower_ast_value(context, curr_ctx, val.unwrap())?)
+                curr_ctx.introduce_ending_point(EndingPointKind::Return);
+
+                let k = Box::new(lower_ast_value(context, curr_ctx, val.unwrap())?.use_as(
+                    context,
+                    curr_ctx,
+                    curr_ctx.return_type.clone().unwrap(),
+                    &*node,
+                    None,
+                )?);
+
+                v = Some(k)
             }
 
             return Ok(Box::new(HIRNode::new(
@@ -79,11 +102,18 @@ pub fn lower_ast_body_node(
         }
 
         ASTTreeNodeKind::ForBlock { .. } => return lower_ast_for_block(context, curr_ctx, node),
+        ASTTreeNodeKind::RangedForBlock { .. } => {
+            return lower_ast_for_ranged_block(context, curr_ctx, node);
+        }
         ASTTreeNodeKind::WhileBlock { .. } => {
             return lower_ast_while_block(context, curr_ctx, node);
         }
         ASTTreeNodeKind::IfStatement { .. } => {
             return lower_ast_if_statement(context, curr_ctx, node);
+        }
+
+        ASTTreeNodeKind::DereferenceModify { .. } => {
+            return lower_ast_pointer_modify(context, curr_ctx, node);
         }
 
         _ => panic!("Invalid node type"),
@@ -107,7 +137,17 @@ pub fn lower_ast_body(
     }
 
     for n in nodes {
-        hir_nodes.push(lower_ast_body_node(context, curr_ctx, n)?);
+        let is_code_dead_pre = !curr_ctx.is_code_alive(curr_ctx.current_branch);
+
+        let node = lower_ast_body_node(context, curr_ctx, n)?;
+
+        if !curr_ctx.is_code_alive(curr_ctx.current_branch) {
+            if is_code_dead_pre || !node.is_ending_point() {
+                return Err(make_unreachable_code(&*node).into());
+            }
+        }
+
+        hir_nodes.push(node);
     }
 
     if introduce_era {
@@ -128,8 +168,8 @@ pub fn lower_ast_toplevel(
             return Ok(true);
         }
 
-        ASTTreeNodeKind::ShadowFunctionDeclaration { .. } => {
-            lower_ast_shadow_function_declaration(context, node)?;
+        ASTTreeNodeKind::ExternFunctionDeclaration { .. } => {
+            lower_ast_extern_function_declaration(context, node)?;
 
             return Ok(true);
         }

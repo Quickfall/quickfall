@@ -28,6 +28,12 @@ pub enum HIRIfBranch {
     },
 }
 
+#[derive(Clone, Debug)]
+pub struct HIRRange {
+    pub min: Box<HIRNode>,
+    pub max: Box<HIRNode>,
+}
+
 #[derive(Debug)]
 pub struct HIRStructContainer {
     pub function_impls: Vec<Box<HIRNode>>,

@@ -9,6 +9,7 @@ use crate::{types::parse_type, value::parse_ast_value};
 pub fn parse_variable_declaration(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
+    allow_value: bool,
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
     let start = tokens[*ind].pos.clone();
 
@@ -23,7 +24,7 @@ pub fn parse_variable_declaration(
     let mut val: Option<Box<ASTTreeNode>> = None;
     let end;
 
-    if tokens[*ind].tok_type == LexerTokenType::EqualSign {
+    if tokens[*ind].tok_type == LexerTokenType::EqualSign && allow_value {
         *ind += 1;
 
         val = Some(parse_ast_value(tokens, ind)?);

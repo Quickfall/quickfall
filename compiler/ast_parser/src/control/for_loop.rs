@@ -4,8 +4,8 @@ use lexer::token::{LexerToken, LexerTokenType};
 use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
 
 use crate::{
-    functions::parse_node_body, parser::parse_ast_node_in_body, value::parse_ast_value,
-    variables::decl::parse_variable_declaration,
+    functions::parse_node_body, parser::parse_ast_node_in_body, ranges::parse_value_range,
+    value::parse_ast_value, variables::decl::parse_variable_declaration,
 };
 
 pub fn parse_for_loop(
@@ -14,11 +14,18 @@ pub fn parse_for_loop(
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
     let start = tokens[*ind].pos.clone();
 
+    if tokens[*ind + 1].tok_type != LexerTokenType::ParenOpen {
+        return parse_for_ranged_loop(tokens, ind);
+    }
+
     *ind += 1;
 
     tokens[*ind].expects(LexerTokenType::ParenOpen)?;
+    *ind += 1;
 
-    let initial = parse_variable_declaration(tokens, ind)?;
+    tokens[*ind].expects(LexerTokenType::Var)?;
+
+    let initial = parse_variable_declaration(tokens, ind, true)?;
 
     tokens[*ind].expects(LexerTokenType::Comma)?;
 
@@ -49,4 +56,33 @@ pub fn parse_for_loop(
         start,
         end,
     )));
+}
+
+pub fn parse_for_ranged_loop(
+    tokens: &Vec<LexerToken>,
+    ind: &mut usize,
+) -> DiagnosticResult<Box<ASTTreeNode>> {
+    let start = tokens[*ind].pos.clone();
+
+    let var = parse_variable_declaration(tokens, ind, false)?;
+
+    tokens[*ind].expects(LexerTokenType::EqualSign)?;
+    *ind += 1;
+
+    tokens[*ind].expects(LexerTokenType::AngelBracketClose)?;
+    *ind += 1;
+
+    let range = parse_value_range(tokens, ind)?;
+
+    tokens[*ind].expects(LexerTokenType::BracketOpen)?;
+
+    let body = parse_node_body(tokens, ind)?;
+
+    let end: compiler_utils::Position = tokens[*ind - 1].get_end_pos();
+
+    Ok(Box::new(ASTTreeNode::new(
+        ASTTreeNodeKind::RangedForBlock { var, range, body },
+        start,
+        end,
+    )))
 }

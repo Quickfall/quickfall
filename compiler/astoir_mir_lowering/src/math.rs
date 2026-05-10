@@ -29,7 +29,7 @@ pub fn lower_hir_math_operation(
         operation,
     } = node.clone().kind
     {
-        if operation.assigns && !left.is_variable_reference() {
+        if !operation.assigns && !left.is_variable_reference() {
             return Err(make_math_operation_req_assign(&*node).into());
         }
 

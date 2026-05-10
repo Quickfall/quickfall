@@ -17,6 +17,24 @@ pub mod arguments;
 pub mod returns;
 pub mod shadow;
 
+pub fn parse_function_return_type(
+    tokens: &Vec<LexerToken>,
+    ind: &mut usize,
+) -> DiagnosticResult<Option<ASTType>> {
+    if tokens[*ind].tok_type == LexerTokenType::Minus {
+        *ind += 1;
+
+        tokens[*ind].expects(LexerTokenType::AngelBracketClose)?;
+        *ind += 1;
+
+        let ty = parse_type(tokens, ind)?;
+
+        return Ok(Some(ty));
+    } else {
+        return Ok(None);
+    }
+}
+
 pub fn parse_function_declaraction(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
@@ -34,12 +52,7 @@ pub fn parse_function_declaraction(
 
     *ind += 1;
 
-    let mut ret_type = None;
-
-    if tokens[*ind].is_keyword() {
-        ret_type = Some(parse_type(tokens, ind)?);
-        //*ind += 1;
-    }
+    let ret_type = parse_function_return_type(tokens, ind)?;
 
     tokens[*ind].expects(LexerTokenType::BracketOpen)?;
 
@@ -108,20 +121,13 @@ pub fn parse_node_body(
     let mut tok: &LexerToken = &tokens[*ind];
     let mut body: Vec<Box<ASTTreeNode>> = Vec::new();
 
-    let mut stock = 1;
-
     while tok.tok_type != LexerTokenType::EndOfFile && tok.tok_type != LexerTokenType::BracketClose
     {
-        if tok.tok_type == LexerTokenType::BracketClose {
-            stock -= 1;
-        }
+        if tok.tok_type == LexerTokenType::SemiCollon {
+            *ind += 1;
+            tok = &tokens[*ind];
 
-        if stock == 0 {
-            break;
-        }
-
-        if tok.tok_type == LexerTokenType::BracketOpen {
-            stock += 1;
+            continue;
         }
 
         let n = parse_ast_node_in_body(tokens, ind)?;

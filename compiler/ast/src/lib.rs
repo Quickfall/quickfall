@@ -4,5 +4,6 @@
 
 pub mod ctx;
 pub mod operators;
+pub mod ranges;
 pub mod tree;
 pub mod types;

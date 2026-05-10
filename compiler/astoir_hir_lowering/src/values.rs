@@ -1,14 +1,20 @@
-use ast::tree::{ASTTreeNode, ASTTreeNodeKind};
+use ast::{
+    ranges::ASTRange,
+    tree::{ASTTreeNode, ASTTreeNodeKind},
+};
 use astoir_hir::{
     ctx::{HIRBranchedContext, HIRContext, get_variable},
     nodes::{HIRNode, HIRNodeKind},
-    structs::StructLRUStep,
+    structs::{HIRRange, StructLRUStep},
 };
 use compiler_global_scope::key::EntryKey;
 use compiler_typing::tree::Type;
 use diagnostics::{
-    DiagnosticResult,
-    builders::{make_invalid_pointing, make_struct_missing_field, make_struct_missing_func},
+    DiagnosticResult, DiagnosticSpanOrigin,
+    builders::{
+        make_expected_simple_error, make_invalid_pointing, make_struct_missing_field,
+        make_struct_missing_func,
+    },
 };
 
 use crate::{
@@ -215,8 +221,7 @@ pub fn lower_ast_value(
             return lower_ast_variable_reference(context, curr_ctx, node, true);
         }
 
-        ASTTreeNodeKind::PointerGrab(_) => return lower_ast_pointer(context, curr_ctx, node),
-
+        ASTTreeNodeKind::Dereference(_) => return lower_ast_pointer(context, curr_ctx, node),
         ASTTreeNodeKind::ReferenceGrab(_) => return lower_ast_reference(context, curr_ctx, node),
 
         ASTTreeNodeKind::UnwrapCondition { .. } => {
@@ -229,6 +234,30 @@ pub fn lower_ast_value(
 
         _ => panic!("Invalid AST value node"),
     }
+}
+
+pub fn lower_ast_range<K: DiagnosticSpanOrigin>(
+    context: &mut HIRContext,
+    curr_ctx: &mut HIRBranchedContext,
+    range: ASTRange,
+    ty: Type,
+    origin: &K,
+) -> DiagnosticResult<HIRRange> {
+    let min = Box::new(
+        lower_ast_value(context, curr_ctx, range.min.clone())?.use_as(
+            context,
+            curr_ctx,
+            ty.clone(),
+            origin,
+            None,
+        )?,
+    );
+    let max = Box::new(
+        lower_ast_value(context, curr_ctx, range.max)?
+            .use_as(context, curr_ctx, ty, origin, None)?,
+    );
+
+    Ok(HIRRange { min, max })
 }
 
 pub fn lower_ast_array_init(
@@ -269,19 +298,23 @@ pub fn lower_ast_pointer(
     curr_ctx: &mut HIRBranchedContext,
     node: Box<ASTTreeNode>,
 ) -> DiagnosticResult<Box<HIRNode>> {
-    if let ASTTreeNodeKind::PointerGrab(val) = node.kind.clone() {
+    if let ASTTreeNodeKind::Dereference(val) = node.kind.clone() {
         let val = lower_ast_value(context, curr_ctx, val)?;
 
-        if !val.is_variable_representative() {
+        let ty = val.get_node_type(context, curr_ctx);
+
+        if ty.is_none() || !ty.unwrap().is_pointer() {
             return Err(make_invalid_pointing(&*node).into());
         }
 
-        let r = val.get_variable_represent();
+        // TODO: add deref counter perhaps?
 
-        curr_ctx.introduce_variable_refer(r.0);
+        //let r = val.get_variable_represent();
+
+        //curr_ctx.introduce_variable_refer(r.0);
 
         return Ok(Box::new(HIRNode::new(
-            HIRNodeKind::PointerGrab { val },
+            HIRNodeKind::Dereference { val },
             &node.start,
             &node.end,
         )));
@@ -289,6 +322,54 @@ pub fn lower_ast_pointer(
 
     panic!("Invalid node")
 }
+
+pub fn lower_ast_pointer_modify(
+    context: &mut HIRContext,
+    curr_ctx: &mut HIRBranchedContext,
+    node: Box<ASTTreeNode>,
+) -> DiagnosticResult<Box<HIRNode>> {
+    if let ASTTreeNodeKind::DereferenceModify { pointer, val } = node.kind.clone() {
+        let ptr = lower_ast_value(context, curr_ctx, pointer)?;
+        let ty = ptr.get_node_type(context, curr_ctx);
+
+        let val = lower_ast_value(context, curr_ctx, val)?;
+        let val_type = val.get_node_type(context, curr_ctx).unwrap();
+
+        if ty.is_none() || !ty.clone().unwrap().is_pointer() {
+            return Err(make_invalid_pointing(&*node).into());
+        }
+
+        if !ty
+            .clone()
+            .unwrap()
+            .get_inner_type()
+            .can_transmute(&val_type, &context.global_scope.scope)
+        {
+            return Err(make_expected_simple_error(&*val, &ty.clone().unwrap(), &val_type).into());
+        }
+
+        let val = val.use_as(
+            context,
+            curr_ctx,
+            *ty.clone().unwrap().get_inner_type(),
+            &*val,
+            None,
+        )?;
+
+        return Ok(Box::new(HIRNode::new(
+            HIRNodeKind::DereferenceModify {
+                pointer: ptr,
+                val: Box::new(val),
+            },
+            &node.start,
+            &node.end,
+        )));
+    }
+
+    panic!("Invalid node")
+}
+
+//pub fn lower_ast_pointer_modify()
 
 pub fn lower_ast_reference(
     context: &mut HIRContext,

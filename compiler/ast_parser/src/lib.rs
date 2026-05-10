@@ -15,6 +15,8 @@ pub mod functions;
 pub mod literals;
 pub mod math;
 pub mod parser;
+pub mod pointers;
+pub mod ranges;
 pub mod structs;
 pub mod types;
 pub mod unwraps;

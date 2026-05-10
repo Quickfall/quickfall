@@ -72,15 +72,23 @@ pub fn parse_compare_operator(
         _ => false,
     };
 
+    if eq {
+        *ind += 1;
+    }
+
     let op = match tokens[*ind].tok_type {
         LexerTokenType::EqualSign => {
-            tokens[*ind + 1].expects(LexerTokenType::EqualSign)?;
+            if !eq {
+                tokens[*ind + 1].expects(LexerTokenType::EqualSign)?;
+            }
 
             ComparingOperator::Equal
         }
 
         LexerTokenType::ExclamationMark => {
-            tokens[*ind + 1].expects(LexerTokenType::EqualSign)?;
+            if !eq {
+                tokens[*ind + 1].expects(LexerTokenType::EqualSign)?;
+            }
 
             ComparingOperator::NotEqual
         }
@@ -105,6 +113,8 @@ pub fn parse_compare_operator(
             return Err(make_unexpected_simple_error(&tokens[*ind], &tokens[*ind].tok_type).into());
         }
     };
+
+    *ind += 1;
 
     return Ok(op);
 }

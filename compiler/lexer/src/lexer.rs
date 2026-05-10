@@ -11,13 +11,12 @@ use diagnostics::diagnostic::SpanPosition;
 
 use crate::token::{LexerToken, LexerTokenType};
 
-const SHADOWFUNC_KEYWORD_HASH: u64 = hash!("shadowfunc");
+const EXTERNFUNC_KEYWORD_HASH: u64 = hash!("externfunc");
 const FUNC_KEYWORD_HASH: u64 = hash!("func");
 const RET_KEYWORD_HASH: u64 = hash!("ret");
 const VAR_KEYWORD_HASH: u64 = hash!("var");
 const STRUCT_KEYWORD_HASH: u64 = hash!("struct");
 const LAYOUT_KEYWORD_HASH: u64 = hash!("layout");
-const LAY_KEYWORD_HASH: u64 = hash!("lay");
 const FALSE_KEYWORD_HASH: u64 = hash!("false");
 const TRUE_KEYWORD_HASH: u64 = hash!("true");
 const IF_KEYWORD_HASH: u64 = hash!("if");
@@ -179,6 +178,10 @@ pub fn lexer_parse(contents: String, file_path: &String) -> DiagnosticResult<Vec
             '-' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Minus)),
             '/' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Divide)),
             '~' => tokens.push(LexerToken::make_single_sized(pos, LexerTokenType::Tidle)),
+            ';' => tokens.push(LexerToken::make_single_sized(
+                pos,
+                LexerTokenType::SemiCollon,
+            )),
             '%' => tokens.push(LexerToken::make_single_sized(
                 pos,
                 LexerTokenType::PercentSign,
@@ -352,11 +355,10 @@ fn parse_keyword(str: &String, ind: &mut usize, start_pos: Position) -> LexerTok
 
     let token_type = match hash {
         FUNC_KEYWORD_HASH => LexerTokenType::Function,
-        SHADOWFUNC_KEYWORD_HASH => LexerTokenType::ShadowFunction,
+        EXTERNFUNC_KEYWORD_HASH => LexerTokenType::ExternFunc,
         RET_KEYWORD_HASH => LexerTokenType::Return,
         STRUCT_KEYWORD_HASH => LexerTokenType::Struct,
         LAYOUT_KEYWORD_HASH => LexerTokenType::Layout,
-        LAY_KEYWORD_HASH => LexerTokenType::Lay,
         TRUE_KEYWORD_HASH => LexerTokenType::True,
         FALSE_KEYWORD_HASH => LexerTokenType::False,
         VAR_KEYWORD_HASH => LexerTokenType::Var,

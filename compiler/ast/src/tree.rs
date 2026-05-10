@@ -15,7 +15,7 @@ use diagnostics::{
     diagnostic::{Diagnostic, Span, SpanKind, SpanPosition},
 };
 
-use crate::types::ASTType;
+use crate::{ranges::ASTRange, types::ASTType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationArgument {
@@ -78,7 +78,13 @@ pub enum ASTTreeNodeKind {
 
     VariableReference(HashedString),
 
-    PointerGrab(Box<ASTTreeNode>),
+    Dereference(Box<ASTTreeNode>),
+
+    DereferenceModify {
+        pointer: Box<ASTTreeNode>,
+        val: Box<ASTTreeNode>,
+    },
+
     ReferenceGrab(Box<ASTTreeNode>),
 
     StructInitializer {
@@ -166,10 +172,17 @@ pub enum ASTTreeNodeKind {
         cond: Box<ASTTreeNode>,
         body: Vec<Box<ASTTreeNode>>,
     },
+
     ForBlock {
         initial_state: Box<ASTTreeNode>,
         cond: Box<ASTTreeNode>,
         increment: Box<ASTTreeNode>,
+        body: Vec<Box<ASTTreeNode>>,
+    },
+
+    RangedForBlock {
+        var: Box<ASTTreeNode>,
+        range: ASTRange,
         body: Vec<Box<ASTTreeNode>>,
     },
 
@@ -185,7 +198,7 @@ pub enum ASTTreeNodeKind {
         requires_this: bool,
     },
 
-    ShadowFunctionDeclaration {
+    ExternFunctionDeclaration {
         func_name: HashedString,
         args: Vec<FunctionDeclarationArgument>,
         return_type: Option<ASTType>,
@@ -222,7 +235,7 @@ impl ASTTreeNodeKind {
             ASTTreeNodeKind::FunctionDeclaration { .. }
                 | ASTTreeNodeKind::EnumDeclaration { .. }
                 | ASTTreeNodeKind::StaticVariableDeclaration { .. }
-                | ASTTreeNodeKind::ShadowFunctionDeclaration { .. }
+                | ASTTreeNodeKind::ExternFunctionDeclaration { .. }
                 | ASTTreeNodeKind::StructLayoutDeclaration { .. }
         );
     }
@@ -239,7 +252,7 @@ impl ASTTreeNodeKind {
                 return Some(HashedString::new(func_name.val.to_string()));
             }
 
-            ASTTreeNodeKind::ShadowFunctionDeclaration {
+            ASTTreeNodeKind::ExternFunctionDeclaration {
                 func_name,
                 args: _,
                 return_type: _,
@@ -349,7 +362,8 @@ impl Display for ASTTreeNodeKind {
             Self::BooleanBasedConditionMember { .. } => "boolean condition",
             Self::MathResult { .. } => "math operation",
             Self::VariableReference(_) => "variable reference",
-            Self::PointerGrab(_) => "pointer grabbing",
+            Self::DereferenceModify { .. } => "modifying dereference",
+            Self::Dereference(_) => "dereference",
             Self::ReferenceGrab(_) => "reference",
             Self::StructInitializer { .. } => "struct value initializer",
             Self::ArrayVariableInitializerValue { .. }
@@ -364,10 +378,10 @@ impl Display for ASTTreeNodeKind {
             Self::ReturnStatement { .. } => "return statement",
             Self::StaticVariableDeclaration { .. } => "static variable declaration",
             Self::WhileBlock { .. } => "while block",
-            Self::ForBlock { .. } => "for block",
+            Self::ForBlock { .. } | Self::RangedForBlock { .. } => "for block",
             Self::FunctionCall { .. } => "function call",
             Self::FunctionDeclaration { .. } => "function declaration",
-            Self::ShadowFunctionDeclaration { .. } => "shadow function declaration",
+            Self::ExternFunctionDeclaration { .. } => "extern function declaration",
             Self::StructLRFunction { .. } => "struct LRU function usage",
             Self::StructLRVariable { .. } => "struct LRU variable usage",
             Self::StructLayoutDeclaration { .. } => "struct / layout declaration",

@@ -21,7 +21,7 @@ use diagnostics::{
 use crate::{
     ctx::{HIRBranchedContext, HIRContext},
     resolve::resolve_to_type,
-    structs::{HIRIfBranch, StructLRUStep},
+    structs::{HIRIfBranch, HIRRange, StructLRUStep},
 };
 
 #[derive(Debug, Clone)]
@@ -129,7 +129,12 @@ pub enum HIRNodeKind {
         index: usize,
     },
 
-    PointerGrab {
+    DereferenceModify {
+        pointer: Box<HIRNode>,
+        val: Box<HIRNode>,
+    },
+
+    Dereference {
         val: Box<HIRNode>,
     },
     ReferenceGrab {
@@ -201,7 +206,7 @@ pub enum HIRNodeKind {
         requires_this: bool,
     },
 
-    ShadowFunctionDeclaration {
+    ExternFunctionDeclaration {
         func_name: usize,
         arguments: Vec<(u64, Type)>,
         return_type: Option<Type>,
@@ -220,6 +225,12 @@ pub enum HIRNodeKind {
         initial_state: Box<HIRNode>,
         condition: Box<HIRNode>,
         incrementation: Box<HIRNode>,
+        body: Vec<Box<HIRNode>>,
+    },
+
+    RangedForBlock {
+        variable: Box<HIRNode>,
+        range: HIRRange,
         body: Vec<Box<HIRNode>>,
     },
 
@@ -257,6 +268,13 @@ impl HIRNode {
         }
 
         return false;
+    }
+
+    pub fn is_ending_point(&self) -> bool {
+        match self.kind {
+            HIRNodeKind::ReturnStatement { .. } => true,
+            _ => false,
+        }
     }
 
     pub fn get_variable_represent(&self) -> (usize, bool) {
@@ -424,17 +442,21 @@ impl HIRNode {
                 return Some(curr_ctx.variables[*index].variable_type.clone());
             }
 
-            HIRNodeKind::PointerGrab { val } => {
+            HIRNodeKind::Dereference { val } => {
+                let ty = val.get_node_type(context, curr_ctx).unwrap();
+
+                if ty.is_generic_direct() {
+                    None
+                } else {
+                    Some(*ty.get_inner_type())
+                }
+            }
+
+            HIRNodeKind::ReferenceGrab { val } => {
                 return Some(Type::Pointer(
                     false,
                     Box::new(val.get_node_type(context, curr_ctx).unwrap()),
                 ));
-            }
-
-            HIRNodeKind::ReferenceGrab { val } => {
-                return Some(Type::Reference(Box::new(
-                    val.get_node_type(context, curr_ctx).unwrap(),
-                )));
             }
 
             HIRNodeKind::UnwrapCondition { .. } => {

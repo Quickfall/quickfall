@@ -5,7 +5,10 @@ use astoir_hir::{
 };
 use compiler_global_scope::key::EntryKey;
 use compiler_typing::TypedGlobalScopeEntry;
-use diagnostics::{DiagnosticResult, builders::make_already_in_scope};
+use diagnostics::{
+    DiagnosticResult,
+    builders::{make_already_in_scope, make_ending_point_missing},
+};
 
 use crate::{lower_ast_body, types::lower_ast_type, values::lower_ast_value};
 
@@ -83,7 +86,7 @@ pub fn lower_ast_function_declaration(
             arguments.push((arg.name.hash, t));
         }
 
-        let mut curr_ctx = HIRBranchedContext::new();
+        let mut curr_ctx = HIRBranchedContext::new(ret_type.clone());
 
         let branch = curr_ctx.start_branch();
 
@@ -115,10 +118,8 @@ pub fn lower_ast_function_declaration(
 
         curr_ctx.end_branch(branch);
 
-        for var in 0..curr_ctx.variables.len() {
-            if curr_ctx.is_eligible_for_ssa(var) {
-                println!("* Function variable {} is eligible for SSA treatment!", var);
-            }
+        if !curr_ctx.meets_ending_point() {
+            return Err(make_ending_point_missing(&*body[body.len() - 1]).into());
         }
 
         let implementation = Box::new(HIRNode::new(
@@ -159,11 +160,11 @@ pub fn lower_ast_function_declaration(
     panic!("Invalid node passed!");
 }
 
-pub fn lower_ast_shadow_function_declaration(
+pub fn lower_ast_extern_function_declaration(
     context: &mut HIRContext,
     node: Box<ASTTreeNode>,
 ) -> DiagnosticResult<Box<HIRNode>> {
-    if let ASTTreeNodeKind::ShadowFunctionDeclaration {
+    if let ASTTreeNodeKind::ExternFunctionDeclaration {
         func_name,
         args,
         return_type,
@@ -198,7 +199,7 @@ pub fn lower_ast_shadow_function_declaration(
         )?;
 
         return Ok(Box::new(HIRNode::new(
-            HIRNodeKind::ShadowFunctionDeclaration {
+            HIRNodeKind::ExternFunctionDeclaration {
                 func_name: ind,
                 arguments,
                 return_type: ret_type,

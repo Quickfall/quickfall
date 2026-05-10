@@ -125,10 +125,14 @@ pub fn parse_ast_value_post_l(
         | LexerTokenType::Minus
         | LexerTokenType::Asterisk
         | LexerTokenType::Divide => {
-            let o = &original?;
+            let o = &original.clone()?;
             let k = Box::new(ASTTreeNode::clone(o.as_ref()));
 
-            return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
+            if !invoked_on_body {
+                return Ok(parse_math_operation(tokens, ind, k, invoked_on_body)?);
+            } else {
+                return original;
+            }
         }
 
         LexerTokenType::ArrayOpen => {
@@ -215,14 +219,23 @@ pub fn parse_ast_condition_if_statement_value(
 /// - Math operation results (both with or without value changing)
 /// - Boolean negation result
 /// - Boolean compare result
+
 pub fn parse_ast_value(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
+    parse_ast_value_full(tokens, ind, true)
+}
+
+pub fn parse_ast_value_full(
+    tokens: &Vec<LexerToken>,
+    ind: &mut usize,
+    allow_lparsing: bool,
+) -> DiagnosticResult<Box<ASTTreeNode>> {
     match &tokens[*ind].tok_type {
         LexerTokenType::ExclamationMark => {
             *ind += 1;
-            let ast = parse_ast_value(tokens, ind)?;
+            let ast = parse_ast_value_full(tokens, ind, allow_lparsing)?;
 
             if ast.kind.is_function_call() || ast.kind.is_var_access() {
                 let end = ast.end.clone();
@@ -248,17 +261,27 @@ pub fn parse_ast_value(
             return parse_ast_array_init(tokens, ind);
         }
 
-        LexerTokenType::Asterisk => return parse_ast_pointer(tokens, ind),
+        LexerTokenType::Asterisk => return parse_ast_dereference(tokens, ind),
         LexerTokenType::Ampersand => return parse_ast_reference(tokens, ind),
 
         LexerTokenType::IntLit(_, _) => {
             let int = parse_integer_literal(tokens, ind);
-            return parse_ast_value_post_l(tokens, ind, int, false);
+
+            if allow_lparsing {
+                return parse_ast_value_post_l(tokens, ind, int, false);
+            } else {
+                return int;
+            }
         }
 
         LexerTokenType::StringLit(_) => {
             let str = parse_string_literal(tokens, ind);
-            return parse_ast_value_post_l(tokens, ind, str, false);
+
+            if allow_lparsing {
+                return parse_ast_value_post_l(tokens, ind, str, false);
+            } else {
+                return str;
+            }
         }
 
         LexerTokenType::BracketOpen => {
@@ -268,7 +291,12 @@ pub fn parse_ast_value(
         LexerTokenType::Keyword(str, _) => {
             if tokens[*ind + 1].tok_type == LexerTokenType::ParenOpen {
                 let call = parse_function_call(tokens, ind);
-                return parse_ast_value_post_l(tokens, ind, call, false);
+
+                if allow_lparsing {
+                    return parse_ast_value_post_l(tokens, ind, call, false);
+                } else {
+                    return call;
+                }
             }
 
             let n = Ok(make_node!(
@@ -281,7 +309,11 @@ pub fn parse_ast_value(
 
             let chain = parse_ast_value_dotacess(tokens, ind, n);
 
-            return parse_ast_value_post_l(tokens, ind, chain, false);
+            if allow_lparsing {
+                return parse_ast_value_post_l(tokens, ind, chain, false);
+            } else {
+                return chain;
+            }
         }
 
         LexerTokenType::Unwrap | LexerTokenType::UnwrapUnsafe => parse_unwrap_value(tokens, ind),
@@ -339,7 +371,7 @@ pub fn parse_ast_array_init(
     )));
 }
 
-pub fn parse_ast_pointer(
+pub fn parse_ast_dereference(
     tokens: &Vec<LexerToken>,
     ind: &mut usize,
 ) -> DiagnosticResult<Box<ASTTreeNode>> {
@@ -351,7 +383,7 @@ pub fn parse_ast_pointer(
     let value = parse_ast_value(tokens, ind)?;
 
     return Ok(Box::new(ASTTreeNode::new(
-        ASTTreeNodeKind::PointerGrab(value),
+        ASTTreeNodeKind::Dereference(value),
         start,
         tokens[*ind].get_end_pos(),
     )));

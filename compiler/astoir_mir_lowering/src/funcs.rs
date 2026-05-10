@@ -83,11 +83,11 @@ pub fn lower_hir_function_decl(
     panic!("Invalid node")
 }
 
-pub fn lower_hir_shadow_decl(
+pub fn lower_hir_extern_decl(
     node: Box<HIRNode>,
     ctx: &mut MIRLoweringContext,
 ) -> DiagnosticResult<bool> {
-    if let HIRNodeKind::ShadowFunctionDeclaration {
+    if let HIRNodeKind::ExternFunctionDeclaration {
         func_name,
         arguments,
         return_type,

@@ -39,7 +39,7 @@ declare_error!(
     10,
     "functions are not supported in layouts"
 );
-declare_error!(INVALID_POINTING, 11, "cannot point to a non-variable");
+declare_error!(INVALID_POINTING, 11, "cannot dereference non-pointer");
 declare_error!(
     TRAIT_MISSING,
     12,
@@ -103,3 +103,10 @@ declare_error!(INVALID_TYPE_REQ, 30, "this operation requires a {} type");
 declare_error!(TYPE_NOT_PART, 31, "type {} is not part of type {}");
 declare_error!(NOT_FOUND_USE, 32, "element {} was not found in {}");
 declare_error!(CANNOT_FIND, 33, "cannot find {} in the current scope");
+declare_error!(ENDING_POINT_MISSING, 34, "missing ending point.");
+declare_error!(CODE_UNREACHABLE, 35, "unreachable code.");
+declare_error!(
+    RET_TYPE_NOT_MATCH,
+    36,
+    "different return type kinds. one is empty and one is not."
+);

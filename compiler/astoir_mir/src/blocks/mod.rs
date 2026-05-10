@@ -1,11 +1,13 @@
-use std::{collections::HashMap, fmt::Display};
+use std::collections::HashMap;
 
 use diagnostics::{DiagnosticResult, unsure_panic};
 
 use crate::{
+    DisplayAstoIR,
     blocks::refer::MIRBlockReference,
     builder::build_phi,
     ctx::MIRContext,
+    fmt::DisplayWithCtx,
     inst_writer::BlockPosition,
     insts::MIRInstruction,
     vals::{base::BaseMIRValue, refer::MIRVariableReference},
@@ -109,6 +111,19 @@ impl MIRBlock {
         return ind;
     }
 
+    pub fn propagate_variables(
+        base: MIRBlockReference,
+        target: MIRBlockReference,
+        ctx: &mut MIRContext,
+    ) {
+        let variables = ctx.blocks[base].variables.clone();
+        let target_block = &mut ctx.blocks[target];
+
+        for (ind, hint) in variables {
+            target_block.variables.insert(ind, hint);
+        }
+    }
+
     pub fn get_variable_ref(&self, var_ind: usize) -> DiagnosticResult<MIRVariableReference> {
         let var = &self.variables[&var_ind];
 
@@ -183,8 +198,8 @@ impl MIRBlock {
     }
 }
 
-impl Display for MIRBlock {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl DisplayAstoIR for MIRBlock {
+    fn format(&self, f: &mut std::fmt::Formatter<'_>, ctx: &MIRContext) -> std::fmt::Result {
         writeln!(f, "%block_{}", self.self_ref)?;
 
         if !self.merge_blocks.is_empty() {
@@ -196,18 +211,24 @@ impl Display for MIRBlock {
         }
 
         for inst in &self.instructions {
-            write!(f, "	{}", inst)?;
+            write!(f, "	{}", DisplayWithCtx::new(ctx, inst))?;
         }
 
         Ok(())
     }
 }
 
-impl Display for MIRBlockHeldInstruction {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl DisplayAstoIR for MIRBlockHeldInstruction {
+    fn format(&self, f: &mut std::fmt::Formatter<'_>, ctx: &MIRContext) -> std::fmt::Result {
         match self {
-            Self::Valued(a, b) => write!(f, "#{} = {}", *b, a),
-            Self::Valueless(a) => write!(f, "{}", a),
+            Self::Valued(a, b) => writeln!(
+                f,
+                "({}) #{} = {}",
+                a.get_return_type(ctx),
+                b,
+                DisplayWithCtx::new(ctx, a)
+            ),
+            Self::Valueless(a) => writeln!(f, "(void) {}", DisplayWithCtx::new(ctx, a)),
         }
     }
 }
