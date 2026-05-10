@@ -62,6 +62,15 @@ impl Type {
         }
     }
 
+    pub fn is_struct(&self) -> bool {
+        match self {
+            Self::GenericLowered(inner) => inner.is_struct(),
+            Self::Generic(inner, _, _) => inner.is_struct(),
+
+            _ => false,
+        }
+    }
+
     pub fn is_ptr(&self) -> bool {
         match self {
             Self::Pointer(_, _) => true,
@@ -122,6 +131,9 @@ impl Type {
 
                 return base == base2;
             }
+
+            (Self::Pointer(_, _), Self::GenericLowered(base)) => return *base == RawType::Pointer,
+            (Self::GenericLowered(base), Self::Pointer(_, _)) => return *base == RawType::Pointer,
 
             _ => false,
         }
