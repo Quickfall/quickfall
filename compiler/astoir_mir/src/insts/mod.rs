@@ -320,7 +320,9 @@ impl MIRInstruction {
 
     pub fn get_return_type(&self, ctx: &MIRContext) -> Type {
         match self {
-            Self::StackAlloc { .. } => return Type::GenericLowered(RawType::Pointer),
+            Self::StackAlloc { alloc_size: _, t } => {
+                return Type::Pointer(false, Box::new(t.clone()));
+            }
             Self::Load { value } => {
                 let base: BaseMIRValue = value.clone().into();
 
